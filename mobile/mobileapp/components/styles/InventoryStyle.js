@@ -312,4 +312,11 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
   
+  itemType: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 5,
+  },
+  
 });

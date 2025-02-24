@@ -59,23 +59,28 @@ export default StyleSheet.create({
   },
 
   tableHeaderText: {
-    fontSize: 12, // Increased for better readability
+    fontSize: 12,
     fontWeight: 'bold',
     color: 'white',
     textAlign: 'center',
+    paddingHorizontal: 10,
+    width: 'auto'
   },
-
+  
   tableCell: {
     fontSize: 12,
     color: '#333',
     textAlign: 'center',
-    paddingVertical: 5, // Improved spacing
-  },
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    width: 'auto',
+    maxWidth: 100,
+  },    
 
   tagCell: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#00796B', // Styled tag text to stand out
+    color: '#00796B',
     textAlign: 'center',
   },
 
@@ -150,8 +155,7 @@ export default StyleSheet.create({
   },
 
   helpButton: {
-    alignSelf: 'center',
-    backgroundColor: '#00796B',
+    alignSelf: 'flex-end',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 5,
@@ -160,7 +164,17 @@ export default StyleSheet.create({
   },
 
   helpText: {
-    color: 'white',
+    textDecorationLine: 'underline',
+    color: 'blue', 
+    fontSize: 16, 
+  },  
+
+  viewLinkText: {
+    fontSize: 12,
     fontWeight: 'bold',
+    color: '#00796B',
+    textDecorationLine: 'underline',
+    textAlign: 'center',
   },
+  
 });

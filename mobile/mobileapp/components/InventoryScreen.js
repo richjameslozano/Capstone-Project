@@ -1,35 +1,40 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, Keyboard } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Picker } from '@react-native-picker/picker';
-import DatePicker from 'react-native-date-picker';
+import { Picker } from '@react-native-picker/picker'; 
+import { useAuth } from '../components/contexts/AuthContext'; 
 import styles from './styles/InventoryStyle';
 
-export default function InventoryScreen({ navigation }) {
+export default function InventoryScreen({ navigation }) { 
+  const { user } = useAuth();  
+  const isAdmin = user?.role === 'admin';
+
   const [selectedTab, setSelectedTab] = useState('Fixed');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [quantity, setQuantity] = useState('');
-  const [date, setDate] = useState(new Date());
   const [reason, setReason] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedDepartment, setSelectedDepartment] = useState('');  
-  const [isDatePickerVisible, setDatePickerVisible] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState('');
 
-  const categories = ['All', 'Fixed', 'Consumables'];
+  const categories = ['All', 'Fixed', 'Consumable'];
   const departments = ['DEPARTMENTS', 'MIKMIK', 'NURSING', 'MEDTECH', 'DENTISTRY', 'OPTOMETRY', 'DENTAL HYGIENE'];
 
   const items = [
-    { id: '1', name: 'ITEM NAME', department: 'MIKMIK', color: 'navy' },
-    { id: '2', name: 'ITEM NAME', department: 'NURSING', color: 'orange' },
-    { id: '3', name: 'ITEM NAME', department: 'MEDTECH', color: 'green' },
-    { id: '4', name: 'ITEM NAME', department: 'DENTISTRY', color: 'purple' },
-    { id: '5', name: 'ITEM NAME', department: 'OPTOMETRY', color: 'blue' },
-    { id: '6', name: 'ITEM NAME', department: 'DENTAL HYGIENE', color: 'teal' },
+    { id: '1', name: 'ITEM 1 NAME', department: 'MIKMIK', type: 'Fixed', color: 'navy' },
+    { id: '2', name: 'ITEM 2 NAME', department: 'NURSING', type: 'Consumable', color: 'orange' },
+    { id: '3', name: 'ITEM 3 NAME', department: 'MEDTECH', type: 'Fixed', color: 'green' },
+    { id: '4', name: 'ITEM 4 NAME', department: 'DENTISTRY', type: 'Consumable', color: 'purple' },
+    { id: '5', name: 'ITEM 5 NAME', department: 'OPTOMETRY', type: 'Fixed', color: 'blue' },
+    { id: '6', name: 'ITEM 6 NAME', department: 'DENTAL HYGIENE', type: 'Consumable', color: 'teal' },
   ];
 
-  const filteredItems = selectedDepartment === 'DEPARTMENTS' || selectedDepartment === '' ? items : items.filter(item => item.department === selectedDepartment);
+  const filteredItems = items.filter(item => 
+    (selectedDepartment === 'DEPARTMENTS' || selectedDepartment === '' || item.department === selectedDepartment) &&
+    (selectedCategory === 'All' || item.type === selectedCategory) &&
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const openModal = (item) => {
     setSelectedItem(item);
@@ -40,7 +45,6 @@ export default function InventoryScreen({ navigation }) {
     setModalVisible(false);
     setSelectedItem(null);
     setQuantity('');
-    setDate(new Date());
     setReason('');
   };
 
@@ -52,8 +56,9 @@ export default function InventoryScreen({ navigation }) {
         </View>
 
         <View style={styles.itemDetails}>
-          <Text style={styles.itemName}>ITEM NAME</Text>
+          <Text style={styles.itemName}>{item.name}</Text>
           <Text style={[styles.department, { color: item.color }]}>Department: {item.department}</Text>
+          <Text style={styles.itemType}>Type: {item.type}</Text> 
           <Text style={styles.description}>Description:</Text>
           <Text style={styles.tags}>{"<Tag>"}</Text>
         </View>
@@ -77,7 +82,12 @@ export default function InventoryScreen({ navigation }) {
       </View>
 
       <Text style={styles.sectionTitle}>Laboratory Items</Text>
-      <TextInput style={styles.searchBar} placeholder="Search" value={searchQuery} onChangeText={setSearchQuery} />
+      <TextInput 
+        style={styles.searchBar} 
+        placeholder="Search by item name" 
+        value={searchQuery} 
+        onChangeText={setSearchQuery} 
+      />
 
       <View style={styles.pickerContainer}>
         <Picker
@@ -90,15 +100,17 @@ export default function InventoryScreen({ navigation }) {
           ))}
         </Picker>
 
-        <Picker
-          selectedValue={selectedDepartment}
-          onValueChange={(itemValue) => setSelectedDepartment(itemValue)}
-          style={styles.picker}
-        >
-          {departments.map((department) => (
-            <Picker.Item key={department} label={department} value={department} />
-          ))}
-        </Picker>
+        {!isAdmin && (
+          <Picker
+            selectedValue={selectedDepartment}
+            onValueChange={(itemValue) => setSelectedDepartment(itemValue)}
+            style={styles.picker}
+          >
+            {departments.map((department) => (
+              <Picker.Item key={department} label={department} value={department} />
+            ))}
+          </Picker>
+        )}
       </View>
 
       <FlatList
@@ -117,6 +129,7 @@ export default function InventoryScreen({ navigation }) {
                 </View>
 
                 <Text style={styles.modalItemName}>{selectedItem?.name}</Text>
+                <Text style={styles.itemType}>Type: {selectedItem?.type}</Text> 
 
                 <View style={styles.inputRow}>
                   <TextInput style={styles.input} placeholder="Quantity" value={quantity} onChangeText={setQuantity} keyboardType="numeric" />
@@ -124,23 +137,6 @@ export default function InventoryScreen({ navigation }) {
 
                 <Text style={styles.label}>Department:</Text>
                 <Text style={styles.departmentText}>{selectedItem?.department}</Text>
-
-                <TouchableOpacity style={styles.dateButton} onPress={() => setDatePickerVisible(true)}>
-                  <Text style={styles.dateButtonText}>{date.toDateString()}</Text>
-                  <Icon name="calendar" size={20} color="white" />
-                </TouchableOpacity>
-
-                <DatePicker
-                  modal
-                  open={isDatePickerVisible}
-                  date={date}
-                  mode="date"
-                  onConfirm={(selectedDate) => {
-                    setDatePickerVisible(false);
-                    setDate(selectedDate);
-                  }}
-                  onCancel={() => setDatePickerVisible(false)}
-                />
 
                 <Text style={styles.label}>Reason of Request:</Text>
                 <TextInput style={styles.textArea} placeholder="Class activity, Research" value={reason} onChangeText={setReason} multiline />
@@ -156,12 +152,14 @@ export default function InventoryScreen({ navigation }) {
 
       <View style={styles.bottomContainer}>
         <View style={styles.requestAddContainer}>
-          <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
-            <Text style={styles.requestButtonText}>Request List</Text>
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationText}>3</Text>
-            </View>
-          </TouchableOpacity>
+          {!isAdmin && (
+            <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
+              <Text style={styles.requestButtonText}>Request List</Text>
+              <View style={styles.notificationBadge}>
+                <Text style={styles.notificationText}>3</Text>
+              </View>
+            </TouchableOpacity>
+          )}
         </View>
 
         <TouchableOpacity style={styles.helpButton} onPress={() => navigation.navigate('HelpScreen')}>

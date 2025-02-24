@@ -244,7 +244,7 @@ export default StyleSheet.create({
 
   /* Request Now Button */
   requestListButton: {
-    backgroundColor: '#007BFF',
+    backgroundColor: '#007BFF', 
     paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 8,
@@ -271,13 +271,13 @@ export default StyleSheet.create({
 
   buttonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'space-between', 
     marginTop: 20,
   },
 
   buttonStyle: {
-    flex: 1,
-    marginHorizontal: 5, 
+    flex: 1, 
+    marginHorizontal: 5,
   },
   
   requestButton: {
@@ -286,4 +286,87 @@ export default StyleSheet.create({
     paddingVertical: 8,
     borderRadius: 8,
   },  
+
+  selectedDateText: {
+    fontSize: 16,
+    textAlign: 'center',
+    marginVertical: 10,
+    fontWeight: 'bold',
+  },
+
+  datePickerContainer: {
+    flexDirection: 'row', // Puts items next to each other
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginVertical: 10,
+    width: '100%',
+  },    
+  
+  dateButton: {
+    marginTop: 5,
+    backgroundColor: '#007BFF',
+  },
+
+  removeIcon: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+  },    
+
+  timeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginVertical: 10,
+  },
+  
+  modalContainer: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  
+  modalContent: {
+    backgroundColor: "white",
+    borderRadius: 10,
+    width: "80%",
+    padding: 20,
+    alignItems: "center",
+  },
+  
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  
+  timeScroll: {
+    height: 150,
+    width: 60,
+  },
+  
+  timeText: {
+    fontSize: 22,
+    textAlign: "center",
+    paddingVertical: 10,
+  },
+  
+  colon: {
+    fontSize: 22,
+    paddingHorizontal: 5,
+  },
+  
+  okButton: {
+    marginTop: 10,
+    backgroundColor: "#007BFF",
+  },
+  
+  modalImage: {
+  width: 100,
+  height: 100,
+  resizeMode: 'contain',
+  alignSelf: 'center',
+  marginBottom: 10,
+  },
+
 });
