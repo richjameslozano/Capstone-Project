@@ -5,11 +5,12 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/adminStyle/AdminDashboardStyle';
 import DataAnalysisModal from './DataAnalysisModal';
 
-export default function Admin2Dashboard({ navigation }) {
+export default function AdminDashboard({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
 
   const menuItems = [
     { title: 'Inventory', subtitle: 'Materials & Supplies', icon: 'clipboard-list', color: '#4CAF50', screen: 'InventoryScreen' },
+    { title: 'Log', subtitle: 'History & Records', icon: 'file-document-outline', screen: 'LogScreen', color: '#1A4572' }, 
     { title: 'Pending Requests', subtitle: 'View and Manage', icon: 'clock-alert', color: '#D32F2F', screen: 'PendingRequestScreen' },
     { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', color: '#673AB7', screen: 'CalendarScreen' },
     { title: 'QR Scanner', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'Camera' },

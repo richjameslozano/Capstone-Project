@@ -18,6 +18,7 @@ import AssetFinder from './components/admin/AssetFinder';
 import RequestScreen from './components/user/RequestScreen';
 import RequestListScreen from './components/user/RequestListScreen';
 import RequestLogScreen from './components/user/RequestLogScreen';
+import LogScreen from './components/admin/LogScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -42,6 +43,7 @@ export default function App() {
                 <Stack.Screen name="RequestScreen" component={RequestScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="RequestListScreen" component={RequestListScreen} options={{ headerShown: false }} />
                 <Stack.Screen name="RequestLogScreen" component={RequestLogScreen} options={{ headerShown: false }} />
+                <Stack.Screen name="LogScreen" component={LogScreen} options={{ headerShown: false }} />
               </Stack.Navigator>
             </NavigationContainer>
           </PaperProvider>

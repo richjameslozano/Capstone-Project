@@ -59,7 +59,6 @@ export default function InventoryScreen({ navigation }) {
           <Text style={styles.itemName}>{item.name}</Text>
           <Text style={[styles.department, { color: item.color }]}>Department: {item.department}</Text>
           <Text style={styles.itemType}>Type: {item.type}</Text> 
-          <Text style={styles.description}>Description:</Text>
           <Text style={styles.tags}>{"<Tag>"}</Text>
         </View>
       </View>

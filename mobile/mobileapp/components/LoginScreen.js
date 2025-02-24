@@ -26,7 +26,7 @@ export default function LoginScreen({ navigation }) {
       role: 'admin' },
 
     { 
-      email: 'dubu@nu-moa.edu.ph', 
+      email: 'dubu@nu-moa.edu.ph',  
       password: '123456', 
       name: 'Dubu', 
       department: 'Marketing', 
