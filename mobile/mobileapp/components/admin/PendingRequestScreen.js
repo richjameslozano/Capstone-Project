@@ -1,37 +1,41 @@
 import React, { useState } from 'react';
 import { View, FlatList, TouchableOpacity, Text } from 'react-native';
 import { Card } from 'react-native-paper';
+import { useRequestList } from '../contexts/RequestListContext';
+import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/adminStyle/PendingRequestStyle';
 
 export default function PendingRequestScreen() {
-  const [requests, setRequests] = useState([
-    { id: '1', name: 'Nadz', request: 'New Laptop', reason: 'Work necessity', tag: 'INF', status: 'Pending' },
-    { id: '2', name: 'Mikmik', request: 'Software Upgrade', reason: 'Security update', tag: 'INF', status: 'Pending' },
-    { id: '3', name: 'Dubu', request: 'Monitor Replacement', reason: 'Screen damage', tag: 'MED', status: 'Pending' },
-    { id: '4', name: 'Mona', request: 'Keyboard Replacement', reason: 'Keys not working', tag: 'DENT', status: 'Pending' },
-    { id: '5', name: 'Neko', request: 'Projector Request', reason: 'Classroom presentation', tag: 'INF', status: 'Pending' },
-  ]);
+  const { pendingRequests, moveToPendingRequests } = useRequestList();
+  const { user } = useAuth();
 
   const updateStatus = (id, newStatus) => {
-    setRequests(prevRequests =>
-      prevRequests.map(req => (req.id === id ? { ...req, status: newStatus } : req))
+    const updatedRequests = pendingRequests.map(req => 
+      req.id === id ? { ...req, status: newStatus } : req
     );
-  };
+  
+    moveToPendingRequests(updatedRequests); 
+  };  
 
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <Card.Content>
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.request}>{item.request}</Text>
+        <Text style={styles.name}>Requestor: {user?.name || 'Unknown'}</Text>
+        <Text style={styles.request}>Item: {item.name}</Text>
         <Text style={styles.reason}>Reason: {item.reason}</Text>
+        <Text style={styles.quantity}>Quantity: {item.quantity}</Text>
+        <Text style={styles.date}>Date: {item.date}</Text>
+        <Text style={styles.modalText}>
+            Start Time: {item?.startTime?.hour ?? '--'}:{item?.startTime?.minute ?? '--'} {item?.startTime?.period ?? '--'}
+        </Text>
+        <Text style={styles.modalText}>
+            End Time: {item?.endTime?.hour ?? '--'}:{item?.endTime?.minute ?? '--'} {item?.endTime?.period ?? '--'}
+        </Text>
+        <Text style={styles.tag}>ID: {item.tags}</Text>
 
-        <View style={styles.tagContainer}>
-          <Text style={[styles.tag, styles[item.status.toLowerCase()]]}>{item.tag}</Text>
-        </View>
+        <Text style={[styles[item.status?.toLowerCase() || 'pending']]}>{item.status || 'Pending'}</Text>
 
-        <Text style={[styles[item.status.toLowerCase()]]}>{item.status}</Text>
-
-        {item.status === 'Pending' && (
+        {(!item.status || item.status.toLowerCase() === 'pending') && (
           <View style={styles.buttonContainer}>
             <TouchableOpacity
               style={[styles.button, styles.approveButton]}
@@ -55,7 +59,11 @@ export default function PendingRequestScreen() {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Pending Requests</Text>
-      <FlatList data={requests} renderItem={renderItem} keyExtractor={item => item.id} />
+      <FlatList 
+        data={pendingRequests} 
+        renderItem={renderItem} 
+        keyExtractor={(item) => String(item.id)}
+      />
     </View>
   );
 }

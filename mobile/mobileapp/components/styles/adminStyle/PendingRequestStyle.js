@@ -50,13 +50,9 @@ export default StyleSheet.create({
   },
 
   tag: {
-    backgroundColor: '#e0e0e0',
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 15,
     fontSize: 14,
-    width: 70,
-    textAlign: 'center'
+    color: '#777',
+    marginTop: 5,
   },
 
   pending: {
@@ -110,4 +106,23 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  quantity: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 5,
+  },
+  
+  date: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 5,
+  },
+  
+  time: {
+    fontSize: 14,
+    color: '#777',
+    marginTop: 5,
+  },
+  
 });

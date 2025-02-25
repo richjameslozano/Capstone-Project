@@ -9,7 +9,7 @@ export default function AdminDashboard({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
 
   const menuItems = [
-    { title: 'Inventory', subtitle: 'Materials & Supplies', icon: 'clipboard-list', color: '#4CAF50', screen: 'InventoryScreen' },
+    { title: 'Inventory', subtitle: 'Materials & Supplies', icon: 'clipboard-list', color: '#4CAF50', screen: 'InventoryStocks' },
     { title: 'Log', subtitle: 'History & Records', icon: 'file-document-outline', screen: 'LogScreen', color: '#1A4572' }, 
     { title: 'Pending Requests', subtitle: 'View and Manage', icon: 'clock-alert', color: '#D32F2F', screen: 'PendingRequestScreen' },
     { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', color: '#673AB7', screen: 'CalendarScreen' },

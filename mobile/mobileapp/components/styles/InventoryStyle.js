@@ -319,4 +319,27 @@ export default StyleSheet.create({
     marginBottom: 5,
   },
   
+  tag: {
+    backgroundColor: '#ddd',
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 5,
+    alignSelf: 'flex-start',
+    marginTop: 5,
+  },
+  
+  tagText: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#333',
+  },
+
+  addButton: {
+    marginLeft: 10,
+  },
+  
+  disabledButton: {
+    opacity: 0.5,
+  },
+  
 });
