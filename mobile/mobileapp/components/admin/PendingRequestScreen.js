@@ -3,20 +3,22 @@ import { View, FlatList, TouchableOpacity, Text } from 'react-native';
 import { Card } from 'react-native-paper';
 import { useRequestList } from '../contexts/RequestListContext';
 import { useAuth } from '../contexts/AuthContext';
-import styles from '../styles/adminStyle/PendingRequestStyle';
+import styles from '../styles/admin2Style/PendingRequestStyle';
 
 export default function PendingRequestScreen() {
   const { pendingRequests, moveToPendingRequests } = useRequestList();
   const { user } = useAuth();
 
   const updateStatus = (id, newStatus) => {
-    const updatedRequests = pendingRequests.map(req => 
+    const updatedRequests = pendingRequests.map(req =>
       req.id === id ? { ...req, status: newStatus } : req
     );
   
-    moveToPendingRequests(updatedRequests); 
-  };  
-
+    moveToPendingRequests(updatedRequests); // Ensure updates are applied
+  };
+  
+  
+  
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
       <Card.Content>
@@ -62,8 +64,9 @@ export default function PendingRequestScreen() {
       <FlatList 
         data={pendingRequests} 
         renderItem={renderItem} 
-        keyExtractor={(item) => String(item.id)}
+        keyExtractor={(item, index) => `${item.id}-${index}`} 
       />
+
     </View>
   );
 }

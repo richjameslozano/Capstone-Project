@@ -106,7 +106,7 @@ export default function RequestListScreen({ navigation }) {
             );            
             Alert.alert("Request Submitted", "Your request has been sent successfully!");
             navigation.navigate('RequestScreen');
-            setReason("");
+            setReason("")
 
           },
         },

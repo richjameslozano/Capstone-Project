@@ -4,15 +4,12 @@ import { Card } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/RequestStyle';
 import { useAuth } from '../contexts/AuthContext';
-
-const pendingRequests = [
-  { id: '1', name: 'ITEM NAME', department: 'NURSING', quantity: 20, date: 'March 23, 2025', time: '4pm-7pm', reason: 'Needed for a class session' },
-  { id: '2', name: 'ITEM NAME', department: 'NURSING', quantity: 10, date: 'March 24, 2025', time: '1pm-3pm', reason: 'Training purposes' },
-  { id: '3', name: 'ITEM NAME', department: 'NURSING', quantity: 15, date: 'March 25, 2025', time: '10am-12pm', reason: 'Research experiment' },
-];
+import { useRequestList } from '../contexts/RequestListContext';
 
 export default function RequestScreen({ navigation }) {
   const { user } = useAuth(); 
+  const { pendingRequests } = useRequestList();
+  const { removeFromPendingRequests } = useRequestList();
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [confirmCancelVisible, setConfirmCancelVisible] = useState(false);
@@ -32,7 +29,9 @@ export default function RequestScreen({ navigation }) {
   };
 
   const confirmCancel = () => {
-    console.log('Request canceled:', selectedRequest?.name);
+    if (selectedRequest) {
+      removeFromPendingRequests(selectedRequest.id);
+    }
     setModalVisible(false);
     setConfirmCancelVisible(false);
     alert(`Your request for "${selectedRequest?.name}" has been canceled.`);
@@ -70,11 +69,7 @@ export default function RequestScreen({ navigation }) {
       <Text style={styles.sectionTitle}>Pending Requests</Text>
       <Text style={styles.subtitle}>View your confirmed requests here.</Text>
 
-      <FlatList
-        data={pendingRequests}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-      />
+      <FlatList data={pendingRequests} keyExtractor={(item) => item.id} renderItem={renderItem} />
 
       <TouchableOpacity style={styles.helpButton}>
         <Text style={styles.helpText}>Help (?)</Text>
@@ -98,8 +93,15 @@ export default function RequestScreen({ navigation }) {
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Requestor:</Text> {user?.name || 'Unknown'}</Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Quantity:</Text> {selectedRequest?.quantity}</Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Department:</Text> {selectedRequest?.department}</Text>
+                <Text style={styles.modalLabel}><Text style={styles.bold}>Tag:</Text> {selectedRequest?.tags}</Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Date:</Text> {selectedRequest?.date}</Text>
-                <Text style={styles.modalLabel}><Text style={styles.bold}>Time:</Text> {selectedRequest?.time}</Text>
+                <Text style={styles.modalLabel}><Text style={styles.bold}>Time:</Text></Text>
+                <Text style={styles.modalText}>
+                  Start Time: {selectedRequest?.startTime?.hour ?? '--'}:{selectedRequest?.startTime?.minute ?? '--'} {selectedRequest?.startTime?.period ?? '--'}
+                </Text>
+                <Text style={styles.modalText}>
+                  End Time: {selectedRequest?.endTime?.hour ?? '--'}:{selectedRequest?.endTime?.minute ?? '--'} {selectedRequest?.endTime?.period ?? '--'}
+                </Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Reason:</Text></Text>
                 <Text style={styles.modalReason}>{selectedRequest?.reason}</Text>
               </View>

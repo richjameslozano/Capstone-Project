@@ -14,16 +14,39 @@ export const RequestListProvider = ({ children }) => {
     setRequestList((prevList) => prevList.filter((item) => item.id !== id));
   };
 
-//   const moveToPendingRequests = (requests) => {
-//     setPendingRequests((prev) => [...prev, ...requests]);
-//     setRequestList([]);
-//   };
+  // const moveToPendingRequests = (requests) => {
+  //   setPendingRequests((prev) => [...prev, ...requests]);
+  //   setRequestList([]);
+  // };
 
-const moveToPendingRequests = (updatedRequests) => {
-    setPendingRequests(prev => 
-      prev.map(req => updatedRequests.find(updated => updated.id === req.id) || req)
-    );
-  };  
+  const moveToPendingRequests = (requests) => {
+    setPendingRequests((prev) => {
+      // Create a map of current pending requests for quick lookup
+      const requestMap = new Map(prev.map(req => [req.id, req]));
+  
+      // Update existing requests if they match, otherwise keep them the same
+      requests.forEach(updatedReq => {
+        if (requestMap.has(updatedReq.id)) {
+          requestMap.set(updatedReq.id, updatedReq); // Update existing request
+        } else {
+          requestMap.set(updatedReq.id, updatedReq); // Add new request
+        }
+      });
+  
+      return Array.from(requestMap.values()); // Convert back to array
+    });
+  
+    setRequestList([]); // Clear request list after moving
+  };
+  
+  
+
+// const moveToPendingRequests = (updatedRequests) => {
+//   setPendingRequests(prev => 
+//     prev.map(req => updatedRequests.find(updated => updated.id === req.id) || req)
+//   );
+//   setRequestList([]);
+// };
 
   const removeFromPendingRequests = (id) => {
     setPendingRequests((prev) => prev.filter((item) => item.id !== id));
