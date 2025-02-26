@@ -32,7 +32,7 @@ export default function App() {
           <GestureHandlerRootView style={styles.container}>
             <PaperProvider>
               <NavigationContainer>
-                <Stack.Navigator>
+                <Stack.Navigator >
                   <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="UserDashboard" component={UserDashboard} options={{ headerShown: false }} />
                   <Stack.Screen name="CalendarScreen" component={CalendarScreen} options={{ headerShown: false }} />
@@ -61,7 +61,7 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight || 16, 
+    paddingTop: StatusBar.currentHeight || 2, 
     backgroundColor: '#f5f5f5',
   },
   

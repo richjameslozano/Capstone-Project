@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import styles from '../styles/userStyle/CalendarStyle';
+import Header from '../Header';
 
 export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState('');
@@ -10,6 +11,8 @@ export default function CalendarScreen() {
 
   return (
     <View style={styles.container}>
+      <Header></Header>
+      <View style={styles.content}>
       <Text style={styles.title}>Select a Date</Text>
 
       <Calendar
@@ -25,6 +28,7 @@ export default function CalendarScreen() {
       />
 
       {selectedDate ? <Text style={styles.selectedDate}>Selected: {selectedDate}</Text> : null}
+      </View>
     </View>
   );
 }

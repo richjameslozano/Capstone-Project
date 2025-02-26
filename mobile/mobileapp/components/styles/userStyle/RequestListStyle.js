@@ -356,11 +356,6 @@ export default StyleSheet.create({
     paddingHorizontal: 5,
   },
   
-  okButton: {
-    marginTop: 10,
-    backgroundColor: "#007BFF",
-  },
-  
   modalImage: {
   width: 100,
   height: 100,
@@ -369,4 +364,76 @@ export default StyleSheet.create({
   marginBottom: 10,
   },
 
+  reasonInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 10,
+    fontSize: 14,
+    backgroundColor: '#f9f9f9',
+    textAlignVertical: 'top', 
+  },    
+
+  dateButton: {
+    backgroundColor: '#00796B',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 10,
+  },
+
+  dateButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  
+  timeButton: {
+    flex: 1,
+    backgroundColor: '#FFA726',
+    paddingVertical: 12,  // Adjusted padding to avoid stretching
+    paddingHorizontal: 20, // Added horizontal padding for better shape
+    borderRadius: 25, // Increased for smoother rounded corners
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 5,
+    minWidth: 120, // Ensures a good button width
+    maxWidth: 150, // Prevents it from being too wide
+    alignSelf: 'center', // Ensures it doesn’t stretch
+  },    
+
+  timeButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+
+  requestButton: {
+    backgroundColor: '#0288D1',
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginVertical: 15,
+  },
+
+  requestButtonText: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  
+  okButton: {
+    backgroundColor: '#388E3C',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+
+  okButtonText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });

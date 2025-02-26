@@ -7,39 +7,20 @@ const styles = StyleSheet.create({
     padding: 15,
   },
 
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#00796B',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    elevation: 5,
-  },
-
-  logo: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-
-  headerText: {
-    flex: 1,
-  },
-
-  title: {
-    fontSize: 16,
+  pageTitle:{
+    fontSize: 18,
     fontWeight: 'bold',
-    color: 'white',
+    marginVertical: 10,
+    textAlign: 'center',
   },
-
-  subtitle: {
-    fontSize: 12,
-    color: 'white',
+  pickerContainer:{
+    width:200,
+    
   },
-
-  profileButton: {
-    padding: 5,
+  pickerText:{
+fontSize:16
   },
+  
 
   searchBar: {
     backgroundColor: 'white',

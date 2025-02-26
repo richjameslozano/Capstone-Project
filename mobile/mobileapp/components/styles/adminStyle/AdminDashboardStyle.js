@@ -5,6 +5,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#f5f5f5',
     padding: 16,
+    paddingTop:60,
   },
 
   userType: {
@@ -14,12 +15,22 @@ export default StyleSheet.create({
   },
 
   header: {
-    backgroundColor: '#00796B',
-    padding: 15,
-    borderRadius: 8,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  right: 0,
+  zIndex: 10, // Keeps it above other content
+  backgroundColor: '#1A4572', // Ensure it's visible
+  flexDirection: 'row',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  padding: 10,
+  elevation: 4, // Adds shadow on Android
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.2,
+  shadowRadius: 3,
+
   },
 
   logo: {

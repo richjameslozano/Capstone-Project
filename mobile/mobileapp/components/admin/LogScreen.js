@@ -3,7 +3,9 @@ import { View, Text, TouchableOpacity, Image, Modal, ScrollView } from 'react-na
 import { DataTable } from 'react-native-paper';
 import { useRequestList } from '../contexts/RequestListContext'; 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import styles from '../styles/admin2Style/LogStyle';
+import styles from '../styles/adminStyle/LogStyle';
+import Header from '../Header';
+
 
 export default function LogScreen({ navigation }) {
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -20,17 +22,8 @@ export default function LogScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image source={require('../../assets/icon.png')} style={styles.logo} />
-        <View style={styles.headerText}>
-          <Text style={styles.title}>National University</Text>
-          <Text style={styles.subtitle}>Laboratory System</Text>
-        </View>
-        <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('ProfileScreen')}>
-          <Icon name="account-circle" size={35} color="white" />
-        </TouchableOpacity>
-      </View>
-
+      
+    <Header/>
       <View style={styles.content}>
         <Text style={styles.pageTitle}>Requests Log</Text>
 

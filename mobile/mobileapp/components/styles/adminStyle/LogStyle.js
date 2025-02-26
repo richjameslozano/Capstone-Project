@@ -43,6 +43,7 @@ export default StyleSheet.create({
   },
 
   content: {
+    marginTop:60,
     flex: 1,
   },
 

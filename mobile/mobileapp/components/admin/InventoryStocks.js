@@ -3,6 +3,7 @@ import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, Modal } fro
 import { Picker } from '@react-native-picker/picker';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/adminStyle/InventoryStocksStyle';
+import Header from '../Header';
 
 const inventoryData = [
   { id: 'INF224', description: 'Syringe', department: 'NURSING', quantity: 100, entryDate: '2025-02-10', expireDate: '2026-02-10', type: 'Consumables' },
@@ -30,18 +31,9 @@ export default function InventoryStocks({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image source={require('../../assets/icon.png')} style={styles.logo} />
-        <View style={styles.headerText}>
-          <Text style={styles.title}>National University</Text>
-          <Text style={styles.subtitle}>Laboratory System</Text>
-        </View>
-        <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('ProfileScreen')}>
-          <Icon name="account-circle" size={35} color="white" />
-        </TouchableOpacity>
-      </View>
+      <Header/>
 
-      <Text style={styles.pageTitle}>Inventory Stocks</Text>
+      <Text style={[styles.pageTitle,{marginTop:60}]}>Inventory Stocks</Text>
 
       <TextInput
         style={styles.searchBar}
@@ -53,12 +45,12 @@ export default function InventoryStocks({ navigation }) {
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={filterType}
-          style={styles.picker}
+          style={styles.pickerText}
           onValueChange={(itemValue) => setFilterType(itemValue)}
         >
           <Picker.Item label="All" value="All" />
           <Picker.Item label="Fixed" value="Fixed" />
-          <Picker.Item label="Consumables" value="Consumables" />
+          <Picker.Item label="Consumables" value="Consumables"  style={styles.pickerText} />
         </Picker>
       </View>
 
