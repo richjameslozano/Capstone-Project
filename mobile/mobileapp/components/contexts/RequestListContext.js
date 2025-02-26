@@ -1,10 +1,25 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
 
 const RequestListContext = createContext();
 
 export const RequestListProvider = ({ children }) => {
   const [requestList, setRequestList] = useState([]);
   const [pendingRequests, setPendingRequests] = useState([]);
+  const [approvedRequests, setApprovedRequests] = useState([]);
+  const [rejectedRequests, setRejectedRequests] = useState([]);  
+
+  useEffect(() => {
+    console.log("Updated Rejected Requests:", rejectedRequests);
+  }, [rejectedRequests]);
+  
+  useEffect(() => {
+    console.log("Approved Requests Updated:", approvedRequests);
+  }, [approvedRequests]);
+  
+  useEffect(() => {
+    console.log("Rejected Requests Updated:", rejectedRequests);
+  }, [rejectedRequests]);
+  
 
   const addToRequestList = (item) => {
     setRequestList((prevList) => [...prevList, item]);
@@ -13,11 +28,6 @@ export const RequestListProvider = ({ children }) => {
   const removeFromRequestList = (id) => {
     setRequestList((prevList) => prevList.filter((item) => item.id !== id));
   };
-
-  // const moveToPendingRequests = (requests) => {
-  //   setPendingRequests((prev) => [...prev, ...requests]);
-  //   setRequestList([]);
-  // };
 
   const moveToPendingRequests = (requests) => {
     setPendingRequests((prev) => {
@@ -39,14 +49,29 @@ export const RequestListProvider = ({ children }) => {
     setRequestList([]); // Clear request list after moving
   };
   
+  const moveToApprovedRequests = (requests) => {
+    if (!Array.isArray(requests)) {
+      console.error("moveToApprovedRequests: requests is not an array", requests);
+      return;
+    }
   
+    setApprovedRequests((prev) => [...prev, ...requests]);
+    setPendingRequests((prev) => prev.filter(req => !requests.some(r => r.id === req.id)));
+  };  
 
-// const moveToPendingRequests = (updatedRequests) => {
-//   setPendingRequests(prev => 
-//     prev.map(req => updatedRequests.find(updated => updated.id === req.id) || req)
-//   );
-//   setRequestList([]);
-// };
+  const moveToRejectedRequests = (requests) => {
+    if (!Array.isArray(requests)) {
+      console.error("moveToRejectedRequests: requests is not an array", requests);
+      return;
+    }
+  
+    console.log("Moving to Rejected Requests:", requests); // Debugging log
+  
+    setRejectedRequests((prev) => [...prev, ...requests]);
+    setPendingRequests((prev) => prev.filter(req => !requests.some(r => r.id === req.id)));
+  };
+  
+  
 
   const removeFromPendingRequests = (id) => {
     setPendingRequests((prev) => prev.filter((item) => item.id !== id));
@@ -76,38 +101,13 @@ export const RequestListProvider = ({ children }) => {
     addToRequestList(newItem);
   }; 
 
-// const transferToRequestList = (item, quantity, reason) => {
-//     if (!quantity.trim() || parseInt(quantity, 10) <= 0) {
-//       Alert.alert('Invalid Request', 'Quantity must be greater than 0.');
-//       return;
-//     }
-  
-//     if (!reason.trim()) {
-//       Alert.alert('Missing Reason', 'Please enter a reason for the request.');
-//       return;
-//     }
-  
-//     const isAlreadyInList = requestList.some(reqItem => reqItem.originalId === item.id);
-//     if (isAlreadyInList) {
-//       Alert.alert('Duplicate Item', 'This item is already in the request list.');
-//       return;
-//     }
-  
-//     const newItem = {
-//       ...item,
-//       originalId: item.id,  
-//       id: `${item.id}-${Date.now()}`,  
-//       quantity: parseInt(quantity, 10),
-//       reason,
-//     };
-  
-//     addToRequestList(newItem);
-//   };  
 
   return (
-    <RequestListContext.Provider value={{ 
-    requestList, setRequestList, addToRequestList, removeFromRequestList, 
-    transferToRequestList, pendingRequests, moveToPendingRequests, removeFromPendingRequests 
+    <RequestListContext.Provider value={{
+      requestList, setRequestList, addToRequestList, removeFromRequestList,
+      transferToRequestList, pendingRequests, moveToPendingRequests,
+      removeFromPendingRequests, approvedRequests, moveToApprovedRequests,
+      rejectedRequests, moveToRejectedRequests 
     }}>
       {children}
     </RequestListContext.Provider>

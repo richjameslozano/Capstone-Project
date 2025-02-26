@@ -1,22 +1,17 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, Modal, ScrollView } from 'react-native';
 import { DataTable } from 'react-native-paper';
+import { useRequestList } from '../contexts/RequestListContext'; 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import styles from '../styles/adminStyle/LogStyle';
-
-const requests = [
-  { id: '1', name: 'Syringe', department: 'NURSING', date: '2025-02-23', status: 'Approved', tag: 'INF224', quantity: 10 },
-  { id: '2', name: 'Gloves', department: 'NURSING', date: '2025-02-22', status: 'Approved', tag: 'MED223', quantity: 20 },
-  { id: '3', name: 'Stethoscope', department: 'NURSING', date: '2025-02-21', status: 'Approved', tag: 'INF225', quantity: 5 },
-  { id: '4', name: 'Thermometer', department: 'NURSING', date: '2025-02-20', status: 'Approved', tag: 'MED224', quantity: 15 },
-  { id: '5', name: 'Face Mask', department: 'NURSING', date: '2025-02-19', status: 'Approved', tag: 'INF226', quantity: 50 },
-  { id: '6', name: 'Alcohol', department: 'NURSING', date: '2025-02-18', status: 'Rejected', tag: 'MED225', quantity: 30 },
-  { id: '7', name: 'Bandages', department: 'NURSING', date: '2025-02-17', status: 'Rejected', tag: 'INF227', quantity: 40 },
-];  
+import styles from '../styles/admin2Style/LogStyle';
 
 export default function LogScreen({ navigation }) {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const { approvedRequests = [], rejectedRequests = [] } = useRequestList();
+
+  console.log("Approved Requests:", approvedRequests);
+  console.log("Rejected Requests:", rejectedRequests);
 
   const openModal = (request) => {
     setSelectedRequest(request);
@@ -42,29 +37,23 @@ export default function LogScreen({ navigation }) {
         <ScrollView horizontal={true}>
           <DataTable>
             <DataTable.Header style={styles.tableHeader}>
-              <DataTable.Title textStyle={styles.tableHeaderText} style={{ flex: 0.5, justifyContent: 'center' }}>#</DataTable.Title>
-              <DataTable.Title textStyle={styles.tableHeaderText} style={{ flex: 1.5 }}>Item Name</DataTable.Title>
-              <DataTable.Title textStyle={styles.tableHeaderText} style={{ flex: 1.2 }}>Department</DataTable.Title>
-              <DataTable.Title textStyle={styles.tableHeaderText} style={{ flex: 1.2 }}>Date</DataTable.Title>
-              <DataTable.Title textStyle={styles.tableHeaderText} style={{ flex: 1 }}>Tag</DataTable.Title>
-              <DataTable.Title textStyle={styles.tableHeaderText} style={{ flex: 1.2 }}>Status</DataTable.Title>
-              <DataTable.Title textStyle={styles.tableHeaderText} style={{ flex: 1 }}>Action</DataTable.Title>
+              <DataTable.Title>#</DataTable.Title>
+              <DataTable.Title>Item Name</DataTable.Title>
+              <DataTable.Title>Department</DataTable.Title>
+              <DataTable.Title>Date</DataTable.Title>
+              <DataTable.Title>Tag</DataTable.Title>
+              <DataTable.Title>Status</DataTable.Title>
+              <DataTable.Title>Action</DataTable.Title>
             </DataTable.Header>
 
-            {requests.map((item, index) => (
+            {approvedRequests.map((item, index) => (
               <DataTable.Row key={item.id} style={styles.tableRow}>
-                <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 0.5, justifyContent: 'center' }}>{index + 1}.</DataTable.Cell>
+                <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 0.5 }}>{index + 1}.</DataTable.Cell>
                 <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 1.5 }}>{item.name}</DataTable.Cell>
                 <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 1.2 }}>{item.department}</DataTable.Cell>
                 <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 1.2 }}>{item.date}</DataTable.Cell>
-                <DataTable.Cell textStyle={[styles.tableCell, styles.tagCell]} style={{ flex: 1 }}>{item.tag}</DataTable.Cell>
-                <DataTable.Cell 
-                  textStyle={[
-                    styles.tableCell, 
-                    item.status === 'Approved' ? styles.statusApproved : styles.statusRejected
-                  ]}
-                  style={{ flex: 1.2 }}
-                >
+                <DataTable.Cell textStyle={[styles.tableCell, styles.tagCell]} style={{ flex: 1 }}>{item.tags}</DataTable.Cell>
+                <DataTable.Cell textStyle={[styles.tableCell, styles.statusApproved]} style={{ flex: 1.2 }}>
                   {item.status}
                 </DataTable.Cell>
                 <DataTable.Cell style={{ flex: 1 }}>
@@ -74,6 +63,29 @@ export default function LogScreen({ navigation }) {
                 </DataTable.Cell>
               </DataTable.Row>
             ))}
+
+          {rejectedRequests.map((item, index) => {
+            console.log("Rendering rejected request:", item);
+            return (
+              <DataTable.Row key={item.id} style={styles.tableRow}>
+                <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 0.5 }}>{index + 1}.</DataTable.Cell>
+                <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 1.5 }}>{item.name}</DataTable.Cell>
+                <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 1.2 }}>{item.department}</DataTable.Cell>
+                <DataTable.Cell textStyle={styles.tableCell} style={{ flex: 1.2 }}>{item.date}</DataTable.Cell>
+                <DataTable.Cell textStyle={[styles.tableCell, styles.tagCell]} style={{ flex: 1 }}>{item.tags}</DataTable.Cell>
+                <DataTable.Cell textStyle={[styles.tableCell, styles.statusRejected]} style={{ flex: 1.2 }}>
+                  {item.status}
+                </DataTable.Cell>
+                <DataTable.Cell style={{ flex: 1 }}>
+                  <TouchableOpacity onPress={() => openModal(item)}>
+                    <Text style={styles.viewLinkText}>View</Text>
+                  </TouchableOpacity>
+                </DataTable.Cell>
+              </DataTable.Row>
+            );
+          })}
+
+
           </DataTable>
         </ScrollView>
       </View>

@@ -6,18 +6,40 @@ import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/admin2Style/PendingRequestStyle';
 
 export default function PendingRequestScreen() {
-  const { pendingRequests, moveToPendingRequests } = useRequestList();
+  const { pendingRequests, moveToApprovedRequests, removeFromPendingRequests, moveToRejectedRequests } = useRequestList();
   const { user } = useAuth();
 
+  // const updateStatus = (id, newStatus) => {
+  //   const updatedRequests = pendingRequests.map(req =>
+  //     req.id === id ? { ...req, status: newStatus } : req
+  //   );
+  
+  //   moveToPendingRequests(updatedRequests); // Ensure updates are applied
+  // };
+  
+  // const updateStatus = (id, newStatus) => {
+  //   if (newStatus === 'Approved') {
+  //     const requestToApprove = pendingRequests.find(req => req.id === id);
+  //     if (requestToApprove) {
+  //       moveToApprovedRequests([requestToApprove]); // Pass an array
+  //     }
+  //   } else {
+  //     removeFromPendingRequests(id);
+  //   }
+  // };  
+
   const updateStatus = (id, newStatus) => {
-    const updatedRequests = pendingRequests.map(req =>
-      req.id === id ? { ...req, status: newStatus } : req
-    );
+    const requestToUpdate = pendingRequests.find(req => req.id === id);
+    if (requestToUpdate) {
+      const updatedRequest = { ...requestToUpdate, status: newStatus };
   
-    moveToPendingRequests(updatedRequests); // Ensure updates are applied
-  };
-  
-  
+      if (newStatus === 'Approved') {
+        moveToApprovedRequests([updatedRequest]); 
+      } else if (newStatus === 'Rejected') {
+        moveToRejectedRequests([updatedRequest]); 
+      }
+    }
+  };  
   
   const renderItem = ({ item }) => (
     <Card style={styles.card}>
