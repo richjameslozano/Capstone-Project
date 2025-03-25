@@ -11,7 +11,7 @@ export default function CalendarScreen() {
 
   return (
     <View style={styles.container}>
-      <Header></Header>
+      <Header/>
       <View style={styles.content}>
       <Text style={styles.title}>Select a Date</Text>
 

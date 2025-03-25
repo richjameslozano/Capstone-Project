@@ -5,6 +5,7 @@ import { Calendar } from 'react-native-calendars';
 import { useRequestList } from '../../components/contexts/RequestListContext';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/RequestListStyle';
+import Header from '../Header';
 
 export default function RequestListScreen({ navigation }) {
   const { requestList, setRequestList, removeFromRequestList } = useRequestList();
@@ -151,16 +152,7 @@ export default function RequestListScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image source={require('../../assets/favicon.png')} style={styles.logo} />
-        <View style={styles.headerText}>
-          <Text style={styles.title}>Request List</Text>
-          <Text style={styles.subtitle}>Manage your borrowed items</Text>
-        </View>
-        <TouchableOpacity style={styles.profileButton}>
-          <Icon name="account-circle" size={30} color="white" />
-        </TouchableOpacity>
-      </View>
+      <Header/>
 
       {requestList.length === 0 ? (
         <Text style={styles.emptyText}>No items in request list.</Text>
