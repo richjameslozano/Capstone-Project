@@ -61,7 +61,6 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight || 2, 
     backgroundColor: '#f5f5f5',
   },
   
