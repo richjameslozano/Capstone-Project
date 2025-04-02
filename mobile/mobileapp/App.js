@@ -15,7 +15,6 @@ import Admin2Dashboard from './components/admin/AdminDashboard';
 import PendingRequestScreen from './components/admin/PendingRequestScreen';
 import InventoryScreen from './components/InventoryScreen';
 import CameraScreen from './components/admin/CameraScreen';
-import AssetFinder from './components/admin/AssetFinder';
 import RequestScreen from './components/user/RequestScreen';
 import RequestListScreen from './components/user/RequestListScreen';
 import RequestLogScreen from './components/user/RequestLogScreen';
@@ -42,7 +41,6 @@ export default function App() {
                   <Stack.Screen name="PendingRequestScreen" component={PendingRequestScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="InventoryScreen" component={InventoryScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="Camera" component={CameraScreen} options={{ headerShown: false }} />
-                  <Stack.Screen name="AssetFinder" component={AssetFinder} options={{ headerShown: false }} />
                   <Stack.Screen name="RequestScreen" component={RequestScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="RequestListScreen" component={RequestListScreen} options={{ headerShown: false }} />
                   <Stack.Screen name="RequestLogScreen" component={RequestLogScreen} options={{ headerShown: false }} />

@@ -17,7 +17,6 @@ export default function AdminDashboard({ navigation }) {
     { title: 'Pending Requests', subtitle: 'View and Manage', icon: 'clock-alert', color: '#D32F2F', screen: 'PendingRequestScreen' },
     { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', color: '#673AB7', screen: 'CalendarScreen' },
     { title: 'QR Scanner', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'Camera' },
-    { title: 'Asset Finder', subtitle: 'Find Your Item', icon: 'magnify', color: '#455A64', screen: 'AssetFinder' },
   ];
 
   const renderItem = ({ item }) => (
