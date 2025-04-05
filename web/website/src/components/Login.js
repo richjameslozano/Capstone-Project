@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
+  onAuthStateChanged,
+  updatePassword
 } from "firebase/auth";
 import { auth, db } from "../backend/firebase/FirebaseConfig";
 import { collection, query, where, getDocs, doc, updateDoc, Timestamp } from "firebase/firestore";
@@ -22,88 +24,13 @@ const Login = () => {
   const [forgotPasswordError, setForgotPasswordError] = useState("");
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-
+  const [newPassword, setNewPassword] = useState("");
   const navigate = useNavigate();
-
-  const adminCredentials = {
-    email: "mikmik@nu-moa.edu.ph",
-    password: "mikmik",
-  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-
-  // const checkUserAndLogin = async () => {
-  //   try {
-  //     const { email, password } = formData;
-  //     const usersRef = collection(db, "accounts");
-  //     const q = query(usersRef, where("email", "==", email));
-  //     const querySnapshot = await getDocs(q);
-  
-  //     if (!querySnapshot.empty) {
-  //       const userDoc = querySnapshot.docs[0];
-  //       const userData = userDoc.data();
-  
-  //       if (userData.isBlocked && userData.blockedUntil) {
-  //         const now = Timestamp.now().toMillis();
-  //         const blockedUntil = userData.blockedUntil.toMillis();
-
-  //         if (now >= blockedUntil) {
-  //           await updateDoc(userDoc.ref, {
-  //             isBlocked: false,
-  //             loginAttempts: 0,
-  //             blockedUntil: null, 
-  //           });
-
-  //           console.log("Account unblocked successfully.");
-
-  //         } else {
-  //           const remainingTime = Math.ceil((blockedUntil - now) / 1000);
-  //           setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
-  //           return;
-  //         }
-  //       }        
-  
-  //       if (userData.isBlocked) {
-  //         setError("Account is blocked. Please try again later.");
-  //         return;
-  //       }
-
-  //       try {
-  //         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  //         await updateDoc(userDoc.ref, { loginAttempts: 0 });
-  //         navigate("/dashboard", { state: { loginSuccess: true, role: userData.role || "user" } });
-
-  //       } catch (error) {
-  //         const newAttempts = (userData.loginAttempts || 0) + 1;
-
-  //         if (newAttempts >= 4) {
-  //           // const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000; 
-  //           const unblockTime = Timestamp.now().toMillis() + 1 * 60 * 1000;
-  //           await updateDoc(userDoc.ref, {
-  //             isBlocked: true,
-  //             blockedUntil: Timestamp.fromMillis(unblockTime),
-  //           });
-
-  //           setError("Account blocked after 4 failed attempts. Try again after 30 minutes.");
-
-  //         } else {
-  //           await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-  //           setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
-  //         }
-  //       }
-  
-  //     } else {
-  //       setError("User not found. Please contact admin.");
-  //     }
-
-  //   } catch (error) {
-  //     console.error("Error during login:", error.message);
-  //     setError("Invalid email or password. Please try again.");
-  //   }
-  // };
 
   const checkUserAndLogin = async () => {
     setIsLoading(true);
@@ -166,9 +93,15 @@ const Login = () => {
       }
 
       try {
-        if (userData.password === password) {
+        const passwordMatch = userData.password === password || (await signInWithEmailAndPassword(auth, email, password).then(() => true).catch(() => false));
+
+          if (passwordMatch) {
           await updateDoc(userDoc.ref, { loginAttempts: 0 });
-          const role = isSuperAdmin ? "super-admin" : (userData.role || "user").toLowerCase();
+          let role = isSuperAdmin ? "super-admin" : (userData.role || "user").toLowerCase();
+
+          if (role === "admin1" || role === "admin2") {
+            role = "admin";
+          }
           
           const userName = userData.name || "User";
           localStorage.setItem("userEmail", userData.email);
@@ -176,23 +109,29 @@ const Login = () => {
           localStorage.setItem("userDepartment", userData.department);
           localStorage.setItem("userPosition", userData.role);
 
+          if (userData.password !== password) {
+            await updateDoc(userDoc.ref, { password });
+            console.log("Password updated successfully in Firestore.");
+          }
+
           switch (role) {
             case "super-admin":
-              navigate("/accounts", { state: { loginSuccess: true, role } });
+              navigate("/main/accounts", { state: { loginSuccess: true, role } });
               break;
 
             case "admin":
-              navigate("/dashboard", { state: { loginSuccess: true, role } });
+              navigate("/main/dashboard", { state: { loginSuccess: true, role } });
               break;
 
             case "user":
-              navigate("/requisition", { state: { loginSuccess: true, role } });
+              navigate("/main/requisition", { state: { loginSuccess: true, role } });
               break;
 
             default:
               setError("Unknown role. Please contact admin.");
               break;
           }
+
         } else {
           const newAttempts = (userData.loginAttempts || 0) + 1;
 
@@ -238,27 +177,50 @@ const Login = () => {
       const querySnapshot = await getDocs(q);
   
       if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0].ref;
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data(); 
+        const role = (userData.role || "user").toLowerCase(); 
+        const normalizedRole = role === "admin1" || role === "admin2" ? "admin" : role; 
   
-        if (userDoc) {
-          console.log("Updating password for user:", userDoc.id);
-          await updateDoc(userDoc, { password });
-          console.log("Password updated successfully:", password);
+        console.log("Updating password for user:", userDoc.id);
+        await updateDoc(userDoc.ref, { password });
   
-          // ✅ Navigate to Dashboard without Firebase Auth
-          navigate("/dashboard", { state: { loginSuccess: true, role: "user" } });
-          setIsNewUser(false);
-        } else {
-          setError("Failed to update user record. Please contact admin.");
+        const userName = userData.name || "User";
+        localStorage.setItem("userEmail", userData.email);
+        localStorage.setItem("userName", userName);
+        localStorage.setItem("userDepartment", userData.department || "Unknown");
+        localStorage.setItem("userPosition", userData.role || "User");
+  
+        switch (normalizedRole) {
+          case "super-admin":
+            navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+            break;
+
+          case "admin":
+            navigate("/main/dashboard", { state: { loginSuccess: true, role: "admin" } });
+            break;
+
+          case "user":
+            navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
+            break;
+            
+          default:
+            setError("Unknown role. Please contact admin.");
+            return;
         }
+  
+        setIsNewUser(false);
+        console.log("Password updated successfully and navigated to:", normalizedRole);
+        
       } else {
         setError("User record not found in Firestore.");
       }
+  
     } catch (error) {
       console.error("Error updating password:", error.message);
       setError("Failed to set password. Try again.");
     }
-  };
+  };  
   
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail) {
@@ -279,24 +241,16 @@ const Login = () => {
 
       await sendPasswordResetEmail(auth, forgotPasswordEmail);
   
-      setForgotPasswordSuccess(
-        "Password reset link sent! Please check your email."
-      );
-
+      setForgotPasswordSuccess("Password reset link sent! Please check your email.");
       setForgotPasswordError(""); 
-
       setTimeout(() => {
         setForgotPasswordEmail("");
       }, 50);
 
     } catch (error) {
       console.error("Error sending reset email:", error.message);
-      setForgotPasswordError(
-        "Failed to send reset link. Please check the email."
-      );
-      
+      setForgotPasswordError("Failed to send reset link. Please check the email.");
       setForgotPasswordSuccess("");
-
       setTimeout(() => {
         setForgotPasswordEmail("");
       }, 50);
