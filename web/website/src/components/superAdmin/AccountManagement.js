@@ -7,6 +7,7 @@ import {
   Form,
   Input,
   Select,
+  Tag,
   Popconfirm,
   message,
 } from "antd";
@@ -25,6 +26,7 @@ import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/superAdminStyle/AccountManagement.css";
 import SuccessModal from "../customs/SuccessModal"; 
+import NotificationModal from "../customs/NotifcationModal";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -44,6 +46,9 @@ const AccountManagement = () => {
   const [selectedAccountId, setSelectedAccountId] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
+  const [modalMessage, setModalMessage] = useState("");
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+
 
   useEffect(() => {
     const loginSuccessFlag = sessionStorage.getItem("loginSuccess");
@@ -82,6 +87,20 @@ const AccountManagement = () => {
     fetchAdminCredentials();
   }, []);
 
+  useEffect(() => {
+    const handleBackButton = (event) => {
+      event.preventDefault();
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    window.history.pushState(null, "", window.location.href);
+    window.addEventListener("popstate", handleBackButton);
+
+    return () => {
+      window.removeEventListener("popstate", handleBackButton);
+    };
+  }, []); 
+
   const closeModal = () => {
     setShowModal(false);
     sessionStorage.removeItem("loginSuccess");
@@ -119,6 +138,19 @@ const AccountManagement = () => {
   };
 
   const handleSave = async (values) => {
+    const isDuplicate = accounts.some(
+      (acc) =>
+        acc.id !== (editingAccount?.id || null) &&
+        (acc.name.toLowerCase() === values.name.toLowerCase() ||
+          acc.email.toLowerCase() === values.email.toLowerCase())
+    );
+  
+    if (isDuplicate) {
+      setModalMessage("An account with the same name or email already exists!");
+      setIsNotificationVisible(true);
+      return;
+    }
+
     if (editingAccount) {
       try {
         const accountRef = doc(db, "accounts", editingAccount.id);
@@ -129,7 +161,8 @@ const AccountManagement = () => {
         );
 
         setAccounts(updatedAccounts);
-        message.success("Account updated successfully!");
+        setModalMessage("Account updated successfully!");
+        setIsNotificationVisible(true);
 
       } catch (error) {
         console.error("Error updating account:", error);
@@ -142,11 +175,13 @@ const AccountManagement = () => {
         const newAccount = { ...values, id: docRef.id };
   
         setAccounts([...accounts, newAccount]);
-        message.success("Account added successfully!");
+        setModalMessage("Account added successfully!");
+        setIsNotificationVisible(true);
 
       } catch (error) {
         console.error("Error adding account:", error);
-        message.error("Failed to add account.");
+        setModalMessage("Failed to update account.");
+        setIsNotificationVisible(true);
       }
     }
   
@@ -158,7 +193,8 @@ const AccountManagement = () => {
       await deleteDoc(doc(db, "accounts", id));
       const updatedAccounts = accounts.filter((acc) => acc.id !== id);
       setAccounts(updatedAccounts);
-      message.success("Account deleted successfully!");
+      setModalMessage("Account deleted successfully!");
+      setIsNotificationVisible(true);
 
     } catch (error) {
       console.error("Error deleting account:", error);
@@ -216,7 +252,11 @@ const AccountManagement = () => {
     {
       title: "Role",
       dataIndex: "role",
-      key: "role",
+      render: (role) => (
+        <Tag color={role === "Admin1" ? "volcano" : role === "Admin2" ? "geekblue" : "green"}>
+          {role.toLowerCase()}
+        </Tag>
+      ),
     },
     {
       title: "Actions",
@@ -248,11 +288,8 @@ const AccountManagement = () => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Sidebar setPageTitle={setPageTitle} />
 
       <Layout className="site-layout">
-        <AppHeader pageTitle={pageTitle} />
-
         <Content className="account-content">
           <div className="account-header">
             <h2>Account Management</h2> 
@@ -331,8 +368,9 @@ const AccountManagement = () => {
                 rules={[{ required: true, message: "Please select a role" }]}
               >
                 <Select placeholder="Select Role">
-                  <Option value="Admin">Admin</Option>
-                  <Option value="User">User</Option>
+                <Option value="Admin1">Admin1</Option>
+                <Option value="Admin2">Admin2</Option>
+                <Option value="User">User</Option>
                 </Select>
               </Form.Item>
             </Form>
@@ -369,6 +407,11 @@ const AccountManagement = () => {
             )}
           </Form>
         </Modal>
+
+        <NotificationModal  
+          isVisible={isNotificationVisible}
+          onClose={() => setIsNotificationVisible(false)}
+          message={modalMessage}/>
 
         <SuccessModal isVisible={showModal} onClose={closeModal} />
       </Layout>
