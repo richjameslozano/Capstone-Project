@@ -32,6 +32,8 @@ import CapexRequest from './users/CapexRequest';
 import ReturnItems from './users/ReturnItems';
 import CustomModal from "./customs/CustomModal";
 import AppHeader from './Header';
+import ProtectedRoute from './ProtectedRoute';
+
 const { Header, Sider, Content } = Layout;
 
 const LayoutMain = () => {
@@ -40,7 +42,7 @@ const LayoutMain = () => {
   } = theme.useToken();
 
   const [collapsed, setCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 408);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -51,8 +53,8 @@ const LayoutMain = () => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      if (window.innerWidth > 768) {
+      setIsMobile(window.innerWidth <= 408);
+      if (window.innerWidth > 408) {
         setMobileOpen(false); 
       }
     };
@@ -162,82 +164,7 @@ const LayoutMain = () => {
     }
   };
 
-//   const handleMenuClick = (e) => {
-//     switch (e.key) {
-//       case "1":
-//         navigate("/main/dashboard");
-//         setPageTitle("Dashboard");
-//         break;
-
-//       case "2":
-//         navigate("/main/inventory");
-//         setPageTitle("Inventory");
-//         break;
-
-//       case "3":
-//         navigate("/main/pending-request");
-//         setPageTitle("Pending Requests");
-//         break;
-
-//       case "4":
-//         navigate("/main/borrow-catalog");
-//         setPageTitle("Borrow Catalog");
-//         break;
-
-//       case "5":
-//         navigate("/main/history");
-//         setPageTitle("History");
-//         break;
-
-//       case "6":
-//         setShowModal(true);
-//         break;
-
-//       case "7":
-//         navigate("/main/accounts");
-//         setPageTitle("Accounts");
-//         break;
-
-//       case "8":
-//         navigate("/main/requisition");
-//         setPageTitle("Requisition");
-//         break;
-
-//       case "9":
-//         navigate("/main/request-list");
-//         setPageTitle("Request List");
-//         break;
-
-//       case "10":
-//         navigate("/main/activity-log");
-//         setPageTitle("Activity Log");
-//         break;
-
-//       case "11":
-//         navigate("/main/search-items");
-//         setPageTitle("Search Items");
-//         break;
-
-//       case "12":
-//         navigate("/main/capex-request");
-//         setPageTitle("Capex Request");
-//         break;
-
-//       case "13":
-//         navigate("/main/return-items");
-//         setPageTitle("Return Items");
-//         break;
-
-//       default:
-//         break;
-//     }
-
-//     if (isMobile) {
-//       setMobileOpen(false);
-//     }
-//   };
-
-const handleMenuClick = (e) => {
+  const handleMenuClick = (e) => {
     if (e.key === "logout") {
       setShowModal(true);
 
@@ -249,7 +176,13 @@ const handleMenuClick = (e) => {
   };  
 
   const handleSignOut = () => {
-    localStorage.clear();
+    // localStorage.clear();
+    // navigate("/", { replace: true });
+    localStorage.removeItem("userId");  
+    localStorage.removeItem("userEmail");
+    localStorage.removeItem("userName");
+    localStorage.removeItem("userDepartment");
+    localStorage.removeItem("userPosition");
     navigate("/", { replace: true });
   };
 
@@ -349,40 +282,44 @@ const handleMenuClick = (e) => {
 
   return (
     <Layout>
-      <Sider trigger={null} collapsible collapsed={collapsed}>
-        <div className="demo-logo-vertical" />
+      <Sider
+          trigger={null}
+          collapsible
+          collapsed={collapsed}
+          collapsedWidth={isMobile ? 0 : undefined} 
+          width={200}  
+          className={isMobile && !mobileOpen ? 'mobile-collapsed' : ''} 
+          style={{ 
+            width: mobileOpen ? '200px' : (collapsed && !isMobile ? '80px' : '200px'),
+          }}
+        > 
+          <div className="demo-logo-vertical" />
 
-        <div className="logo">
-            {!collapsed || isMobile ? (
-              <>
+          <div className="logo">
+              {!collapsed || isMobile ? (
+                <>
+                  <h3 className="logo-title">NU MOA</h3>
+                  <p className="logo-subtitle">Laboratory System</p>
+                </>
+              ) : (
                 <h3 className="logo-title">NU MOA</h3>
-                <p className="logo-subtitle">Laboratory System</p>
-              </>
-            ) : (
-              <h3 className="logo-title">NU</h3>
-            )}
-          </div>
+              )}
+            </div>
 
-        <Menu
-          theme="dark"
-          mode="inline"
-          selectedKeys={[location.pathname]}
-          onClick={handleMenuClick}
-          items={menuItems}
+          <Menu
+            theme="dark"
+            mode="inline"
+            selectedKeys={[location.pathname]}
+            onClick={handleMenuClick}
+            items={menuItems}
 
-        />
+          />
       </Sider>
 
       <Layout>
         <AppHeader
         pageTitle={pageTitle}
-        onToggleSidebar={() => {
-            if (isMobile) {
-            setMobileOpen(!mobileOpen);
-            } else {
-            setCollapsed(!collapsed);
-            }
-        }}
+        onToggleSidebar={toggleSidebar}
         isSidebarCollapsed={collapsed}
         />
 
@@ -395,21 +332,21 @@ const handleMenuClick = (e) => {
             borderRadius: borderRadiusLG,
           }}
         >
-            <Routes>
-                <Route path="/dashboard" element={<Dashboard/>} />
-                <Route path="/inventory" element={<Inventory />} />
-                <Route path="/pending-request" element={<PendingRequest />} />
-                <Route path="/borrow-catalog" element={<BorrowCatalog />} />
-                <Route path="/history" element={<History />} />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/accounts" element={<AccountManagement />} />
-                <Route path="/requisition" element={<Requisition />} />
-                <Route path="/request-list" element={<RequestList />} />
-                <Route path="/activity-log" element={<ActivityLog />} />
-                <Route path="/search-items" element={<SearchItems />} />
-                <Route path="/capex-request" element={<CapexRequest />} />
-                <Route path="/return-items" element={<ReturnItems />} />
-            </Routes>
+          <Routes>
+            <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
+            <Route path="/inventory" element={<ProtectedRoute element={<Inventory />} />} />
+            <Route path="/pending-request" element={<ProtectedRoute element={<PendingRequest />} />} />
+            <Route path="/borrow-catalog" element={<ProtectedRoute element={<BorrowCatalog />} />} />
+            <Route path="/history" element={<ProtectedRoute element={<History />} />} />
+            <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
+            <Route path="/accounts" element={<ProtectedRoute element={<AccountManagement />} />} />
+            <Route path="/requisition" element={<ProtectedRoute element={<Requisition />} />} />
+            <Route path="/request-list" element={<ProtectedRoute element={<RequestList />} />} />
+            <Route path="/activity-log" element={<ProtectedRoute element={<ActivityLog />} />} />
+            <Route path="/search-items" element={<ProtectedRoute element={<SearchItems />} />} />
+            <Route path="/capex-request" element={<ProtectedRoute element={<CapexRequest />} />} />
+            <Route path="/return-items" element={<ProtectedRoute element={<ReturnItems />} />} />
+          </Routes>
         </Content>
         
         <CustomModal
