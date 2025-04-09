@@ -1,0 +1,110 @@
+/* Default header styles */
+.header {
+  background-color: white;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #333;
+  margin: 0;
+}
+
+/* User Profile */
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  gap: 8px;
+}
+
+.user-profile:hover {
+  opacity: 0.8;
+  transition: 0.2s;
+}
+
+.user-profile .ant-avatar {
+  width: 40px;
+  height: 40px;
+  font-size: 18px;
+}
+
+/* Header layout */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 24px;
+  background: #fff;
+  height: 64px;
+  box-shadow: 0 2px 8px #f0f1f2;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Mobile Header Adjustments */
+@media (max-width: 768px) {
+  .header {
+    padding: 0 12px;
+    height: 56px;
+  }
+
+  .header-title {
+    font-size: 18px;
+  }
+
+  .user-profile {
+    gap: 6px;
+  }
+
+  .user-profile span {
+    font-size: 14px;
+  }
+
+  .user-profile .ant-avatar {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+  }
+}
+
+/* For very small screens, adjust layout further */
+@media (max-width: 408px) {
+  .header {
+    padding: 0 8px;
+    height: 48px;
+
+  }
+
+  .header-title {
+    font-size: 16px;
+  }
+
+  .user-profile {
+    gap: 4px;
+  }
+
+  .user-profile span {
+    font-size: 12px;
+  }
+
+  .user-profile .ant-avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+}
