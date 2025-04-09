@@ -1,3 +1,9 @@
+.pending-main {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start; 
+}
+
 .pending-content {
   padding: 20px;
   background-color: #f5f5f5;
@@ -28,12 +34,6 @@
   height: 40px;
 }
 
-.pending-table {
-  width: 60%;
-  background: white;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-
 .status-btn {
   background-color: #28a745;
   color: white;
@@ -43,32 +43,60 @@
 }
 
 .details-card {
-  width: 40%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-top: 4px solid #28a745;
+  margin-top: 20px;
+  border: 1px solid #ddd;
 }
 
 .details-header {
   display: flex;
   justify-content: space-between;
-  background-color: #28a745;
-  color: white;
-  padding: 10px;
-  font-size: 16px;
-  font-weight: bold;
+  align-items: center;
 }
 
 .req-id {
-  font-style: italic;
+  font-weight: bold;
+  color: green;
 }
 
-.list-item {
-  display: flex;
-  justify-content: space-between;
+.items-table {
+  margin-top: 15px;
 }
 
 .cancel-btn {
+  margin-top: 20px;
+}
+
+.pending-table {
+  width: 50%;
+  background: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  table-layout: fixed;
+}
+
+.items-table {
+  width: 100%;
+  table-layout: fixed;
   margin-top: 15px;
-  background-color: #ff4d4f;
-  border: none;
+}
+
+.ant-table th,
+.ant-table td {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ant-table .ant-table-cell {
+  width: 120px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.details-card {
+  width: 48%;
+  margin-top: 0;
+  border: 1px solid #ddd;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
