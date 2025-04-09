@@ -26,7 +26,7 @@ import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/superAdminStyle/AccountManagement.css";
 import SuccessModal from "../customs/SuccessModal"; 
-import NotificationModal from "../customs/NotifcationModal";
+import NotificationModal from "../customs/NotificationModal";
 
 const { Content } = Layout;
 const { Option } = Select;
