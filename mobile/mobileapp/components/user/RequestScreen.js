@@ -34,7 +34,7 @@ export default function RequestScreen({ navigation }) {
     }
     setModalVisible(false);
     setConfirmCancelVisible(false);
-    alert(`Your request for "${selectedRequest?.name}" has been canceled.`);
+    alert(`Your request for "${selectedRequest?.itemName}" has been canceled.`);
   };
 
   const renderItem = ({ item, index }) => (
@@ -43,7 +43,7 @@ export default function RequestScreen({ navigation }) {
         <Text style={styles.index}>{index + 1}.)</Text>
         <Image source={require('../../assets/favicon.png')} style={styles.image} />
         <View style={styles.details}>
-          <Text style={styles.itemName}>{item.name}</Text>
+          <Text style={styles.itemName}>{item.itemName}</Text>
           <Text style={styles.department}>Department: <Text style={styles.highlight}>{item.department}</Text></Text>
           <TouchableOpacity style={styles.button} onPress={() => openModal(item)}>
             <Text style={styles.buttonText}>View Details</Text>
@@ -55,16 +55,7 @@ export default function RequestScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Image source={require('../../assets/icon.png')} style={styles.logo} />
-        <View style={styles.headerText}>
-          <Text style={styles.title}>National University</Text>
-          <Text style={styles.subtitle}>Laboratory System</Text>
-        </View>
-        <TouchableOpacity style={styles.profileButton} onPress={() => navigation.navigate('ProfileScreen')}>
-          <Icon name="account-circle" size={35} color="white" />
-        </TouchableOpacity>
-      </View>
+      <Header/>
 
       <Text style={styles.sectionTitle}>Pending Requests</Text>
       <Text style={styles.subtitle}>View your confirmed requests here.</Text>
@@ -93,7 +84,8 @@ export default function RequestScreen({ navigation }) {
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Requestor:</Text> {user?.name || 'Unknown'}</Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Quantity:</Text> {selectedRequest?.quantity}</Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Department:</Text> {selectedRequest?.department}</Text>
-                <Text style={styles.modalLabel}><Text style={styles.bold}>Tag:</Text> {selectedRequest?.tags}</Text>
+                <Text style={styles.modalLabel}><Text style={styles.bold}>Type:</Text> {selectedRequest?.type}</Text>
+                <Text style={styles.modalLabel}><Text style={styles.bold}>Category:</Text> {selectedRequest?.category}</Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Date:</Text> {selectedRequest?.date}</Text>
                 <Text style={styles.modalLabel}><Text style={styles.bold}>Time:</Text></Text>
                 <Text style={styles.modalText}>

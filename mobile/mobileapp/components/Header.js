@@ -8,19 +8,14 @@ export default function Header() {
   const navigation = useNavigation();
   return (
     <View style={styles.header}>
-      {/* Status Bar */}
-      <StatusBar backgroundColor="#1A4572" barStyle="light-content" />
 
-      {/* Logo */}
       <Image source={require('../assets/icon.png')} style={styles.logo} />
 
-      {/* Title & Subtitle */}
       <View style={styles.headerText}>
-        <Text style={styles.title}>National University</Text>
+        <Text style={styles.title}>NU MOA</Text>
         <Text style={styles.subtitle}>Laboratory System</Text>
       </View>
 
-      {/* Profile Button */}
       <TouchableOpacity 
         style={styles.profileButton} 
         onPress={() => navigation.navigate('ProfileScreen')}

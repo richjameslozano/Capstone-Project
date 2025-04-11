@@ -9,10 +9,11 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 export default function UserDashboard({ navigation }) {
   const menuItems = [
     { title: 'Requisition', subtitle: 'Materials & Supplies', icon: 'clipboard-list', screen: 'InventoryScreen', color: '#4CAF50' },
-    { title: 'Log', subtitle: 'History & Records', icon: 'file-document-outline', screen: 'RequestLogScreen', color: '#1A4572' }, 
+    { title: 'History Log', subtitle: 'Records', icon: 'file-document-outline', screen: 'RequestLogScreen', color: '#1A4572' }, 
     { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', screen: 'CalendarScreen', color: '#673AB7' }, 
-    { title: 'Pending Requests', subtitle: '', icon: 'clock-alert', screen: 'RequestScreen', color: '#A52A2A' }, 
+    { title: 'Orders', subtitle: '', icon: 'clock-alert', screen: 'RequestScreen', color: '#A52A2A' }, 
     { title: 'Policies', subtitle: 'Rules & Regulations', icon: 'file-document', screen: 'PolicyScreen', color: '#7D284D' }, 
+    { title: 'Search Items', subtitle: 'Materials', icon: 'file-document', screen: 'SearchItems', color: '#7D284D' }, 
   ];
 
   const renderItem = ({ item }) => (
@@ -28,7 +29,6 @@ export default function UserDashboard({ navigation }) {
 
   
   return (
-
     <View style={styles.container2}>
        <StatusBar style="light" backgroundColor="#1A4572" />
      <Header/>
@@ -50,7 +50,6 @@ export default function UserDashboard({ navigation }) {
         <Text style={styles.cardTitle}>Admin Panel</Text>
       </TouchableOpacity>
     </View>
-  
   );
 }
     

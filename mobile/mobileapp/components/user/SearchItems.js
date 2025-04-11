@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,71 +6,54 @@ import {
   FlatList,
   TouchableOpacity,
   Modal,
-  Image,
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/SearchItemsStyle';
 import Header from '../Header';
-
-const initialItems = [
-  {
-    id: '1',
-    description: 'Hydrochloric Acid',
-    quantity: 5,
-    status: 'In Use',
-    category: 'Chemical',
-    location: 'Lab A',
-  },
-  {
-    id: '2',
-    description: 'Microscope',
-    quantity: 3,
-    status: 'Available',
-    category: 'Equipment',
-    location: 'Lab B',
-  },
-  {
-    id: '3',
-    description: 'Gloves',
-    quantity: 0,
-    status: 'Out of Stock',
-    category: 'Materials',
-    location: 'Storage Room',
-  },
-  {
-    id: '4',
-    description: 'Phenolphthalein',
-    quantity: 8,
-    status: 'Available',
-    category: 'Reagent',
-    location: 'Lab C',
-  },
-  {
-    id: '5',
-    description: 'Burette',
-    quantity: 1,
-    status: 'In Use',
-    category: 'Equipment',
-    location: 'Lab D',
-  },
-];
+import { db } from '../../backend/firebase/FirebaseConfig'; 
+import { collection, getDocs } from 'firebase/firestore';
 
 export default function SearchItemsScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredItems, setFilteredItems] = useState(initialItems);
+  const [filteredItems, setFilteredItems] = useState([]);
   const [hoveredItem, setHoveredItem] = useState(null);
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, 'inventory')); 
+        const items = querySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        setFilteredItems(items);
+
+      } catch (error) {
+        console.error("Error fetching items: ", error);
+      }
+    };
+
+    fetchItems();
+  }, []);
 
   const handleSearch = (query) => {
     setSearchQuery(query);
-    const filteredData = initialItems.filter(
-      (item) =>
-        item.description.toLowerCase().includes(query.toLowerCase()) ||
-        item.category.toLowerCase().includes(query.toLowerCase()) ||
-        item.location.toLowerCase().includes(query.toLowerCase())
-    );
+
+    const filteredData = filteredItems.filter((item) => {
+      const description = item.itemName ? item.itemName.toLowerCase() : ''; 
+      const category = item.category ? item.category.toLowerCase() : '';
+      const location = item.labRoom ? item.labRoom.toLowerCase() : '';
+  
+      return (
+        description.includes(query.toLowerCase()) ||
+        category.includes(query.toLowerCase()) ||
+        location.includes(query.toLowerCase())
+      );
+    });
+  
     setFilteredItems(filteredData);
-  };
+  };  
 
   const handleLongPress = (item) => {
     setHoveredItem(item);
@@ -84,12 +67,14 @@ export default function SearchItemsScreen({ navigation }) {
     <View style={styles.row}>
       <View style={[styles.cell, { flex: 2 }]}>
         <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
-          {item.description}
+          {item.itemName}
         </Text>
       </View>
+
       <View style={[styles.cell, { flex: 1 }]}>
         <Text style={styles.cellText}>{item.quantity}</Text>
       </View>
+
       <View style={[styles.statusCell, { flex: 2 }]}>
         <Text
           style={[
@@ -102,18 +87,20 @@ export default function SearchItemsScreen({ navigation }) {
           {item.status}
         </Text>
       </View>
+
       <View style={[styles.cell, { flex: 1.5 }]}>
         <Text style={styles.cellText}>{item.category}</Text>
       </View>
+      
       <View style={[styles.cell, { flex: 1.5 }]}>
-        <Text style={styles.cellText}>{item.location}</Text>
+        <Text style={styles.cellText}>{item.labRoom}</Text>
       </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
-      <Header/>
+      <Header />
 
       <View style={styles.content}>
         <Text style={styles.pageTitle}>Search Items</Text>

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { TextInput, Text, Card, HelperText } from 'react-native-paper';
@@ -7,6 +6,10 @@ import CustomButton from './customs/CustomButton';
 import ForgotPasswordModal from './ForgotPasswordModal';
 import styles from './styles/LoginStyle';
 import { useAuth } from '../components/contexts/AuthContext';  
+import { db } from '../backend/firebase/FirebaseConfig';  
+import { collection, query, where, getDocs } from 'firebase/firestore';
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../backend/firebase/FirebaseConfig'; // Make sure you import auth
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();  
@@ -16,44 +19,51 @@ export default function LoginScreen({ navigation }) {
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
-
-  const accounts = [
-    { 
-      email: 'mikmik@nu-moa.edu.ph', 
-      password: '123456', 
-      name: 'Mik Mik', 
-      department: 'IT', 
-      role: 'admin' },
-
-    { 
-      email: 'dubu@nu-moa.edu.ph',  
-      password: '123456', 
-      name: 'Dubu', 
-      department: 'Marketing', 
-      role: 'user' },
-  ];
-
-  const handleLogin = () => {
+  
+  const handleLogin = async () => {
     if (!email || !password) {
       setError('Please enter both email and password');
       return;
     }
-
+  
     setError('');
     setLoading(true);
-
-    const account = accounts.find(acc => acc.email === email && acc.password === password);
-
-    setTimeout(() => {
-      setLoading(false);
-      if (account) {
-        login(account);
-        navigation.replace(account.role === 'admin' ? 'Admin2Dashboard' : 'UserDashboard');
-      } else {
-        setError('Invalid email or password');
+  
+    try {
+      // Sign in with Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const firebaseUser = userCredential.user;
+  
+      // Get extra user data from Firestore
+      const q = query(collection(db, 'accounts'), where('email', '==', email));
+      const querySnapshot = await getDocs(q);
+  
+      if (querySnapshot.empty) {
+        setError('User not found in database.');
+        setLoading(false);
+        return;
       }
-    }, 2000);
-  };
+  
+      let userData = null;
+      querySnapshot.forEach(doc => {
+        userData = { id: doc.id, ...doc.data() };
+      });
+  
+      login(userData); // Your context method to save the user
+  
+      if (userData.role === "Admin1" || userData.role === "Admin2") {
+        navigation.replace("Admin2Dashboard");
+      } else {
+        navigation.replace("UserDashboard");
+      }
+  
+    } catch (error) {
+      console.error('Login Error:', error);
+      setError('Invalid email or password.');
+    } finally {
+      setLoading(false);
+    }
+  };  
 
   return (
     <View style={styles.container}>
