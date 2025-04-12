@@ -4,43 +4,14 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F5F5F5',
-    marginTop: 60, // Prevent content overlap with the header
+  },
+
+  container1: {
+    flex: 1,
+    backgroundColor: '#F5F5F5',
+    paddingTop: 85,
   },
   
-  headerContainer: {
-    backgroundColor: '#003366',
-    padding: 10,
-    zIndex: 1000, // Ensures header is on top
-    elevation: 5, // Android shadow
-  },  
-
-  /* Header Section */
-  logo: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
-  },
-
-  headerText: {
-    alignItems: 'center',
-    flex: 1,
-  },
-
-  title: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  subtitle: {
-    color: 'white',
-    fontSize: 14,
-  },
-
-  profileButton: {
-    padding: 5,
-  },
-
   /* Section Title */
   sectionTitle: {
     fontSize: 20,
@@ -437,4 +408,138 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  emptyText: {
+    textAlign: 'center',
+    fontSize: 16,
+    marginVertical: 20,
+    color: '#888',
+  },
+
+  dateButton: {
+    backgroundColor: '#00796B',
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 20,
+    marginTop: 10,
+    alignItems: 'center',
+  },
+
+  dateButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
+  timeButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+
+  timeButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+
+  timeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
+  reasonInput: {
+    marginHorizontal: 20,
+    marginTop: 10,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    padding: 10,
+    backgroundColor: 'white',
+    minHeight: 60,
+    textAlignVertical: 'top',
+  },
+
+  requestButton: {
+    backgroundColor: '#00796B',
+    padding: 15,
+    borderRadius: 8,
+    margin: 20,
+    alignItems: 'center',
+  },
+
+  requestButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+
+  timeScroll: {
+    maxHeight: 150,
+    marginHorizontal: 5,
+  },
+
+  timeText: {
+    fontSize: 18,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    textAlign: 'center',
+  },
+
+  colon: {
+    fontSize: 18,
+    alignSelf: 'center',
+    paddingHorizontal: 5,
+  },
+
+  okButton: {
+    backgroundColor: '#00796B',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+
+  okButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: '#fff',
+  },
+
+  removeIcon: {
+    padding: 5,
+  },
+
+  programRoomContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+  
+  pickerWrapper: {
+    flex: 1,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    justifyContent: 'center',
+    height: 45,
+  },
+  
+  roomInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    height: 45,
+  },  
 });

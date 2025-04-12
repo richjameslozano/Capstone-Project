@@ -1,28 +1,42 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, ScrollView, Image, TouchableOpacity, Modal } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import { getDocs, collection } from 'firebase/firestore';
+import { db } from '../../backend/firebase/FirebaseConfig'; 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/adminStyle/InventoryStocksStyle';
 import Header from '../Header';
 
-const inventoryData = [
-  { id: 'INF224', description: 'Syringe', department: 'NURSING', quantity: 100, entryDate: '2025-02-10', expireDate: '2026-02-10', type: 'Consumables' },
-  { id: 'MED223', description: 'Gloves', department: 'NURSING', quantity: 200, entryDate: '2025-02-12', expireDate: '2026-02-12', type: 'Consumables' },
-  { id: 'INF225', description: 'Stethoscope', department: 'NURSING', quantity: 50, entryDate: '2025-02-15', expireDate: '2030-02-15', type: 'Fixed' },
-  { id: 'MED224', description: 'Thermometer', department: 'NURSING', quantity: 80, entryDate: '2025-02-18', expireDate: '2028-02-18', type: 'Fixed' },
-  { id: 'INF226', description: 'Face Mask', department: 'NURSING', quantity: 500, entryDate: '2025-02-20', expireDate: '2027-02-20', type: 'Consumables' },
-];
-
 export default function InventoryStocks({ navigation }) {
+  const [inventoryItems, setInventoryItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  const filteredData = inventoryData.filter(item => 
-    item.description.toLowerCase().includes(searchQuery.toLowerCase()) &&
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const inventoryCollection = collection(db, 'inventory');
+        const inventorySnapshot = await getDocs(inventoryCollection);
+        const inventoryList = inventorySnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        setInventoryItems(inventoryList);
+      } catch (error) {
+        console.error("Error fetching inventory: ", error);
+      }
+    };
+
+    fetchInventory();
+  }, []);
+
+  const filteredData = inventoryItems.filter(item =>
+    item.itemName?.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (filterType === 'All' || item.type === filterType)
-  );
+  );  
 
   const openDetailsModal = (item) => {
     setSelectedItem(item);
@@ -31,9 +45,9 @@ export default function InventoryStocks({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Header/>
+      <Header />
 
-      <Text style={[styles.pageTitle,{marginTop:60}]}>Inventory Stocks</Text>
+      <Text style={styles.pageTitle}>Inventory Stocks</Text>
 
       <TextInput
         style={styles.searchBar}
@@ -45,12 +59,12 @@ export default function InventoryStocks({ navigation }) {
       <View style={styles.pickerContainer}>
         <Picker
           selectedValue={filterType}
-          style={styles.pickerText}
+          style={styles.picker}
           onValueChange={(itemValue) => setFilterType(itemValue)}
         >
           <Picker.Item label="All" value="All" />
           <Picker.Item label="Fixed" value="Fixed" />
-          <Picker.Item label="Consumables" value="Consumables"  style={styles.pickerText} />
+          <Picker.Item label="Consumables" value="Consumables" />
         </Picker>
       </View>
 
@@ -59,17 +73,22 @@ export default function InventoryStocks({ navigation }) {
           <View key={item.id} style={styles.card}>
             <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>ID:</Text>
-              <Text style={styles.cardValue}>{item.id}</Text>
+              <Text style={styles.cardValue}>{item.itemId || item.id}</Text>
             </View>
 
             <View style={styles.cardRow}>
-              <Text style={styles.cardLabel}>Description:</Text>
-              <Text style={styles.cardValue}>{item.description}</Text>
+              <Text style={styles.cardLabel}>Item Name:</Text>
+              <Text style={styles.cardValue}>{item.itemName}</Text>
             </View>
 
             <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>Balance:</Text>
               <Text style={styles.cardValueNum}>{item.quantity}</Text>
+            </View>
+
+            <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Condition:</Text>
+              <Text style={styles.cardValueNum}>{item.condition}</Text>
             </View>
 
             <TouchableOpacity style={styles.viewDetailsButton} onPress={() => openDetailsModal(item)}>
@@ -85,13 +104,18 @@ export default function InventoryStocks({ navigation }) {
             {selectedItem && (
               <>
                 <Text style={styles.modalTitle}>Item Details</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>ID:</Text> {selectedItem.id}</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>Item Name:</Text> {selectedItem.description}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>ID:</Text> {selectedItem.itemId || selectedItem.id}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Item Name:</Text> {selectedItem.itemName}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Department:</Text> {selectedItem.department}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Entry Date:</Text> {selectedItem.entryDate}</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>Expire Date:</Text> {selectedItem.expireDate}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Expire Date:</Text> {selectedItem.expireDate || 'N/A'}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Type:</Text> {selectedItem.type}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Category:</Text> {selectedItem.category || 'N/A'}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Condition:</Text> {selectedItem.condition || 'N/A'}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Lab Room:</Text> {selectedItem.labroom || 'N/A'}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Status:</Text> {selectedItem.status || 'N/A'}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Usage Type:</Text> {selectedItem.usageType || 'N/A'}</Text>
 
                 <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                   <Text style={styles.closeButtonText}>Close</Text>
