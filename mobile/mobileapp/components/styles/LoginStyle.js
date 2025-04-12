@@ -56,4 +56,5 @@ export default StyleSheet.create({
     right: 10,
     top: 18,
   },
+  
 });

@@ -3,20 +3,18 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
+    backgroundColor: '#F5F5F5',
+    marginTop: 60, // Prevent content overlap with the header
   },
+  
+  headerContainer: {
+    backgroundColor: '#003366',
+    padding: 10,
+    zIndex: 1000, // Ensures header is on top
+    elevation: 5, // Android shadow
+  },  
 
   /* Header Section */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#00796B',
-    padding: 15,
-    borderRadius: 8,
-    justifyContent: 'space-between',
-  },
-
   logo: {
     width: 40,
     height: 40,
@@ -388,26 +386,29 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
+  timeButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 10,
+  },  
   
   timeButton: {
-    flex: 1,
     backgroundColor: '#FFA726',
-    paddingVertical: 12,  // Adjusted padding to avoid stretching
-    paddingHorizontal: 20, // Added horizontal padding for better shape
-    borderRadius: 25, // Increased for smoother rounded corners
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 25,
     alignItems: 'center',
     justifyContent: 'center',
+    width: 140, // Fixed button width
     marginHorizontal: 5,
-    minWidth: 120, // Ensures a good button width
-    maxWidth: 150, // Prevents it from being too wide
-    alignSelf: 'center', // Ensures it doesn’t stretch
-  },    
-
+  },
+  
   timeButtonText: {
     color: 'white',
     fontSize: 14,
     fontWeight: 'bold',
-  },
+  },  
 
   requestButton: {
     backgroundColor: '#0288D1',

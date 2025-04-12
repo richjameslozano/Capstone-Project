@@ -5,25 +5,49 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
-  card: {
+
+  modalContent: {
     width: '85%',
+    maxWidth: 400,
     padding: 20,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    elevation: 5,
   },
-  title: {
-    fontSize: 20,
+
+  modalTitle: {
+    fontSize: 22,
     fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+
+  modalText: {
+    fontSize: 16,
     textAlign: 'center',
     marginBottom: 15,
   },
+
   input: {
     marginBottom: 10,
   },
-  button: {
+
+  successText: {
+    color: 'green',
+    textAlign: 'center',
+    marginBottom: 10,
+  },
+
+  modalButton: {
     marginTop: 10,
   },
-  cancel: {
+
+  modalCancel: {
     textAlign: 'center',
     marginTop: 10,
     color: 'blue',

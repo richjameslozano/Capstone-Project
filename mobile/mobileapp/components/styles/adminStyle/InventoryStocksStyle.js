@@ -13,14 +13,15 @@ const styles = StyleSheet.create({
     marginVertical: 10,
     textAlign: 'center',
   },
+  
   pickerContainer:{
     width:200,
     
   },
+
   pickerText:{
-fontSize:16
+    fontSize:16
   },
-  
 
   searchBar: {
     backgroundColor: 'white',

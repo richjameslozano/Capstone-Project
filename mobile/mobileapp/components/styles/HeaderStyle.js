@@ -19,24 +19,29 @@ export default StyleSheet.create({
     shadowRadius: 3,
     marginBottom:10,
   },
+  
   logo: {
     width: 40,
     height: 40,
     resizeMode: 'contain',
   },
+
   headerText: {
     flex: 1,
     marginLeft: 10,
   },
+
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
+
   subtitle: {
     fontSize: 14,
     color: '#ddd',
   },
+
   profileButton: {
     padding: 5,
   },
