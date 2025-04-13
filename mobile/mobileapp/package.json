@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@firebase/firestore": "^4.7.10",
     "@react-native-community/checkbox": "^0.5.17",
     "@react-native-picker/picker": "^2.11.0",
     "@react-navigation/native": "^7.0.14",
@@ -19,6 +20,7 @@
     "expo-camera": "~16.0.17",
     "expo-permissions": "^14.4.0",
     "expo-status-bar": "~2.0.1",
+    "firebase": "^11.6.0",
     "react": "18.3.1",
     "react-native": "0.76.7",
     "react-native-calendars": "^1.1309.1",
