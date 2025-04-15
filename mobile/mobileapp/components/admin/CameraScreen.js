@@ -74,7 +74,7 @@ const CameraScreen = ({ navigation }) => {
 
       const parsedData = JSON.parse(decryptedData);
 
-      Alert.alert("QR Code Scanned", `Item: ${parsedData.name}\nTimestamp: ${parsedData.timestamp}`);
+      Alert.alert("QR Code Scanned", `Item: ${parsedData.itemName}\nTimestamp: ${parsedData.timestamp}`);
 
     } catch (error) {
       Alert.alert("Error", "Invalid or unauthorized QR Code.");
