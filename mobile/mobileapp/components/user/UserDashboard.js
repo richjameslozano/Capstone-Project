@@ -1,19 +1,19 @@
 import React from 'react'; 
-import { View, Text, TouchableOpacity, FlatList, Image } from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, Image, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/UserDashboardStyle';
 import Header from '../Header';
-import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export default function UserDashboard({ navigation }) {
   const menuItems = [
     { title: 'Requisition', subtitle: 'Materials & Supplies', icon: 'clipboard-list', screen: 'InventoryScreen', color: '#4CAF50' },
-    { title: 'History Log', subtitle: 'Records', icon: 'file-document-outline', screen: 'RequestLogScreen', color: '#1A4572' }, 
+    { title: 'History Log', subtitle: 'Records', icon: 'file-document-outline', screen: 'UserHistoryLogScreen', color: '#1A4572' }, 
     { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', screen: 'CalendarScreen', color: '#673AB7' }, 
     { title: 'Orders', subtitle: '', icon: 'clock-alert', screen: 'RequestScreen', color: '#A52A2A' }, 
     { title: 'Policies', subtitle: 'Rules & Regulations', icon: 'file-document', screen: 'PolicyScreen', color: '#7D284D' }, 
     { title: 'Search Items', subtitle: 'Materials', icon: 'file-document', screen: 'SearchItems', color: '#7D284D' }, 
+    { title: 'Activity Log', subtitle: '???', icon: 'file-document', screen: 'UserActivityLogScreen', color: '#7D284D' }, 
   ];
 
   const renderItem = ({ item }) => (

@@ -74,6 +74,7 @@ export default function ProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={30} color="white" />
         </TouchableOpacity>
@@ -94,34 +95,12 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.label}>Email</Text>
         <TextInput style={styles.input} value={user?.email || ''} editable={false} />
 
+        <Text style={styles.label}>Email</Text>
+        <TextInput style={styles.input} value={user?.jobTitle || ''} editable={false} />
+
         <Text style={styles.label}>Department</Text>
         <TextInput style={styles.input} value={user?.department || ''} editable={false} />
       </View>
-
-      <TouchableOpacity 
-        style={styles.logoutButton} 
-        onPress={() => {
-          Alert.alert(
-            "Logout Confirmation", 
-            "Are you sure you want to log out?", 
-            [
-              { text: "Cancel", style: "cancel" },
-              { 
-                text: "Logout", 
-                style: "destructive", 
-                onPress: () => {
-                  logout();
-                  navigation.replace('Login');
-                }
-              }
-            ]
-          );
-        }}
-      >
-        <Icon name="logout" size={24} color="white" />
-        <Text style={styles.logoutText}>Logout</Text>
-      </TouchableOpacity>
-
     </View>
   );
 }

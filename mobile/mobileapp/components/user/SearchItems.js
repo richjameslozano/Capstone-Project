@@ -9,33 +9,57 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { db } from '../../backend/firebase/FirebaseConfig'; 
+import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import styles from '../styles/userStyle/SearchItemsStyle';
 import Header from '../Header';
-import { db } from '../../backend/firebase/FirebaseConfig'; 
-import { collection, getDocs } from 'firebase/firestore';
 
 export default function SearchItemsScreen({ navigation }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredItems, setFilteredItems] = useState([]);
   const [hoveredItem, setHoveredItem] = useState(null);
 
-  useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, 'inventory')); 
-        const items = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        setFilteredItems(items);
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const querySnapshot = await getDocs(collection(db, 'inventory')); 
+  //       const items = querySnapshot.docs.map(doc => ({
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       }));
+  //       setFilteredItems(items);
+  //     } catch (error) {
+  //       console.error("Error fetching items: ", error);
+  //     }
+  //   };
 
+  //   fetchItems();
+  // }, []);
+
+  useEffect(() => {
+    const fetchItems = () => {
+      try {
+        // Set up the real-time listener using onSnapshot
+        const inventoryRef = collection(db, 'inventory');
+        const unsubscribe = onSnapshot(inventoryRef, (querySnapshot) => {
+          const items = querySnapshot.docs.map(doc => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+  
+          setFilteredItems(items); // Update state with the fetched items
+        });
+  
+        // Clean up the listener when the component unmounts
+        return () => unsubscribe();
+  
       } catch (error) {
         console.error("Error fetching items: ", error);
       }
     };
-
+  
     fetchItems();
-  }, []);
+  }, []); 
 
   const handleSearch = (query) => {
     setSearchQuery(query);
@@ -55,27 +79,24 @@ export default function SearchItemsScreen({ navigation }) {
     setFilteredItems(filteredData);
   };  
 
-  const handleLongPress = (item) => {
-    setHoveredItem(item);
+  // Function to handle row click and show details
+  const handleRowClick = (item) => {
+    setHoveredItem(item);  // Set the clicked item as hovered item
   };
 
   const closeModal = () => {
-    setHoveredItem(null);
+    setHoveredItem(null); // Close the modal by setting hoveredItem to null
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.row}>
-      <View style={[styles.cell, { flex: 2 }]}>
-        <Text numberOfLines={1} ellipsizeMode="tail" style={styles.cellText}>
-          {item.itemName}
-        </Text>
+  const renderItem = ({ item, index }) => (
+    <TouchableOpacity onPress={() => handleRowClick(item)} style={index % 2 === 0 ? styles.rowEven : styles.rowOdd}>
+      <View style={{ flex: 3 }}>
+        <Text style={styles.cellText} numberOfLines={1}>{item.itemName}</Text>
       </View>
-
-      <View style={[styles.cell, { flex: 1 }]}>
+      <View style={{ flex: 1 }}>
         <Text style={styles.cellText}>{item.quantity}</Text>
       </View>
-
-      <View style={[styles.statusCell, { flex: 2 }]}>
+      <View style={{ flex: 2 }}>
         <Text
           style={[
             styles.status,
@@ -87,78 +108,74 @@ export default function SearchItemsScreen({ navigation }) {
           {item.status}
         </Text>
       </View>
-
-      <View style={[styles.cell, { flex: 1.5 }]}>
+      <View style={{ flex: 2 }}>
         <Text style={styles.cellText}>{item.category}</Text>
       </View>
-      
-      <View style={[styles.cell, { flex: 1.5 }]}>
-        <Text style={styles.cellText}>{item.labRoom}</Text>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 
   return (
-    <View style={styles.container}>
+    <View style={styles.content}>
       <Header />
 
-      <View style={styles.content}>
-        <Text style={styles.pageTitle}>Search Items</Text>
+      <Text style={styles.pageTitle}>Search Items</Text>
 
-        <View style={styles.searchContainer}>
-          <Icon name="magnify" size={24} color="#777" style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search items, category, location..."
-            value={searchQuery}
-            onChangeText={handleSearch}
-          />
-        </View>
-
-        <ScrollView horizontal contentContainerStyle={{ flexGrow: 1 }}>
-          <View style={styles.tableContainer}>
-            <View style={[styles.row, styles.headerRow]}>
-              <Text style={[styles.headerText, { flex: 2 }]}>Description</Text>
-              <Text style={[styles.headerText, { flex: 1, textAlign: 'center' }]}>Qty</Text>
-              <Text style={[styles.headerText, { flex: 2 }]}>Status</Text>
-              <Text style={[styles.headerText, { flex: 1.5 }]}>Category</Text>
-              <Text style={[styles.headerText, { flex: 1.5 }]}>Location</Text>
-            </View>
-
-            <FlatList
-              data={filteredItems}
-              keyExtractor={(item) => item.id}
-              renderItem={renderItem}
-              ListEmptyComponent={() => (
-                <Text style={styles.noResults}>No matching items found.</Text>
-              )}
-            />
-          </View>
-        </ScrollView>
+      {/* Search Bar */}
+      <View style={styles.searchContainer}>
+        <Icon name="magnify" size={24} color="#777" style={styles.searchIcon} />
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search items, category, location..."
+          value={searchQuery}
+          onChangeText={handleSearch}
+        />
       </View>
 
-      <TouchableOpacity style={styles.helpButton}>
-        <Text style={styles.helpText}>Help (?)</Text>
-      </TouchableOpacity>
+      {/* Table Header */}
+      <View style={styles.tableContainer}>
+        <View style={[styles.row, styles.headerRow]}>
+          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Description</Text>
+          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
+          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Status</Text>
+          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
+          <Text style={[styles.tableHeaderText, { flex: 1 }]}>Location</Text>
+        </View>
 
-      {hoveredItem && (
-        <Modal
-          visible={!!hoveredItem}
-          transparent
-          animationType="fade"
-          onRequestClose={closeModal}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Full Description</Text>
-              <Text style={styles.modalText}>{hoveredItem.description}</Text>
-              <TouchableOpacity style={styles.closeButton} onPress={closeModal}>
-                <Text style={styles.closeButtonText}>Close</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
-      )}
+        {/* Items List */}
+        <FlatList
+          data={filteredItems}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={{ flexGrow: 1 }}
+          ListEmptyComponent={() => (
+            <Text style={styles.noResults}>No matching items found.</Text>
+          )}
+        />
+      </View>
+
+      {/* Modal for Item Details */}
+      <Modal visible={hoveredItem !== null} onRequestClose={closeModal}>
+        <View style={styles.modalContainer}>
+          <ScrollView>
+            {hoveredItem && (
+              <View>
+                <Text style={styles.modalTitle}>{hoveredItem.itemName}</Text>
+                <Text>Quantity: {hoveredItem.quantity}</Text>
+                <Text>Status: {hoveredItem.status}</Text>
+                <Text>Category: {hoveredItem.category}</Text>
+                <Text>Location: {hoveredItem.labRoom}</Text>
+                <Text>Condition: {hoveredItem.condition || 'N/A'}</Text>
+                <Text>Item Type: {hoveredItem.type || 'N/A'}</Text>
+                <Text>Usage Type: {hoveredItem.usageType || 'N/A'}</Text>
+                <Text>Date Acquired: {hoveredItem.entryDate || 'N/A'}</Text>
+              </View>
+            )}
+            <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        </View>
+      </Modal>
     </View>
   );
 }
