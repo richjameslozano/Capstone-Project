@@ -5,11 +5,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CustomButton from './customs/CustomButton';
 import ForgotPasswordModal from './ForgotPasswordModal';
 import styles from './styles/LoginStyle';
-import { useAuth } from '../components/contexts/AuthContext';  
+import { useAuth } from './contexts/AuthContext';  
 import { db } from '../backend/firebase/FirebaseConfig';  
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../backend/firebase/FirebaseConfig'; // Make sure you import auth
+import { collection, query, where, getDocs, updateDoc, addDoc, serverTimestamp, Timestamp } from 'firebase/firestore';
+import { signInWithEmailAndPassword, signOut } from 'firebase/auth';
+import { auth } from '../backend/firebase/FirebaseConfig'; 
 
 export default function LoginScreen({ navigation }) {
   const { login } = useAuth();  
@@ -30,41 +30,163 @@ export default function LoginScreen({ navigation }) {
     setLoading(true);
   
     try {
-      // Sign in with Firebase Auth
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
-  
-      // Get extra user data from Firestore
-      const q = query(collection(db, 'accounts'), where('email', '==', email));
+      const usersRef = collection(db, "accounts");
+      const q = query(usersRef, where("email", "==", email));
       const querySnapshot = await getDocs(q);
   
-      if (querySnapshot.empty) {
-        setError('User not found in database.');
+      let userDoc, userData, isSuperAdmin = false;
+  
+      // First check regular accounts
+      if (!querySnapshot.empty) {
+        userDoc = querySnapshot.docs[0];
+        userData = userDoc.data();
+
+      } else {
+        // Then check if it's a super-admin
+        const superAdminRef = collection(db, "super-admin");
+        const superAdminQuery = query(superAdminRef, where("email", "==", email));
+        const superAdminSnapshot = await getDocs(superAdminQuery);
+  
+        if (!superAdminSnapshot.empty) {
+          userDoc = superAdminSnapshot.docs[0];
+          userData = userDoc.data();
+          isSuperAdmin = true;
+        }
+      }
+  
+      if (!userData) {
+        setError("User not found. Please contact admin.");
         setLoading(false);
         return;
       }
   
-      let userData = null;
-      querySnapshot.forEach(doc => {
-        userData = { id: doc.id, ...doc.data() };
-      });
+      if (userData.disabled) {
+        setError("Your account has been disabled.");
+        await signOut(auth);
+        setLoading(false);
+        return;
+      }
   
-      login(userData); // Your context method to save the user
+      // If password not set yet (new user)
+      if (!isSuperAdmin && !userData.uid) {
+        setError("Password not set. Please contact admin.");
+        setLoading(false);
+        return;
+      }
   
-      if (userData.role === "Admin1" || userData.role === "Admin2") {
-        navigation.replace("Admin2Dashboard");
+      // Block check
+      if (userData.isBlocked && userData.blockedUntil) {
+        const now = Timestamp.now().toMillis();
+        const blockedUntil = userData.blockedUntil.toMillis();
+  
+        if (now < blockedUntil) {
+          const remainingTime = Math.ceil((blockedUntil - now) / 1000);
+          setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
+          setLoading(false);
+          return;
+
+        } else {
+          await updateDoc(userDoc.ref, {
+            isBlocked: false,
+            loginAttempts: 0,
+            blockedUntil: null,
+          });
+
+          console.log("Account unblocked.");
+        }
+      }
+  
+      if (isSuperAdmin) {
+        if (userData.password === password) {
+          await updateDoc(userDoc.ref, { loginAttempts: 0 });
+  
+          login({ ...userData, id: userDoc.id, role: "Super Admin" });
+  
+          navigation.replace("SuperAdminDashboard");
+  
+        } else {
+          const newAttempts = (userData.loginAttempts || 0) + 1;
+  
+          if (newAttempts >= 4) {
+            const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
+            await updateDoc(userDoc.ref, {
+              isBlocked: true,
+              blockedUntil: Timestamp.fromMillis(unblockTime),
+            });
+  
+            setError("Super Admin account blocked for 30 minutes.");
+
+          } else {
+            await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+            setError(`Invalid password. ${4 - newAttempts} attempts left.`);
+          }
+  
+          setLoading(false);
+          return;
+        }
+  
       } else {
-        navigation.replace("UserDashboard");
+        // ✅ Firebase Auth login for regular users/admins
+        try {
+          await signInWithEmailAndPassword(auth, email, password);
+          await updateDoc(userDoc.ref, { loginAttempts: 0 });
+  
+          const role = (userData.role || "user").toLowerCase();
+          login({ ...userData, id: userDoc.id });
+  
+          await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
+            action: "User Logged In (Mobile)",
+            userName: userData.name || "User",
+            timestamp: serverTimestamp(),
+          });
+  
+          switch (role) {
+            case "admin1":
+            case "admin2":
+              navigation.replace("Admin");
+              break;
+
+            case "user":
+              navigation.replace('User')
+              break;
+
+            default:
+              setError("Unknown role. Contact admin.");
+          }
+  
+        } catch (authError) {
+          // console.error("Auth login failed:", authError.message);
+  
+          const newAttempts = (userData.loginAttempts || 0) + 1;
+  
+          if (newAttempts >= 4) {
+            const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
+            await updateDoc(userDoc.ref, {
+              isBlocked: true,
+              blockedUntil: Timestamp.fromMillis(unblockTime),
+            });
+  
+            setError("Account blocked after 4 failed attempts.");
+            
+          } else {
+            await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+            setError(`Invalid password. ${4 - newAttempts} attempts left.`);
+          }
+  
+          setLoading(false);
+          return;
+        }
       }
   
     } catch (error) {
-      console.error('Login Error:', error);
-      setError('Invalid email or password.');
+      console.error("Login error:", error);
+      setError("Unexpected error. Try again.");
+
     } finally {
       setLoading(false);
     }
-  };  
-
+  };
+  
   return (
     <View style={styles.container}>
       <Card style={styles.card}>
