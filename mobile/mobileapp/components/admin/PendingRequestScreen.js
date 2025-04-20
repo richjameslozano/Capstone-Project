@@ -3,7 +3,7 @@ import { View, FlatList, TouchableOpacity, Text } from 'react-native';
 import { Card } from 'react-native-paper';
 import { useRequestList } from '../contexts/RequestListContext';
 import { useAuth } from '../contexts/AuthContext';
-import styles from '../styles/adminStyle/PendingRequestStyle';
+import styles from '../styles/admin2Style/PendingRequestStyle';
 import Header from '../Header';
 
 export default function PendingRequestScreen() {
@@ -84,7 +84,7 @@ export default function PendingRequestScreen() {
   return (
     <View style={styles.container}>
       <Header/>
-      <Text style={[styles.title,{marginTop:45}]}>Pending Requests</Text>
+      <Text style={styles.title}>Pending Requests</Text>
       <FlatList 
         data={pendingRequests} 
         renderItem={renderItem} 
