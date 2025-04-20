@@ -3,218 +3,145 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
   },
-
-  /* Header Section */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#00796B',
-    padding: 15,
-    borderRadius: 8,
-    justifyContent: 'space-between',
-  },
-
-  logo: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
-  },
-
-  headerText: {
-    alignItems: 'center',
-    flex: 1,
-  },
-
+  
   title: {
-    color: 'white',
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: 'bold',
+    marginVertical: 16,
+    textAlign: 'center',
+    marginTop: 80,
   },
 
-  subtitle: {
-    color: 'white',
-    fontSize: 14,
+  listContainer: {
+    paddingBottom: 80,
   },
 
-  profileButton: {
-    padding: 5,
-  },
-
-  /* Section Title */
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginVertical: 10,
-  },
-
-  /* Card Styles */
   card: {
-    backgroundColor: '#FFF',
-    borderRadius: 10,
-    padding: 10,
-    flexDirection: 'column',
-    marginBottom: 10,
-    elevation: 3,
+    padding: 16,
+    marginVertical: 8,
+    backgroundColor: '#f1f1f1',
+    borderRadius: 8,
   },
 
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-
-  index: {
-    fontSize: 16,
-    marginRight: 10,
+  requestId: {
     fontWeight: 'bold',
-  },
-
-  image: {
-    width: 50,
-    height: 50,
-    backgroundColor: '#ccc',
-    marginRight: 10,
-  },
-
-  details: {
-    flex: 1,
-  },
-
-  itemName: {
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-
-  department: {
-    fontSize: 12,
-    color: '#333',
-  },
-
-  highlight: {
-    color: 'orange',
-    fontWeight: 'bold',
-  },
-
-  button: {
-    marginTop: 5,
-    backgroundColor: '#007BFF',
-    paddingVertical: 10, 
-    paddingHorizontal: 20,
-    borderRadius: 5, 
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  buttonText: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-
-  helpButton: {
-    alignSelf: 'center',
-    marginTop: 10,
-  },
-
-  helpText: {
-    fontSize: 12,
-    color: '#007BFF',
-    fontWeight: 'bold',
+    marginBottom: 6,
   },
 
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
+    padding: 16,
   },
-
+  
   modalContent: {
-    width: '85%',
-    backgroundColor: 'white',
+    width: '100%',
+    maxHeight: '90%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
     padding: 20,
-    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
     elevation: 5,
   },
-
-  modalHeader: {
-    alignItems: 'center',
-    marginBottom: 10,
-  },
-
-  modalImage: {
-    width: 50,
-    height: 50,
-    marginBottom: 10,
-  },
-
-  modalItemName: {
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  modalDetails: {
-    marginBottom: 15,
-  },
   
-  modalLabel: {
-    fontSize: 14,
-    marginBottom: 5,
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 16,
+    textAlign: 'center',
   },
 
-  bold: {
+  label: {
     fontWeight: 'bold',
   },
 
-  modalReason: {
-    fontSize: 14,
-    color: '#333',
+  subTitle: {
+    marginTop: 10,
+    fontWeight: 'bold',
   },
 
-  modalFooter: {
-    flexDirection: 'row',
-    justifyContent: 'center',
+  itemCard: {
+    marginVertical: 5,
+    padding: 8,
+    backgroundColor: '#e6f7ff',
+    borderRadius: 6,
   },
 
-  okButton: {
-    backgroundColor: '#007BFF',
-  },
-
-  modalFooter: {
+  modalButtons: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
-  },
-  
-  okButton: {
-    backgroundColor: '#007BFF',
-    padding: 10,
-    borderRadius: 5,
-    flex: 1,
-    alignItems: 'center',
-    marginRight: 5,
-  },
-  
-  okButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
+    marginTop: 24,
+    gap: 10,
   },
   
   cancelButton: {
-    backgroundColor: '#FF3B30',
-    padding: 10,
-    borderRadius: 5,
     flex: 1,
+    backgroundColor: '#ff4d4f',
+    padding: 12,
+    borderRadius: 6,
     alignItems: 'center',
-    marginLeft: 5,
   },
   
-  cancelButtonText: {
-    color: 'white',
-    fontSize: 16,
+  closeButton: {
+    flex: 1,
+    backgroundColor: '#1890ff',
+    padding: 12,
+    borderRadius: 6,
+    alignItems: 'center',
+  },
+  
+  cancelText: {
+    color: '#fff',
     fontWeight: 'bold',
-  },  
+  },
+  
+  closeText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
+  table: {
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+  },
+  
+  tableHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#1890ff',
+    paddingVertical: 8,
+    borderTopLeftRadius: 6,
+    borderTopRightRadius: 6,
+  },
+  
+  tableHeaderCell: {
+    flex: 1,
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+    fontSize: 12,
+  },
+  
+  tableRow: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderColor: '#eee',
+    paddingVertical: 6,
+  },
+  
+  tableCell: {
+    flex: 1,
+    textAlign: 'center',
+    fontSize: 12,
+  },
+  
 });

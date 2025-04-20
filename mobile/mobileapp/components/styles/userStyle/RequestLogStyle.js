@@ -5,15 +5,15 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f8f8',
     paddingHorizontal: 10,
-    paddingBottom: 20, // Ensure space for the help button at the bottom
+    paddingBottom: 20, 
   },
 
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#00796B',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
+    paddingVertical: 15,
+    paddingHorizontal: 20,
     elevation: 5,
   },
 
@@ -28,7 +28,7 @@ export default StyleSheet.create({
   },
 
   title: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: 'white',
   },
@@ -44,38 +44,35 @@ export default StyleSheet.create({
 
   content: {
     flex: 1,
+    marginTop: 10,
   },
 
   pageTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginVertical: 10,
+    marginVertical: 15,
     textAlign: 'center',
+    color: '#00796B',
   },
 
   tableHeader: {
     backgroundColor: '#00796B',
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
 
   tableHeaderText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: 'white',
-    textAlign: 'center',
-    paddingHorizontal: 10,
-    width: 'auto'
+    textAlign: 'center',  
   },
   
   tableCell: {
     fontSize: 12,
     color: '#333',
     textAlign: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 10,
-    width: 'auto',
-    maxWidth: 100,
-  },    
+    paddingVertical: 12,
+  },
 
   tagCell: {
     fontSize: 12,
@@ -104,13 +101,13 @@ export default StyleSheet.create({
 
   viewButton: {
     backgroundColor: '#00796B',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
     borderRadius: 5,
   },
 
   viewButtonText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: 'white',
   },
@@ -123,26 +120,30 @@ export default StyleSheet.create({
   },
 
   modalContent: {
-    width: '80%',
+    width: '85%',
     backgroundColor: 'white',
-    padding: 20,
+    padding: 25,
     borderRadius: 10,
     alignItems: 'center',
+    elevation: 5,
   },
 
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 15,
+    color: '#00796B',
   },
 
   modalText: {
     fontSize: 14,
-    marginBottom: 5,
+    marginBottom: 10,
+    textAlign: 'left',
+    width: '100%',
   },
 
   closeButton: {
-    marginTop: 15,
+    marginTop: 20,
     backgroundColor: '#00796B',
     paddingVertical: 8,
     paddingHorizontal: 20,
@@ -167,14 +168,66 @@ export default StyleSheet.create({
     textDecorationLine: 'underline',
     color: 'blue', 
     fontSize: 16, 
-  },  
+  },
 
   viewLinkText: {
-    fontSize: 12,
+    fontSize: 14,
     fontWeight: 'bold',
     color: '#00796B',
     textDecorationLine: 'underline',
     textAlign: 'center',
   },
+
+  modalContent: {
+    width: '90%',
+    maxHeight: '80%',
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 12,
+    elevation: 10,
+    alignItems: 'center',
+  },
   
+  modalText: {
+    fontSize: 14,
+    marginBottom: 8,
+    textAlign: 'left',
+    width: '100%',
+    color: '#333',
+  },
+  
+  tableHeader: {
+    backgroundColor: '#00796B',
+    paddingVertical: 10,
+    paddingHorizontal: 4,
+  },
+  
+  tableHeaderText: {
+    fontSize: 13,
+    fontWeight: 'bold',
+    color: 'white',
+    textAlign: 'center',
+  },
+  
+  tableCell: {
+    fontSize: 13,
+    color: '#333',
+    textAlign: 'center',
+    paddingHorizontal: 2,
+  },
+  
+  closeButton: {
+    marginTop: 15,
+    backgroundColor: '#00796B',
+    paddingVertical: 10,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+  },
+  
+  closeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },  
+
 });

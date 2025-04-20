@@ -6,8 +6,8 @@ export default StyleSheet.create({
     top: 0,
     left: 0,
     right: 0,
-    zIndex: 10, // Keeps it above other content
-    backgroundColor: '#1A4572', // Header background color
+    zIndex: 10, 
+    backgroundColor: '#1A4572',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
@@ -45,4 +45,10 @@ export default StyleSheet.create({
   profileButton: {
     padding: 5,
   },
+
+  menuButton: {
+    marginLeft: 10,
+    justifyContent: 'center',
+  },
+  
 });

@@ -7,47 +7,12 @@ export default StyleSheet.create({
     padding: 16,
   },
 
-  /* Header Section */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#00796B',
-    padding: 15,
-    borderRadius: 8,
-    justifyContent: 'space-between',
-  },
-
-  logo: {
-    width: 40,
-    height: 40,
-    resizeMode: 'contain',
-  },
-
-  headerText: {
-    alignItems: 'center',
-    flex: 1,
-  },
-
-  title: {
-    color: 'white',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-
-  subtitle: {
-    color: 'white',
-    fontSize: 14,
-  },
-
-  profileButton: {
-    padding: 5,
-  },
-
   /* Section Title */
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 10,
+    marginTop: 50,
   },
 
   /* Search Bar */
@@ -71,14 +36,6 @@ export default StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 10,
-  },
-
-  picker: {
-    flex: 1,
-    height: 50,
-    backgroundColor: '#F5F5F5',
-    borderRadius: 10,
-    marginHorizontal: 5,
   },
 
   /* Modal Styles */
@@ -126,18 +83,31 @@ export default StyleSheet.create({
 
   inputRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
+    alignItems: 'center',
+    marginHorizontal: 10,
     marginBottom: 10,
   },
-
+  
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#CCC',
-    padding: 10,
-    borderRadius: 5,
-    marginHorizontal: 5,
+    borderColor: '#ccc',
+    padding: 8,
+    borderRadius: 6,
+    marginRight: 8,
+    backgroundColor: '#fff',
+  },
+
+  confirmButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+  },
+
+  confirmButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
   },
 
   dateButton: {
@@ -185,6 +155,44 @@ export default StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     fontSize: 16,
+  },
+
+  /* Time Picker Modal */
+  timeScroll: {
+    height: 150,
+    width: '100%',
+    marginVertical: 10,
+  },
+
+  timeText: {
+    fontSize: 18,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    textAlign: 'center',
+  },
+
+  timeButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginTop: 10,
+  },
+
+  timeButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 8,
+  },
+
+  timeButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
+  timeContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginVertical: 10,
   },
 
   /* Bottom Section */
@@ -242,12 +250,12 @@ export default StyleSheet.create({
     marginBottom: 10,
     elevation: 3,
   },
-  
+
   cardContent: {
     flexDirection: 'row',
     alignItems: 'flex-start',
   },
-  
+
   imageContainer: {
     width: 60,
     height: 60,
@@ -257,33 +265,33 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginRight: 10,
   },
-  
+
   itemImage: {
     width: '100%',
     height: '100%',
     borderRadius: 10,
   },
-  
+
   itemDetails: {
     flex: 1,
   },
-  
+
   itemName: {
     fontWeight: 'bold',
     fontSize: 16,
   },
-  
+
   department: {
     fontWeight: 'bold',
     fontSize: 14,
     marginBottom: 5,
   },
-  
+
   description: {
     fontSize: 12,
     color: '#666',
   },
-  
+
   tags: {
     fontSize: 12,
     color: '#666',
@@ -297,7 +305,7 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginTop: 20,
   },
-  
+
   addItemButton: {
     backgroundColor: '#4caf50',
     paddingVertical: 10,
@@ -305,20 +313,20 @@ export default StyleSheet.create({
     borderRadius: 10,
     marginLeft: 10,
   },
-  
+
   addItemText: {
     color: 'white',
     fontSize: 16,
     fontWeight: 'bold',
   },
-  
+
   itemType: {
     fontSize: 14,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 5,
   },
-  
+
   tag: {
     backgroundColor: '#ddd',
     paddingVertical: 4,
@@ -327,7 +335,7 @@ export default StyleSheet.create({
     alignSelf: 'flex-start',
     marginTop: 5,
   },
-  
+
   tagText: {
     fontSize: 12,
     fontWeight: 'bold',
@@ -337,9 +345,104 @@ export default StyleSheet.create({
   addButton: {
     marginLeft: 10,
   },
-  
+
   disabledButton: {
     opacity: 0.5,
   },
-  
+
+  programRoomContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+
+  pickerWrapper: {
+    flex: 1,
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    justifyContent: 'center',
+    height: 45,
+  },
+
+  roomInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    height: 45,
+  },
+
+  timeModalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', 
+  },
+
+  timeModalContent: {
+    width: '80%',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    padding: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    elevation: 5,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+
+  timeScroll: {
+    height: 150,
+    width: 60,
+    marginHorizontal: 5,
+  },
+
+  timeText: {
+    fontSize: 18,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    textAlign: 'center',
+  },
+
+  colon: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginHorizontal: 5,
+    textAlign: 'center',
+  },
+
+  okButton: {
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginTop: 20,
+    alignItems: 'center',
+  },
+
+  okButtonText: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+
+  reasonInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginVertical: 10,
+    fontSize: 14,
+    backgroundColor: '#f9f9f9',
+    textAlignVertical: 'top', 
+  },  
 });
