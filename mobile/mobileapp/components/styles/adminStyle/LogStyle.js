@@ -5,115 +5,77 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#f8f8f8',
     paddingHorizontal: 10,
-    paddingBottom: 20, // Ensure space for the help button at the bottom
+    paddingBottom: 20,
   },
 
-  header: {
+  filterContainer: {
+    flexDirection: 'row',  // Keeps the buttons side by side
+    justifyContent: 'space-between', // Ensures space between buttons
+    marginVertical: 5,
+    marginBottom: 10, 
+    marginTop: 80,
+  },
+
+  table: {
+    width: '100%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    marginTop: 10,
+  },
+
+  tableRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#00796B',
-    paddingVertical: 10,
-    paddingHorizontal: 15,
-    elevation: 5,
-  },
-
-  logo: {
-    width: 40,
-    height: 40,
-    marginRight: 10,
-  },
-
-  headerText: {
-    flex: 1,
-  },
-
-  title: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-
-  subtitle: {
-    fontSize: 12,
-    color: 'white',
-  },
-
-  profileButton: {
-    padding: 5,
-  },
-
-  content: {
-    marginTop:60,
-    flex: 1,
-  },
-
-  pageTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginVertical: 10,
-    textAlign: 'center',
+    paddingVertical: 8,
+    paddingHorizontal: 5,
   },
 
   tableHeader: {
+    flex: 1,
+    fontSize: 13,
+    fontWeight: 'bold',
+    textAlign: 'center',
     backgroundColor: '#00796B',
-    paddingVertical: 10,
+    color: 'white',
+    paddingVertical: 8,
+    borderRightWidth: 1,
+    borderColor: '#005a4f',
   },
 
-  tableHeaderText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-    paddingHorizontal: 10,
-    width: 'auto'
-  },
-  
   tableCell: {
+    flex: 1,
     fontSize: 12,
-    color: '#333',
     textAlign: 'center',
     paddingVertical: 8,
-    paddingHorizontal: 10,
-    width: 'auto',
-    maxWidth: 100,
-  },    
-
-  tagCell: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#00796B',
-    textAlign: 'center',
+    paddingHorizontal: 6,
+    borderBottomWidth: 1,
+    borderColor: '#e0e0e0',
   },
 
   tableRowEven: {
-    backgroundColor: 'white',
+    backgroundColor: '#ffffff',
   },
 
   tableRowOdd: {
-    backgroundColor: '#f2f2f2',
+    backgroundColor: '#f9f9f9',
   },
 
-  statusApproved: {
-    color: 'green',
-    fontWeight: 'bold',
-  },
-
-  statusRejected: {
-    color: 'red',
-    fontWeight: 'bold',
-  },
-
-  viewButton: {
+  button: {
     backgroundColor: '#00796B',
-    paddingVertical: 5,
-    paddingHorizontal: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 5,
+    marginVertical: 5,
   },
 
-  viewButtonText: {
-    fontSize: 12,
+  buttonText: {
+    fontSize: 14,
     fontWeight: 'bold',
     color: 'white',
+    textAlign: 'center',
   },
 
   modalOverlay: {
@@ -140,6 +102,7 @@ export default StyleSheet.create({
   modalText: {
     fontSize: 14,
     marginBottom: 5,
+    textAlign: 'center',
   },
 
   closeButton: {
@@ -157,8 +120,8 @@ export default StyleSheet.create({
 
   helpButton: {
     alignSelf: 'flex-end',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
+    paddingVertical: 8,
+    paddingHorizontal: 16,
     borderRadius: 5,
     position: 'absolute',
     bottom: 20,
@@ -166,16 +129,8 @@ export default StyleSheet.create({
 
   helpText: {
     textDecorationLine: 'underline',
-    color: 'blue', 
-    fontSize: 16, 
-  },  
-
-  viewLinkText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#00796B',
-    textDecorationLine: 'underline',
-    textAlign: 'center',
+    color: 'blue',
+    fontSize: 16,
   },
-  
+
 });
