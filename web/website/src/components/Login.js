@@ -456,7 +456,9 @@ const Login = () => {
         localStorage.setItem("userEmail", userData.email);
         localStorage.setItem("userName", userName);
         localStorage.setItem("userDepartment", userData.department || "Unknown");
-        localStorage.setItem("userPosition", userData.role || "User");
+        // localStorage.setItem("userPosition", userData.role || "User");
+        localStorage.setItem("userPosition", role);
+        console.log(localStorage.getItem("userPosition"));
   
         switch (normalizedRole) {
           case "super-admin":
