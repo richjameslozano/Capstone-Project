@@ -25,7 +25,7 @@ import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
 import DeleteModal from "../customs/DeleteModal";
-import NotificationModal from "../customs/NotificationModal";
+import NotificationModal from "../customs/NotifiicationModal"; 
 
 const { Content } = Layout;
 const { Option } = Select;

@@ -7,13 +7,16 @@ import {
   onAuthStateChanged,
   updatePassword,
   signOut,
+  getAuth,
 } from "firebase/auth";
 import { auth, db } from "../backend/firebase/FirebaseConfig";
 import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, serverTimestamp } from "firebase/firestore";
+import { notification, Modal } from "antd";
 import bcrypt from "bcryptjs";
 import "./styles/Login.css";
 
 import trybg2 from '../try-bg2.svg'
+import NotificationModal from "./customs/NotifcationModal";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -28,6 +31,8 @@ const Login = () => {
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [newPassword, setNewPassword] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false); 
+  const [modalMessage, setModalMessage] = useState("");
   const [signUpMode, setSignUpMode] = useState(false);
   const [signUpData, setSignUpData] = useState({
     name: "",
@@ -295,7 +300,7 @@ const Login = () => {
           localStorage.setItem("userEmail", userData.email);
           localStorage.setItem("userName", userName);
           localStorage.setItem("userDepartment", userData.department || "Admin");
-          localStorage.setItem("userPosition", "Super Admin");
+          localStorage.setItem("userPosition", "super-admin");
   
           navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
   
@@ -334,7 +339,9 @@ const Login = () => {
           localStorage.setItem("userEmail", userData.email);
           localStorage.setItem("userName", userName);
           localStorage.setItem("userDepartment", userData.department || "");
-          localStorage.setItem("userPosition", userData.role || "User");
+          // localStorage.setItem("userPosition", userData.role || "User");
+          localStorage.setItem("userPosition", role);
+          console.log(localStorage.getItem("userPosition"));
 
           await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
             action: "User Logged In (Website)",
@@ -385,64 +392,6 @@ const Login = () => {
       setIsLoading(false);
     }
   };
-  
-  // const handleRegisterPassword = async () => {
-  //   if (formData.password !== confirmPassword) {
-  //     setError("Passwords do not match.");
-  //     return;
-  //   }
-  
-  //   try {
-  //     const { email, password } = formData;
-  //     const usersRef = collection(db, "accounts");
-  //     const q = query(usersRef, where("email", "==", email.trim().toLowerCase()));
-  //     const querySnapshot = await getDocs(q);
-  
-  //     if (!querySnapshot.empty) {
-  //       const userDoc = querySnapshot.docs[0];
-  //       const userData = userDoc.data(); 
-  //       const role = (userData.role || "user").toLowerCase(); 
-  //       const normalizedRole = role === "admin1" || role === "admin2" ? "admin" : role; 
-  
-  //       console.log("Updating password for user:", userDoc.id);
-  //       await updateDoc(userDoc.ref, { password });
-  
-  //       const userName = userData.name || "User";
-  //       localStorage.setItem("userEmail", userData.email);
-  //       localStorage.setItem("userName", userName);
-  //       localStorage.setItem("userDepartment", userData.department || "Unknown");
-  //       localStorage.setItem("userPosition", userData.role || "User");
-  
-  //       switch (normalizedRole) {
-  //         case "super-admin":
-  //           navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
-  //           break;
-
-  //         case "admin":
-  //           navigate("/main/dashboard", { state: { loginSuccess: true, role: "admin" } });
-  //           break;
-
-  //         case "user":
-  //           navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
-  //           break;
-            
-  //         default:
-  //           setError("Unknown role. Please contact admin.");
-  //           return;
-  //       }
-  
-  //       setIsNewUser(false);
-  //       console.log("Password updated successfully and navigated to:", normalizedRole);
-        
-  //     } else {
-  //       setError("User record not found in Firestore.");
-  //     }
-  
-  //   } catch (error) {
-  //     console.error("Error updating password:", error.message);
-  //     setError("Failed to set password. Try again.");
-  //   }
-  // };  
 
   const handleRegisterPassword = async () => {
     if (formData.password !== confirmPassword) {
@@ -514,46 +463,142 @@ const Login = () => {
     }
   };
 
+  // const handleSignUp = async () => {
+  //   const { name, email, password, confirmPassword, jobTitle, department } = signUpData;
+  
+  //   // Step 1: Ensure the email domain is valid
+  //   const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+  //   const emailDomain = email.split('@')[1];
+  
+  //   if (!validDomains.includes(emailDomain)) {
+  //     setError("Invalid email domain. Only @nu-moa.edu.ph and @students.nu-moa.edu.ph are allowed.");
+  //     return;
+  //   }
+  
+  //   // Step 2: Ensure passwords match
+  //   if (password !== confirmPassword) {
+  //     setError("Passwords do not match.");
+  //     return;
+  //   }
+  
+  //   try {
+  //     // Step 3: Create the Firebase user with email and password
+  //     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  //     const firebaseUser = userCredential.user;
+  
+  //     // Step 4: Determine the role based on the job title
+  //     let role = "user";  // Default role is 'user'
+  
+  //     if (jobTitle.toLowerCase() === "dean") {
+  //       role = "admin1";  // Dean is Admin1
+
+  //     } else if (jobTitle.toLowerCase() === "laboratory custodian") {
+  //       role = "admin2";  // Laboratory Custodian is Admin2
+        
+  //     } else if (jobTitle.toLowerCase() === "faculty") {
+  //       role = "user";  // Faculty is User
+  //     }
+  
+  //     // Step 5: Create a new document in the 'pendingaccounts' collection
+  //     const sanitizedData = {
+  //       name: name.trim().toLowerCase(),
+  //       email: email.trim().toLowerCase(),
+  //       jobTitle,
+  //       department,
+  //       role,  // Assign role based on job title
+  //       createdAt: serverTimestamp(),
+  //       status: "pending", // Mark as pending
+  //       uid: firebaseUser.uid,
+  //     };
+  
+  //     // Add user data to 'pendingaccounts' collection
+  //     await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+  
+  //     // Step 6: Don't allow login yet, navigate to a "Pending" page or show a message
+  //     navigate("/pending", { state: { message: "Your account is pending approval." } });
+  
+  //   } catch (error) {
+  //     console.error("Sign up error:", error.message);
+  //     if (error.code === "auth/email-already-in-use") {
+  //       setError("Email already in use.");
+  //     } else {
+  //       setError("Failed to create account. Try again.");
+  //     }
+  //   }
+  // };  
+
   const handleSignUp = async () => {
     const { name, email, password, confirmPassword, jobTitle, department } = signUpData;
+    const auth = getAuth();
   
+    // Step 1: Ensure the email domain is valid
+    const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+    const emailDomain = email.split('@')[1];
+  
+    if (!validDomains.includes(emailDomain)) {
+      setError("Invalid email domain. Only @nu-moa.edu.ph and @students.nu-moa.edu.ph are allowed.");
+      return;
+    }
+  
+    // Step 2: Ensure passwords match
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
   
     try {
+      // Step 3: Create the Firebase user with email and password
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
   
-      await addDoc(collection(db, "accounts"), {
-        name,
-        email,
+      // Step 4: Determine the role based on the job title
+      let role = "user";  // Default role is 'user'
+      if (jobTitle.toLowerCase() === "dean") {
+        role = "admin1";  // Dean is Admin1
+      } else if (jobTitle.toLowerCase() === "laboratory custodian") {
+        role = "admin2";  // Laboratory Custodian is Admin2
+      } else if (jobTitle.toLowerCase() === "faculty") {
+        role = "user";  // Faculty is User
+      }
+  
+      // Step 5: Create a new document in the 'pendingaccounts' collection
+      const sanitizedData = {
+        name: name.trim().toLowerCase(),
+        email: email.trim().toLowerCase(),
         jobTitle,
         department,
-        uid: firebaseUser.uid,
-        role: "user",
+        role,  // Assign role based on job title
         createdAt: serverTimestamp(),
+        status: "pending", // Mark as pending
+        uid: firebaseUser.uid,
+      };
+  
+      // Add user data to 'pendingaccounts' collection
+      await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+  
+      // Step 6: Set the modal message and show the modal
+      setModalMessage("Successfully Registered! Please check your email for further instructions. Your account is pending approval from the ITSO.");
+      setIsModalVisible(true); // Open the modal
+  
+      // Clear input fields after successful registration
+      setSignUpData({
+        name: "",
+        email: "",
+        password: "",
+        confirmPassword: "",
+        jobTitle: "",
+        department: "",
       });
-  
-      localStorage.setItem("userId", firebaseUser.uid);
-      localStorage.setItem("userEmail", email);
-      localStorage.setItem("userName", name);
-      localStorage.setItem("userDepartment", department);
-      localStorage.setItem("userPosition", jobTitle);
-  
-      navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
   
     } catch (error) {
       console.error("Sign up error:", error.message);
       if (error.code === "auth/email-already-in-use") {
         setError("Email already in use.");
-
       } else {
         setError("Failed to create account. Try again.");
       }
     }
-  };  
+  };
   
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail) {
@@ -589,116 +634,6 @@ const Login = () => {
       }, 50);
     }
   };  
-
-  // return (
-  //   <div className="login-container">
-  //     <div className="login-box">
-  //       <h2 className="login-title">{isNewUser ? "Set Your Password" : "Login"}</h2>
-  //       {error && <p className="error-message">{error}</p>}
-
-  //       <form
-  //         onSubmit={(e) => {
-  //           e.preventDefault();
-  //           isNewUser ? handleRegisterPassword() : checkUserAndLogin();
-  //         }}
-  //       >
-  //         <div className="form-group">
-  //           <label>Email</label>
-  //           <input
-  //             type="email"
-  //             name="email"
-  //             value={formData.email}
-  //             onChange={handleChange}
-  //             required
-  //             placeholder="Enter your email"
-  //           />
-  //         </div>
-
-  //         <div className="form-group password-group">
-  //           <label>Password</label>
-  //           <div className="password-wrapper">
-  //             <input
-  //               type={showPassword ? "text" : "password"}
-  //               name="password"
-  //               value={formData.password}
-  //               onChange={handleChange}
-  //               required
-  //               placeholder="Enter your password"
-  //             />
-  //             <span className="toggle-password" onClick={() => setShowPassword(!showPassword)}>
-  //               {showPassword ? "🔒" : "👁️"}
-  //             </span>
-  //           </div>
-  //         </div>
-
-  //         {isNewUser && (
-  //           <div className="form-group password-group">
-  //             <label>Confirm Password</label>
-  //             <div className="password-wrapper">
-  //               <input
-  //                 type={showConfirmPassword ? "text" : "password"}
-  //                 name="confirmPassword"
-  //                 value={confirmPassword}
-  //                 onChange={(e) => setConfirmPassword(e.target.value)}
-  //                 required
-  //                 placeholder="Confirm your password"
-  //               />
-  //               <span
-  //                 className="toggle-password"
-  //                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-  //               >
-  //                 {showConfirmPassword ? "🔒" : "👁️"}
-  //               </span>
-  //             </div>
-  //           </div>
-  //         )}
-
-  //         <button type="submit" className="login-btn"  disabled={isLoading}>
-  //           {isLoading ? <div className="loader"></div> : isNewUser ? "Set Password" : "Login"}
-  //         </button>
-  //       </form>
-
-  //       {!isNewUser && (
-  //         <p className="forgot-password-link" onClick={() => setIsForgotPasswordModalVisible(true)}>
-  //           Forgot Password?
-  //         </p>
-  //       )}
-  //     </div>
-
-  //     {isForgotPasswordModalVisible && (
-  //       <div className="modal-overlay">
-  //         <div className="modal-content">
-  //           <h3>Forgot Password</h3>
-  //           <p>Enter your email to receive a reset link.</p>
-  //           <input
-  //             type="email"
-  //             value={forgotPasswordEmail}
-  //             onChange={(e) => setForgotPasswordEmail(e.target.value)}
-  //             placeholder="Enter your email"
-  //             required
-  //           />
-  //           {forgotPasswordError && (
-  //             <p className="error-message">{forgotPasswordError}</p>
-  //           )}
-  //           {forgotPasswordSuccess && (
-  //             <p className="success-message">{forgotPasswordSuccess}</p>
-  //           )}
-  //           <div className="modal-actions">
-  //             <button onClick={handleForgotPassword} className="modal-btn">
-  //               Send Reset Link
-  //             </button>
-  //             <button
-  //               onClick={() => setIsForgotPasswordModalVisible(false)}
-  //               className="modal-cancel-btn"
-  //             >
-  //               Cancel
-  //             </button>
-  //           </div>
-  //         </div>
-  //       </div>
-  //     )}
-  //   </div>
-  // );
 
   return (
     <div className="login-container" >
@@ -751,24 +686,34 @@ const Login = () => {
 
               <div className="form-group">
                 <label>Job Title</label>
-                <input
-                  type="text"
+                <select
                   name="jobTitle"
                   value={signUpData.jobTitle}
                   onChange={handleSignUpChange}
                   required
-                />
+                >
+                  <option value="">Select Job Title</option>
+                  <option value="Faculty">Faculty</option>
+                  <option value="Dean">Dean</option>
+                  <option value="Laboratory Custodian">Laboratory Custodian</option>
+                </select>
               </div>
 
               <div className="form-group">
                 <label>Department</label>
-                <input
-                  type="text"
+                <select
                   name="department"
                   value={signUpData.department}
                   onChange={handleSignUpChange}
                   required
-                />
+                >
+                  <option value="">Select Department</option>
+                  <option value="Medical Technology">Medical Technology</option>
+                  <option value="Nursing">Nursing</option>
+                  <option value="Dentistry">Dentistry</option>
+                  <option value="Pharmacy">Pharmacy</option>
+                  <option value="Optometry">Optometry</option>
+                </select>
               </div>
 
               <div className="form-group password-group">
@@ -950,6 +895,12 @@ const Login = () => {
           </div>
         </div>
       )}
+
+      <NotificationModal
+        isVisible={isModalVisible}
+        onClose={() => setIsModalVisible(false)}
+        message={modalMessage} 
+      />
     </div>
   );
 };
