@@ -4,16 +4,26 @@ import {
   Input,
   Table,
   Button,
-  Card,
   Typography,
   Modal,
   message,
   Spin,
 } from "antd";
 import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
-import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
-import { db } from "../../backend/firebase/FirebaseConfig"; // Adjust path if different
-import { getAuth } from "firebase/auth"; // Import Firebase Auth to get the current user
+import {
+  collection,
+  getDocs,
+  doc,
+  updateDoc,
+  getDoc,
+  deleteDoc,
+  setDoc,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "../../backend/firebase/FirebaseConfig";
+import { getAuth } from "firebase/auth";
+import NotificationModal from "../customs/NotifcationModal"; 
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -25,73 +35,146 @@ const RequestList = () => {
   const [loading, setLoading] = useState(true);
   const [viewDetailsModalVisible, setViewDetailsModalVisible] = useState(false);
   const [userName, setUserName] = useState("User");
+  const [notificationVisible, setNotificationVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
-  const storedName = localStorage.getItem("userName");
-
-  // Fetch the current user's name from Firebase Authentication
   const fetchUserName = async () => {
     const auth = getAuth();
     const user = auth.currentUser;
     if (user) {
       setUserName(user.displayName || "Unknown User");
-    } else {
-      setUserName("Unknown User");
     }
   };
 
   const fetchRequests = async () => {
+    setLoading(true);
     try {
       const userId = localStorage.getItem("userId");
-      if (!userId) {
-        throw new Error("User ID not found in localStorage.");
-      }
-  
+      if (!userId) throw new Error("User ID not found in localStorage.");
+
       const querySnapshot = await getDocs(collection(db, `accounts/${userId}/userRequests`));
       const fetched = [];
-  
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
+
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
+        const enrichedItems = await Promise.all(
+          (data.filteredMergedData || []).map(async (item) => {
+            const inventoryId = item.selectedItemId || item.selectedItem?.value;
+            let itemId = "N/A";
+
+            if (inventoryId) {
+              try {
+                const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
+                if (invDoc.exists()) {
+                  itemId = invDoc.data().itemId || "N/A";
+                }
+
+              } catch (err) {
+                console.error(`Error fetching inventory item ${inventoryId}:`, err);
+              }
+            }
+
+            return {
+              ...item,
+              itemIdFromInventory: itemId,
+            };
+          })
+        );
+
         fetched.push({
-          id: doc.id,
+          id: docSnap.id,
           dateRequested: data.timestamp
             ? new Date(data.timestamp.seconds * 1000).toLocaleDateString()
             : "N/A",
           dateRequired: data.dateRequired || "N/A",
-          requester: data.name || "Unknown",
+          requester: data.userName || "Unknown",
           room: data.room || "N/A",
           timeNeeded: `${data.timeFrom || "N/A"} - ${data.timeTo || "N/A"}`,
           courseCode: data.program || "N/A",
           courseDescription: data.reason || "N/A",
-          items: data.requestList || [],
-          status: "PENDING", // Assuming static for now
+          items: enrichedItems,
+          status: "PENDING",
           message: data.reason || "",
         });
+      }
+
+      const sortedByDate = fetched.sort((a, b) => {
+        const dateA = new Date(a.dateRequested);
+        const dateB = new Date(b.dateRequested);
+        return dateB - dateA; 
       });
-  
-      setRequests(fetched);
+      
+      setRequests(sortedByDate);      
+
     } catch (err) {
       console.error("Error fetching requests:", err);
-      message.error("Failed to fetch user requests.");
+      setNotificationMessage("Failed to fetch user requests.");
+      setNotificationVisible(true);
+      
     } finally {
       setLoading(false);
     }
-  };  
+  };
 
   useEffect(() => {
     fetchRequests();
-    fetchUserName(); // Fetch user name on component mount
+    fetchUserName();
   }, []);
 
   const handleCancelRequest = async () => {
     try {
-      const requestRef = doc(db, "accounts/7Gy44baolf72J0T8yq3u/userRequests", selectedRequest.id);
-      await updateDoc(requestRef, { status: "CANCELLED" }); // Update request status to CANCELLED
-      message.success("Request successfully canceled!");
-      setSelectedRequest(null);
+      const userId = localStorage.getItem("userId");
+  
+      if (!userId || !selectedRequest?.id) {
+        throw new Error("Missing user ID or selected request ID.");
+      }
+  
+      const userRequestRef = doc(db, `accounts/${userId}/userRequests`, selectedRequest.id);
+      const activityLogRef = doc(db, `accounts/${userId}/historylog`, selectedRequest.id);
+  
+      // Fetch request data before deleting
+      const requestSnap = await getDoc(userRequestRef);
+      if (!requestSnap.exists()) throw new Error("Request not found.");
+  
+      const requestData = requestSnap.data();
+  
+      // Write to activity log
+      await setDoc(activityLogRef, {
+        ...requestData,
+        status: "CANCELLED",
+        cancelledAt: new Date(),
+      });
+  
+      // Delete from userRequests subcollection
+      await deleteDoc(userRequestRef);
+  
+      // Find and delete from root userrequests collection
+      const rootQuery = query(
+        collection(db, "userrequests"),
+        where("accountId", "==", userId),
+        where("timestamp", "==", requestData.timestamp) // Assumes timestamp is unique for each request
+      );
+  
+      const rootSnap = await getDocs(rootQuery);
+      const batchDeletes = [];
+  
+      rootSnap.forEach((docSnap) => {
+        batchDeletes.push(deleteDoc(doc(db, "userrequests", docSnap.id)));
+      });
+  
+      await Promise.all(batchDeletes);
       setIsCancelVisible(false);
+
+      setNotificationMessage("Request successfully canceled and logged.");
+      setNotificationVisible(true);
+      setSelectedRequest(null);
+      setViewDetailsModalVisible(false);
+      fetchRequests();
+
     } catch (err) {
       console.error("Error canceling request:", err);
-      message.error("Failed to cancel the request.");
+      setNotificationMessage("Failed to cancel the request.");
+      setNotificationVisible(true);
     }
   };
 
@@ -134,7 +217,7 @@ const RequestList = () => {
     {
       title: "Action",
       key: "action",
-      render: (text, record) => (
+      render: (_, record) => (
         <Button onClick={() => handleViewDetails(record)} type="primary">
           View Details
         </Button>
@@ -146,7 +229,7 @@ const RequestList = () => {
     {
       title: "Item #",
       key: "index",
-      render: (text, record, index) => <span>{index + 1}</span>,
+      render: (_, __, index) => <span>{index + 1}</span>,
     },
     {
       title: "Item Name",
@@ -155,8 +238,8 @@ const RequestList = () => {
     },
     {
       title: "Item ID",
-      dataIndex: "itemId",
-      key: "itemId",
+      dataIndex: "itemIdFromInventory",
+      key: "itemIdFromInventory",
     },
     {
       title: "Qty",
@@ -216,6 +299,7 @@ const RequestList = () => {
               <Table
                 columns={columns}
                 dataSource={requests}
+                pagination={{ pageSize: 10 }}
                 rowKey="id"
                 className="pending-table"
               />
@@ -224,7 +308,7 @@ const RequestList = () => {
 
           <Modal
             title={`Request Details - ${selectedRequest?.id}`}
-            visible={viewDetailsModalVisible}
+            open={viewDetailsModalVisible}
             onCancel={handleModalClose}
             footer={[
               <Button key="close" onClick={handleModalClose}>
@@ -233,7 +317,7 @@ const RequestList = () => {
               <Button
                 key="cancel"
                 danger
-                onClick={handleCancelRequest}
+                onClick={() => setIsCancelVisible(true)}
                 icon={<CloseOutlined />}
               >
                 Cancel Request
@@ -242,7 +326,7 @@ const RequestList = () => {
           >
             {selectedRequest && (
               <>
-                <p><strong>Requester:</strong> {storedName}</p> 
+                <p><strong>Requester:</strong> {selectedRequest.requester}</p>
                 <p><strong>Requisition Date:</strong> {selectedRequest.dateRequested}</p>
                 <p><strong>Date Required:</strong> {selectedRequest.dateRequired}</p>
                 <p><strong>Time Needed:</strong> {selectedRequest.timeNeeded}</p>
@@ -253,7 +337,7 @@ const RequestList = () => {
                 <Table
                   columns={itemColumns}
                   dataSource={selectedRequest.items}
-                  rowKey={(record, index) => index}
+                  rowKey={(_, index) => index}
                   size="small"
                   pagination={false}
                 />
@@ -274,6 +358,13 @@ const RequestList = () => {
           </Modal>
         </Content>
       </Layout>
+
+      <NotificationModal
+        isVisible={notificationVisible}
+        onClose={() => setNotificationVisible(false)}
+        message={notificationMessage}
+      />
+
     </Layout>
   );
 };

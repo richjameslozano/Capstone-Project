@@ -1,65 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Layout,
   Table,
   Input,
   Tag,
-  Select,
-  Card,
   Typography,
-  Button,
+  Select,
+  Space,
+  Modal,
+  Descriptions,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/SearchItems.css";
 
 const { Content } = Layout;
 const { Title } = Typography;
 const { Option } = Select;
-
-const itemData = [
-  {
-    key: "1",
-    description: "Sodium Chloride",
-    quantity: 50,
-    status: "Available",
-    category: "Chemical",
-    room: "Chemistry Lab 1",
-  },
-  {
-    key: "2",
-    description: "Test Tubes",
-    quantity: 0,
-    status: "Out of Stock",
-    category: "Reagent",
-    room: "Biology Lab 2",
-  },
-  {
-    key: "3",
-    description: "Beaker Set",
-    quantity: 20,
-    status: "In Use",
-    category: "Equipment",
-    room: "Physics Lab 3",
-  },
-  {
-    key: "4",
-    description: "Gloves",
-    quantity: 100,
-    status: "Available",
-    category: "Materials",
-    room: "Nursing Lab 1",
-  },
-  {
-    key: "5",
-    description: "Ethanol",
-    quantity: 0,
-    status: "Out of Stock",
-    category: "Chemical",
-    room: "Chemistry Lab 2",
-  },
-];
 
 const columns = [
   {
@@ -79,27 +37,18 @@ const columns = [
     title: "Status",
     dataIndex: "status",
     key: "status",
-    filters: [
-      { text: "Available", value: "Available" },
-      { text: "Out of Stock", value: "Out of Stock" },
-      { text: "In Use", value: "In Use" },
-    ],
-    onFilter: (value, record) => record.status === value,
     render: (status) => {
       let color;
       switch (status) {
         case "Available":
           color = "green";
           break;
-
         case "Out of Stock":
           color = "red";
           break;
-
         case "In Use":
           color = "orange";
           break;
-          
         default:
           color = "blue";
       }
@@ -110,13 +59,6 @@ const columns = [
     title: "Category",
     dataIndex: "category",
     key: "category",
-    filters: [
-      { text: "Chemical", value: "Chemical" },
-      { text: "Reagent", value: "Reagent" },
-      { text: "Materials", value: "Materials" },
-      { text: "Equipment", value: "Equipment" },
-    ],
-    onFilter: (value, record) => record.category === value,
     render: (category) => (
       <Tag color={category === "Chemical" ? "blue" : "geekblue"}>
         {category.toUpperCase()}
@@ -132,40 +74,141 @@ const columns = [
 ];
 
 const SearchItems = () => {
-  const [filteredData, setFilteredData] = useState(itemData);
+  const [inventoryData, setInventoryData] = useState([]);
+  const [filteredData, setFilteredData] = useState([]);
   const [searchText, setSearchText] = useState("");
-  const [pageTitle, setPageTitle] = useState("Search Items");
+  const [statusFilter, setStatusFilter] = useState(null);
+  const [categoryFilter, setCategoryFilter] = useState(null);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
-  const handleSearch = (value) => {
-    const filteredItems = itemData.filter((item) =>
-      item.description.toLowerCase().includes(value.toLowerCase())
-    );
-    setFilteredData(filteredItems);
+  // useEffect(() => {
+  //   const fetchInventory = async () => {
+  //     try {
+  //       const snapshot = await getDocs(collection(db, "inventory"));
+  //       const items = snapshot.docs.map((doc) => {
+  //         const data = doc.data();
+  //         return {
+  //           key: doc.id,
+  //           description: data.itemName || "Unnamed Item",
+  //           quantity: data.quantity || 0,
+  //           status: data.status || "Unknown",
+  //           category: data.category || "Uncategorized",
+  //           room: data.labRoom || "No Room Info",
+  //           ...data, // Include all data for modal use
+  //         };
+  //       });
+  //       setInventoryData(items);
+  //       setFilteredData(items);
+        
+  //     } catch (err) {
+  //       console.error("Error fetching inventory data:", err);
+  //     }
+  //   };
+
+  //   fetchInventory();
+  // }, []);
+
+  useEffect(() => {
+    const fetchInventory = () => {
+      try {
+        // Set up real-time listener using onSnapshot
+        const inventoryRef = collection(db, "inventory");
+
+        const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
+          const items = snapshot.docs.map((doc) => {
+            const data = doc.data();
+            return {
+              key: doc.id,
+              description: data.itemName || "Unnamed Item",
+              quantity: data.quantity || 0,
+              status: data.status || "Unknown",
+              category: data.category || "Uncategorized",
+              room: data.labRoom || "No Room Info",
+              ...data, // Include all data for modal use
+            };
+          });
+
+          setInventoryData(items);
+          setFilteredData(items); // You can implement additional filtering if needed
+        });
+
+        // Cleanup listener when component unmounts
+        return () => unsubscribe();
+        
+      } catch (err) {
+        console.error("Error fetching inventory data:", err);
+      }
+    };
+
+    fetchInventory();
+  }, []); 
+
+  useEffect(() => {
+    let data = [...inventoryData];
+
+    if (searchText) {
+      data = data.filter((item) =>
+        item.description.toLowerCase().includes(searchText.toLowerCase())
+      );
+    }
+
+    if (statusFilter) {
+      data = data.filter((item) => item.status === statusFilter);
+    }
+
+    if (categoryFilter) {
+      data = data.filter((item) => item.category === categoryFilter);
+    }
+
+    setFilteredData(data);
+  }, [searchText, statusFilter, categoryFilter, inventoryData]);
+
+  const handleRowClick = (record) => {
+    setSelectedItem(record);
+    setIsModalVisible(true);
   };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      
       <Layout className="site-layout">
         <Content className="search-content">
-          <div className="pending-header">
-            <Title level={3}>
-              <SearchOutlined /> Search Items
-            </Title>
-          </div>
-
           <div className="search-container">
             <Input
               placeholder="Search by item description..."
               value={searchText}
-              onChange={(e) => {
-                setSearchText(e.target.value);
-                handleSearch(e.target.value);
-              }}
+              onChange={(e) => setSearchText(e.target.value)}
               allowClear
               prefix={<SearchOutlined />}
               className="search-input"
             />
+
+            <Space style={{ marginTop: 10 }} wrap>
+              <Select
+                placeholder="Filter by Status"
+                allowClear
+                style={{ width: 200 }}
+                onChange={(value) => setStatusFilter(value)}
+                value={statusFilter}
+              >
+                <Option value="Available">Available</Option>
+                <Option value="Out of Stock">Out of Stock</Option>
+                <Option value="In Use">In Use</Option>
+              </Select>
+
+              <Select
+                placeholder="Filter by Category"
+                allowClear
+                style={{ width: 200 }}
+                onChange={(value) => setCategoryFilter(value)}
+                value={categoryFilter}
+              >
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+              </Select>
+            </Space>
           </div>
 
           <div className="pending-main">
@@ -173,10 +216,65 @@ const SearchItems = () => {
               columns={columns}
               dataSource={filteredData}
               rowKey="key"
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 10 }}
               className="search-table"
+              onRow={(record) => ({
+                onClick: () => handleRowClick(record),
+              })}
             />
           </div>
+
+          <Modal
+            title="Item Details"
+            visible={isModalVisible}
+            onCancel={() => setIsModalVisible(false)}
+            footer={null}
+          >
+            {selectedItem && (
+              <Descriptions bordered column={1}>
+                <Descriptions.Item label="Item Name">
+                  {selectedItem.itemName}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Quantity">
+                  {selectedItem.quantity}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Status">
+                  {selectedItem.status}
+                </Descriptions.Item>
+                
+                <Descriptions.Item label="Condition">
+                  {selectedItem.condition || "N/A"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Item Type">
+                  {selectedItem.type}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Usage Type">
+                  {selectedItem.usageType}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Category">
+                  {selectedItem.category}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Department">
+                  {selectedItem.department}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Laboratory Room">
+                  {selectedItem.labRoom}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Date Acquired">
+                  {selectedItem.entryDate || "N/A"}
+                </Descriptions.Item>
+
+              </Descriptions>
+            )}
+          </Modal>
         </Content>
       </Layout>
     </Layout>
