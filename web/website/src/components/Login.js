@@ -16,7 +16,7 @@ import bcrypt from "bcryptjs";
 import "./styles/Login.css";
 
 import trybg2 from '../try-bg2.svg'
-import NotificationModal from "./customs/NotifcationModal";
+import NotificationModal from "./customs/NotificationModal";
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
