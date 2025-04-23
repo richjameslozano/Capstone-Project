@@ -13,6 +13,8 @@ import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, s
 import bcrypt from "bcryptjs";
 import "./styles/Login.css";
 
+import trybg2 from '../try-bg2.svg'
+
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -37,6 +39,9 @@ const Login = () => {
   });
   const navigate = useNavigate();
 
+
+  const [animateInputs, setAnimateInputs] = useState(false);
+
   useEffect(() => {
     const handleBackButton = (event) => {
       event.preventDefault();
@@ -60,6 +65,21 @@ const Login = () => {
     const { name, value } = e.target;
     setSignUpData({ ...signUpData, [name]: value });
   };  
+
+  const signUpAnimate = (e) =>{
+    if(signUpMode === true){
+      setSignUpMode(false)
+
+      setAnimateInputs(true);
+      setTimeout(() => setAnimateInputs(false), 1000);
+    }
+    else if(signUpMode ===false){
+      setSignUpMode(true)
+
+      setAnimateInputs(true);
+      setTimeout(() => setAnimateInputs(false), 1000);
+    }
+  }
 
   // const checkUserAndLogin = async () => {
   //   setIsLoading(true);
@@ -681,14 +701,21 @@ const Login = () => {
   // );
 
   return (
-    <div className="login-container">
+    <div className="login-container" >
       <div className="login-box">
-        <h2 className="login-title">
+        
+        <div className="container2">
+        <div className="image-div">
+            <img src={trybg2} alt="This is the image"></img>
+          </div>
+        
+
+        <div className="form-div">
+        <h2 className= {signUpMode ?  "create-account-title": "login-title" }>
           {signUpMode ? "Create an Account" : isNewUser ? "Set Your Password" : "Login"}
         </h2>
-        {error && <p className="error-message">{error}</p>}
-
         <form
+          className={signUpMode ? "form-wrapper slide-in": "form-wrapper slide-in2"}
           onSubmit={(e) => {
             e.preventDefault();
             signUpMode
@@ -813,6 +840,8 @@ const Login = () => {
                   >
                     {showPassword ? "🔒" : "👁️"}
                   </span>
+
+                  {error && <p className="error-message" >{error}</p>}
                 </div>
               </div>
 
@@ -842,7 +871,9 @@ const Login = () => {
             </>
           )}
 
-          <button type="submit" className="login-btn" disabled={isLoading}>
+          <div></div>
+
+          <button type="submit" className= {signUpMode ? "signup-btn" : "login-btn"} disabled={isLoading}>
             {isLoading ? (
               <div className="loader"></div>
             ) : signUpMode ? (
@@ -855,28 +886,36 @@ const Login = () => {
           </button>
         </form>
 
+        <div className= { signUpMode? "bottom-label-div2":"bottom-label-div"}>
+
         {!signUpMode && !isNewUser && (
           <p
             className="forgot-password-link"
+            style={{marginTop: '20px', cursor: 'pointer'}}
             onClick={() => setIsForgotPasswordModalVisible(true)}
           >
             Forgot Password?
           </p>
         )}
 
-        <p className="switch-mode">
+        <p className="switch-mode" >
           {signUpMode ? (
             <>
               Already have an account?{" "}
-              <span onClick={() => setSignUpMode(false)}>Login here</span>
+              <span onClick={() => signUpAnimate()}>Login here</span>
             </>
           ) : (
             <>
               Don’t have an account?{" "}
-              <span onClick={() => setSignUpMode(true)}>Sign up here</span>
+              <span onClick={() => signUpAnimate()}>Sign up here</span>
             </>
           )}
         </p>
+        </div>
+
+
+        </div>
+        </div>
       </div>
 
       {isForgotPasswordModalVisible && (
