@@ -11,7 +11,9 @@ import {
   Space,
   DatePicker,
   Modal,
+  InputNumber,
 } from "antd";
+import { EditOutlined, DeleteOutlined, EyeOutlined } from '@ant-design/icons'; 
 import moment from "moment";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
@@ -23,7 +25,7 @@ import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
 import DeleteModal from "../customs/DeleteModal";
-import NotificationModal from "../customs/NotificationModal";
+import NotificationModal from "../customs/NotifcationModal";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -46,6 +48,17 @@ const Inventory = () => {
   const [itemToDelete, setItemToDelete] = useState(null);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [isRowModalVisible, setIsRowModalVisible] = useState(false);
+  const [qrModalVisible, setQrModalVisible] = useState(false);
+  const [selectedQrCode, setSelectedQrCode] = useState('');
+  const [isItemModalVisible, setIsItemModalVisible] = useState(false);
+  const [isQrModalVisible, setIsQrModalVisible] = useState(false);
+  const [isViewQRModalVisible, setIsViewQRModalVisible] = useState(false);
+  const [filterCategory, setFilterCategory] = useState(null);
+  const [filterItemType, setFilterItemType] = useState(null);
+  const [filterUsageType, setFilterUsageType] = useState(null);
+  const [searchText, setSearchText] = useState('');
   const db = getFirestore();
 
   useEffect(() => {
@@ -80,6 +93,21 @@ const Inventory = () => {
   
     fetchInventory();
   }, []);  
+
+  const filteredData = dataSource.filter((item) => {
+    const matchesSearch = searchText
+      ? Object.values(item).some((val) =>
+          String(val).toLowerCase().includes(searchText.toLowerCase())
+        )
+      : true;
+  
+    return (
+      (!filterCategory || item.category === filterCategory) &&
+      (!filterItemType || item.type === filterItemType) &&
+      (!filterUsageType || item.usageType === filterUsageType) &&
+      matchesSearch
+    );
+  });  
 
   const handleAdd = async (values) => {
     if (!itemName || !values.department) {
@@ -121,7 +149,7 @@ const Inventory = () => {
       timestamp,
       category: values.category,
       labRoom: values.labRoom,
-      quantity: values.quantity,
+      quantity: Number(values.quantity),
       department: values.department,
       type: values.type,
       status: "Available",
@@ -237,28 +265,15 @@ const Inventory = () => {
 
   const columns = [
     { title: "Item ID", dataIndex: "itemId", key: "itemId" },
-    { title: "Item Description", dataIndex: "item", key: "item" },
+    { title: "Item Name", dataIndex: "itemName", key: "itemName", 
+      sorter: (a, b) => a.itemName.localeCompare(b.itemName),
+      sortDirections: ['ascend', 'descend'],
+      defaultSortOrder: 'ascend', 
+    },
     { title: "Category", dataIndex: "category", key: "category" },
     { title: "Department", dataIndex: "department", key: "department" },
-    { title: "Lab/Stock Room", dataIndex: "labRoom", key: "labRoom" },
     { title: "Inventory Balance", dataIndex: "quantity", key: "quantity" },
     { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
-    {
-      title: "Date of Entry",
-      dataIndex: "entryDate",
-      key: "entryDate",
-      render: (date) => {
-        return date && date !== "N/A" ? date : "N/A";
-      },
-    },
-    {
-      title: "Expiry Date",
-      dataIndex: "expiryDate",
-      key: "expiryDate",
-      render: (date) => {
-        return date && date !== "N/A" ? date : "N/A";
-      },
-    },
     { title: "Status", dataIndex: "status", key: "status" },
     { title: "Condition", dataIndex: "condition", key: "condition" },
     {
@@ -266,30 +281,55 @@ const Inventory = () => {
       dataIndex: "qrCode",
       key: "qrCode",
       render: (qrCode, record) => (
-        <div ref={(el) => (qrRefs.current[record.id] = el)}>
-          <QRCodeCanvas value={qrCode} size={100} />
-        </div>
+        <Button
+          type="link"
+          onClick={() => {
+            setSelectedQrCode(qrCode);
+            setQrModalVisible(true);
+          }}
+        >
+          View QR
+        </Button>
       ),
-    },
+    },    
     {
       title: "Actions",
+      dataIndex: "actions",
       key: "actions",
       render: (_, record) => (
         <Space direction="vertical" size="small">
-          <Button type="primary" onClick={() => printQRCode(record)}>
-            Print PDF
-          </Button>
+          <Button
+            icon={<EyeOutlined />} 
+            onClick={(e) => {
+              e.stopPropagation(); 
+              setSelectedRow(record);
+              setIsRowModalVisible(true);
+            }}
+          />
 
-          <Button type="link" onClick={() => editItem(record)}>
-            Edit
-          </Button>
+          <Button
+            type="text"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={(e) => {
+              e.stopPropagation(); 
+              handleDelete(record);
+            }}
+          />
 
-          <Button type="text" danger onClick={() => handleDelete(record)}>
-            Delete
-          </Button>
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={(e) => {
+              e.stopPropagation(); 
+              setSelectedRow(record);
+              setIsEditModalVisible(true);
+              editItem(record)
+            }}
+          />
         </Space>
       ),
-    },
+    }    
   ];
 
   const disabledDate = (current) => {
@@ -307,49 +347,91 @@ const Inventory = () => {
       <Layout>
         <Content className="content inventory-container">
           <div className="inventory-header">
-            <Input.Search
-              placeholder="Search"
-              className="search-bar"
-              style={{ width: 300 }}
-            />
-            <Button type="default" className="filter-btn">
-              All
-            </Button>
+            <Space wrap>
+              <Input.Search
+                placeholder="Search"
+                className="search-bar"
+                style={{ width: 200 }}
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+
+              <Select
+                allowClear
+                placeholder="Filter by Category"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterCategory(value)}
+              >
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+              </Select>
+
+              <Select
+                allowClear
+                placeholder="Filter by Item Type"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterItemType(value)}
+              >
+                <Option value="Fixed">Fixed</Option>
+                <Option value="Consumable">Consumable</Option>
+              </Select>
+
+              <Select
+                allowClear
+                placeholder="Filter by Usage Type"
+                style={{ width: 180 }}
+                onChange={(value) => setFilterUsageType(value)}
+              >
+                <Option value="Laboratory Experiment">Laboratory Experiment</Option>
+                <Option value="Research">Research</Option>
+                <Option value="Community Extension">Community Extension</Option>
+                <Option value="Others">Others</Option>
+              </Select>
+
+              <Button
+                onClick={() => {
+                  setFilterCategory(null);
+                  setFilterItemType(null);
+                  setFilterUsageType(null);
+                  setSearchText('');
+                }}
+              >
+                Reset Filters
+              </Button>
+            </Space>
           </div>
 
-          <Table
-            dataSource={dataSource}
-            columns={columns}
-            rowKey={(record) => record.itemId}
-            bordered
-            className="inventory-table"
-          />
-
           <div className="form-container">
-            <h3>Add Item to Inventory with QR Code</h3>
-
-            <Form layout="vertical" form={form} onFinish={handleAdd}>
-              <Space style={{ marginBottom: "20px" }}>
-                    <Form.Item 
-                        name="Item Name" 
-                        label="Item Name" 
-                        rules={[
-                        {
-                          required: true,
-                          message: "Please enter Item Name!",
-                        },
-                      ]}>
-                        <Input
-                          placeholder="Enter Item Name"
-                          value={itemName}
-                          onChange={(e) => setItemName(e.target.value)}
-                          style={{ width: "200px" }}
-                        />
-                    </Form.Item>
-              </Space>
-
+            <Form layout="vertical" form={form} onFinish={handleAdd}>         
               <Row gutter={16}>
-                <Col span={12}>
+                <Col span={8}>
+                  <Form.Item
+                    name="Item Name"
+                    label="Item Name"
+                    rules={[{ required: true, message: "Please enter Item Name!" }]}
+                  >
+                    <Input
+                      placeholder="Enter Item Name"
+                      value={itemName}
+                      onChange={(e) => setItemName(e.target.value)}
+                      style={{ width: "100%" }}
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col span={8}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    rules={[{ required: true, message: "Please enter Quantity!" }]}
+                  >
+                      <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }}/>
+                  </Form.Item>
+                </Col>
+
+                <Col span={8}>
                   <Form.Item
                     name="usageType"
                     label="Usage Type"
@@ -366,49 +448,27 @@ const Inventory = () => {
               </Row>
 
               <Row gutter={16}>
-                  <Col span={12}>
-                    <Form.Item 
-                      name="type" 
-                      label="Item Type" 
-                      rules={[
-                        {
-                        required: true,
-                        message: "Please select Item Type!",
-                        },
-                      ]}>
-                      <Select onChange={value => setItemType(value)} placeholder="Select Item Type">
-                        <Option value="Fixed">Fixed</Option>
-                        <Option value="Consumable">Consumable</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
+                <Col span={8}>
+                  <Form.Item
+                    name="type"
+                    label="Item Type"
+                    rules={[{ required: true, message: "Please select Item Type!" }]}
+                  >
+                    <Select
+                      onChange={(value) => setItemType(value)}
+                      placeholder="Select Item Type"
+                    >
+                      <Option value="Fixed">Fixed</Option>
+                      <Option value="Consumable">Consumable</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
 
-                  <Col span={12}>
-                    <Form.Item 
-                      name="quantity" 
-                      label="Quantity" 
-                      rules={[
-                      {
-                        required: true,
-                        message: "Please enter Quantity!",
-                      },
-                    ]}>
-                      <Input placeholder="Enter quantity" />
-                    </Form.Item>
-                  </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
                     name="entryDate"
                     label="Date of Entry"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please select a date of entry!",
-                      },
-                    ]}
+                    rules={[{ required: true, message: "Please select a date of entry!" }]}
                   >
                     <DatePicker
                       format="YYYY-MM-DD"
@@ -419,16 +479,11 @@ const Inventory = () => {
                   </Form.Item>
                 </Col>
 
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
                     name="expiryDate"
                     label="Date of Expiry"
-                    rules={[
-                      {
-                        required: false,
-                        message: "Please select a date of expiry!",
-                      },
-                    ]}
+                    rules={[{ required: false, message: "Please select a date of expiry!" }]}
                   >
                     <DatePicker
                       format="YYYY-MM-DD"
@@ -442,13 +497,11 @@ const Inventory = () => {
               </Row>
 
               <Row gutter={16}>
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
                     name="category"
                     label="Category"
-                    rules={[
-                      { required: true, message: "Please select a category!" },
-                    ]}
+                    rules={[{ required: true, message: "Please select a category!" }]}
                   >
                     <Select placeholder="Select Category">
                       <Option value="Chemical">Chemical</Option>
@@ -459,31 +512,76 @@ const Inventory = () => {
                   </Form.Item>
                 </Col>
 
-                <Col span={12}>
+                <Col span={8}>
                   <Form.Item
                     name="labRoom"
                     label="Lab/Stock Room"
-                    rules={[
-                      {
-                        required: true,
-                        message: "Please enter Lab/Stock Room!",
-                      },
-                    ]}
+                    rules={[{ required: true, message: "Please enter Lab/Stock Room!" }]}
                   >
                     <Input placeholder="Enter Lab/Stock Room" />
                   </Form.Item>
                 </Col>
+
+                <Col span={8}>
+                  <Form.Item name="department" label="Department">
+                    <Input placeholder="Enter department" />
+                  </Form.Item>
+                </Col>
               </Row>
 
-              <Form.Item name="department" label="Department">
-                <Input placeholder="Enter department" />
+              <Form.Item>
+                <Button type="primary" htmlType="submit" className="add-btn">
+                  Add to Inventory with QR Code
+                </Button>
               </Form.Item>
-
-              <Button type="primary" htmlType="submit" className="add-btn">
-                Add to Inventory with QR Code
-              </Button>
             </Form>
           </div>
+
+          <Table
+            dataSource={filteredData}
+            columns={columns}
+            rowKey={(record) => record.itemId}
+            bordered
+            className="inventory-table"
+          />
+
+          <Modal
+            title="Item Details"
+            visible={isRowModalVisible}
+            footer={null}
+            onCancel={() => setIsRowModalVisible(false)}
+          >
+            {selectedRow && (
+              <div>
+                <p><strong>Item ID:</strong> {selectedRow.itemId}</p>
+                <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
+                <p><strong>Quantity:</strong> {selectedRow.quantity}</p>
+                <p><strong>Category:</strong> {selectedRow.category}</p>
+                <p><strong>Item Type:</strong> {selectedRow.type}</p>
+                <p><strong>Department:</strong> {selectedRow.department}</p>
+                <p><strong>Status:</strong> {selectedRow.status}</p>
+                <p><strong>Condition:</strong> {selectedRow.condition}</p>
+                <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
+                <p><strong>Date of Entry:</strong> {selectedRow.entryDate || 'N/A'}</p>
+                <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
+              </div>
+            )}
+          </Modal>
+
+          <Modal
+            title="Item QR Code"
+            visible={qrModalVisible}
+            onCancel={() => setQrModalVisible(false)}
+            footer={null}
+          >
+            {selectedQrCode ? (
+              <div style={{ textAlign: 'center' }}>
+                <QRCodeCanvas value={selectedQrCode} size={200} />
+              </div>
+            ) : (
+              <p>No QR Code Available</p>
+            )}
+          </Modal>
 
           <Modal
             title="Edit Item"
@@ -579,12 +677,14 @@ const Inventory = () => {
               setItemToDelete(null);
             }}
             item={itemToDelete}
+            setDataSource={setDataSource} // Make sure this is passed correctly
             onDeleteSuccess={(deletedItemId) => {
               setDataSource((prev) =>
                 prev.filter((item) => item.itemId !== deletedItemId)
               );
             }}
           />
+
 
           <NotificationModal
             isVisible={isNotificationVisible}
