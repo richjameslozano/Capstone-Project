@@ -26,6 +26,7 @@ import BorrowCatalog from './admin/BorrowCatalog';
 import History from './admin/History';
 import Profile from './Profile';
 import AccountManagement from './superAdmin/AccountManagement';
+import PendingAccounts from './superAdmin/PendingAccounts';
 import Requisition from './users/Requisition';
 import RequestList from './users/RequestList';
 import ActivityLog from './users/ActivityLog';
@@ -169,6 +170,11 @@ const LayoutMain = () => {
         setPageTitle("Activivty Log");
         break;
 
+      case "/main/pending-accounts":
+        setSelectedKey("17");
+        setPageTitle("Pending Accounts");
+        break;
+
       default:
         setSelectedKey("1");
         setPageTitle("Dashboard");
@@ -195,17 +201,6 @@ const LayoutMain = () => {
   
     if (isMobile) setMobileOpen(false);
   };  
-
-  // const handleSignOut = () => {
-  //   // localStorage.clear();
-  //   // navigate("/", { replace: true });
-  //   localStorage.removeItem("userId");  
-  //   localStorage.removeItem("userEmail");
-  //   localStorage.removeItem("userName");
-  //   localStorage.removeItem("userDepartment");
-  //   localStorage.removeItem("userPosition");
-  //   navigate("/", { replace: true });
-  // };
 
   const handleSignOut = async () => {
     const userId = localStorage.getItem("userId");
@@ -238,6 +233,11 @@ const LayoutMain = () => {
       key: "/main/accounts",
       icon: <UserOutlined />,
       label: "Accounts",
+    },
+    {
+      key: "/main/pending-accounts",
+      icon: <UserOutlined />,
+      label: "Pending Accounts",
     },
     {
       key: "logout",
@@ -389,6 +389,25 @@ const LayoutMain = () => {
             borderRadius: borderRadiusLG,
           }}
         >
+          {/* <Routes>
+            <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
+            <Route path="/inventory" element={<ProtectedRoute element={<Inventory />} />} />
+            <Route path="/pending-request" element={<ProtectedRoute element={<PendingRequest />} />} />
+            <Route path="/borrow-catalog" element={<ProtectedRoute element={<BorrowCatalog />} />} />
+            <Route path="/history" element={<ProtectedRoute element={<History />} />} />
+            <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
+            <Route path="/accounts" element={<ProtectedRoute element={<AccountManagement />} />} />
+            <Route path="/requisition" element={<ProtectedRoute element={<Requisition />} />} />
+            <Route path="/request-list" element={<ProtectedRoute element={<RequestList />} />} />
+            <Route path="/activity-log" element={<ProtectedRoute element={<ActivityLog />} />} />
+            <Route path="/search-items" element={<ProtectedRoute element={<SearchItems />} />} />
+            <Route path="/capex-request" element={<ProtectedRoute element={<CapexRequest />} />} />
+            <Route path="/return-items" element={<ProtectedRoute element={<ReturnItems />} />} />
+            <Route path="/history-log" element={<ProtectedRoute element={<HistoryLog/>} />} />
+            <Route path="/request-log" element={<ProtectedRoute element={<RequestLog/>} />} />
+            <Route path="/admin-activity-log" element={<ProtectedRoute element={<AdminActivityLog/>} />} />
+          </Routes> */}
+
           <Routes>
             {/* Routes accessible to all logged-in users */}
             <Route element={<ProtectedRoute allowedRoles={["admin", "user", "super-admin"]} />}>
@@ -400,6 +419,7 @@ const LayoutMain = () => {
             {/* Superadmin-only routes */}
             <Route element={<ProtectedRoute allowedRoles={["super-admin"]} />}>
               <Route path="/accounts" element={<AccountManagement />} />
+              <Route path="/pending-accounts" element={<PendingAccounts/>} />
             </Route>
 
             {/* Admin-only routes */}
