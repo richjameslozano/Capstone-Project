@@ -275,7 +275,7 @@ const Login = () => {
           localStorage.setItem("userEmail", userData.email);
           localStorage.setItem("userName", userName);
           localStorage.setItem("userDepartment", userData.department || "Admin");
-          localStorage.setItem("userPosition", "Super Admin");
+          localStorage.setItem("userPosition", "super-admin");
   
           navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
   
@@ -314,7 +314,8 @@ const Login = () => {
           localStorage.setItem("userEmail", userData.email);
           localStorage.setItem("userName", userName);
           localStorage.setItem("userDepartment", userData.department || "");
-          localStorage.setItem("userPosition", userData.role || "User");
+          // localStorage.setItem("userPosition", userData.role || "User");
+          localStorage.setItem("userPosition", role);
 
           await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
             action: "User Logged In (Website)",
