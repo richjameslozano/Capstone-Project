@@ -17,6 +17,8 @@ import {
 } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../backend/firebase/FirebaseConfig"; 
 import Dashboard from './Dashboard';
 import Inventory from './admin/Inventory';
 import PendingRequest from './admin/PendingRequest';
@@ -33,6 +35,9 @@ import ReturnItems from './users/ReturnItems';
 import CustomModal from "./customs/CustomModal";
 import AppHeader from './Header';
 import ProtectedRoute from './ProtectedRoute';
+import HistoryLog from './users/HistoryLog';
+import RequestLog from './admin/RequestLog';
+import AdminActivityLog from './admin/AdminActivityLog';
 
 const { Header, Sider, Content } = Layout;
 
@@ -148,6 +153,21 @@ const LayoutMain = () => {
         setPageTitle("Return Items");
         break;
 
+      case "/main/history-log":
+        setSelectedKey("14");
+        setPageTitle("History Log");
+        break;
+
+      case "/main/request-log":
+        setSelectedKey("15");
+        setPageTitle("Request Log");
+        break;
+
+      case "/main/admin-activity-log":
+        setSelectedKey("16");
+        setPageTitle("Activivty Log");
+        break;
+
       default:
         setSelectedKey("1");
         setPageTitle("Dashboard");
@@ -175,14 +195,40 @@ const LayoutMain = () => {
     if (isMobile) setMobileOpen(false);
   };  
 
-  const handleSignOut = () => {
-    // localStorage.clear();
-    // navigate("/", { replace: true });
-    localStorage.removeItem("userId");  
+  // const handleSignOut = () => {
+  //   // localStorage.clear();
+  //   // navigate("/", { replace: true });
+  //   localStorage.removeItem("userId");  
+  //   localStorage.removeItem("userEmail");
+  //   localStorage.removeItem("userName");
+  //   localStorage.removeItem("userDepartment");
+  //   localStorage.removeItem("userPosition");
+  //   navigate("/", { replace: true });
+  // };
+
+  const handleSignOut = async () => {
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName") || "Unknown User";
+
+    if (userId) {
+      try {
+        await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+          action: "User Logged Out (Website)",
+          userName,
+          timestamp: serverTimestamp(),
+        });
+      } catch (error) {
+        console.error("Error logging logout:", error);
+      }
+    }
+
+    // Clear local storage and redirect
+    localStorage.removeItem("userId");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userName");
     localStorage.removeItem("userDepartment");
     localStorage.removeItem("userPosition");
+
     navigate("/", { replace: true });
   };
 
@@ -222,9 +268,14 @@ const LayoutMain = () => {
       label: "Borrow Catalog",
     },
     {
-      key: "/main/history",
+      key: "/main/admin-activity-log",
       icon: <HistoryOutlined />,
-      label: "History",
+      label: "Activity Log",
+    },
+    {
+      key: "/main/request-log",
+      icon: <HistoryOutlined />,
+      label: "Request Log",
     },
     {
       key: "logout",
@@ -246,14 +297,19 @@ const LayoutMain = () => {
       label: "Request List",
     },
     {
+      key: "/main/search-items",
+      icon: <ClockCircleOutlined />,
+      label: "Search Items",
+    },
+    {
       key: "/main/activity-log",
       icon: <ClockCircleOutlined />,
       label: "Activity Log",
     },
     {
-      key: "/main/search-items",
+      key: "/main/history-log",
       icon: <ClockCircleOutlined />,
-      label: "Search Items",
+      label: "History Log",
     },
     {
       key: "/main/capex-request",
@@ -346,6 +402,9 @@ const LayoutMain = () => {
             <Route path="/search-items" element={<ProtectedRoute element={<SearchItems />} />} />
             <Route path="/capex-request" element={<ProtectedRoute element={<CapexRequest />} />} />
             <Route path="/return-items" element={<ProtectedRoute element={<ReturnItems />} />} />
+            <Route path="/history-log" element={<ProtectedRoute element={<HistoryLog/>} />} />
+            <Route path="/request-log" element={<ProtectedRoute element={<RequestLog/>} />} />
+            <Route path="/admin-activity-log" element={<ProtectedRoute element={<AdminActivityLog/>} />} />
           </Routes>
         </Content>
         
