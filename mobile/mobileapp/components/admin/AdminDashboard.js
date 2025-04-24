@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import styles from '../styles/admin2Style/AdminDashboardStyle';
+import styles from '../styles/adminStyle/Admin2DashboardStyle';
 import DataAnalysisModal from './DataAnalysisModal';
 import Header from '../Header';
 

@@ -124,5 +124,63 @@ export default StyleSheet.create({
     color: '#777',
     marginTop: 5,
   },
+
+  modalContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 20,
+    borderRadius: 10,
+    width: '90%',
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
+  textArea: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    textAlignVertical: 'top',
+    marginBottom: 10,
+  },
+
+  modalButtonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+
+  cardButtonGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 10,
+    marginTop: 10,
+  },  
+
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 6,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+
+  tableHeader: {
+    backgroundColor: '#f0f0f0',
+  },
   
+  tableCell: {
+    paddingHorizontal: 8,
+    minWidth: 90,
+    fontSize: 12,
+    color: '#333',
+  },
 });
