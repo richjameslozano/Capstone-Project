@@ -271,9 +271,7 @@ const Inventory = () => {
       defaultSortOrder: 'ascend', 
     },
     { title: "Category", dataIndex: "category", key: "category" },
-    { title: "Department", dataIndex: "department", key: "department" },
     { title: "Inventory Balance", dataIndex: "quantity", key: "quantity" },
-    { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },
     { title: "Condition", dataIndex: "condition", key: "condition" },
     {
@@ -305,7 +303,9 @@ const Inventory = () => {
               setSelectedRow(record);
               setIsRowModalVisible(true);
             }}
-          />
+          >
+            View
+          </Button>
 
           <Button
             type="text"
@@ -315,7 +315,9 @@ const Inventory = () => {
               e.stopPropagation(); 
               handleDelete(record);
             }}
-          />
+          >
+            Delete
+          </Button>
 
           <Button
             type="link"
@@ -326,7 +328,9 @@ const Inventory = () => {
               setIsEditModalVisible(true);
               editItem(record)
             }}
-          />
+          >
+            Edit
+          </Button>
         </Space>
       ),
     }    
@@ -346,63 +350,6 @@ const Inventory = () => {
 
       <Layout>
         <Content className="content inventory-container">
-          <div className="inventory-header">
-            <Space wrap>
-              <Input.Search
-                placeholder="Search"
-                className="search-bar"
-                style={{ width: 200 }}
-                allowClear
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-
-              <Select
-                allowClear
-                placeholder="Filter by Category"
-                style={{ width: 160 }}
-                onChange={(value) => setFilterCategory(value)}
-              >
-                <Option value="Chemical">Chemical</Option>
-                <Option value="Reagent">Reagent</Option>
-                <Option value="Materials">Materials</Option>
-                <Option value="Equipment">Equipment</Option>
-              </Select>
-
-              <Select
-                allowClear
-                placeholder="Filter by Item Type"
-                style={{ width: 160 }}
-                onChange={(value) => setFilterItemType(value)}
-              >
-                <Option value="Fixed">Fixed</Option>
-                <Option value="Consumable">Consumable</Option>
-              </Select>
-
-              <Select
-                allowClear
-                placeholder="Filter by Usage Type"
-                style={{ width: 180 }}
-                onChange={(value) => setFilterUsageType(value)}
-              >
-                <Option value="Laboratory Experiment">Laboratory Experiment</Option>
-                <Option value="Research">Research</Option>
-                <Option value="Community Extension">Community Extension</Option>
-                <Option value="Others">Others</Option>
-              </Select>
-
-              <Button
-                onClick={() => {
-                  setFilterCategory(null);
-                  setFilterItemType(null);
-                  setFilterUsageType(null);
-                  setSearchText('');
-                }}
-              >
-                Reset Filters
-              </Button>
-            </Space>
-          </div>
-
           <div className="form-container">
             <Form layout="vertical" form={form} onFinish={handleAdd}>         
               <Row gutter={16}>
@@ -535,6 +482,63 @@ const Inventory = () => {
                 </Button>
               </Form.Item>
             </Form>
+          </div>
+
+          <div className="inventory-header">
+            <Space wrap>
+              <Input.Search
+                placeholder="Search"
+                className="search-bar"
+                style={{ width: 200 }}
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+
+              <Select
+                allowClear
+                placeholder="Filter by Category"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterCategory(value)}
+              >
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+              </Select>
+
+              <Select
+                allowClear
+                placeholder="Filter by Item Type"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterItemType(value)}
+              >
+                <Option value="Fixed">Fixed</Option>
+                <Option value="Consumable">Consumable</Option>
+              </Select>
+
+              <Select
+                allowClear
+                placeholder="Filter by Usage Type"
+                style={{ width: 180 }}
+                onChange={(value) => setFilterUsageType(value)}
+              >
+                <Option value="Laboratory Experiment">Laboratory Experiment</Option>
+                <Option value="Research">Research</Option>
+                <Option value="Community Extension">Community Extension</Option>
+                <Option value="Others">Others</Option>
+              </Select>
+
+              <Button
+                onClick={() => {
+                  setFilterCategory(null);
+                  setFilterItemType(null);
+                  setFilterUsageType(null);
+                  setSearchText('');
+                }}
+              >
+                Reset Filters
+              </Button>
+            </Space>
           </div>
 
           <Table
