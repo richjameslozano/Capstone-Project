@@ -145,57 +145,6 @@ export default function InventoryScreen({ navigation }) {
     }
   };
 
-  // const addToList = async (item) => {
-  //   const quantity = itemQuantities[item.id];
-  
-  //   if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-  //     alert('Please enter a valid quantity.');
-  //     return;
-  //   }
-  
-  //   try {
-  //     const collectionRef = collection(db, 'accounts', user.id, 'temporaryRequests');
-  
-  //     // 🔍 Check for duplicates by "id"
-  //     const q = query(collectionRef, where('id', '==', item.id));
-  //     const querySnapshot = await getDocs(q);
-  
-  //     if (!querySnapshot.empty) {
-  //       alert('This item is already in your request list.');
-  //       return;
-  //     }
-  
-  
-  //     await addDoc(collectionRef, {
-  //       category: item.category || '',
-  //       condition: item.condition || '',
-  //       department: item.department || '',
-  //       entryDate: item.entryDate || '',
-  //       expiryDate: item.expiryDate || '',
-  //       id: item.id, 
-  //       itemId: item.itemId || '',
-  //       itemName: item.itemName || '',
-  //       labRoom: item.labRoom || '',
-  //       qrCode: item.qrCode || '',
-  //       quantity: quantity.toString(),
-  //       selectedItemId: item.id,
-  //       selectedItemLabel: item.itemName,
-  //       status: item.status || 'Available',
-  //       timestamp: Timestamp.fromDate(new Date()),
-  //       type: item.type || '',
-  //       usageType: item.usageType || '',
-  //     });
-  
-  //     alert('Item successfully added to temporaryRequests.');
-  //     setActiveInputItemId(null);
-  //     setItemQuantities((prev) => ({ ...prev, [item.id]: '' }));
-
-  //   } catch (error) {
-  //     console.error('Error adding item to temporaryRequests:', error);
-  //     alert('Failed to add item. Try again.');
-  //   }
-  // };
-
   const addToList = async (item) => {
     const quantity = itemQuantities[item.id];
   
@@ -203,7 +152,15 @@ export default function InventoryScreen({ navigation }) {
       alert('Please enter a valid quantity.');
       return;
     }
+
+    const requestedQty = parseInt(quantity);
+    const availableQty = parseInt(item.quantity);
   
+    if (requestedQty > availableQty) {
+      alert(`The quantity you requested exceeds available stock (${availableQty}).`);
+      return;
+    }
+
     if (
       !metadata?.dateRequired || 
       !metadata?.timeFrom || 
@@ -390,67 +347,6 @@ export default function InventoryScreen({ navigation }) {
         </View>
       </View>
 
-       {/* <TouchableOpacity style={styles.dateButton} onPress={() => setCalendarVisible(true)}>
-                <Text style={styles.dateButtonText}>
-                  {selectedDate ? `Borrow Date: ${selectedDate}` : 'Pick Borrow Date'}
-                </Text>
-              </TouchableOpacity>
-        
-              {calendarVisible && (
-                <Calendar
-                  onDayPress={(day) => {
-                    setSelectedDate(day.dateString);
-                    setCalendarVisible(false);
-                  }}
-                  markedDates={{ [selectedDate]: { selected: true, selectedColor: '#00796B' } }}
-                  minDate={today}
-                />
-              )}
-      
-              <View style={styles.timeButtonContainer}>
-                <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('start')}>
-                    <Text style={styles.timeButtonText}>
-                      Start Time: {formatTime(selectedStartTime)}
-                    </Text>
-                  </TouchableOpacity>
-          
-                  <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('end')}>
-                    <Text style={styles.timeButtonText}>
-                      End Time: {formatTime(selectedEndTime)}
-                    </Text>
-                  </TouchableOpacity>
-              </View>
-      
-              <View style={styles.programRoomContainer}>
-                <View style={styles.pickerWrapper}>
-                  <Picker
-                    selectedValue={program}
-                    onValueChange={(itemValue) => setProgram(itemValue)}
-                    style={{ height: 50, fontSize: 5 }} 
-                  >
-                    <Picker.Item label="Select Program" value="" />
-                    <Picker.Item label="SAM - BSMT" value="SAM - BSMT" />
-                    <Picker.Item label="SAH - BSN" value="SAH - BSN" />
-                    <Picker.Item label="SHS" value="SHS" />
-                  </Picker>
-                </View>
-      
-                <TextInput
-                  style={styles.roomInput}
-                  placeholder="Enter room"
-                  value={room}
-                  onChangeText={setRoom}
-                />
-              </View>
-      
-              <TextInput
-                style={styles.reasonInput}
-                placeholder="Enter reason for borrowing..."
-                value={reason}
-                onChangeText={setReason}
-                multiline
-              /> */}
-
               <TouchableOpacity style={styles.dateButton} onPress={() => setCalendarVisible(true)}>
                 <Text style={styles.dateButtonText}>
                   {selectedDate ? `Borrow Date: ${selectedDate}` : 'Pick Borrow Date'}
@@ -522,12 +418,6 @@ export default function InventoryScreen({ navigation }) {
                 }}
                 multiline
               />
-
-      {/* <FlatList
-        data={filteredItems.length > 0 ? filteredItems : inventoryItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-      /> */}
 
       <FlatList
         data={filteredItems}
