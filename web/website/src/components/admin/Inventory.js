@@ -25,7 +25,7 @@ import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
 import DeleteModal from "../customs/DeleteModal";
-import NotificationModal from "../customs/NotificationModal"; 
+import NotificationModal from "../customs/NotificationModal";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -104,7 +104,7 @@ const Inventory = () => {
     return (
       (!filterCategory || item.category === filterCategory) &&
       (!filterItemType || item.type === filterItemType) &&
-      (!filterUsageType || item.usageType === filterUsageType) &&
+      // (!filterUsageType || item.usageType === filterUsageType) &&
       matchesSearch
     );
   });  
@@ -154,7 +154,7 @@ const Inventory = () => {
       type: values.type,
       status: "Available",
       condition: "Good",  
-      usageType: values.usageType,
+      // usageType: values.usageType,
     };
   
     const encryptedData = CryptoJS.AES.encrypt(
@@ -199,7 +199,7 @@ const Inventory = () => {
       quantity: record.quantity,
       status: record.status,
       condition: record.condition, 
-      usageType: record.usageType,
+      // usageType: record.usageType,
     });
     setIsEditModalVisible(true);
   };
@@ -212,7 +212,7 @@ const Inventory = () => {
       quantity: values.quantity ?? 0,
       status: values.status ?? "Available",
       condition: values.condition ?? "Good",
-      usageType: values.usageType ?? "",
+      // usageType: values.usageType ?? "",
     };
   
     try {
@@ -271,7 +271,9 @@ const Inventory = () => {
       defaultSortOrder: 'ascend', 
     },
     { title: "Category", dataIndex: "category", key: "category" },
+    { title: "Department", dataIndex: "department", key: "department" },
     { title: "Inventory Balance", dataIndex: "quantity", key: "quantity" },
+    // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },
     { title: "Condition", dataIndex: "condition", key: "condition" },
     {
@@ -303,9 +305,7 @@ const Inventory = () => {
               setSelectedRow(record);
               setIsRowModalVisible(true);
             }}
-          >
-            View
-          </Button>
+          />
 
           <Button
             type="text"
@@ -315,9 +315,7 @@ const Inventory = () => {
               e.stopPropagation(); 
               handleDelete(record);
             }}
-          >
-            Delete
-          </Button>
+          />
 
           <Button
             type="link"
@@ -328,9 +326,7 @@ const Inventory = () => {
               setIsEditModalVisible(true);
               editItem(record)
             }}
-          >
-            Edit
-          </Button>
+          />
         </Space>
       ),
     }    
@@ -350,6 +346,63 @@ const Inventory = () => {
 
       <Layout>
         <Content className="content inventory-container">
+          <div className="inventory-header">
+            <Space wrap>
+              <Input.Search
+                placeholder="Search"
+                className="search-bar"
+                style={{ width: 200 }}
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+
+              <Select
+                allowClear
+                placeholder="Filter by Category"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterCategory(value)}
+              >
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+              </Select>
+
+              <Select
+                allowClear
+                placeholder="Filter by Item Type"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterItemType(value)}
+              >
+                <Option value="Fixed">Fixed</Option>
+                <Option value="Consumable">Consumable</Option>
+              </Select>
+
+              {/* <Select
+                allowClear
+                placeholder="Filter by Usage Type"
+                style={{ width: 180 }}
+                onChange={(value) => setFilterUsageType(value)}
+              >
+                <Option value="Laboratory Experiment">Laboratory Experiment</Option>
+                <Option value="Research">Research</Option>
+                <Option value="Community Extension">Community Extension</Option>
+                <Option value="Others">Others</Option>
+              </Select> */}
+
+              <Button
+                onClick={() => {
+                  setFilterCategory(null);
+                  setFilterItemType(null);
+                  // setFilterUsageType(null);
+                  setSearchText('');
+                }}
+              >
+                Reset Filters
+              </Button>
+            </Space>
+          </div>
+
           <div className="form-container">
             <Form layout="vertical" form={form} onFinish={handleAdd}>         
               <Row gutter={16}>
@@ -378,7 +431,7 @@ const Inventory = () => {
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                {/* <Col span={8}>
                   <Form.Item
                     name="usageType"
                     label="Usage Type"
@@ -391,7 +444,7 @@ const Inventory = () => {
                       <Option value="Others">Others</Option>
                     </Select>
                   </Form.Item>
-                </Col>
+                </Col> */}
               </Row>
 
               <Row gutter={16}>
@@ -484,63 +537,6 @@ const Inventory = () => {
             </Form>
           </div>
 
-          <div className="inventory-header">
-            <Space wrap>
-              <Input.Search
-                placeholder="Search"
-                className="search-bar"
-                style={{ width: 200 }}
-                allowClear
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-
-              <Select
-                allowClear
-                placeholder="Filter by Category"
-                style={{ width: 160 }}
-                onChange={(value) => setFilterCategory(value)}
-              >
-                <Option value="Chemical">Chemical</Option>
-                <Option value="Reagent">Reagent</Option>
-                <Option value="Materials">Materials</Option>
-                <Option value="Equipment">Equipment</Option>
-              </Select>
-
-              <Select
-                allowClear
-                placeholder="Filter by Item Type"
-                style={{ width: 160 }}
-                onChange={(value) => setFilterItemType(value)}
-              >
-                <Option value="Fixed">Fixed</Option>
-                <Option value="Consumable">Consumable</Option>
-              </Select>
-
-              <Select
-                allowClear
-                placeholder="Filter by Usage Type"
-                style={{ width: 180 }}
-                onChange={(value) => setFilterUsageType(value)}
-              >
-                <Option value="Laboratory Experiment">Laboratory Experiment</Option>
-                <Option value="Research">Research</Option>
-                <Option value="Community Extension">Community Extension</Option>
-                <Option value="Others">Others</Option>
-              </Select>
-
-              <Button
-                onClick={() => {
-                  setFilterCategory(null);
-                  setFilterItemType(null);
-                  setFilterUsageType(null);
-                  setSearchText('');
-                }}
-              >
-                Reset Filters
-              </Button>
-            </Space>
-          </div>
-
           <Table
             dataSource={filteredData}
             columns={columns}
@@ -612,7 +608,7 @@ const Inventory = () => {
                   </Form.Item>
                 </Col>
 
-                <Row gutter={16}>
+                {/* <Row gutter={16}>
                 <Col span={24}>
                   <Form.Item name="usageType" label="Usage Type">
                     <Select placeholder="Select Usage Type">
@@ -623,7 +619,7 @@ const Inventory = () => {
                     </Select>
                   </Form.Item>
                 </Col>
-               </Row>
+               </Row> */}
 
                 <Col span={12}>
                   <Form.Item
