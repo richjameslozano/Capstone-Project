@@ -143,6 +143,11 @@ export default function LoginScreen({ navigation }) {
           switch (role) {
             case "admin1":
             case "admin2":
+            case "admin":
+              navigation.replace("Admin");
+              break;
+
+            case "super-user":
               navigation.replace("Admin");
               break;
 

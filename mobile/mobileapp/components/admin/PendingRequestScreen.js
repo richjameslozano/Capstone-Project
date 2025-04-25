@@ -319,21 +319,6 @@ export default function PendingRequestScreen() {
           <Text style={[styles[item.status?.toLowerCase() || 'pending']]}>{item.status || 'Pending'}</Text>
         </Card.Content>
       </TouchableOpacity>
-  
-      <View style={styles.cardButtonGroup}>
-        <TouchableOpacity
-          style={[styles.button, styles.approveButton]}
-          onPress={() => handleApprove(item)}
-        >
-          <Text style={styles.buttonText}>Approve</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.button, styles.rejectButton]}
-          onPress={() => handleReject(item)}
-        >
-          <Text style={styles.buttonText}>Reject</Text>
-        </TouchableOpacity>
-      </View>
     </Card>
   );
 
@@ -346,41 +331,6 @@ export default function PendingRequestScreen() {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
       />
-
-      <Modal
-        visible={isRejectModalVisible}
-        animationType="slide"
-        transparent={true}
-        onRequestClose={() => setIsRejectModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Reject Reason</Text>
-            <TextInput
-              value={rejectReason}
-              onChangeText={setRejectReason}
-              placeholder="Please provide a reason for rejection"
-              multiline
-              numberOfLines={4}
-              style={styles.textArea}
-            />
-            <View style={styles.modalButtonGroup}>
-              <TouchableOpacity
-                onPress={handleRejectSubmit}
-                style={[styles.button, styles.approveButton]}
-              >
-                <Text style={styles.buttonText}>Submit</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setIsRejectModalVisible(false)}
-                style={[styles.button, styles.rejectButton]}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
 
       <Modal
         visible={viewModalVisible}
@@ -399,6 +349,7 @@ export default function PendingRequestScreen() {
               <>
                 <Text style={styles.modalText}>Name: {selectedRequest.userName || 'N/A'}</Text>
                 <Text style={styles.modalText}>Program: {selectedRequest.program}</Text>
+                <Text style={styles.modalText}>Usage Type: {selectedRequest.usageType}</Text>
                 <Text style={styles.modalText}>Room: {selectedRequest.room}</Text>
                 <Text style={styles.modalText}>Reason: {selectedRequest.reason}</Text>
                 <Text style={styles.modalText}>Time Needed: {selectedRequest.timeFrom} - {selectedRequest.timeTo}</Text>
