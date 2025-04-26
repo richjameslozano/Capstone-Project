@@ -4,7 +4,7 @@ import { Picker } from '@react-native-picker/picker';
 import { getDocs, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig'; 
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import styles from '../styles/admin2Style/InventoryStocksStyle';
+import styles from '../styles/adminStyle/InventoryStocksStyle';
 import Header from '../Header';
 
 export default function InventoryStocks({ navigation }) {

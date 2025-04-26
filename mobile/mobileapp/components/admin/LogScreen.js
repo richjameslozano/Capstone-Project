@@ -3,7 +3,7 @@ import { View, Text, Button, Modal, FlatList, ScrollView, ActivityIndicator } fr
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, getDocs, onSnapshot} from "firebase/firestore";
 import { useAuth } from "../contexts/AuthContext";
-import styles from "../styles/admin2Style/LogStyle";
+import styles from "../styles/adminStyle/LogStyle";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
 import Header from '../Header';
 
