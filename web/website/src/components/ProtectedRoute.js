@@ -17,11 +17,7 @@ const ProtectedRoute = ({ allowedRoles = ["user", "admin", "super-admin", "super
   console.log("Allowed roles:", allowedRoles);
   console.log("Role Check:", allowedRoles.includes(userRole)); 
   console.log("userRole:", userRole);
-
-  if (!userEmail) {
-    return <Navigate to="/" replace />;
-  }
-
+  
   if (!userEmail || !userRole) {
     return <Navigate to="/" replace />;
   }
