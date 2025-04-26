@@ -1,0 +1,29 @@
+.view-details {
+  color: #1890ff;
+  text-decoration: none;
+}
+
+.view-details:hover {
+  text-decoration: underline;
+}
+
+.ant-modal-title {
+  font-weight: bold;
+}
+
+.ant-btn:hover {
+  background-color: #d9d9d9;
+}
+
+.request-log-table .ant-table-tbody > tr:nth-child(odd) > td {
+  background-color: #fafafa; /* Light gray */
+}
+  
+.request-log-table .ant-table-tbody > tr:nth-child(even) > td {
+  background-color: #ffffff; /* White */
+}
+  
+.request-log-table .ant-table-tbody > tr:hover > td {
+  background-color: #e6f7ff; /* Light blue highlight */
+}
+  

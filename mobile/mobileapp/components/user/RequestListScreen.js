@@ -9,8 +9,9 @@ import {
   TextInput,
   Alert,
   TouchableWithoutFeedback,
+  ScrollView,
 } from 'react-native';
-import { collection, getDocs, deleteDoc, doc, onSnapshot, Timestamp, setDoc, addDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, onSnapshot, Timestamp, setDoc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import { useRequestMetadata } from '../contexts/RequestMetadataContext';
@@ -27,7 +28,36 @@ const RequestListScreen = () => {
   const { metadata } = useRequestMetadata();
   const [showConfirmationModal, setShowConfirmationModal] = useState(false); 
   const [confirmationData, setConfirmationData] = useState(null);
+  const [tempDocIdsToDelete, setTempDocIdsToDelete] = useState([]);
 
+   // useEffect(() => {
+  //   if (!user || !user.id) return;
+  
+  //   const tempRequestRef = collection(db, 'accounts', user.id, 'temporaryRequests');
+  
+  //   const unsubscribe = onSnapshot(tempRequestRef, (querySnapshot) => {
+  //     const tempRequestList = querySnapshot.docs.map((doc) => {
+  //       const data = doc.data();
+  //       return {
+  //         id: doc.id,
+  //         ...data,
+  //         selectedItem: {
+  //           value: data.selectedItemId,
+  //           label: data.selectedItemLabel,
+  //         },
+  //       };
+  //     });
+  
+  //     setRequestList(tempRequestList);
+  //     setLoading(false);
+  //   }, (error) => {
+  //     console.error('Error fetching request list in real-time:', error);
+  //     setLoading(false);
+  //   });
+  
+  //   return () => unsubscribe(); // cleanup listener on unmount
+  // }, [user]);
+  
   useEffect(() => {
     if (!user || !user.id) return;
   
@@ -45,16 +75,21 @@ const RequestListScreen = () => {
           },
         };
       });
-  
-      setRequestList(tempRequestList);
+      
+      // ✅ Collect all temp doc IDs to delete later
+      const ids = querySnapshot.docs.map(doc => doc.id);
+      setTempDocIdsToDelete(ids);
+      
+      setRequestList(tempRequestList);      
       setLoading(false);
+      
     }, (error) => {
       console.error('Error fetching request list in real-time:', error);
       setLoading(false);
     });
   
     return () => unsubscribe(); // cleanup listener on unmount
-  }, [user]);
+  }, [user]);  
 
   const handleRequestNow = async () => {
     console.log('Current metadata:', metadata);
@@ -77,72 +112,18 @@ const RequestListScreen = () => {
     setShowConfirmationModal(true);
   };
 
-  // const submitRequest = async () => {
-  //   const { user } = useAuth(); // access the user from AuthContext
-  //   console.log('Checking if user is available:', user);
-  
-  //   if (!user || !user.id) {
-  //     Alert.alert('Error', 'User is not logged in.');
-  //     return;
-  //   }
-  
-  //   try {
-  //     // Get user's name from accounts collection
-  //     const userDocRef = doc(db, 'accounts', user.id);
-  //     const userDocSnapshot = await getDoc(userDocRef);
-  
-  //     if (!userDocSnapshot.exists()) {
-  //       Alert.alert('Error', 'User not found.');
-  //       return;
-  //     }
-  
-  //     const userName = userDocSnapshot.data().name;
-  
-  //     // Prepare request data
-  //     const requestData = {
-  //       dateRequired: metadata.dateRequired,
-  //       timeFrom: metadata.timeFrom,
-  //       timeTo: metadata.timeTo,
-  //       program: metadata.program,
-  //       room: metadata.room,
-  //       reason: metadata.reason,
-  //       requestList: requestList.map((item) => ({
-  //         ...item,
-  //         program: metadata.program,
-  //         reason: metadata.reason,
-  //         room: metadata.room,
-  //         timeFrom: metadata.timeFrom,
-  //         timeTo: metadata.timeTo,
-  //         usageType: item.usageType,
-  //       })),
-  //       userName,
-  //       timestamp: Timestamp.now(),
-  //     };
-  
-  //     console.log('Request data to be saved:', requestData);
-  //     // Add to user's personal requests
-  //     const userRequestRef = collection(db, 'accounts', user.id, 'userRequests');
-  //     await addDoc(userRequestRef, requestData);
-  
-  //     // Add to global userrequests collection
-  //     const userRequestsRootRef = collection(db, 'userrequests');
-  //     const newUserRequestRef = doc(userRequestsRootRef);
-  //     await setDoc(newUserRequestRef, {
-  //       ...requestData,
-  //       accountId: user.uid,
-  //     });
-  
-  //     Alert.alert('Success', 'Request submitted successfully.');
-
-  //   } catch (error) {
-  //     console.error('Error submitting request:', error);
-  //     Alert.alert('Error', 'Failed to submit request. Please try again.');
-  //   }
-  // };  
+  const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
+    await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+      action, // e.g. "Requested Items" or "Returned Items"
+      userName,
+      timestamp: serverTimestamp(),
+      requestList: requestDetails, 
+    });
+  };
 
   const submitRequest = async () => {
     console.log('submitRequest initiated');
-    const { user } = useAuth(); // access the user from AuthContext
+    console.log('Submitting for user:', user?.id);
   
     if (!user || !user.id) {
       console.log('No user logged in');
@@ -150,8 +131,13 @@ const RequestListScreen = () => {
       return false;
     }
   
+    if (!requestList || requestList.length === 0) {
+      console.log('Request list is empty');
+      Alert.alert('Error', 'No items in the request list.');
+      return false;
+    }
+  
     try {
-      // Fetch user info from the database
       const userDocRef = doc(db, 'accounts', user.id);
       const userDocSnapshot = await getDoc(userDocRef);
   
@@ -171,7 +157,7 @@ const RequestListScreen = () => {
         program: metadata.program,
         room: metadata.room,
         reason: metadata.reason,
-        requestList: requestList.map((item) => ({
+        filteredMergedData: requestList.map((item) => ({
           ...item,
           program: metadata.program,
           reason: metadata.reason,
@@ -195,18 +181,32 @@ const RequestListScreen = () => {
       const newUserRequestRef = doc(userRequestsRootRef);
       await setDoc(newUserRequestRef, {
         ...requestData,
-        accountId: user.uid,
+        accountId: user.id,
       });
+
+      // ✅ Delete the original temporary request
+      if (tempDocIdsToDelete.length > 0) {
+        for (const id of tempDocIdsToDelete) {
+          await deleteDoc(doc(db, 'accounts', user.id, 'temporaryRequests', id));
+          console.log('Deleted temp request with ID:', id);
+        }
+
+      } else {
+        console.log('No temp requests to delete');
+      }      
   
+      // Log the "Requested Items" action
+      await logRequestOrReturn(user.id, userName, "Requested Items", requestData.filteredMergedData);
+
       console.log('Request submitted successfully');
-      return true; // Successful submission
+      return true; 
+
     } catch (error) {
       console.error('Error submitting request:', error);
       Alert.alert('Error', 'Failed to submit request. Please try again.');
-      return false; // Error in submission
+      return false; 
     }
   };
-  
   
   const handleConfirmRequest = async () => {
     console.log('Metadata:', metadata);
@@ -405,13 +405,27 @@ const RequestListScreen = () => {
                   <Text style={styles.modalText}>Room: {confirmationData?.room}</Text>
                   <Text style={styles.modalText}>Reason: {confirmationData?.reason}</Text>
 
-                  <FlatList
-                    data={requestList}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id}
-                    contentContainerStyle={styles.listContent}
-                    ListEmptyComponent={<Text style={styles.emptyText}>No items to display.</Text>}
-                  />
+                  <ScrollView horizontal>
+                    <View>
+                      {/* Table Header */}
+                      <View style={styles.tableRowHeader}>
+                        <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Name</Text>
+                        <Text style={[styles.tableCellHeader, { width: 100 }]}>Qty</Text>
+                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Category</Text>
+                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Status</Text>
+                      </View>
+
+                      {/* Table Rows */}
+                      {requestList.map((item) => (
+                        <View key={item.id} style={styles.tableRow}>
+                          <Text style={[styles.tableCell, { width: 150 }]}>{item.selectedItem?.label}</Text>
+                          <Text style={[styles.tableCell, { width: 100 }]}>{item.quantity}</Text>
+                          <Text style={[styles.tableCell, { width: 120 }]}>{item.category}</Text>
+                          <Text style={[styles.tableCell, { width: 120 }]}>{item.status}</Text>
+                        </View>
+                      ))}
+                    </View>
+                  </ScrollView>
 
                   <View style={styles.modalActions}>
                     <TouchableOpacity

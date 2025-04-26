@@ -17,6 +17,8 @@ import {
 } from '@ant-design/icons';
 import { Button, Layout, Menu, theme } from 'antd';
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../backend/firebase/FirebaseConfig"; 
 import Dashboard from './Dashboard';
 import Inventory from './admin/Inventory';
 import PendingRequest from './admin/PendingRequest';
@@ -24,6 +26,7 @@ import BorrowCatalog from './admin/BorrowCatalog';
 import History from './admin/History';
 import Profile from './Profile';
 import AccountManagement from './superAdmin/AccountManagement';
+import PendingAccounts from './superAdmin/PendingAccounts';
 import Requisition from './users/Requisition';
 import RequestList from './users/RequestList';
 import ActivityLog from './users/ActivityLog';
@@ -33,6 +36,10 @@ import ReturnItems from './users/ReturnItems';
 import CustomModal from "./customs/CustomModal";
 import AppHeader from './Header';
 import ProtectedRoute from './ProtectedRoute';
+import HistoryLog from './users/HistoryLog';
+import RequestLog from './admin/RequestLog';
+import AdminActivityLog from './admin/AdminActivityLog';
+import NotAuthorized from './NotAuthorized';
 
 const { Header, Sider, Content } = Layout;
 
@@ -148,6 +155,26 @@ const LayoutMain = () => {
         setPageTitle("Return Items");
         break;
 
+      case "/main/history-log":
+        setSelectedKey("14");
+        setPageTitle("History Log");
+        break;
+
+      case "/main/request-log":
+        setSelectedKey("15");
+        setPageTitle("Request Log");
+        break;
+
+      case "/main/admin-activity-log":
+        setSelectedKey("16");
+        setPageTitle("Activivty Log");
+        break;
+
+      case "/main/pending-accounts":
+        setSelectedKey("17");
+        setPageTitle("Pending Accounts");
+        break;
+
       default:
         setSelectedKey("1");
         setPageTitle("Dashboard");
@@ -175,14 +202,29 @@ const LayoutMain = () => {
     if (isMobile) setMobileOpen(false);
   };  
 
-  const handleSignOut = () => {
-    // localStorage.clear();
-    // navigate("/", { replace: true });
-    localStorage.removeItem("userId");  
+  const handleSignOut = async () => {
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName") || "Unknown User";
+
+    if (userId) {
+      try {
+        await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+          action: "User Logged Out (Website)",
+          userName,
+          timestamp: serverTimestamp(),
+        });
+      } catch (error) {
+        console.error("Error logging logout:", error);
+      }
+    }
+
+    // Clear local storage and redirect
+    localStorage.removeItem("userId");
     localStorage.removeItem("userEmail");
     localStorage.removeItem("userName");
     localStorage.removeItem("userDepartment");
     localStorage.removeItem("userPosition");
+
     navigate("/", { replace: true });
   };
 
@@ -191,6 +233,11 @@ const LayoutMain = () => {
       key: "/main/accounts",
       icon: <UserOutlined />,
       label: "Accounts",
+    },
+    {
+      key: "/main/pending-accounts",
+      icon: <UserOutlined />,
+      label: "Pending Accounts",
     },
     {
       key: "logout",
@@ -222,9 +269,53 @@ const LayoutMain = () => {
       label: "Borrow Catalog",
     },
     {
-      key: "/main/history",
+      key: "/main/admin-activity-log",
       icon: <HistoryOutlined />,
-      label: "History",
+      label: "Activity Log",
+    },
+    {
+      key: "/main/request-log",
+      icon: <HistoryOutlined />,
+      label: "Request Log",
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Sign Out",
+      danger: true,
+    },
+  ];
+
+  const superUserMenuItems = [
+    {
+      key: "/main/dashboard",
+      icon: <DashboardOutlined />,
+      label: "Dashboard",
+    },
+    {
+      key: "/main/inventory",
+      icon: <UnorderedListOutlined />,
+      label: "Inventory",
+    },
+    {
+      key: "/main/pending-request",
+      icon: <FileTextOutlined />,
+      label: "Pending Requests",
+    },
+    {
+      key: "/main/borrow-catalog",
+      icon: <AppstoreOutlined />,
+      label: "Borrow Catalog",
+    },
+    {
+      key: "/main/admin-activity-log",
+      icon: <HistoryOutlined />,
+      label: "Activity Log",
+    },
+    {
+      key: "/main/request-log",
+      icon: <HistoryOutlined />,
+      label: "Request Log",
     },
     {
       key: "logout",
@@ -246,14 +337,19 @@ const LayoutMain = () => {
       label: "Request List",
     },
     {
+      key: "/main/search-items",
+      icon: <ClockCircleOutlined />,
+      label: "Search Items",
+    },
+    {
       key: "/main/activity-log",
       icon: <ClockCircleOutlined />,
       label: "Activity Log",
     },
     {
-      key: "/main/search-items",
+      key: "/main/history-log",
       icon: <ClockCircleOutlined />,
-      label: "Search Items",
+      label: "History Log",
     },
     {
       key: "/main/capex-request",
@@ -278,6 +374,8 @@ const LayoutMain = () => {
       ? superAdminMenuItems
       : role === "admin"
       ? adminMenuItems
+      : role === "super-user"
+      ? superUserMenuItems
       : userMenuItems;
 
   return (
@@ -332,7 +430,7 @@ const LayoutMain = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-          <Routes>
+          {/* <Routes>
             <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
             <Route path="/inventory" element={<ProtectedRoute element={<Inventory />} />} />
             <Route path="/pending-request" element={<ProtectedRoute element={<PendingRequest />} />} />
@@ -346,6 +444,45 @@ const LayoutMain = () => {
             <Route path="/search-items" element={<ProtectedRoute element={<SearchItems />} />} />
             <Route path="/capex-request" element={<ProtectedRoute element={<CapexRequest />} />} />
             <Route path="/return-items" element={<ProtectedRoute element={<ReturnItems />} />} />
+            <Route path="/history-log" element={<ProtectedRoute element={<HistoryLog/>} />} />
+            <Route path="/request-log" element={<ProtectedRoute element={<RequestLog/>} />} />
+            <Route path="/admin-activity-log" element={<ProtectedRoute element={<AdminActivityLog/>} />} />
+          </Routes> */}
+
+          <Routes>
+            {/* Routes accessible to all logged-in users */}
+            <Route element={<ProtectedRoute allowedRoles={["admin", "user", "super-admin", "super-user"]} />}>
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/activity-log" element={<ActivityLog />} />
+              <Route path="/history-log" element={<HistoryLog />} />
+            </Route>
+
+            {/* Superadmin-only routes */}
+            <Route element={<ProtectedRoute allowedRoles={["super-admin"]} />}>
+              <Route path="/accounts" element={<AccountManagement />} />
+              <Route path="/pending-accounts" element={<PendingAccounts/>} />
+            </Route>
+
+            {/* Admin-only routes */}
+            <Route element={<ProtectedRoute allowedRoles={["admin", "super-user"]} />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/inventory" element={<Inventory />} />
+              <Route path="/pending-request" element={<PendingRequest />} />
+              <Route path="/borrow-catalog" element={<BorrowCatalog />} />
+              <Route path="/request-log" element={<RequestLog />} />
+              <Route path="/admin-activity-log" element={<AdminActivityLog />} />
+            </Route>
+
+            {/* User-only routes */}
+            <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
+              <Route path="/requisition" element={<Requisition />} />
+              <Route path="/request-list" element={<RequestList />} />
+              <Route path="/search-items" element={<SearchItems />} />
+              <Route path="/capex-request" element={<CapexRequest />} />
+              <Route path="/return-items" element={<ReturnItems />} />
+            </Route>
+
+            <Route path="/not-authorized" element={<NotAuthorized />} />
           </Routes>
         </Content>
         

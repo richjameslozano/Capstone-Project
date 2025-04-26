@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Layout, Card, Col, Row, Modal, Button, message, notification } from "antd";
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import AppHeader from "./Header";
 import "./styles/Dashboard.css";
 import SuccessModal from "./customs/SuccessModal";
+import CustomCalendar from "./customs/CustomCalendar";
 
 const { Content } = Layout;
 
@@ -132,6 +132,12 @@ const Dashboard = () => {
                   </PieChart>
                 </ResponsiveContainer>
               </Card>
+            </Col>
+          </Row>
+
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <CustomCalendar/>
             </Col>
           </Row>
         </Content>

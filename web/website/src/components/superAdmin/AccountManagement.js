@@ -13,7 +13,8 @@ import {
 } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db } from "../../backend/firebase/FirebaseConfig";
+import { db, auth } from "../../backend/firebase/FirebaseConfig";
+import { createUserWithEmailAndPassword, updateEmail } from "firebase/auth";
 import {
   collection,
   addDoc,
@@ -21,7 +22,11 @@ import {
   updateDoc,
   deleteDoc,
   doc,
+  onSnapshot,
+  query,
+  where,
 } from "firebase/firestore";
+import { debounce } from 'lodash';
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/superAdminStyle/AccountManagement.css";
@@ -48,7 +53,11 @@ const AccountManagement = () => {
   const navigate = useNavigate();
   const [modalMessage, setModalMessage] = useState("");
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
-
+  const [searchTerm, setSearchTerm] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [departmentFilter, setDepartmentFilter] = useState("");
+  const [filteredAccounts, setFilteredAccounts] = useState([]);
 
   useEffect(() => {
     const loginSuccessFlag = sessionStorage.getItem("loginSuccess");
@@ -64,28 +73,35 @@ const AccountManagement = () => {
   }, [location.state, navigate]);
 
   useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "accounts"));
-        const accountList = querySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-
-        setAccounts(accountList);
-
-      } catch (error) {
-        console.error("Error fetching accounts:", error);
-        message.error("Failed to load accounts.");
-      }
-    };
+    const accountsCollection = collection(db, 'accounts');
   
-    fetchAccounts();
+    const unsubscribe = onSnapshot(accountsCollection, (querySnapshot) => {
+      const accountList = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+  
+      setAccounts(accountList);
+      
+    }, (error) => {
+      console.error("Error fetching accounts in real-time: ", error);
+      message.error("Failed to load accounts.");
+    });
+  
+    return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
 
   useEffect(() => {
     fetchAdminCredentials();
   }, []);
+
+  useEffect(() => {
+    handleSearch();
+  }, [searchTerm, roleFilter, statusFilter, departmentFilter]);
+  
+  useEffect(() => {
+    setFilteredAccounts(accounts); 
+  }, [accounts]);
 
   useEffect(() => {
     const handleBackButton = (event) => {
@@ -105,6 +121,34 @@ const AccountManagement = () => {
     setShowModal(false);
     sessionStorage.removeItem("loginSuccess");
   };  
+
+  const handleSearch = () => {
+    let filteredData = [...accounts]; // Start with all accounts
+    
+    if (searchTerm) {
+      filteredData = filteredData.filter(
+        (account) =>
+          account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          account.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+  
+    if (roleFilter) {
+      filteredData = filteredData.filter((account) => account.role === roleFilter);
+    }
+  
+    if (statusFilter) {
+      filteredData = filteredData.filter(
+        (account) => (statusFilter === "Active" ? !account.disabled : account.disabled)
+      );
+    }
+  
+    if (departmentFilter) {
+      filteredData = filteredData.filter((account) => account.department === departmentFilter);
+    }
+  
+    setFilteredAccounts(filteredData); 
+  };
 
   const fetchAdminCredentials = async () => {
     try {
@@ -138,11 +182,33 @@ const AccountManagement = () => {
   };
 
   const handleSave = async (values) => {
+    // Sanitize input by trimming extra spaces and lowering the case
+    const sanitizedValues = {
+      ...values,
+      name: values.name.trim().toLowerCase(),
+      email: values.email.trim().toLowerCase(),
+    };
+
+    // Check if the employeeId already exists in the 'accounts' collection
+    const employeeQuery = query(
+      collection(db, "accounts"),
+      where("employeeId", "==", sanitizedValues.employeeId.trim())
+    );
+    
+    const employeeSnapshot = await getDocs(employeeQuery);
+    
+    if (!employeeSnapshot.empty && employeeSnapshot.docs[0].id !== (editingAccount?.id || null)) {
+      setModalMessage("This employee ID is already in use!");
+      setIsNotificationVisible(true);
+      return;
+    }
+  
+    // Check for duplicates, ensuring all names and emails are unique
     const isDuplicate = accounts.some(
       (acc) =>
         acc.id !== (editingAccount?.id || null) &&
-        (acc.name.toLowerCase() === values.name.toLowerCase() ||
-          acc.email.toLowerCase() === values.email.toLowerCase())
+        (acc.name.toLowerCase() === sanitizedValues.name ||
+          acc.email.toLowerCase() === sanitizedValues.email)
     );
   
     if (isDuplicate) {
@@ -150,57 +216,81 @@ const AccountManagement = () => {
       setIsNotificationVisible(true);
       return;
     }
-
-    if (editingAccount) {
-      try {
+  
+    try {
+      if (editingAccount) {
+        // If editing an existing account
         const accountRef = doc(db, "accounts", editingAccount.id);
-        await updateDoc(accountRef, values);
+        await updateDoc(accountRef, sanitizedValues);
   
         const updatedAccounts = accounts.map((acc) =>
-          acc.id === editingAccount.id ? { ...acc, ...values } : acc
+          acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
         );
-
+  
         setAccounts(updatedAccounts);
         setModalMessage("Account updated successfully!");
-        setIsNotificationVisible(true);
-
-      } catch (error) {
-        console.error("Error updating account:", error);
-        message.error("Failed to update account.");
-      }
-
-    } else {
-      try {
-        const docRef = await addDoc(collection(db, "accounts"), values);
-        const newAccount = { ...values, id: docRef.id };
+        
+      } else {
+        // If adding a new account
+        const docRef = await addDoc(collection(db, "accounts"), sanitizedValues);
+        const newAccount = { ...sanitizedValues, id: docRef.id };
   
         setAccounts([...accounts, newAccount]);
         setModalMessage("Account added successfully!");
-        setIsNotificationVisible(true);
-
-      } catch (error) {
-        console.error("Error adding account:", error);
-        setModalMessage("Failed to update account.");
-        setIsNotificationVisible(true);
       }
-    }
   
-    setIsModalVisible(false);
-  };
-  
-  const handleDelete = async (id) => {
-    try {
-      await deleteDoc(doc(db, "accounts", id));
-      const updatedAccounts = accounts.filter((acc) => acc.id !== id);
-      setAccounts(updatedAccounts);
-      setModalMessage("Account deleted successfully!");
       setIsNotificationVisible(true);
 
     } catch (error) {
-      console.error("Error deleting account:", error);
-      message.error("Failed to delete account.");
+      console.error("Error handling account:", error);
+      setModalMessage("Failed to update account.");
+      setIsNotificationVisible(true);
+    }
+  
+    setIsModalVisible(false);
+  };  
+  
+  const handleDisable = async (id) => {
+    try {
+      // 1. Mark the account as disabled in Firestore
+      await updateDoc(doc(db, "accounts", id), {
+        disabled: true,
+      });
+  
+      // 2. Update local state
+      const updatedAccounts = accounts.map((acc) =>
+        acc.id === id ? { ...acc, disabled: true } : acc
+      );
+      setAccounts(updatedAccounts);
+  
+      setModalMessage("Account disabled successfully!");
+      setIsNotificationVisible(true);
+
+    } catch (error) {
+      console.error("Error disabling account:", error);
+      message.error("Failed to disable account.");
     }
   };
+
+  const handleEnable = async (id) => {
+    try {
+      await updateDoc(doc(db, "accounts", id), {
+        disabled: false,
+      });
+  
+      const updatedAccounts = accounts.map((acc) =>
+        acc.id === id ? { ...acc, disabled: false } : acc
+      );
+      setAccounts(updatedAccounts);
+  
+      setModalMessage("Account enabled successfully!");
+      setIsNotificationVisible(true);
+
+    } catch (error) {
+      console.error("Error enabling account:", error);
+      message.error("Failed to enable account.");
+    }
+  };  
 
   const handlePasswordConfirm = () => {
     if (adminCredentials && password === adminCredentials.password) {
@@ -209,8 +299,9 @@ const AccountManagement = () => {
         showModalHandler(accountToEdit);
 
       } else if (actionType === "delete") {
-        handleDelete(selectedAccountId); 
+        handleDisable(selectedAccountId); 
       }
+
       message.success("Password confirmed!");
       setIsPasswordModalVisible(false);
       setPassword("");
@@ -250,11 +341,20 @@ const AccountManagement = () => {
       key: "department",
     },
     {
-      title: "Role",
-      dataIndex: "role",
-      render: (role) => (
-        <Tag color={role === "Admin1" ? "volcano" : role === "Admin2" ? "geekblue" : "green"}>
-          {role.toLowerCase()}
+      title: "Job Title",
+      dataIndex: "jobTitle",
+      render: (jobTitle) => (
+        <Tag color={jobTitle === "Dean" ? "volcano" : jobTitle === "Laboratory Custodian" ? "geekblue" : "green"}>
+          {jobTitle.toLowerCase()}
+        </Tag>
+      ),
+    },
+    {
+      title: "Status",
+      key: "status",
+      render: (_, record) => (
+        <Tag color={record.disabled ? "red" : "green"}>
+          {record.disabled ? "Disabled" : "Active"}
         </Tag>
       ),
     },
@@ -267,23 +367,31 @@ const AccountManagement = () => {
             type="link"
             icon={<EditOutlined />}
             onClick={() => confirmEdit(record)}
+            disabled={record.disabled} 
           />
           
-          <Popconfirm
-            title="Are you sure you want to delete this account?"
-            onConfirm={() => confirmDelete(record.id)} 
-            okText="Yes"
-            cancelText="No"
-          >
-            <Button
-              type="link"
-              danger
-              icon={<DeleteOutlined />}
-            />
-          </Popconfirm>
+          {record.disabled ? (
+            <Popconfirm
+              title="Enable this account?"
+              onConfirm={() => handleEnable(record.id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="link" style={{ color: "green" }}>Enable</Button>
+            </Popconfirm>
+          ) : (
+            <Popconfirm
+              title="Are you sure you want to disable this account?"
+              onConfirm={() => confirmDelete(record.id)}
+              okText="Yes"
+              cancelText="No"
+            >
+              <Button type="link" danger>Disable</Button>
+            </Popconfirm>
+          )}
         </>
       ),
-    },
+    }    
   ];
 
   return (
@@ -303,8 +411,50 @@ const AccountManagement = () => {
             </Button>
           </div>
 
+          <div className="filters">
+            <Input
+              placeholder="Search by name or email"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            <Select
+              placeholder="Select Role"
+              value={roleFilter}
+              onChange={(value) => setRoleFilter(value)}
+             allowClear
+            >
+              <Option value="admin">Admin</Option>
+              <Option value="super-user">super-user</Option>
+              <Option value="User">User</Option>
+            </Select>
+
+            <Select
+              placeholder="Select Status"
+              value={statusFilter}
+              onChange={(value) => setStatusFilter(value)}
+              allowClear
+            >
+              <Option value="Active">Active</Option>
+              <Option value="Disabled">Disabled</Option>
+            </Select>
+
+            <Select
+              placeholder="Select Department"
+              value={departmentFilter}
+              onChange={(value) => setDepartmentFilter(value)}
+              allowClear
+            >
+              <Option value="Nursing">Nursing</Option>
+              <Option value="Medical Technology">Medical Technology</Option>
+              <Option value="Dentistry">Dentistry</Option>
+              <Option value="Pharmacy">Pharmacy</Option>
+            </Select>
+          </div>
+
           <Table
-            dataSource={accounts}
+            // dataSource={accounts}
+            dataSource={filteredAccounts}
             columns={columns}
             rowKey="id"
             className="account-table"
@@ -343,6 +493,20 @@ const AccountManagement = () => {
               </Form.Item>
 
               <Form.Item
+                name="employeeId"
+                label="Employee ID"
+                rules={[
+                  { required: true, message: "Please input Employee ID!" },
+                  {
+                    pattern: /^\d{2}-\d{4}$/,
+                    message: "Format must be like 12-0430",
+                  },
+                ]}
+              >
+                <Input placeholder="e.g., 12-0430" />
+              </Form.Item>
+
+              <Form.Item
                 name="department"
                 label="Department"
                 rules={[
@@ -363,16 +527,39 @@ const AccountManagement = () => {
               </Form.Item>
 
               <Form.Item
-                name="role"
-                label="Role"
+                name="jobTitle"
+                label="Job Title"
                 rules={[{ required: true, message: "Please select a role" }]}
               >
-                <Select placeholder="Select Role">
-                <Option value="Admin1">Admin1</Option>
-                <Option value="Admin2">Admin2</Option>
-                <Option value="User">User</Option>
+                <Select
+                  placeholder="Select Role"
+                  onChange={(value) => {
+                    form.setFieldsValue({
+                      role:
+                        value === "Dean"
+                          ? "admin"
+                          : value === "Laboratory Custodian"
+                          ? "super-user"
+                          : value === "Faculty"
+                          ? "User"
+                          : "",
+                    });
+                  }}
+                >
+                  <Option value="Dean">Dean</Option>
+                  <Option value="Laboratory Custodian">Laboratory Custodian</Option>
+                  <Option value="Faculty">Faculty</Option>
                 </Select>
               </Form.Item>
+
+              <Form.Item
+                name="role"
+                label="Role"
+                rules={[{ required: true, message: "Job title is required" }]}
+              >
+                <Input disabled />
+              </Form.Item>
+
             </Form>
           </Modal>
         </Content>

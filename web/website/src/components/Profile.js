@@ -33,7 +33,6 @@ const { Title, Text } = Typography;
 const Profile = () => {
   const [formData, setFormData] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
-  const [pageTitle, setPageTitle] = useState("Profile");
   const [userDocRef, setUserDocRef] = useState(null);
 
   const fileInputRef = useRef();
@@ -191,12 +190,15 @@ const Profile = () => {
                   <p>
                     <strong>Name:</strong> {formData.name}
                   </p>
+                  
                   <p>
                     <strong>Department:</strong> {formData.department}
                   </p>
+
                   <p>
-                    <strong>Position:</strong> {formData.role}
+                    <strong>Job Title:</strong> {formData.jobTitle}
                   </p>
+  
                   <p>
                     <strong>Email:</strong> {formData.email}
                   </p>

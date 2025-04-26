@@ -199,4 +199,39 @@ export default StyleSheet.create({
     alignItems: 'center',
     marginBottom: 6,
   },
+
+  table: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    marginVertical: 10,
+    overflow: 'hidden',
+  },
+
+  tableRowHeader: {
+    flexDirection: 'row',
+    backgroundColor: '#ddd',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderColor: '#ccc',
+  },
+  
+  tableRow: {
+    flexDirection: 'row',
+    paddingVertical: 8,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+  
+  tableCellHeader: {
+    fontWeight: 'bold',
+    paddingHorizontal: 8,
+    fontSize: 14,
+  },
+  
+  tableCell: {
+    paddingHorizontal: 8,
+    fontSize: 14,
+  },
+  
 });
