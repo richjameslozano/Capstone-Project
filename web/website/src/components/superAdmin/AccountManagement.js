@@ -22,7 +22,9 @@ import {
   updateDoc,
   deleteDoc,
   doc,
-  onSnapshot
+  onSnapshot,
+  query,
+  where,
 } from "firebase/firestore";
 import { debounce } from 'lodash';
 import Sidebar from "../Sidebar";
@@ -186,6 +188,20 @@ const AccountManagement = () => {
       name: values.name.trim().toLowerCase(),
       email: values.email.trim().toLowerCase(),
     };
+
+    // Check if the employeeId already exists in the 'accounts' collection
+    const employeeQuery = query(
+      collection(db, "accounts"),
+      where("employeeId", "==", sanitizedValues.employeeId.trim())
+    );
+    
+    const employeeSnapshot = await getDocs(employeeQuery);
+    
+    if (!employeeSnapshot.empty && employeeSnapshot.docs[0].id !== (editingAccount?.id || null)) {
+      setModalMessage("This employee ID is already in use!");
+      setIsNotificationVisible(true);
+      return;
+    }
   
     // Check for duplicates, ensuring all names and emails are unique
     const isDuplicate = accounts.some(

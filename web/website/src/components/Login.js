@@ -341,6 +341,13 @@ const Login = () => {
   const handleSignUp = async () => {
     const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
     const auth = getAuth();
+
+    // Step 0: Validate employee ID format
+    const employeeIdPattern = /^\d{2}-\d{4}$/;
+    if (!employeeIdPattern.test(employeeId.trim())) {
+      setError("Invalid employee ID format. Please use the format ##-#### (e.g., 12-3456).");
+      return;
+    }
   
     // Step 1: Ensure the email domain is valid
     const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
@@ -372,6 +379,7 @@ const Login = () => {
         collection(db, "pendingaccounts"),
         where("email", "==", email.trim().toLowerCase())
       );
+      
       const emailQueryAccounts = query(
         collection(db, "accounts"),
         where("email", "==", email.trim().toLowerCase())
@@ -457,7 +465,6 @@ const Login = () => {
       }
     }
   };
-  
   
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail) {
@@ -547,9 +554,15 @@ const Login = () => {
                 <label>Employee ID</label>
                 <input
                   type="text"
-                  name="employeeId"
                   value={signUpData.employeeId}
-                  onChange={handleSignUpChange}
+                  onChange={(e) => {
+                    const rawValue = e.target.value;
+                    // Allow only digits and dash, max length 7
+                    if (/^[0-9-]{0,7}$/.test(rawValue)) {
+                      setSignUpData({ ...signUpData, employeeId: rawValue });
+                    }
+                  }}
+                  placeholder="e.g., 12-3456"
                   required
                 />
               </div>
