@@ -15,7 +15,7 @@ import { notification, Modal } from "antd";
 import bcrypt from "bcryptjs";
 import "./styles/Login.css";
 
-import trybg2 from './try-bg.svg'
+import trybg2 from '../try-bg2.svg'
 import NotificationModal from "./customs/NotificationModal";
 import TermsModal from "./customs/TermsModal";
 
@@ -657,18 +657,19 @@ const Login = () => {
                     </div>
                   </div>
   
-                  {/* Terms and Conditions Checkbox */}
-                  <div className="form-group">
+                  <div className="terms-checkbox">
                     <input
                       type="checkbox"
                       name="termsChecked"
                       checked={termsChecked}
                       onChange={() => setTermsChecked(!termsChecked)}
                       required
+                      id="termsCheckbox"
                     />
-                    <label>
-                      I agree to the{' '}
-                      <span onClick={openTermsModal} style={{ cursor: 'pointer', color: '#007bff' }}>
+                    
+                    <label htmlFor="termsCheckbox">
+                      I agree to{' '}
+                      <span onClick={openTermsModal} className="terms-link">
                         Terms and Conditions
                       </span>
                     </label>
