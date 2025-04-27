@@ -41,14 +41,6 @@ export default function UserDashboard({ navigation }) {
         contentContainerStyle={styles.grid}
         style={{marginTop: 60}}
       />
-
-      <TouchableOpacity 
-        style={styles.card} 
-        onPress={() => navigation.navigate('Admin2Dashboard')}
-      >
-        <Icon name="account-cog" size={40} color="#333" />
-        <Text style={styles.cardTitle}>Admin Panel</Text>
-      </TouchableOpacity>
     </View>
   );
 }
