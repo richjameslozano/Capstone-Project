@@ -37,7 +37,9 @@ const Login = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [signUpMode, setSignUpMode] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
+  const [isSessionActive, setIsSessionActive] = useState(true);
   const [signUpData, setSignUpData] = useState({
+    
     name: "",
     email: "",
     employeeId: '',
@@ -47,14 +49,53 @@ const Login = () => {
     confirmPassword: "",
     termsAccepted: false,
   });
+  let sessionTimeout;
+  const SESSION_DURATION = 30 * 60 * 1000; // 30 minutes in milliseconds
   const navigate = useNavigate();
-
   const openTermsModal = () => setIsTermModalVisible(true);
   const closeTermsModal = () => setIsTermModalVisible(false);
 
   const [animateInputs, setAnimateInputs] = useState(false);
 
   useEffect(() => {
+    const handleActivity = () => {
+        setIsSessionActive(true);
+        resetSessionTimeout();
+    };
+
+    const resetSessionTimeout = () => {
+        clearTimeout(sessionTimeout);
+        setIsSessionActive(false);
+        sessionTimeout = setTimeout(() => {
+            alert("Session expired due to inactivity. You will be logged out.");
+            logout();
+        }, SESSION_DURATION);
+    };
+     // Add event listeners for user activity
+     window.addEventListener("mousemove", handleActivity);
+     window.addEventListener("keypress", handleActivity);
+     window.addEventListener("click", handleActivity);
+     window.addEventListener("scroll", handleActivity);
+     resetSessionTimeout();
+
+     return () => {
+      clearTimeout(sessionTimeout);
+      window.removeEventListener("mousemove", handleActivity);
+      window.removeEventListener("keypress", handleActivity);
+      window.removeEventListener("click", handleActivity);
+      window.removeEventListener("scroll", handleActivity);
+  };
+}, []);
+
+const logout = async () => {
+  await signOut(auth);
+  localStorage.clear(); // Clear local storage
+  navigate("/login"); // Redirect to login page
+};
+
+
+
+     useEffect(() => {
     const handleBackButton = (event) => {
       event.preventDefault();
       window.history.pushState(null, "", window.location.href);
