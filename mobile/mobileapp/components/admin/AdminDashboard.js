@@ -43,7 +43,7 @@ export default function AdminDashboard({ navigation }) {
           contentContainerStyle={styles.grid}
         />
 
-        <View style={{ alignItems: 'center', marginVertical: 10 }}>
+        {/* <View style={{ alignItems: 'center', marginVertical: 10 }}>
           <TouchableOpacity 
             style={styles.bottomSheetTrigger} 
             onPress={() => setModalVisible(true)}
@@ -51,7 +51,7 @@ export default function AdminDashboard({ navigation }) {
             <Text style={styles.footerText}>📊 View Data Analysis</Text>
             <Icon name="chevron-up" size={20} color="white" />
           </TouchableOpacity>
-        </View>
+        </View> */}
 
         <DataAnalysisModal isVisible={isModalVisible} onClose={() => setModalVisible(false)} />
       </View>

@@ -419,10 +419,10 @@ const AccountManagement = () => {
             />
 
             <Select
+              className="select-role"
               placeholder="Select Role"
-              value={roleFilter}
               onChange={(value) => setRoleFilter(value)}
-             allowClear
+              allowClear
             >
               <Option value="admin">Admin</Option>
               <Option value="super-user">super-user</Option>
@@ -430,8 +430,8 @@ const AccountManagement = () => {
             </Select>
 
             <Select
+             className="select-status"
               placeholder="Select Status"
-              value={statusFilter}
               onChange={(value) => setStatusFilter(value)}
               allowClear
             >
@@ -440,8 +440,8 @@ const AccountManagement = () => {
             </Select>
 
             <Select
+             className="select-department"
               placeholder="Select Department"
-              value={departmentFilter}
               onChange={(value) => setDepartmentFilter(value)}
               allowClear
             >
@@ -492,7 +492,7 @@ const AccountManagement = () => {
                 <Input placeholder="Enter Email" />
               </Form.Item>
 
-              <Form.Item
+              {/* <Form.Item
                 name="employeeId"
                 label="Employee ID"
                 rules={[
@@ -504,6 +504,28 @@ const AccountManagement = () => {
                 ]}
               >
                 <Input placeholder="e.g., 12-0430" />
+              </Form.Item> */}
+
+              <Form.Item
+                name="employeeId"
+                label="Employee ID"
+                rules={[
+                  { required: true, message: "Please input Employee ID!" },
+                  {
+                    pattern: /^\d{2}-\d{4}$/,
+                    message: "Format must be like 12-0430",
+                  },
+                ]}
+              >
+                <Input 
+                  placeholder="e.g., 12-0430"
+                  maxLength={7}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const onlyNumbersAndDash = value.replace(/[^0-9-]/g, ""); // Remove non-numeric/non-dash
+                    e.target.value = onlyNumbersAndDash; // Set corrected value back
+                  }}
+                />
               </Form.Item>
 
               <Form.Item

@@ -40,6 +40,7 @@ import HistoryLog from './users/HistoryLog';
 import RequestLog from './admin/RequestLog';
 import AdminActivityLog from './admin/AdminActivityLog';
 import NotAuthorized from './NotAuthorized';
+import CapexList from './admin/CapexList';
 
 const { Header, Sider, Content } = Layout;
 
@@ -157,7 +158,7 @@ const LayoutMain = () => {
 
       case "/main/history-log":
         setSelectedKey("14");
-        setPageTitle("History Log");
+        setPageTitle("Status Board");
         break;
 
       case "/main/request-log":
@@ -173,6 +174,11 @@ const LayoutMain = () => {
       case "/main/pending-accounts":
         setSelectedKey("17");
         setPageTitle("Pending Accounts");
+        break;
+
+      case "/main/capex-request-list":
+        setSelectedKey("18");
+        setPageTitle("Capex Request List");
         break;
 
       default:
@@ -224,6 +230,7 @@ const LayoutMain = () => {
     localStorage.removeItem("userName");
     localStorage.removeItem("userDepartment");
     localStorage.removeItem("userPosition");
+    localStorage.removeItem("userJobTitle");
 
     navigate("/", { replace: true });
   };
@@ -277,6 +284,11 @@ const LayoutMain = () => {
       key: "/main/request-log",
       icon: <HistoryOutlined />,
       label: "Request Log",
+    },
+    {
+      key: "/main/capex-request-list",
+      icon: <HistoryOutlined />,
+      label: "Capex Request List",
     },
     {
       key: "logout",
@@ -349,7 +361,7 @@ const LayoutMain = () => {
     {
       key: "/main/history-log",
       icon: <ClockCircleOutlined />,
-      label: "History Log",
+      label: "Status Board",
     },
     {
       key: "/main/capex-request",
@@ -430,28 +442,10 @@ const LayoutMain = () => {
             borderRadius: borderRadiusLG,
           }}
         >
-          {/* <Routes>
-            <Route path="/dashboard" element={<ProtectedRoute element={<Dashboard />} />} />
-            <Route path="/inventory" element={<ProtectedRoute element={<Inventory />} />} />
-            <Route path="/pending-request" element={<ProtectedRoute element={<PendingRequest />} />} />
-            <Route path="/borrow-catalog" element={<ProtectedRoute element={<BorrowCatalog />} />} />
-            <Route path="/history" element={<ProtectedRoute element={<History />} />} />
-            <Route path="/profile" element={<ProtectedRoute element={<Profile />} />} />
-            <Route path="/accounts" element={<ProtectedRoute element={<AccountManagement />} />} />
-            <Route path="/requisition" element={<ProtectedRoute element={<Requisition />} />} />
-            <Route path="/request-list" element={<ProtectedRoute element={<RequestList />} />} />
-            <Route path="/activity-log" element={<ProtectedRoute element={<ActivityLog />} />} />
-            <Route path="/search-items" element={<ProtectedRoute element={<SearchItems />} />} />
-            <Route path="/capex-request" element={<ProtectedRoute element={<CapexRequest />} />} />
-            <Route path="/return-items" element={<ProtectedRoute element={<ReturnItems />} />} />
-            <Route path="/history-log" element={<ProtectedRoute element={<HistoryLog/>} />} />
-            <Route path="/request-log" element={<ProtectedRoute element={<RequestLog/>} />} />
-            <Route path="/admin-activity-log" element={<ProtectedRoute element={<AdminActivityLog/>} />} />
-          </Routes> */}
 
           <Routes>
             {/* Routes accessible to all logged-in users */}
-            <Route element={<ProtectedRoute allowedRoles={["admin", "user", "super-admin", "super-user"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={["admin", "user", "super-admin", "super-user"]} />} >
               <Route path="/profile" element={<Profile />} />
               <Route path="/activity-log" element={<ActivityLog />} />
               <Route path="/history-log" element={<HistoryLog />} />
@@ -460,7 +454,7 @@ const LayoutMain = () => {
             {/* Superadmin-only routes */}
             <Route element={<ProtectedRoute allowedRoles={["super-admin"]} />}>
               <Route path="/accounts" element={<AccountManagement />} />
-              <Route path="/pending-accounts" element={<PendingAccounts/>} />
+              <Route path="/pending-accounts" element={<PendingAccounts />} />
             </Route>
 
             {/* Admin-only routes */}
@@ -473,13 +467,17 @@ const LayoutMain = () => {
               <Route path="/admin-activity-log" element={<AdminActivityLog />} />
             </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+              <Route path="/capex-request-list" element={<CapexList/>} />
+            </Route>
+
             {/* User-only routes */}
             <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
               <Route path="/requisition" element={<Requisition />} />
               <Route path="/request-list" element={<RequestList />} />
               <Route path="/search-items" element={<SearchItems />} />
-              <Route path="/capex-request" element={<CapexRequest />} />
               <Route path="/return-items" element={<ReturnItems />} />
+              <Route path="/capex-request" element={<CapexRequest />} />
             </Route>
 
             <Route path="/not-authorized" element={<NotAuthorized />} />
