@@ -1,0 +1,65 @@
+import React, { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import SessionTimeoutModal from './customs/SessionTimeoutModal';
+
+
+
+export function TimeoutProvider({ children }) {
+    const navigate = useNavigate();
+    const location = useLocation();
+    const timeoutRef = useRef();
+    const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
+    const SESSION_TIMEOUT = 60000; // 60 seconds change when desired
+    const exemptedRoutes = ['/', '/signup']; // Routes that should not trigger timeout
+
+    useEffect(() => {
+        if (exemptedRoutes.includes(location.pathname)) return;
+
+        const handleActivity = () => {
+            clearTimeout(timeoutRef.current);
+            setIsModalVisible(false); // Hide modal on activity
+            timeoutRef.current = setTimeout(() => {
+                setIsModalVisible(true); // Show modal on session timeout
+                navigate('/'); // Example action on timeout
+            }, SESSION_TIMEOUT);
+        };
+
+        // Add event listeners for user activity
+        window.addEventListener('mousemove', handleActivity);
+        window.addEventListener('keydown', handleActivity);
+        window.addEventListener('click', handleActivity);
+        window.addEventListener('scroll', handleActivity);
+
+        // Start the session timeout
+        handleActivity();
+
+        // Cleanup event listeners and timeout on component unmount
+        return () => {
+            clearTimeout(timeoutRef.current);
+            window.removeEventListener('mousemove', handleActivity);
+            window.removeEventListener('keydown', handleActivity);
+            window.removeEventListener('click', handleActivity);
+            window.removeEventListener('scroll', handleActivity);
+        };
+    }, [navigate, location.pathname]);
+    const handleLogout = () => {
+        // Clear user session and redirect to login
+        localStorage.clear(); // Clear local storage
+        navigate('/'); // Redirect to login page
+    };
+
+    const handleModalClose = () => {
+        setIsModalVisible(false); // Close the modal
+        handleLogout(); // Log out the user
+    };
+
+    return (
+        <>
+            {children}
+            <SessionTimeoutModal
+                isVisible={isModalVisible}
+                onClose={handleModalClose}
+            />
+        </>
+    );
+}

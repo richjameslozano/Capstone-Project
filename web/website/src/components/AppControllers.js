@@ -20,6 +20,7 @@ import SessionTimeout from './SessionTimeout';
 import HistoryLog from './users/HistoryLog';
 import RequestLog from './admin/RequestLog';
 import AdminActivityLog from './admin/AdminActivityLog';
+import { TimeoutProvider } from './TimeoutProvider';
 
 const AppWrapper = () => {
   const location = useLocation();
@@ -37,12 +38,14 @@ const AppWrapper = () => {
   return (
     <>
       {shouldShowTimeout && <SessionTimeout onLogout={handleSignOut} />}
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route element={<ProtectedRoute />}>
-          <Route path="/main/*" element={<LayoutMain />} />
-        </Route>
-      </Routes>
+      <TimeoutProvider>
+          <Routes>
+            <Route path="/" element={<Login />} />
+              <Route element={<ProtectedRoute />}>
+              <Route path="/main/*" element={<LayoutMain />} />
+            </Route>
+          </Routes>
+      </TimeoutProvider>
     </>
   );
 };
