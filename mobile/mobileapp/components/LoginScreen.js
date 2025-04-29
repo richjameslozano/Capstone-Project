@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { TextInput, Text, Card, HelperText, Menu, Button } from 'react-native-paper';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import CustomButton from './customs/CustomButton';
-import ForgotPasswordModal from './ForgotPasswordModal';
+  import { MaterialCommunityIcons } from '@expo/vector-icons';
+  import CustomButton from './customs/CustomButton';
+  import ForgotPasswordModal from './ForgotPasswordModal';
 import styles from './styles/LoginStyle';
 import { useAuth } from '../components/contexts/AuthContext';
 import { db, auth } from '../backend/firebase/FirebaseConfig';

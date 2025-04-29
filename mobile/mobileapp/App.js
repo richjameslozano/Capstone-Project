@@ -14,11 +14,12 @@ import Icon from 'react-native-vector-icons/Ionicons';
 
 import ActivityLogScreen from './components/admin/ActivityLogScreen';
 import LoginScreen from './components/LoginScreen';
+import LoginScreen2 from './components/LoginScreen2';
 import UserDashboard from './components/user/UserDashboard';
 import CalendarScreen from './components/user/CalendarScreen';
 import PolicyScreen from './components/PolicyScreen';
 import ProfileScreen from './components/user/ProfileScreen';
-import Admin2Dashboard from './components/admin/AdminDashboard';
+import AdminDashboard from './components/admin/AdminDashboard';
 import PendingRequestScreen from './components/admin/PendingRequestScreen';
 import InventoryScreen from './components/InventoryScreen';
 import CameraScreen from './components/admin/CameraScreen';
@@ -26,7 +27,7 @@ import RequestScreen from './components/user/RequestScreen';
 import RequestListScreen from './components/user/RequestListScreen';
 import RequestLogScreen from './components/user/RequestLogScreen';
 import LogScreen from './components/admin/LogScreen';
-import InventoryStocks from './components/admin2/InventoryStocks';
+import InventoryStocks from './components/admin/InventoryStocks';
 import SearchItems from './components/user/SearchItems';
 import UserActivityLogScreen from './components/user/UserActivityLogScreen';
 import BorrowCatalogScreen from './components/admin/BorrowCatalogScreen';
@@ -135,7 +136,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')}>
+      <TouchableOpacity onPress={() => navigation.navigate('AdminDashboard')}>
         <Title style={styles.drawerItem}>Dashboard</Title>
       </TouchableOpacity>
 
@@ -226,11 +227,11 @@ function UserDrawer() {
 const AdminDrawer = () => {
   return (
     <Drawer.Navigator
-      initialRouteName="Admin2Dashboard"
+      initialRouteName="AdminDashboard"
       screenOptions={{ headerShown: false }}
       drawerContent={(props) => <CustomAdminDrawerContent {...props} />}
     >
-      <Drawer.Screen name="Admin2Dashboard" component={Admin2Dashboard} />
+      <Drawer.Screen name="AdminDashboard" component={AdminDashboard} />
       <Drawer.Screen name="PendingRequestScreen" component={PendingRequestScreen} />
       <Drawer.Screen name="InventoryScreen" component={InventoryScreen} />
       <Drawer.Screen name="CameraScreen" component={CameraScreen} />
@@ -253,7 +254,7 @@ export default function App() {
               <PaperProvider>
                 <NavigationContainer>
                   <Stack.Navigator>
-                    <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+                    <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />
                     <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>

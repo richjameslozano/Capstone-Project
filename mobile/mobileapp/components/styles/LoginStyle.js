@@ -28,9 +28,9 @@ export default StyleSheet.create({
     textAlign: 'center',
   },
 
-  input: {
-    marginBottom: 10,
-  },
+  // input: {
+  //   marginBottom: 10,
+  // },
 
   dropdown: {
     marginBottom: 10,
