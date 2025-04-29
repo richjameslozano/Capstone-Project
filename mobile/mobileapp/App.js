@@ -32,6 +32,8 @@ import SearchItems from './components/user/SearchItems';
 import UserActivityLogScreen from './components/user/UserActivityLogScreen';
 import BorrowCatalogScreen from './components/admin/BorrowCatalogScreen';
 import { RequestMetadataProvider } from './components/contexts/RequestMetadataContext';
+import CapexRequestScreen from './components/user/CapexRequestScreen';
+import CapexRequestList from './components/admin/CapexListScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -78,6 +80,10 @@ const CustomDrawerContent = ({ navigation }) => {
 
       <TouchableOpacity onPress={() => navigation.navigate('PolicyScreen')}>
         <Title style={styles.drawerItem}>Policy Screen</Title>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('CapexRequestScreen')}>
+        <Title style={styles.drawerItem}>Capex Request</Title>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -164,6 +170,10 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         <Title style={styles.drawerItem}>Borrow Catalog</Title>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={() => navigation.navigate('CapexRequestListScreen')}>
+        <Title style={styles.drawerItem}>Capex Request List</Title>
+      </TouchableOpacity>
+
       <TouchableOpacity
         style={styles.logoutButton} 
         onPress={() => {
@@ -220,6 +230,7 @@ function UserDrawer() {
       <Drawer.Screen name="SearchItems" component={SearchItems} />
       <Drawer.Screen name="UserActivityLogScreen" component={UserActivityLogScreen} />
       <Drawer.Screen name="InventoryScreen" component={InventoryScreen} />
+      <Drawer.Screen name="CapexRequestScreen" component={CapexRequestScreen} />
     </Drawer.Navigator>
   );
 }
@@ -240,6 +251,7 @@ const AdminDrawer = () => {
       <Drawer.Screen name="ActivityLogScreen" component={ActivityLogScreen} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
       <Drawer.Screen name="BorrowCatalogScreen" component={BorrowCatalogScreen} />
+      <Drawer.Screen name="CapexRequestListScreen" component={CapexRequestList} />
     </Drawer.Navigator>
   );
 };
