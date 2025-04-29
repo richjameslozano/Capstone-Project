@@ -22,6 +22,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
+import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/CapexRequestStyle';
 import Header from "../Header";
 
@@ -34,14 +35,15 @@ const CapexRequestScreen = () => {
   const [estimatedCost, setEstimatedCost] = useState("");
   const [justification, setJustification] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
+  const { user } = useAuth();
 
-  const userId = getAuth().currentUser?.uid;
+  const userId = getAuth().currentUser?.id;
   const userName = getAuth().currentUser?.displayName;
 
   useEffect(() => {
-    if (!userId) return;
+    if (!user?.id) return; // Use user.id instead of Firestore's getAuth()
 
-    const ref = collection(db, `accounts/${userId}/temporaryCapexRequest`);
+    const ref = collection(db, `accounts/${user.id}/temporaryCapexRequest`);
     const unsubscribe = onSnapshot(ref, (snapshot) => {
       const items = snapshot.docs
         .map((doc, index) => {
@@ -58,19 +60,33 @@ const CapexRequestScreen = () => {
     });
 
     return () => unsubscribe();
-  }, [userId]);
+  }, [user?.id]);
 
   const calculateTotal = (data) => {
     const total = data.reduce(
       (sum, item) => sum + (item.qty * item.estimatedCost || 0),
       0
     );
+
     setTotalPrice(total);
   };
 
   const handleSave = async () => {
     if (!itemDescription || !qty || !estimatedCost) {
       Alert.alert("Validation Error", "All fields are required");
+      return;
+    }
+
+    // Check if the item already exists
+    const existingItemQuery = await getDocs(
+      collection(db, `accounts/${user.id}/temporaryCapexRequest`)
+    );
+    const existingItem = existingItemQuery.docs.find(
+      (doc) => doc.data().itemDescription.toLowerCase() === itemDescription.toLowerCase()
+    );
+
+    if (existingItem) {
+      Alert.alert("Validation Error", "This item already exists in your CAPEX request.");
       return;
     }
 
@@ -90,6 +106,7 @@ const CapexRequestScreen = () => {
           editingItem.id
         );
         await setDoc(ref, itemData);
+
       } else {
         await addDoc(
           collection(db, `accounts/${userId}/temporaryCapexRequest`),
@@ -98,6 +115,7 @@ const CapexRequestScreen = () => {
       }
 
       resetForm();
+
     } catch (error) {
       Alert.alert("Error", "Failed to save item");
       console.error(error);
@@ -125,6 +143,7 @@ const CapexRequestScreen = () => {
   const handleDelete = async (id) => {
     try {
       await deleteDoc(doc(db, `accounts/${userId}/temporaryCapexRequest`, id));
+
     } catch (error) {
       console.error("Delete error:", error);
     }
@@ -157,6 +176,7 @@ const CapexRequestScreen = () => {
       const snapshot = await getDocs(
         collection(db, `accounts/${userId}/temporaryCapexRequest`)
       );
+
       await Promise.all(
         snapshot.docs.map((docSnap) =>
           deleteDoc(doc(db, `accounts/${userId}/temporaryCapexRequest`, docSnap.id))
@@ -166,6 +186,7 @@ const CapexRequestScreen = () => {
       Alert.alert("Success", "CAPEX Request submitted!");
       setDataSource([]);
       setTotalPrice(0);
+
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Submission failed");
