@@ -34,21 +34,26 @@ const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
     backgroundColor: '#6200ee',
-    paddingVertical: 12,
     paddingHorizontal: 20,
     borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
+    backgroundColor: '#002075',
+    borderRadius: 10,
+    paddingVertical: 10,
     marginTop: 10,
   },
+  
   text: {
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
+
   icon: {
     marginRight: 8,
   },
+
   disabledButton: {
     backgroundColor: '#b0b0b0',
   },

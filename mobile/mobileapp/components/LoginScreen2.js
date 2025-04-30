@@ -572,15 +572,24 @@ export default function LoginScreen({navigation}) {
             )}
 
             {/* Login/Sign Up Button */}
-            <Button
-            mode="contained"
-            onPress={isSignup ? handleSignup : handleLogin}
-            icon={isSignup ? "account-plus" : "login"}
-            style={styles.loginButton}
-            labelStyle={styles.loginButtonText}
-          >
-            {isSignup ? "Sign Up" : "Login"}
-          </Button>
+            {/* <Button
+              mode="contained"
+              onPress={isSignup ? handleSignup : handleLogin}
+              icon={isSignup ? "account-plus" : "login"}
+              style={styles.loginButton}
+              labelStyle={styles.loginButtonText}
+            >
+              {isSignup ? "Sign Up" : "Login"}
+            </Button> */}
+
+            <CustomButton
+              title={isSignup ? "Sign Up" : "Login"}
+              onPress={isSignup ? handleSignup : handleLogin}
+              icon={isSignup ? "account-plus" : "login"}
+              loading={loading}
+              style={styles.loginButton}
+              labelStyle={styles.loginButtonText}
+            />
 
             {/* Toggle Login/Signup */}
             <TouchableOpacity onPress={() => setIsSignup(!isSignup)}
