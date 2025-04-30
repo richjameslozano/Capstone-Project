@@ -18,8 +18,16 @@
 }
 
 .request-details {
+  display: flex;
+  flex-direction: column;
   margin-top: 20px;
 }
+
+/* .whole-setion{
+  display: flex; 
+  flex-direction: row;
+  width: 100%;
+} */
 
 .date-required,
 .reason-container {
