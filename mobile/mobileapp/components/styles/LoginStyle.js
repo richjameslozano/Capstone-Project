@@ -102,4 +102,132 @@ export default StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
+
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  inner: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  header: {
+    backgroundColor: '#002075',
+    height: '35%',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 50,
+  },
+  headerTitle: {
+    fontSize: 36,
+    color: '#ffffff',
+    fontWeight: 'bold',
+  },
+  subHeader: {
+    fontSize: 16,
+    color: '#c8e6c9',
+    marginTop: 8,
+  },
+  loginCard: {
+    flex: 1,
+    backgroundColor: '#ffffff',
+    marginTop: -40,
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+    padding: 20,
+    paddingTop: 30,
+    height: 'auto'
+  },
+  loginTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#374151',
+  },
+
+  signupTitle: {
+    fontSize: 14,
+    marginBottom: 30,
+    color: '#374151',
+    textAlign: 'center'
+  },
+
+  inputContainer: {
+    backgroundColor: '#f3f4f6',
+    borderBottomWidth: 0,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 0,
+  },
+  
+  inputContainer2: {
+    backgroundColor: '#f3f4f6',
+    borderBottomWidth: 0,
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    marginBottom: 0,
+  },
+
+  inputText: {
+    fontSize: 16,
+  },
+
+  forgotPassword: {
+    textAlign: 'right',
+    color: '#4B5563',
+    marginBottom: 20,
+    marginRight: 110,
+    fontSize: 14,
+  },
+
+  loginButton: {
+    backgroundColor: '#002075',
+  borderRadius: 10,
+  paddingVertical: 10,
+  marginTop: 10,
+  },
+
+  loginButtonText: {
+    fontSize: 18,
+  color: '#fff',
+  },
+
+  footerText: {
+    marginTop: 20,
+    textAlign: 'center',
+    color: '#6b7280',
+  },
+  
+  input: {
+    height: 20,
+    borderWidth: 1,
+    borderColor: '#9CA3AF',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginBottom: 10,
+  },
+
+  scrollContainer: {
+
+    flexGrow: 1,
+    paddingBottom: 80,
+    backgroundColor: 'white',
+    
+  },
+
+  label:{
+    paddingLeft: 10,
+    fontWeight: 800,
+    fontSize: 12,
+    marginBottom: 5
+  },
+
+  menucontainer:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingLeft: 10,
+    paddingRight: 10,
+    
+  }
 });

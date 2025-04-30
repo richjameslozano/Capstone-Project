@@ -1,50 +1,47 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation } from 'react-native';
-import { Input, Text } from 'react-native-elements';
-import { Icon } from 'react-native-elements';
-import { TextInput, Card, HelperText, Menu, Provider, Button  } from 'react-native-paper';
-
+import { Input, Text, Icon } from 'react-native-elements';
+import { TextInput, Card, HelperText, Menu, Provider, Button, Checkbox  } from 'react-native-paper';
 import { useAuth } from '../components/contexts/AuthContext';
 import { db, auth } from '../backend/firebase/FirebaseConfig';
 import { collection, query, where, getDocs, updateDoc, addDoc, serverTimestamp, Timestamp, setDoc, doc } from 'firebase/firestore';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, getAuth } from 'firebase/auth';
-
+import styles from './styles/LoginStyle';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CustomButton from './customs/CustomButton';
 import ForgotPasswordModal from './ForgotPasswordModal';
+import TermsModal from './customs/TermsModal';
 import {Animated} from 'react-native';
-
 import { ScrollView } from 'react-native-gesture-handler';
 
 
 export default function LoginScreen({navigation}) {
   const [showPassword, setShowPassword] = useState(false);
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [name, setName] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
+  const [isSignup, setIsSignup] = useState(false);
+  const [employeeID, setEmployeeID] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [department, setDepartment] = useState('');
+  const [jobMenuVisible, setJobMenuVisible] = useState(false);
+  const [deptMenuVisible, setDeptMenuVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [agreedToTerms, setAgreedToTerms] = useState(false);
+  const [isTermsModalVisible, setTermsModalVisible] = useState(false);
 
-
-    const { login } = useAuth();
-    const [email, setEmail] = useState('');
-    const [signUpEmail, setSignUpEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [signUpPassword, setSignUpPassword] = useState('');
-    const [name, setName] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [secureTextEntry, setSecureTextEntry] = useState(true);
-    const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
-    const [isSignup, setIsSignup] = useState(false);
-    const [employeeID, setEmployeeID] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [jobTitle, setJobTitle] = useState('');
-    const [department, setDepartment] = useState('');
-    const [jobMenuVisible, setJobMenuVisible] = useState(false);
-    const [deptMenuVisible, setDeptMenuVisible] = useState(false);
-    const [modalMessage, setModalMessage] = useState("");
-    const [isModalVisible, setIsModalVisible] = useState(false);
-
-
-    const jobOptions = ['Dean', 'Laboratory Custodian', 'Faculty'];
-    const deptOptions = ['Medical Technology', 'Nursing', 'Dentistry', 'Optometry'];
+  const jobOptions = ['Dean', 'Laboratory Custodian', 'Faculty'];
+  const deptOptions = ['Medical Technology', 'Nursing', 'Dentistry', 'Optometry'];
 
 
 
@@ -253,6 +250,12 @@ export default function LoginScreen({navigation}) {
           setLoading(false);
           return;
         }
+
+        if (!agreedToTerms) {
+          setError("You must agree to the Terms and Conditions.");
+          setLoading(false);
+          return;
+        }        
     
         // Step 4: Validate employee ID format (e.g. 12-3456)
         const employeeIdPattern = /^\d{2}-\d{4}$/;
@@ -505,6 +508,23 @@ export default function LoginScreen({navigation}) {
                   inputContainerStyle={styles.inputContainer}
                   inputStyle={styles.inputText}
                 />
+
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
+                  <Checkbox
+                    status={agreedToTerms ? 'checked' : 'unchecked'}
+                    onPress={() => setAgreedToTerms(!agreedToTerms)}
+                  />
+                  <TouchableOpacity onPress={() => setTermsModalVisible(true)}>
+                    <Text style={{ color: '#007BFF', textDecorationLine: 'underline' }}>
+                      View Terms and Conditions
+                    </Text>
+                  </TouchableOpacity>
+
+                  <TermsModal
+                    visible={isTermsModalVisible}
+                    onClose={() => setTermsModalVisible(false)}
+                  />
+                </View>
              
               </View>
             )}
@@ -586,127 +606,4 @@ export default function LoginScreen({navigation}) {
 
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
-  inner: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  header: {
-    backgroundColor: '#002075',
-    height: '35%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 50,
-  },
-  headerTitle: {
-    fontSize: 36,
-    color: '#ffffff',
-    fontWeight: 'bold',
-  },
-  subHeader: {
-    fontSize: 16,
-    color: '#c8e6c9',
-    marginTop: 8,
-  },
-  loginCard: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    marginTop: -40,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    padding: 20,
-    paddingTop: 30,
-    height: 'auto'
-  },
-  loginTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    color: '#374151',
-  },
-
-  signupTitle: {
-    fontSize: 14,
-    marginBottom: 30,
-    color: '#374151',
-    textAlign: 'center'
-  },
-
-  inputContainer: {
-    backgroundColor: '#f3f4f6',
-    borderBottomWidth: 0,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 0,
-  },
-  inputContainer2: {
-    backgroundColor: '#f3f4f6',
-    borderBottomWidth: 0,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 0,
-  },
-
-  inputText: {
-    fontSize: 16,
-  },
-  forgotPassword: {
-    textAlign: 'right',
-    color: '#4B5563',
-    marginBottom: 20,
-    marginRight: 10,
-    fontSize: 14,
-  },
-  loginButton: {
-    backgroundColor: '#002075',
-  borderRadius: 10,
-  paddingVertical: 10,
-  marginTop: 10,
-  },
-  loginButtonText: {
-    fontSize: 18,
-  color: '#fff',
-  },
-  footerText: {
-    marginTop: 20,
-    textAlign: 'center',
-    color: '#6b7280',
-  },
-  input: {
-    height: 20,
-    borderWidth: 1,
-    borderColor: '#9CA3AF',
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    marginBottom: 10,
-  },
-
-  scrollContainer: {
-
-    flexGrow: 1,
-    paddingBottom: 80,
-    backgroundColor: 'white',
-    
-  },
-  label:{
-    paddingLeft: 10,
-    fontWeight: 800,
-    fontSize: 12,
-    marginBottom: 5
-  },
-  menucontainer:{
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingLeft: 10,
-    paddingRight: 10,
-    
-  }
-  
-});
 
