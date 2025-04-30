@@ -97,9 +97,11 @@ const RequestLogScreen = () => {
                 : data.action || 'Modified a request';
   
               const by =
-                action === 'Request Approved'
-                  ? data.approvedBy
-                  : data.userName || 'Unknown User';
+                action === "Request Approved"
+                ? data.approvedBy
+                : action === "Request Rejected"
+                ? data.rejectedBy
+                : data.userName || "Unknown User";
   
               return {
                 key: doc.id || index.toString(),
