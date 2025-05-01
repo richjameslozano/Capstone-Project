@@ -697,7 +697,8 @@ const PendingRequest = () => {
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",
         timeTo: selectedRequest.timeTo || "N/A",
-        timestamp: new Date(),
+        timestamp: selectedRequest.timestamp || "N/A",
+        rawTimestamp: new Date(),
         requestList: enrichedItems,
         status: "Approved",
         approvedBy: userName,
@@ -714,7 +715,8 @@ const PendingRequest = () => {
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",
         timeTo: selectedRequest.timeTo || "N/A",
-        timestamp: new Date(),
+        timestamp: selectedRequest.timestamp || "N/A",
+        rawTimestamp: new Date(),
         requestList: rejectedItems,
         status: "Rejected",
         rejectedBy: userName,
@@ -754,7 +756,8 @@ const PendingRequest = () => {
           program: selectedRequest.program,
           timeFrom: selectedRequest.timeFrom || "N/A",
           timeTo: selectedRequest.timeTo || "N/A",
-          timestamp: new Date(),
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
         }
       );
   
@@ -775,7 +778,8 @@ const PendingRequest = () => {
             program: selectedRequest.program,
             timeFrom: selectedRequest.timeFrom || "N/A",
             timeTo: selectedRequest.timeTo || "N/A",
-            timestamp: new Date(),
+            timestamp: selectedRequest.timestamp || "N/A",
+            rawTimestamp: new Date(),
           }
         );
       }
@@ -855,7 +859,8 @@ const PendingRequest = () => {
           dateRequired: selectedRequest.dateRequired || "N/A",
           timeFrom: selectedRequest.timeFrom || "N/A",
           timeTo: selectedRequest.timeTo || "N/A",
-          timestamp: new Date(),
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
           requestList: formattedItems,
           status: "Borrowed",
           approvedBy: userName,
@@ -867,7 +872,8 @@ const PendingRequest = () => {
           ...requestLogEntry,
           status: "Approved",
           approvedBy: userName,
-          timestamp: new Date(),
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
         };
   
         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
@@ -1042,7 +1048,8 @@ const PendingRequest = () => {
       dateRequired: selectedRequest.dateRequired || "N/A",
       timeFrom: selectedRequest.timeFrom || "N/A",  
       timeTo: selectedRequest.timeTo || "N/A",  
-      timestamp: new Date(),
+      timestamp: selectedRequest.timestamp || "N/A",
+      rawTimestamp: new Date(),
       requestList: enrichedItems, 
       status: "Approved", 
       approvedBy: userName, 
@@ -1059,7 +1066,8 @@ const PendingRequest = () => {
       dateRequired: selectedRequest.dateRequired || "N/A",
       timeFrom: selectedRequest.timeFrom || "N/A",  
       timeTo: selectedRequest.timeTo || "N/A",  
-      timestamp: new Date(),
+      timestamp: selectedRequest.timestamp || "N/A",
+      rawTimestamp: new Date(),
       requestList: rejectedItems, 
       status: "Rejected", 
       rejectedBy: userName, 
@@ -1100,7 +1108,8 @@ const PendingRequest = () => {
         program: selectedRequest.program,
         timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
         timeTo: selectedRequest.timeTo || "N/A",  
-        timestamp: new Date(),
+        timestamp: selectedRequest.timestamp || "N/A",
+        rawTimestamp: new Date(),
       }
     );
 
@@ -1121,7 +1130,8 @@ const PendingRequest = () => {
           program: selectedRequest.program,
           timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
           timeTo: selectedRequest.timeTo || "N/A",  
-          timestamp: new Date(),
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
         }
       );
     }
@@ -1209,7 +1219,8 @@ const PendingRequest = () => {
           dateRequired: selectedRequest.dateRequired || "N/A",
           timeFrom: selectedRequest.timeFrom || "N/A",  // Add timeFrom
           timeTo: selectedRequest.timeTo || "N/A",  
-          timestamp: new Date(),
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
           requestList: formattedItems,  // Add all selected "Fixed" items together
           status: "Borrowed",  // Status as "Borrowed"
           approvedBy: userName,
@@ -1222,7 +1233,8 @@ const PendingRequest = () => {
           ...requestLogEntry,
           status: "Approved", 
           approvedBy: userName,
-          timestamp: new Date(),
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
         };
 
         // Add the borrow catalog entry to Firestore
