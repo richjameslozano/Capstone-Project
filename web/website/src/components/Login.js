@@ -750,7 +750,7 @@ const Login = () => {
   
               <div></div>
   
-              <button type="submit" className={signUpMode ? "signup-btn" : "login-btn"} disabled={isLoading}>
+              <button type="submit" className={signUpMode ? "signup-btn" : "login-btn"}  disabled={isLoading || (signUpMode && !termsChecked)}>
                 {isLoading ? (
                   <div className="loader"></div>
                 ) : signUpMode ? (
