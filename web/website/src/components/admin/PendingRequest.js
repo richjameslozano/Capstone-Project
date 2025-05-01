@@ -654,6 +654,7 @@ const PendingRequest = () => {
               if (inventoryDoc.exists()) {
                 itemType = inventoryDoc.data().type || "Unknown";
               }
+
             } catch (err) {
               console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
             }
@@ -682,6 +683,7 @@ const PendingRequest = () => {
           const userData = userDoc.data();
           userName = userData.name || "Unknown";
         }
+
       } catch (error) {
         console.error("Error fetching user name:", error);
       }
@@ -808,9 +810,11 @@ const PendingRequest = () => {
             });
       
             console.log(`✅ Successfully updated inventory for ${inventoryId}`);
+
           } else {
             console.error(`❌ Inventory item not found: ${inventoryId}`);
           }
+
         } catch (err) {
           console.error(`🔥 Failed to update inventory for ${inventoryId}:`, err.message);
         }
@@ -941,9 +945,11 @@ const PendingRequest = () => {
         if (selectedItemId) {
           try {
             const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+
             if (inventoryDoc.exists()) {
               itemType = inventoryDoc.data().type || "Unknown";
             }
+
           } catch (err) {
             console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
           }
@@ -976,6 +982,7 @@ const PendingRequest = () => {
         uncheckedItems,
         selectedRequest,
       });
+
       setIsRejectModalVisible(true);
       return; // Stop and wait for modal submission
     }    
@@ -992,6 +999,7 @@ const PendingRequest = () => {
             if (inventoryDoc.exists()) {
               itemType = inventoryDoc.data().type || "Unknown";
             }
+
           } catch (err) {
             console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
           }
@@ -1020,6 +1028,7 @@ const PendingRequest = () => {
         const userData = userDoc.data();
         userName = userData.name || "Unknown";
       }
+
     } catch (error) {
       console.error("Error fetching user name:", error);
     }
@@ -1147,14 +1156,15 @@ const PendingRequest = () => {
           });
     
           console.log(`✅ Successfully updated inventory for ${inventoryId}`);
+
         } else {
           console.error(`❌ Inventory item not found: ${inventoryId}`);
         }
+
       } catch (err) {
         console.error(`🔥 Failed to update inventory for ${inventoryId}:`, err.message);
       }
     }
-    
 
     try {
       // Add to requestlog for approval
@@ -1340,7 +1350,7 @@ const PendingRequest = () => {
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",  
         timeTo: selectedRequest.timeTo || "N/A",  
-        timestamp: selectedRequest.timestamp || new Date(),
+        timestamp: new Date(),
         requestList: enrichedItems, 
         status: "Rejected", 
         rejectedBy: userName, 
@@ -1597,14 +1607,14 @@ const PendingRequest = () => {
           formatDate={formatDate}
         />
 
-        {/* <ApprovedRequestModal
+        <ApprovedRequestModal
           isApprovedModalVisible={isApprovedModalVisible}
           setIsApprovedModalVisible={setIsApprovedModalVisible}
           selectedApprovedRequest={selectedApprovedRequest}
           setSelectedApprovedRequest={setSelectedApprovedRequest}
           columns={columns}
           formatDate={formatDate}
-        /> */}
+        />
 
       </Layout>
     </Layout>

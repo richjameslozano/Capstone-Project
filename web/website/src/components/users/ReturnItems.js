@@ -30,8 +30,8 @@ const ReturnItems = () => {
 
         const logs = querySnapshot.docs.map((doc) => {
           const data = doc.data();
-          const timestamp = data.timestamp ? data.timestamp.toDate().toLocaleDateString() : "N/A";
-
+          const rawTimestamp = data.timestamp ? data.timestamp.toDate() : null;
+        
           return {
             id: doc.id,
             date: data.dateRequired ?? "N/A",
@@ -44,12 +44,24 @@ const ReturnItems = () => {
             reason: data.reason ?? "No reason provided",
             department: data.requestList?.[0]?.department ?? "N/A",
             approvedBy: data.approvedBy,
-            timestamp: timestamp,
+            timestamp: rawTimestamp, // store as Date
             raw: data,
           };
         });
+        
+        // Sort by raw timestamp
+        logs.sort((a, b) => (b.timestamp?.getTime() || 0) - (a.timestamp?.getTime() || 0));
+        
+        // Format timestamp for display
+        const formattedLogs = logs.map((log) => ({
+          ...log,
+          timestamp: log.timestamp
+            ? log.timestamp.toLocaleString()
+            : "N/A",
+        }));        
 
-        setHistoryData(logs);
+        setHistoryData(formattedLogs);
+
       } catch (error) {
         console.error("Error fetching request logs: ", error);
       }
@@ -183,7 +195,7 @@ const ReturnItems = () => {
             columns={columns}
             rowKey="id"
             bordered
-            pagination={{ pageSize: 15 }}
+            pagination={{ pageSize: 10 }}
           />
         </Content>
 
@@ -254,29 +266,22 @@ const ReturnItems = () => {
                   {
                     title: "Return Quantity",
                     key: "returnQty",
-                    render: (_, record) => {
-                      const inventoryItem = inventoryData[record.itemId];
-                      if (inventoryItem) {
-                        return (
-                          <input
-                            type="number"
-                            min={1}
-                            max={record.quantity}
-                            value={returnQuantities[record.itemId] || ""}
-                            onChange={(e) =>
-                              setReturnQuantities((prev) => ({
-                                ...prev,
-                                [record.itemId]: e.target.value,
-                              }))
-                            }
-                            style={{ width: "80px" }}
-                          />
-                        );
-                      } else {
-                        return <span style={{ color: "red" }}>Item not found</span>;
-                      }
-                    },
-                  },
+                    render: (_, record) => (
+                      <input
+                        type="number"
+                        min={1}
+                        max={record.quantity}
+                        value={returnQuantities[record.itemId] || ""}
+                        onChange={(e) =>
+                          setReturnQuantities((prev) => ({
+                            ...prev,
+                            [record.itemId]: e.target.value,
+                          }))
+                        }
+                        style={{ width: "80px" }}
+                      />
+                    ),
+                  },                  
                   {
                     title: "Condition",
                     key: "condition",
