@@ -619,7 +619,7 @@ const Requisition = () => {
           min={1}
           value={record.quantity}
           onChange={async (e) => {
-            const newQuantity = e.target.value;
+            const newQuantity = Number(e.target.value);
 
             // Fetch inventory details to validate the quantity
             const inventoryRef = collection(db, "inventory");

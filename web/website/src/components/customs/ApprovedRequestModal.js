@@ -11,7 +11,7 @@ const ApprovedRequestModal = ({
   formatDate,
 }) => {
   // fallback to empty array if undefined
-  const requestList = selectedApprovedRequest?.requestList || [];
+  const requestList = selectedApprovedRequest?.filteredMergedData || [];
   console.log("requestList in Modal:", requestList);
 
   if (selectedApprovedRequest) {
