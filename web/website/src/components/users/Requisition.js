@@ -727,7 +727,7 @@ const Requisition = () => {
                     }}
                   />
                   {dateRequired && (
-                    <p style={{ marginTop: "8px", fontWeight: "bold", color: "#f60" }}>
+                    <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
                       Selected Date: {dateRequired}
                     </p>
                   )}
@@ -774,7 +774,7 @@ const Requisition = () => {
                     </div>
 
                     {timeFrom && timeTo && (
-                      <p style={{ marginTop: "8px", fontWeight: "bold", color: "#f60" }}>
+                      <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
                         Time Needed: From {timeFrom} To {timeTo}
                       </p>
                     )}

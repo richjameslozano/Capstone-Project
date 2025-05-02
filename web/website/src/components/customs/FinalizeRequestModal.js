@@ -1,5 +1,6 @@
 import React from "react";
 import { Modal } from "antd";
+import "../styles/usersStyle/Requisition.css";
 
 const FinalizeRequestModal = ({
   visible,
@@ -16,24 +17,43 @@ const FinalizeRequestModal = ({
 }) => {
   return (
     <Modal
-      title="Review Your Requisition"
+      className="finalize-modal"
+      // title="Finalize Request"
       visible={visible}
+      
       onOk={onOk}
       onCancel={onCancel}
       width={800}
       okText="Confirm and Submit"
       cancelText="Cancel"
+      closable={false}
     >
-      <p><strong>Date Required:</strong> {dateRequired || "N/A"}</p>
-      <p><strong>Time From:</strong> {timeFrom || "N/A"} &nbsp; <strong>To:</strong> {timeTo || "N/A"}</p>
-      <p><strong>Program:</strong> {program || "N/A"}</p>
-      <p><strong>Usage Type:</strong> {usageType || "N/A"}</p>
-      <p><strong>Room:</strong> {room || "N/A"}</p>
-      <p><strong>Reason:</strong> {reason || "N/A"}</p>
+      <div className="finalize-title-container" style={{}}>
+        <strong style={{fontSize: '18px', color: 'white'}}>Finalize Request</strong>
+      </div>
 
-      <h4 style={{ marginTop: "20px" }}>📦 Items Summary:</h4>
+    <div className="modal-whole">
+      <div className="modal-left">
+            <div><p><strong>Date Needed:</strong></p><p>{dateRequired || "N/A"}</p></div>
+        
+            <div><p><strong>Time Needed:</strong></p><p>{timeFrom || "N/A"} - {timeTo || "N/A"}</p></div> 
+
+            <div><p><strong>Program:</strong></p><p>{program || "N/A"}</p></div>
+
+            <div><p><strong>Usage Type:</strong></p><p>{usageType || "N/A"}</p></div>
+
+            <div><p><strong>Room:</strong></p><p> {room || "N/A"}</p></div>
+      </div>
+
+      <div className="modal-right">
+        
+        <div style={{display: 'flex', flexDirection: 'column'}}><p style={{marginBottom: 5}}><strong>Note:</strong></p><p><i>{reason || "N/A"}</i></p></div>
+      </div>
+    </div>
+
+      <h4 style={{ marginTop: "20px"}}>Item Summary:</h4>
       <div style={{ maxHeight: 200, overflowY: "auto" }}>
-        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <table className="finalize-table" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Item</th>
