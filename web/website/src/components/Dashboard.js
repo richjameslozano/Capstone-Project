@@ -156,9 +156,9 @@ const Dashboard = () => {
                 >
                   <div className="summary-card-content">
                     <div className="summary-card-icon">{card.icon}</div>
-                    <div>
-                      <h3>{card.count}</h3>
-                      <p>{card.title}</p>
+                    <div className="card-content-layout">
+                      <h3 className="card-count">{card.count}</h3>
+                      <p className="card-title">{card.title}</p>
                     </div>
                   </div>
                 </Card>

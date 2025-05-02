@@ -1061,6 +1061,10 @@ const Requisition = () => {
               <strong style={{marginBottom: '5px'}}>Note (Optional):</strong>
               <Input.TextArea
                 rows={3}
+                showCount
+                style={{maxHeight: '150px', minHeight: '50px'}}
+                
+                maxLength={100}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
                 placeholder="Leave a note for the custodian"
