@@ -19,7 +19,7 @@ import UserDashboard from './components/user/UserDashboard';
 import CalendarScreen from './components/user/CalendarScreen';
 import PolicyScreen from './components/PolicyScreen';
 import ProfileScreen from './components/user/ProfileScreen';
-import Admin2Dashboard from './components/admin/Admin2Dashboard';
+import Admin2Dashboard from './components/admin/AdminDashboard';
 import PendingRequestScreen from './components/admin/PendingRequestScreen';
 import InventoryScreen from './components/InventoryScreen';
 import CameraScreen from './components/admin/CameraScreen';
