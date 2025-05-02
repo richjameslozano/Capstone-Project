@@ -11,15 +11,15 @@ import { useAuth } from './components/contexts/AuthContext';
 import { db } from './backend/firebase/FirebaseConfig';
 import { collection, addDoc, serverTimestamp } from "firebase/firestore";
 import Icon from 'react-native-vector-icons/Ionicons'; 
+import { LogBox } from 'react-native';
 
 import ActivityLogScreen from './components/admin/ActivityLogScreen';
 import LoginScreen from './components/LoginScreen';
-import LoginScreen2 from './components/LoginScreen2';
 import UserDashboard from './components/user/UserDashboard';
 import CalendarScreen from './components/user/CalendarScreen';
 import PolicyScreen from './components/PolicyScreen';
 import ProfileScreen from './components/user/ProfileScreen';
-import AdminDashboard from './components/admin/AdminDashboard';
+import Admin2Dashboard from './components/admin/Admin2Dashboard';
 import PendingRequestScreen from './components/admin/PendingRequestScreen';
 import InventoryScreen from './components/InventoryScreen';
 import CameraScreen from './components/admin/CameraScreen';
@@ -37,6 +37,10 @@ import CapexRequestList from './components/admin/CapexListScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+
+LogBox.ignoreLogs([
+  'Support for defaultProps will be removed from function components'
+]);
 
 const CustomDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
@@ -63,7 +67,7 @@ const CustomDrawerContent = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('UserHistoryLogScreen')}>
-        <Title style={styles.drawerItem}>History Log</Title>
+        <Title style={styles.drawerItem}>Status Board</Title>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('UserActivityLogScreen')}>
@@ -142,7 +146,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         </View>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('AdminDashboard')}>
+      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')}>
         <Title style={styles.drawerItem}>Dashboard</Title>
       </TouchableOpacity>
 
@@ -238,11 +242,11 @@ function UserDrawer() {
 const AdminDrawer = () => {
   return (
     <Drawer.Navigator
-      initialRouteName="AdminDashboard"
+      initialRouteName="Admin2Dashboard"
       screenOptions={{ headerShown: false }}
       drawerContent={(props) => <CustomAdminDrawerContent {...props} />}
     >
-      <Drawer.Screen name="AdminDashboard" component={AdminDashboard} />
+      <Drawer.Screen name="Admin2Dashboard" component={Admin2Dashboard} />
       <Drawer.Screen name="PendingRequestScreen" component={PendingRequestScreen} />
       <Drawer.Screen name="InventoryScreen" component={InventoryScreen} />
       <Drawer.Screen name="CameraScreen" component={CameraScreen} />
@@ -266,7 +270,7 @@ export default function App() {
               <PaperProvider>
                 <NavigationContainer>
                   <Stack.Navigator>
-                    <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />
+                    <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
                     <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>
