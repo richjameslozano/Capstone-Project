@@ -859,9 +859,8 @@ const Requisition = () => {
                   </div>
             </div>
             
-  
             <div className="reason-container">
-              <strong>Reason of Request:</strong>
+              <strong style={{marginBottom: '5px'}}>Reason of Request:</strong>
               <Input.TextArea
                 rows={3}
                 value={reason}
@@ -869,10 +868,13 @@ const Requisition = () => {
                 placeholder="Enter reason for request"
               />
             </div>
+    
+  
+           
             </div>
 
             <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>
-              <select
+              {/* <select
                 value={searchUsageType}
                 onChange={(e) => {
                   const selectedType = e.target.value;
@@ -897,7 +899,7 @@ const Requisition = () => {
                 <option value="Research">Research</option>
                 <option value="Community Extension">Community Extension</option>
                 <option value="Others">Others</option>
-              </select>
+              </select> */}
               
               <select
                 value={searchCategory}
@@ -938,7 +940,7 @@ const Requisition = () => {
           />
           </div>
 
-          <div>
+          <div className="bottom-btns">
             <Button
               type="dashed"
               onClick={() => {
