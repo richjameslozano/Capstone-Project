@@ -1058,12 +1058,12 @@ const Requisition = () => {
             </div>
             
             <div className="reason-container">
-              <strong style={{marginBottom: '5px'}}>Reason of Request:</strong>
+              <strong style={{marginBottom: '5px'}}>Note (Optional):</strong>
               <Input.TextArea
                 rows={3}
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                placeholder="Enter reason for request"
+                placeholder="Leave a note for the custodian"
               />
             </div>
     
