@@ -10,7 +10,6 @@ import {
   StyleSheet,
   TouchableOpacity,
 } from "react-native";
-import { db } from "../../backend/firebase/FirebaseConfig";
 import {
   collection,
   addDoc,
@@ -23,6 +22,7 @@ import {
 } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import { useAuth } from '../contexts/AuthContext';
+import { db } from '../../backend/firebase/FirebaseConfig';
 import styles from '../styles/userStyle/CapexRequestStyle';
 import Header from "../Header";
 
@@ -71,56 +71,107 @@ const CapexRequestScreen = () => {
     setTotalPrice(total);
   };
 
+  const calculateTotalPrice = (data) => {
+    const total = data.reduce((sum, item) => {
+      const cost = Number(item.estimatedCost);
+      const quantity = Number(item.qty);
+      return sum + (isNaN(cost) || isNaN(quantity) ? 0 : cost * quantity);
+    }, 0);
+
+    setTotalPrice(total);
+  };  
+
+  const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
+    try {
+      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+        action, // e.g., "Added a Capex Item", "Requested Items", etc.
+        userName,
+        timestamp: serverTimestamp(),
+        requestList: requestDetails,
+      });
+    } catch (error) {
+      console.error("Error logging request or return activity:", error);
+    }
+  };
+
   const handleSave = async () => {
-    if (!itemDescription || !qty || !estimatedCost) {
+    const trimmedQty = qty.trim();
+    const trimmedCost = estimatedCost.trim();
+  
+    if (!itemDescription || !trimmedQty || !trimmedCost) {
       Alert.alert("Validation Error", "All fields are required");
       return;
     }
-
-    // Check if the item already exists
-    const existingItemQuery = await getDocs(
-      collection(db, `accounts/${user.id}/temporaryCapexRequest`)
-    );
-    const existingItem = existingItemQuery.docs.find(
-      (doc) => doc.data().itemDescription.toLowerCase() === itemDescription.toLowerCase()
-    );
-
-    if (existingItem) {
-      Alert.alert("Validation Error", "This item already exists in your CAPEX request.");
+  
+    const parsedQty = Number(trimmedQty);
+    const parsedCost = Number(trimmedCost);
+  
+    if (isNaN(parsedQty) || isNaN(parsedCost)) {
+      Alert.alert("Validation Error", "Quantity and Estimated Cost must be valid numbers.");
       return;
     }
-
-    const itemData = {
-      itemDescription,
-      qty: Number(qty),
-      estimatedCost: Number(estimatedCost),
-      totalPrice: Number(qty) * Number(estimatedCost),
-      justification,
-    };
-
+  
+    if (parsedQty <= 0 || parsedCost <= 0) {
+      Alert.alert("Validation Error", "Quantity and Estimated Cost must be greater than 0.");
+      return;
+    }
+  
     try {
-      if (editingItem) {
-        const ref = doc(
-          db,
-          `accounts/${userId}/temporaryCapexRequest`,
-          editingItem.id
+      const itemData = {
+        itemDescription: itemDescription.trim(),
+        qty: parsedQty.toString(),
+        estimatedCost: parsedCost.toString(),
+        totalPrice: parsedQty * parsedCost,
+        justification,
+      };
+  
+      // Duplicate check only when adding new
+      if (!editingItem) {
+        const existingItemsSnapshot = await getDocs(
+          collection(db, `accounts/${user.id}/temporaryCapexRequest`)
         );
-        await setDoc(ref, itemData);
-
+  
+        const isDuplicate = existingItemsSnapshot.docs.some(
+          (doc) =>
+            doc.data().itemDescription.trim().toLowerCase() ===
+            itemDescription.trim().toLowerCase()
+        );
+  
+        if (isDuplicate) {
+          Alert.alert("Validation Error", "This item already exists in your CAPEX request.");
+          return;
+        }
+      }
+  
+      let savedItem = null;
+  
+      if (editingItem) {
+        const ref = doc(db, `accounts/${user.id}/temporaryCapexRequest`, editingItem.id);
+        await setDoc(ref, { ...itemData, id: editingItem.id });
+        savedItem = { ...itemData, id: editingItem.id };
       } else {
-        await addDoc(
-          collection(db, `accounts/${userId}/temporaryCapexRequest`),
+        const newDocRef = await addDoc(
+          collection(db, `accounts/${user.id}/temporaryCapexRequest`),
           itemData
         );
+        savedItem = { ...itemData, id: newDocRef.id };
       }
-
+  
+      // Log the action
+      try {
+        await logRequestOrReturn(user.id, user.name, "Added a Capex Item", savedItem);
+      } catch (logError) {
+        console.error("Failed to log activity:", logError);
+      }
+  
       resetForm();
 
+      Alert.alert("Success", editingItem ? "Item updated!" : "Item added!");
     } catch (error) {
+      console.error("Firestore error:", error);
       Alert.alert("Error", "Failed to save item");
-      console.error(error);
     }
-  };
+  };  
 
   const resetForm = () => {
     setItemDescription("");
@@ -141,57 +192,88 @@ const CapexRequestScreen = () => {
   };
 
   const handleDelete = async (id) => {
-    try {
-      await deleteDoc(doc(db, `accounts/${userId}/temporaryCapexRequest`, id));
+    Alert.alert(
+      "Confirm Deletion",
+      "Are you sure you want to delete this item?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Deletion cancelled"),
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            try {
+              // Filter out the deleted item from your list
+              const updatedData = dataSource.filter((item) => item.id !== id);
+              setDataSource(updatedData);
+          
+              calculateTotalPrice(updatedData); // recalculate if needed
+          
+              Alert.alert("Success", "Item deleted successfully");
+          
+              const capexRequestRef = doc(db, `accounts/${user.id}/temporaryCapexRequest`, id);
+              await deleteDoc(capexRequestRef); // delete from Firestore
+          
+              await logRequestOrReturn(user.id, user.name, "Deleted a Capex Item", [
+                { deletedItemId: id },
+              ]);
 
-    } catch (error) {
-      console.error("Delete error:", error);
-    }
-  };
+            } catch (error) {
+              console.error("Error deleting item from Firestore:", error);
+              Alert.alert("Error", "Failed to delete item");
+            }
+          },
+        },
+      ]
+    );
+  };  
 
   const handleSubmitRequest = async () => {
     if (dataSource.length === 0) {
       Alert.alert("Error", "No items to submit");
       return;
     }
-
+  
     try {
       const requestRef = await addDoc(collection(db, "capexrequestlist"), {
-        userId,
-        userName,
+        userId: user.id, // Use user.id here
+        userName: user.name, // user.name or user.displayName
         totalPrice,
         createdAt: serverTimestamp(),
         items: dataSource,
       });
-
-      await addDoc(collection(db, `accounts/${userId}/capexrequests`), {
+  
+      await addDoc(collection(db, `accounts/${user.id}/capexrequests`), {
         capexRequestId: requestRef.id,
-        userId,
-        userName,
+        userId: user.id, // Use user.id here
+        userName: user.name, // user.name or user.displayName
         totalPrice,
         createdAt: serverTimestamp(),
         items: dataSource,
       });
-
+  
       const snapshot = await getDocs(
-        collection(db, `accounts/${userId}/temporaryCapexRequest`)
+        collection(db, `accounts/${user.id}/temporaryCapexRequest`)
       );
-
+  
       await Promise.all(
         snapshot.docs.map((docSnap) =>
-          deleteDoc(doc(db, `accounts/${userId}/temporaryCapexRequest`, docSnap.id))
+          deleteDoc(doc(db, `accounts/${user.id}/temporaryCapexRequest`, docSnap.id))
         )
       );
-
+  
+      await logRequestOrReturn(user.id, user.name, "Sent a Capex Request", dataSource);
       Alert.alert("Success", "CAPEX Request submitted!");
       setDataSource([]);
       setTotalPrice(0);
-
+  
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Submission failed");
     }
-  };
+  }  
 
   return (
     <View style={styles.container}>
