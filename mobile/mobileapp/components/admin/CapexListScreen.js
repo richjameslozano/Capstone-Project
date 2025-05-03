@@ -11,6 +11,7 @@ import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/adminStyle/CapexListStyle";
+import Header from '../Header';
 
 const CapexRequestList = () => {
   const [requests, setRequests] = useState([]);
@@ -89,6 +90,7 @@ const CapexRequestList = () => {
 
   return (
     <View style={styles.container}>
+      <Header/>
       <Text style={styles.title}>List of Requests</Text>
 
       <FlatList
