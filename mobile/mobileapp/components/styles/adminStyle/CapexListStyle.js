@@ -93,7 +93,6 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
   },  
-
 });
 
 export default styles;
