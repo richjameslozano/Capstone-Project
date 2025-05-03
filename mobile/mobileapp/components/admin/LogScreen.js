@@ -141,7 +141,8 @@ const LogScreen = () => {
       <View style={styles.filterContainer}>
         <Button title="All" onPress={() => setFilterStatus("All")} />
         <Button title="Approved" onPress={() => setFilterStatus("Approved")} />
-        <Button title="Declined" onPress={() => setFilterStatus("Declined")} />
+        <Button title="Rejected" onPress={() => setFilterStatus("Rejected")} />
+        <Button title="Returned" onPress={() => setFilterStatus("Returned")} />
       </View>
 
       {loading ? (
