@@ -13,6 +13,7 @@ export default function InventoryStocks({ navigation }) {
   const [filterType, setFilterType] = useState('All');
   const [selectedItem, setSelectedItem] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [filterCategory, setFilterCategory] = useState('All');
 
   // useEffect(() => {
   //   const fetchInventory = async () => {
@@ -61,8 +62,9 @@ export default function InventoryStocks({ navigation }) {
 
   const filteredData = inventoryItems.filter(item =>
     item.itemName?.toLowerCase().includes(searchQuery.toLowerCase()) &&
-    (filterType === 'All' || item.type === filterType)
-  );  
+    (filterType === 'All' || item.type === filterType) &&
+    (filterCategory === 'All' || item.category === filterCategory)
+  );   
 
   const openDetailsModal = (item) => {
     setSelectedItem(item);
@@ -82,16 +84,32 @@ export default function InventoryStocks({ navigation }) {
         onChangeText={setSearchQuery}
       />
 
-      <View style={styles.pickerContainer}>
-        <Picker
-          selectedValue={filterType}
-          style={styles.picker}
-          onValueChange={(itemValue) => setFilterType(itemValue)}
-        >
-          <Picker.Item label="All" value="All" />
-          <Picker.Item label="Fixed" value="Fixed" />
-          <Picker.Item label="Consumables" value="Consumables" />
-        </Picker>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 10 }}>
+        <View style={{ flex: 1, marginRight: 5 }}>
+          <Picker
+            selectedValue={filterType}
+            style={styles.picker}
+            onValueChange={(itemValue) => setFilterType(itemValue)}
+          >
+            <Picker.Item label="All Types" value="All" />
+            <Picker.Item label="Fixed" value="Fixed" />
+            <Picker.Item label="Consumables" value="Consumables" />
+          </Picker>
+        </View>
+
+        <View style={{ flex: 1, marginLeft: 5 }}>
+          <Picker
+            selectedValue={filterCategory}
+            style={styles.picker}
+            onValueChange={(itemValue) => setFilterCategory(itemValue)}
+          >
+            <Picker.Item label="All Categories" value="All" />
+            <Picker.Item label="Chemical" value="Chemical" />
+            <Picker.Item label="Reagent" value="Reagent" />
+            <Picker.Item label="Materials" value="Materials" />
+            <Picker.Item label="Equipment" value="Equipment" />
+          </Picker>
+        </View>
       </View>
 
       <ScrollView>
