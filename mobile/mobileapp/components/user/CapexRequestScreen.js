@@ -197,62 +197,88 @@ const CapexRequestScreen = () => {
     <View style={styles.container}>
       <Header/>
       <Text style={styles.title}>CAPEX Request</Text>
-      <Text style={styles.total}>Total: ₱{totalPrice.toLocaleString()}</Text>
 
-      <FlatList
-        data={dataSource}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.item}>
-            <Text>{item.no}. {item.itemDescription}</Text>
-            <Text>Qty: {item.qty}</Text>
-            <Text>Est. Cost: ₱{item.estimatedCost}</Text>
-            <Text>Total: ₱{item.totalPrice}</Text>
-            <Text>Justification: {item.justification}</Text>
-            <View style={styles.row}>
-              <Button title="Edit" onPress={() => handleEdit(item)} />
-              <Button title="Delete" color="red" onPress={() => handleDelete(item.id)} />
+      <View style={styles.tableContainer}>
+        <View style={[styles.tableRow, styles.tableHeader]}>
+          <Text style={[styles.tableCell, styles.headerCell]}>Item</Text>
+          <Text style={[styles.tableCell, styles.headerCell]}>Qty</Text>
+          <Text style={[styles.tableCell, styles.headerCell]}>Est. Cost</Text>
+          <Text style={[styles.tableCell, styles.headerCell]}>Total</Text>
+          <Text style={[styles.tableCell, styles.headerCell]}>Actions</Text>
+        </View>
+
+        {dataSource.map((item) => (
+          <View key={item.id} style={styles.tableRow}>
+            <Text style={styles.tableCell}>{item.itemDescription}</Text>
+            <Text style={styles.tableCell}>{item.qty}</Text>
+            <Text style={styles.tableCell}>₱{item.estimatedCost}</Text>
+            <Text style={styles.tableCell}>₱{item.totalPrice}</Text>
+            <View style={[styles.tableCell, styles.actionsCell]}>
+              <TouchableOpacity onPress={() => handleEdit(item)} style={[styles.smallButton, styles.editButton]}>
+                <Text style={styles.buttonText}>Edit</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.smallButton, styles.deleteButton]}>
+                <Text style={styles.buttonText}>Del</Text>
+              </TouchableOpacity>
             </View>
           </View>
-        )}
-      />
+        ))}
+      </View>
 
-      <Button title="Add Item" onPress={() => setModalVisible(true)} />
-      <Button title="Submit Request" onPress={handleSubmitRequest} color="green" />
+      <Text style={styles.total}>Total: ₱{totalPrice.toLocaleString()}</Text>
 
-      <Modal visible={modalVisible} animationType="slide">
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>
-            {editingItem ? "Edit Item" : "Add CAPEX Item"}
-          </Text>
-          <TextInput
-            placeholder="Item Description"
-            value={itemDescription}
-            onChangeText={setItemDescription}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Quantity"
-            keyboardType="numeric"
-            value={qty}
-            onChangeText={setQty}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Estimated Cost"
-            keyboardType="numeric"
-            value={estimatedCost}
-            onChangeText={setEstimatedCost}
-            style={styles.input}
-          />
-          <TextInput
-            placeholder="Justification"
-            value={justification}
-            onChangeText={setJustification}
-            style={styles.input}
-          />
-          <Button title="Save" onPress={handleSave} />
-          <Button title="Cancel" color="gray" onPress={resetForm} />
+      <TouchableOpacity style={styles.buttonPrimary} onPress={() => {
+        console.log("Add Item pressed");
+        setModalVisible(true);
+      }}>
+        <Text style={styles.buttonText}>Add Item</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.buttonPrimary} onPress={handleSubmitRequest}>
+        <Text style={styles.buttonText}>Submit Request</Text>
+      </TouchableOpacity>
+
+      <Modal
+        visible={modalVisible}
+        animationType="slide"
+        transparent={true} 
+      >
+        <View style={styles.modalWrapper}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {editingItem ? "Edit Item" : "Add CAPEX Item"}
+            </Text>
+
+            <TextInput
+              placeholder="Item Description"
+              value={itemDescription}
+              onChangeText={setItemDescription}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Quantity"
+              keyboardType="numeric"
+              value={qty}
+              onChangeText={setQty}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Estimated Cost"
+              keyboardType="numeric"
+              value={estimatedCost}
+              onChangeText={setEstimatedCost}
+              style={styles.input}
+            />
+            <TextInput
+              placeholder="Justification"
+              value={justification}
+              onChangeText={setJustification}
+              style={styles.input}
+            />
+
+            <Button title="Save" onPress={handleSave} />
+            <Button title="Cancel" color="gray" onPress={resetForm} />
+          </View>
         </View>
       </Modal>
     </View>
