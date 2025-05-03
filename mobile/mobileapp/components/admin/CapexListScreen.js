@@ -117,38 +117,45 @@ const CapexRequestList = () => {
 
       <Modal
         visible={viewModalVisible}
-        animationType="slide"
+        animationType="fade"
+        transparent={true}
         onRequestClose={() => setViewModalVisible(false)}
       >
-        <View style={styles.modalContent}>
-          {selectedRowDetails && (
-            <View>
-              <Text>
-                <Text style={styles.boldText}>User Name:</Text> {selectedRowDetails.userName}
-              </Text>
-              <Text>
-                <Text style={styles.boldText}>Total Price:</Text> ₱{selectedRowDetails.totalPrice?.toLocaleString()}
-              </Text>
-              <Text>
-                <Text style={styles.boldText}>Submission Date:</Text> {formatDate(selectedRowDetails.createdAt)}
-              </Text>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            {selectedRowDetails && (
+              <View>
+                <Text>
+                  <Text style={styles.boldText}>User Name:</Text> {selectedRowDetails.userName}
+                </Text>
+                <Text>
+                  <Text style={styles.boldText}>Total Price:</Text> ₱{selectedRowDetails.totalPrice?.toLocaleString()}
+                </Text>
+                <Text>
+                  <Text style={styles.boldText}>Submission Date:</Text> {formatDate(selectedRowDetails.createdAt)}
+                </Text>
 
-              <Text style={styles.subHeading}>Items:</Text>
-              <FlatList
-                data={selectedRowDetails.items}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={({ item }) => (
-                  <View style={styles.itemRow}>
-                    <Text>{item.itemDescription}</Text>
-                    <Text>Qty: {item.qty}</Text>
-                    <Text>Est. Cost: ₱{item.estimatedCost}</Text>
-                    <Text>Total: ₱{item.totalPrice}</Text>
+                <Text style={styles.subHeading}>Items:</Text>
+
+                <View style={styles.tableHeader}>
+                  <Text style={styles.tableHeaderCell}>Description</Text>
+                  <Text style={styles.tableHeaderCell}>Qty</Text>
+                  <Text style={styles.tableHeaderCell}>Est. Cost</Text>
+                  <Text style={styles.tableHeaderCell}>Total</Text>
+                </View>
+
+                {selectedRowDetails.items.map((item, index) => (
+                  <View key={index} style={styles.tableRow}>
+                    <Text style={styles.tableCell}>{item.itemDescription}</Text>
+                    <Text style={styles.tableCell}>{item.qty}</Text>
+                    <Text style={styles.tableCell}>₱{item.estimatedCost}</Text>
+                    <Text style={styles.tableCell}>₱{item.totalPrice}</Text>
                   </View>
-                )}
-              />
-            </View>
-          )}
-          <Button title="Close" onPress={() => setViewModalVisible(false)} />
+                ))}
+              </View>
+            )}
+            <Button title="Close" onPress={() => setViewModalVisible(false)} />
+          </View>
         </View>
       </Modal>
     </View>

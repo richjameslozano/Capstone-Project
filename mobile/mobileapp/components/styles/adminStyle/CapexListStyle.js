@@ -51,6 +51,48 @@ const styles = StyleSheet.create({
   itemRow: {
     marginBottom: 10,
   },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  
+  modalBox: {
+    width: '90%',
+    maxHeight: '80%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    padding: 20,
+  },
+
+  tableHeader: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderColor: "#ccc",
+    paddingBottom: 5,
+    marginBottom: 5,
+  },
+  
+  tableHeaderCell: {
+    flex: 1,
+    fontWeight: "bold",
+    fontSize: 14,
+  },
+  
+  tableRow: {
+    flexDirection: "row",
+    paddingVertical: 4,
+    borderBottomWidth: 0.5,
+    borderColor: "#eee",
+  },
+  
+  tableCell: {
+    flex: 1,
+    fontSize: 14,
+  },  
+
 });
 
 export default styles;
