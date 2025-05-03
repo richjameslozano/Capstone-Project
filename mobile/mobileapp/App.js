@@ -34,6 +34,7 @@ import BorrowCatalogScreen from './components/admin/BorrowCatalogScreen';
 import { RequestMetadataProvider } from './components/contexts/RequestMetadataContext';
 import CapexRequestScreen from './components/user/CapexRequestScreen';
 import CapexRequestList from './components/admin/CapexListScreen';
+import ReturnItems from './components/user/ReturnItems';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -235,6 +236,7 @@ function UserDrawer() {
       <Drawer.Screen name="UserActivityLogScreen" component={UserActivityLogScreen} />
       <Drawer.Screen name="InventoryScreen" component={InventoryScreen} />
       <Drawer.Screen name="CapexRequestScreen" component={CapexRequestScreen} />
+      <Drawer.Screen name="ReturnItemsScreen" component={ReturnItems} />
     </Drawer.Navigator>
   );
 }

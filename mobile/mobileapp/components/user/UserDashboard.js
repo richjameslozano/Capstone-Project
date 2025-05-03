@@ -15,6 +15,7 @@ export default function UserDashboard({ navigation }) {
     { title: 'Search Items', subtitle: 'Materials', icon: 'file-document', screen: 'SearchItems', color: '#7D284D' }, 
     { title: 'Activity Log', subtitle: '???', icon: 'file-document', screen: 'UserActivityLogScreen', color: '#7D284D' }, 
     { title: 'Capex Request', subtitle: '???', icon: 'file-document', screen: 'CapexRequestScreen', color: '#7D284D' }, 
+    { title: 'Return Items', subtitle: '???', icon: 'file-document', screen: 'ReturnItemsScreen', color: '#7D284D' }, 
   ];
 
   const renderItem = ({ item }) => (
