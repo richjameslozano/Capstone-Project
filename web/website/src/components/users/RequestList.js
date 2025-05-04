@@ -405,8 +405,9 @@ const RequestList = () => {
           >
             {selectedRequest && (
               <>
-                  <div className="request-details-container" style={{}}>
-                    <strong style={{fontSize: '18px', color: 'white'}}>Request Details {selectedRequest?.id}</strong>
+                  <div className="request-details-container" style={{justifyContent: 'space-between'}}>
+                    <strong style={{fontSize: '18px', color: 'white'}}>Request Details</strong>
+                    <span style={{fontSize: 12, color: 'white'}}>{selectedRequest?.id}</span>
                   </div>
 
                   <div className="request-details-whole">
