@@ -12,7 +12,7 @@ import {
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
-import { db } from "../../backend/firebase/FirebaseConfig";
+import { db } from "../../backend/firebase/FirebaseConfig"; 
 import "../styles/usersStyle/SearchItems.css";
 
 const { Content } = Layout;
@@ -225,14 +225,18 @@ const SearchItems = () => {
           </div>
 
           <Modal
-            title="Item Details"
+            className="search-modal-container"
             visible={isModalVisible}
             onCancel={() => setIsModalVisible(false)}
             footer={null}
           >
             {selectedItem && (
-              <Descriptions bordered column={1}>
-                <Descriptions.Item label="Item Name">
+              <>
+              <div style={{marginBottom: '15px'}}>
+                <strong style={{fontSize: '20px'}}>Item Details</strong>
+              </div>
+              <Descriptions bordered column={1} className="custom-descriptions">
+                <Descriptions.Item label="Item Name"> 
                   {selectedItem.itemName}
                 </Descriptions.Item>
 
@@ -252,9 +256,9 @@ const SearchItems = () => {
                   {selectedItem.type}
                 </Descriptions.Item>
 
-                <Descriptions.Item label="Usage Type">
+                {/* <Descriptions.Item label="Usage Type">
                   {selectedItem.usageType}
-                </Descriptions.Item>
+                </Descriptions.Item> */}
 
                 <Descriptions.Item label="Category">
                   {selectedItem.category}
@@ -264,15 +268,16 @@ const SearchItems = () => {
                   {selectedItem.department}
                 </Descriptions.Item>
 
-                <Descriptions.Item label="Laboratory Room">
+                {/* <Descriptions.Item label="Laboratory Room">
                   {selectedItem.labRoom}
-                </Descriptions.Item>
+                </Descriptions.Item> */}
 
                 <Descriptions.Item label="Date Acquired">
                   {selectedItem.entryDate || "N/A"}
                 </Descriptions.Item>
 
               </Descriptions>
+              </>
             )}
           </Modal>
         </Content>
