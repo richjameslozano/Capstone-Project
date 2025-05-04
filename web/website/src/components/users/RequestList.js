@@ -25,6 +25,7 @@ import {
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { getAuth } from "firebase/auth";
 import NotificationModal from "../customs/NotificationModal"; 
+import "../styles/usersStyle/RequestList.css";
 
 const { Content } = Layout;
 const { Title } = Typography;
@@ -382,9 +383,11 @@ const RequestList = () => {
           </div>
 
           <Modal
-            title={`Request Details - ${selectedRequest?.id}`}
+            className="request-list-modal"
             open={viewDetailsModalVisible}
             onCancel={handleModalClose}
+            width={800}
+            closable={false}
             footer={[
               <Button key="close" onClick={handleModalClose}>
                 Close
@@ -402,23 +405,40 @@ const RequestList = () => {
           >
             {selectedRequest && (
               <>
-                <p><strong>Requester:</strong> {selectedRequest.requester}</p>
-                <p><strong>Requisition Date:</strong> {selectedRequest.dateRequested}</p>
-                <p><strong>Date Required:</strong> {selectedRequest.dateRequired}</p>
-                <p><strong>Time Needed:</strong> {selectedRequest.timeNeeded}</p>
-                <p><strong>Course Code:</strong> {selectedRequest.courseCode}</p>
-                <p><strong>Course Description:</strong> {selectedRequest.courseDescription}</p>
-                <p><strong>Room:</strong> {selectedRequest.room}</p>
-                <p><strong>Usage Type:</strong> {selectedRequest.usageType}</p>
-                <Title level={5}>Requested Items:</Title>
-                <Table
-                  columns={itemColumns}
-                  dataSource={selectedRequest.items}
-                  rowKey={(_, index) => index}
-                  size="small"
-                  pagination={false}
-                />
-                <p><strong>Message:</strong> {selectedRequest.message || "No message provided."}</p>
+                  <div className="request-details-container" style={{}}>
+                    <strong style={{fontSize: '18px', color: 'white'}}>Request Details {selectedRequest?.id}</strong>
+                  </div>
+
+                  <div className="request-details-whole">
+                      <div className="request-details-left">
+                        <div><p><strong>Requester:</strong></p><p>{selectedRequest.requester}</p></div>
+                        <div><p><strong>Requisition Date:</strong></p><p>{selectedRequest.dateRequested}</p></div>
+                        <div><p><strong>Date Required:</strong></p><p>{selectedRequest.dateRequired}</p></div>
+                        <div><p><strong>Time Needed:</strong></p><p>{selectedRequest.timeNeeded}</p></div>
+                      </div>
+                        
+                        
+                      <div className="request-details-right">
+                        <div><p><strong>Course Code:</strong></p><p>{selectedRequest.courseCode}</p></div>
+                        <div><p><strong>Course Description:</strong></p><p>{selectedRequest.requester}</p></div>
+                        <div><p><strong>Room:</strong></p><p> {selectedRequest.room}</p></div>
+                        <div><p><strong>Usage Type:</strong></p><p>{selectedRequest.usageType}</p></div>
+                      </div>
+                  </div>
+                
+                <div className="details-table">
+                  <Title level={5}>Requested Items:</Title>
+                  <Table
+                    columns={itemColumns}
+                    dataSource={selectedRequest.items}
+                    rowKey={(_, index) => index}
+                    size="small"
+                    pagination={false}
+                  />
+                  <br></br>
+                  <p style={{marginBottom: '30px'}}><strong>Note:</strong> {selectedRequest.message || "No message provided."}</p>
+                </div>
+                
               </>
             )}
           </Modal>
