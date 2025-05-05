@@ -126,11 +126,31 @@ import "./styles/Dashboard.css";
     }, []);
  
    const summaryCards = [
-     { title: "Pending Requests", count: pendingRequestCount, color: "#a0d911", icon: "📄" },
-     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#fa541c", icon: "📋" },
+     { title: "Pending Requests", count: pendingRequestCount, color: "#fa541c", icon: "📄" },
+     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#a0d911", icon: "📋" },
      { title: "Products", count: 7, color: "#13c2c2", icon: "🛒" },
      { title: "Sales", count: 15, color: "#faad14", icon: "💵" },
    ];
+
+   const lightenColor = (hex, percent) => {
+    const num = parseInt(hex.replace("#", ""), 16);
+    const amt = Math.round(2.55 * percent * 100);
+    const R = (num >> 16) + amt;
+    const G = ((num >> 8) & 0x00ff) + amt;
+    const B = (num & 0x0000ff) + amt;
+    return (
+      "#" +
+      (
+        0x1000000 +
+        (R > 255 ? 255 : R) * 0x10000 +
+        (G > 255 ? 255 : G) * 0x100 +
+        (B > 255 ? 255 : B)
+      )
+        .toString(16)
+        .slice(1)
+    );
+  };
+  
  
    const salesColumns = [
      {
@@ -155,38 +175,44 @@ import "./styles/Dashboard.css";
      },
    ];
  
+   const [hoveredIndex, setHoveredIndex] = useState(null);
    return (
      <Layout style={{ minHeight: "100vh" }}>
        <Layout>
+        <div className="summary-card-whole">
+        {summaryCards.map((card, index)=>{
+          const isHovered = index === hoveredIndex;
+          const bgColor = isHovered
+            ? lightenColor(card.color, 0.1)
+            : card.color;
+          return(
+            <div on className="summary-card-content" style={{backgroundColor: bgColor}}
+            onMouseEnter={() => setHoveredIndex(index)}
+            onMouseLeave={() => setHoveredIndex(null)}
+            onClick={() => {
+              if (card.title === "Pending Requests") {
+                navigate("/main/pending-request"); 
+              }
+
+              if (card.title === "Borrow Catalog") {
+                navigate("/main/borrow-catalog"); 
+              }
+            }}
+            >
+            <div className="summary-card-icon">{card.icon}</div>
+            <div className="card-content-layout">
+              <h3 className="card-count">{card.count}</h3>
+              <div className="card-title"><p style={{margin: 0}}>{card.title}</p></div>
+            </div>
+          </div>
+          )
+            
+ })}
+        </div>
+
         <Content className="content">
-            <Row gutter={[16, 16]}>
-              {summaryCards.map((card, index) => (
-                <Col xs={24} sm={12} md={6} key={index}>
-                  <Card
-                    className="summary-card"
-                    style={{ backgroundColor: card.color, cursor: card.title === "Pending Requests" ? "pointer" : "default" }}
-                    onClick={() => {
-                      if (card.title === "Pending Requests") {
-                        navigate("/main/pending-request"); 
-                      }
 
-                      if (card.title === "Borrow Catalog") {
-                        navigate("/main/borrow-catalog"); 
-                      }
-                    }}
-                  >
-                    <div className="summary-card-content">
-                      <div className="summary-card-icon">{card.icon}</div>
-                      <div className="card-content-layout">
-                        <h3 className="card-count">{card.count}</h3>
-                        <p className="card-title">{card.title}</p>
-                      </div>
-                    </div>
-                  </Card>
-                </Col>
-              ))}
-            </Row>
-
+          <h1 style={{fontWeight: "bold", marginTop: '20px'}}>Analytics Center</h1>
             {/* AI Analytics Section */}
             <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
               <Col xs={24} md={8}>
