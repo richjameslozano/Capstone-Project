@@ -590,3 +590,5 @@ export default function InventoryScreen({ navigation }) {
     </View>
   );
 }
+
+// Working in progress balikan ko mamaya -rich
