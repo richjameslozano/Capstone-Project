@@ -432,7 +432,8 @@ const LayoutMain = () => {
           />
       </Sider>
 
-      <Layout>
+      <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: 'margin-left 0.2s' }}>
+
         <Header
           style={{
             position: "fixed",
@@ -456,7 +457,7 @@ const LayoutMain = () => {
           style={{
             margin: '24px 16px',
             padding: 24,
-            minHeight: 280,
+            minHeight: "100vh",
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
           }}
