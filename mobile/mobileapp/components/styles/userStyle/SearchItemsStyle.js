@@ -40,7 +40,7 @@ export default StyleSheet.create({
   searchContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#EDEDED',
+    backgroundColor: '#e3e3e3',
     borderRadius: 8,
     paddingHorizontal: 10,
     marginBottom: 10,
@@ -65,6 +65,7 @@ export default StyleSheet.create({
     overflow: 'hidden',
     marginTop: 10,
     width: '100%', // Make it fit the screen
+    
   },  
 
   headerRow: {
@@ -73,13 +74,17 @@ export default StyleSheet.create({
     borderColor: '#D6D6D6',
     flexDirection: 'row',
     paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
+    
   },
 
   tableHeaderText: {
     fontWeight: 'bold',
     color: '#333',
     fontSize: 14,
+    display:'flex',
+    width:'10px',
+    
   },
 
   row: {
@@ -88,6 +93,7 @@ export default StyleSheet.create({
     borderColor: '#E0E0E0',
     paddingVertical: 8,
     paddingHorizontal: 10,
+    
   },
 
   cell: {
@@ -192,6 +198,7 @@ export default StyleSheet.create({
   closeButtonText: {
     color: '#FFF',
     fontWeight: 'bold',
+    width:'40px'
   },
   
   rowEven: {

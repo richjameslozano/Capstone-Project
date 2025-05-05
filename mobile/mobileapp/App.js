@@ -35,7 +35,7 @@ import { RequestMetadataProvider } from './components/contexts/RequestMetadataCo
 import CapexRequestScreen from './components/user/CapexRequestScreen';
 import CapexRequestList from './components/admin/CapexListScreen';
 import ReturnItems from './components/user/ReturnItems';
-
+import LoginScreen2 from './components/LoginScreen2';
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
@@ -272,7 +272,7 @@ export default function App() {
               <PaperProvider>
                 <NavigationContainer>
                   <Stack.Navigator>
-                    <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
+                    <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />
                     <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>
