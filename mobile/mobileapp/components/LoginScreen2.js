@@ -391,7 +391,7 @@ export default function LoginScreen({navigation}) {
 
                 <Text style={styles.label}>Employee ID:<Text style={{color:'red'}}>*</Text></Text>
                 <Input
-                  placeholder="Enter Employee ID"
+                  placeholder="e.g., 30-0912"
                   value={employeeID}
                   onChangeText={(text) => {
                     const cleaned = text.replace(/\D/g, "");

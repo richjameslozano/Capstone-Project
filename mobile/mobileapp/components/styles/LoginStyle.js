@@ -195,7 +195,8 @@ export default StyleSheet.create({
   footerText: {
     marginTop: 20,
     textAlign: 'center',
-    color: '#6b7280',
+    color: '#6e9fc1',
+    textDecorationLine: 'underline'
   },
   
   input: {

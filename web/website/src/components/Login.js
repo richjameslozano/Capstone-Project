@@ -354,6 +354,7 @@ const Login = () => {
   const handleSignUp = async () => {
     const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
     const auth = getAuth();
+    setIsLoading(true)
 
     if (!termsChecked) {
       setError("You must accept the terms and conditions before signing up.");
@@ -453,6 +454,8 @@ const Login = () => {
         status: "pending", // Mark as pending
         uid: firebaseUser.uid,
       };
+
+     
   
       // Add user data to 'pendingaccounts' collection
       await addDoc(collection(db, "pendingaccounts"), sanitizedData);
@@ -481,6 +484,9 @@ const Login = () => {
       } else {
         setError("Failed to create account. Try again.");
       }
+    } finally{
+      setIsLoading(false)
+      setSignUpMode(false)
     }
   };
   
