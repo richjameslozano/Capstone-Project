@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
 import { NavigationContainer } from '@react-navigation/native';
@@ -55,16 +55,15 @@ const CustomDrawerContent = ({ navigation }) => {
         <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
           <Avatar.Image style={{backgroundColor: '#5e8fb0'}} size={70} source={{ uri: 'https://your-profile-image-url.com' }} />
         </TouchableOpacity>
-        <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>Position goees here</Text>
         </View>
       
       <View style={{paddingTop: 10}}>
       <Title style={styles.profileName}>{user ? user.name : 'Guest'}</Title>
-      <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>account email goes here</Text>   
+      <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>Position goes here</Text>   
       </View>
       </View>
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')}>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
   <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
   <Title style={styles.titleStyle}>Profile</Title>
 </TouchableOpacity>
