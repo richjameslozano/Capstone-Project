@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
 import { NavigationContainer } from '@react-navigation/native';
@@ -48,47 +48,54 @@ const CustomDrawerContent = ({ navigation }) => {
 
   return (
     <View style={styles.drawerContent}>
-      <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
-        <View style={styles.profileSection}>
-          <Avatar.Image size={50} source={{ uri: 'https://your-profile-image-url.com' }} />
-          <Title style={styles.profileName}>{user ? user.name : 'Guest'}</Title>
+      <View style={styles.upperSection}>
+        <View style={styles.headProfile}>
+        <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
+          <Avatar.Image style={{backgroundColor: '#5e8fb0'}} size={70} source={{ uri: 'https://your-profile-image-url.com' }} />
+        </TouchableOpacity>
+        <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>Position goees here</Text>
         </View>
+      
+      <View style={{paddingTop: 10}}>
+      <Title style={styles.profileName}>{user ? user.name : 'Guest'}</Title>
+      <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>account email goes here</Text>   
+      </View>
+      </View>
+
+      <TouchableOpacity  style={styles.drawerItem} onPress={() => navigation.navigate('UserDashboard')}>
+        <Title style={styles.titleStyle}>Dashboard</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('UserDashboard')}>
-        <Title style={styles.drawerItem}>Dashboard</Title>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('InventoryScreen')}>
-        <Title style={styles.drawerItem}>Requisition</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('InventoryScreen')}>
+        <Title style={styles.titleStyle}>Requisition</Title>
       </TouchableOpacity>
       
-      <TouchableOpacity onPress={() => navigation.navigate('SearchItems')}>
-        <Title style={styles.drawerItem}>Search Items</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('SearchItems')}>
+        <Title style={styles.titleStyle}>Search Items</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('UserHistoryLogScreen')}>
-        <Title style={styles.drawerItem}>Status Board</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserHistoryLogScreen')}>
+        <Title style={styles.titleStyle}>Status Board</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('UserActivityLogScreen')}>
-        <Title style={styles.drawerItem}>Activity Log</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserActivityLogScreen')}>
+        <Title style={styles.titleStyle}>Activity Log</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('CalendarScreen')}>
-        <Title style={styles.drawerItem}>Calendar Screen</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CalendarScreen')}>
+        <Title style={styles.titleStyle}>Calendar Screen</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('RequestListScreen')}>
-        <Title style={styles.drawerItem}>Request List Screen</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('RequestListScreen')}>
+        <Title style={styles.titleStyle}>Request List Screen</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('PolicyScreen')}>
-        <Title style={styles.drawerItem}>Policy Screen</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('PolicyScreen')}>
+        <Title style={styles.titleStyle}>Policy Screen</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('CapexRequestScreen')}>
-        <Title style={styles.drawerItem}>Capex Request</Title>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CapexRequestScreen')}>
+        <Title style={styles.titleStyle}>Capex Request</Title>
       </TouchableOpacity>
 
       <TouchableOpacity
@@ -298,53 +305,60 @@ const styles = StyleSheet.create({
   },
 
   drawerContent: {
-    flex: 1,
-    paddingTop: 50,
-    paddingHorizontal: 20,
-    backgroundColor: '#1A4572', 
+    height: '100%',
+    backgroundColor: 'white', 
   },  
 
+  upperSection:{
+    display: 'flex',
+    backgroundColor: '#6e9fc1',
+    height: '20%',
+    padding: 20,
+    marginBottom: 15
+  },
+
   profileSection: {
+  
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 30,
-    padding: 10,
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 3,
+    height: 'auto',
+    maxWidth: 70
+  },
+
+  headProfile: {
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: 'space-between'
   },
 
   profileName: {
-    marginLeft: 12,
     fontSize: 18,
     fontWeight: '600',
-    color: '#2c3e50',
+    color: '#fff',
+    marginBottom: 0
   },
 
   drawerItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 15,
-    fontSize: 16,
+    paddingHorizontal: 20,
     backgroundColor: '#ffffff',
-    borderRadius: 10,
     marginBottom: 12,
-    elevation: 2,
     color: '#333',
+  },
+
+  titleStyle: {
+    fontSize: 16,
+    fontWeight: 500
   },
 
   logoutButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: 'auto',
+
     padding: 15,
     backgroundColor: '#ffefef',
-    borderRadius: 10,
+
     marginBottom: 30,
-    elevation: 2,
+
   },
 
   logoutText: {
