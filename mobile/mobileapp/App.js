@@ -14,7 +14,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import { LogBox } from 'react-native';
 
 import ActivityLogScreen from './components/admin/ActivityLogScreen';
-import LoginScreen from './components/LoginScreen';
+import LoginScreen from './components/LoginScreen2';
 import UserDashboard from './components/user/UserDashboard';
 import CalendarScreen from './components/user/CalendarScreen';
 import PolicyScreen from './components/PolicyScreen';
