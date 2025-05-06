@@ -194,6 +194,7 @@ export default StyleSheet.create({
     textAlign: 'left',
     width: '100%',
     color: '#333',
+    
   },
   
   tableHeader: {
@@ -210,10 +211,15 @@ export default StyleSheet.create({
   },
   
   tableCell: {
-    fontSize: 13,
+    fontSize: 14,
     color: '#333',
     textAlign: 'center',
     paddingHorizontal: 2,
+    height:40,
+    paddingTop:10,
+
+
+
   },
   
   closeButton: {

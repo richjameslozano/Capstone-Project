@@ -171,8 +171,9 @@ const UserActivityLogScreen = () => {
         <View style={styles.table}>
           <View style={styles.tableHeader}>
             <Text style={[styles.tableCell, styles.headerCell]}>Date</Text>
+            <Text style={[styles.tableCell, styles.headerCell]}>Time</Text>
             <Text style={[styles.tableCell, styles.headerCell]}>Action</Text>
-            <Text style={[styles.tableCell, styles.headerCell]}>By</Text>
+            <Text style={[styles.tableCell, styles.headerCell]}>Approved by</Text>
           </View>
 
           <FlatList
