@@ -11,6 +11,9 @@ import { Calendar } from 'react-native-calendars';
 import { useRequestMetadata } from './contexts/RequestMetadataContext';
 import Header from './Header';
 
+
+import Icon2 from 'react-native-vector-icons/Ionicons'; 
+
 export default function InventoryScreen({ navigation }) {
   const { user } = useAuth();
   const [tempRequestCount, setTempRequestCount] = useState(0);
@@ -40,6 +43,14 @@ export default function InventoryScreen({ navigation }) {
   const [selectedUsageTypeInput, setSelectedUsageTypeInput] = useState(''); 
   const today = new Date().toISOString().split('T')[0];
   const { metadata, setMetadata } = useRequestMetadata(); 
+
+
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
 
     // useEffect(() => {
   //   const fetchInventory = async () => {
@@ -316,30 +327,128 @@ export default function InventoryScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Header />
-      <Text style={styles.sectionTitle}>Laboratory Items</Text>
-      <TextInput
-        style={styles.searchBar}
-        placeholder="Search by item name"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-      />
+      <Header onLayout={handleHeaderLayout} />
 
-      <View style={{ flexDirection: 'row', marginHorizontal: 10 }}>
-        <View style={{ flex: 1, marginRight: 5 }}>
-          <Picker
-            selectedValue={selectedCategory}
-            onValueChange={(itemValue) => setSelectedCategory(itemValue)}
-            style={styles.picker}
-          >
-          <Picker.Item key="default-category" label="Select Category" value="" />
-            {categories.map((category, index) => (
-              <Picker.Item key={category + index} label={category} value={category} />
-            ))}
-          </Picker>
+  <ScrollView>
+    <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
+      <View style={{flexDirection:'row', alignItems: 'center', marginBottom: 10}}>
+        <Icon2 name='clipboard-outline' size={30}/>
+        <View style={{flex: 1, marginLeft: 8}}>
+        <Text style={{fontSize:18, fontWeight: 'bold'}}>Requisition Slip</Text>
+        <Text style={{fontWeight: 300, fontSize: 13}}>Please fill in the required information to proceed.</Text>
         </View>
+      </View>
+    <View style={[styles.dateSection]}>
+      <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f', width: 100}}>Date Needed:</Text>
 
-        <View style={{ flex: 1, marginLeft: 5 }}>
+      <TouchableOpacity style={styles.dateButton} onPress={() => setCalendarVisible(true)}>
+        <Text style={styles.dateButtonText}>
+          {selectedDate || 'Select Date'}
+        </Text>
+        <Icon2 name="chevron-down" type="ionicon" size={20} color='#fff'/>
+      </TouchableOpacity>
+
+      {/* Modal with Calendar */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={calendarVisible}
+        onRequestClose={() => setCalendarVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Calendar
+              onDayPress={(day) => {
+                setSelectedDate(day.dateString);
+                setCalendarVisible(false);
+                setMetadata((prev) => ({ ...prev, dateRequired: day.dateString }));
+              }}
+              markedDates={{
+                [selectedDate]: { selected: true, selectedColor: '#00796B' },
+              }}
+              minDate={today}
+            />
+            <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.closeButton}>
+              <Text style={{ color: 'white' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+
+
+
+          <View style={styles.timeSection}>
+              <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f', width:100}}>Time Needed:</Text>
+              <View style={styles.timeButtonContainer}>
+                <View style={styles.timeBtn}>
+                <Text style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>start:</Text>
+                    <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('start')}>
+                      <Text style={styles.timeButtonText}>
+                        {formatTime(selectedStartTime)}
+                      </Text>
+                    </TouchableOpacity>
+                </View>
+                  
+                <View  style={styles.timeBtn}>
+                <Text  style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>end:</Text>
+                    <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('end')}>
+                      <Text style={styles.timeButtonText}>
+                      {formatTime(selectedEndTime)}
+                      </Text>
+                    </TouchableOpacity>
+                </View>  
+                  </View>
+          </View>
+
+
+          <View style={styles.programSection}>
+            <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width:100}}>Select Program:</Text>
+            <View style={styles.programPicker}>
+                  <Picker
+                    selectedValue={program}
+                    onValueChange={(itemValue) => {
+                      setProgram(itemValue);
+                      setMetadata((prevMetadata) => ({ ...prevMetadata, program: itemValue }));
+                    }}
+                    style={styles.programItem}
+                    dropdownIconColor= "#6e9fc1"
+                    dropdownIconRippleColor='white'
+                  >
+                    <Picker.Item label="Program" value=""  style={{fontSize: 15}}/>
+                    <Picker.Item label="SAM - BSMT" value="SAM - BSMT" style={{fontSize: 15}} />
+                    <Picker.Item label="SAH - BSN" value="SAH - BSN"  style={{fontSize: 15}}/>
+                    <Picker.Item label="SHS" value="SHS"  style={{fontSize: 15}}/>
+                  </Picker>
+
+                  <Icon2
+                    name="chevron-down"
+                    size={20}
+                    color="white"
+                    style={styles.arrowIcon}
+                    pointerEvents="none"
+                  />
+                </View>
+          </View>
+
+          <View style={styles.roomSection}>
+            <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width: 100}}>Room No.</Text>
+            <TextInput
+                  style={styles.roomInput}
+                  placeholder="e.g., 929"
+                  value={room}
+                  keyboardType='numeric'
+                  maxLength={4}
+                  onChangeText={(text) => {
+                    setRoom(text);
+                    setMetadata((prevMetadata) => ({ ...prevMetadata, room: text }));
+                  }}
+                />
+          </View>
+
+          <View style={styles.usageSection}>
+                <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width: 100}}>Usage Type</Text>
+                <View  style={styles.usagePicker}>
           <Picker
             selectedValue={selectedUsageTypeInput}
             onValueChange={(itemValue) => {
@@ -349,81 +458,31 @@ export default function InventoryScreen({ navigation }) {
                 usageType: itemValue,
               }));
             }}
-            style={styles.picker}
+            dropdownIconColor='#6e9fc1'
+            dropdownIconRippleColor='white'
+            style={styles.programItem}
           >
-            <Picker.Item label="Select Usage Type" value="" />
-            <Picker.Item label="Laboratory Experiment" value="Laboratory Experiment" />
+            <Picker.Item label="Select" value="" style={{fontSize: 15}}/>
+            <Picker.Item label="Laboratory Experiment" value="Laboratory Experiment" style={{fontSize: 15}}/>
             <Picker.Item label="Research" value="Research" />
-            <Picker.Item label="Community Extension" value="Community Extension" />
-            <Picker.Item label="Others" value="Others" />
+            <Picker.Item label="Community Extension" value="Community Extension" style={{fontSize: 15}}/>
+            <Picker.Item label="Others" value="Others" style={{fontSize: 15}}/>
           </Picker>
+          <Icon2
+                    name="chevron-down"
+                    size={20}
+                    color="white"
+                    style={styles.arrowIcon}
+                    pointerEvents="none"
+                  />
         </View>
-      </View>
+          </View>
 
-              <TouchableOpacity style={styles.dateButton} onPress={() => setCalendarVisible(true)}>
-                <Text style={styles.dateButtonText}>
-                  {selectedDate ? `Borrow Date: ${selectedDate}` : 'Pick Borrow Date'}
-                </Text>
-              </TouchableOpacity>
-        
-              {calendarVisible && (
-                <Calendar
-                  onDayPress={(day) => {
-                    setSelectedDate(day.dateString);
-                    setCalendarVisible(false);
-                    setMetadata((prevMetadata) => ({ ...prevMetadata, dateRequired: day.dateString }));
-                  }}
-                  markedDates={{ [selectedDate]: { selected: true, selectedColor: '#00796B' } }}
-                  minDate={today}
-                />
-              )}
-      
-              <View style={styles.timeButtonContainer}>
-                <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('start')}>
-                  <Text style={styles.timeButtonText}>
-                    Start Time: {formatTime(selectedStartTime)}
-                  </Text>
-                </TouchableOpacity>
-                
-                <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('end')}>
-                  <Text style={styles.timeButtonText}>
-                    End Time: {formatTime(selectedEndTime)}
-                  </Text>
-                </TouchableOpacity>
-              </View>
-
-      
-              <View style={styles.programRoomContainer}>
-                <View style={styles.pickerWrapper}>
-                  <Picker
-                    selectedValue={program}
-                    onValueChange={(itemValue) => {
-                      setProgram(itemValue);
-                      setMetadata((prevMetadata) => ({ ...prevMetadata, program: itemValue }));
-                    }}
-                    style={{ height: 50, fontSize: 5 }} 
-                  >
-                    <Picker.Item label="Select Program" value="" />
-                    <Picker.Item label="SAM - BSMT" value="SAM - BSMT" />
-                    <Picker.Item label="SAH - BSN" value="SAH - BSN" />
-                    <Picker.Item label="SHS" value="SHS" />
-                  </Picker>
-                </View>
-      
-                <TextInput
-                  style={styles.roomInput}
-                  placeholder="Enter room"
-                  value={room}
-                  onChangeText={(text) => {
-                    setRoom(text);
-                    setMetadata((prevMetadata) => ({ ...prevMetadata, room: text }));
-                  }}
-                />
-              </View>
-      
-              <TextInput
-                style={styles.reasonInput}
-                placeholder="Enter reason for borrowing..."
+        <View style={styles.noteSection}>
+          <Text style={{fontWeight: 'bold'}}>Note: (Optional)</Text>
+        <TextInput
+                style={styles.noteInput}
+                placeholder="Leave a note..."
                 value={reason}
                 onChangeText={(text) => {
                   setReason(text);
@@ -431,13 +490,52 @@ export default function InventoryScreen({ navigation }) {
                 }}
                 multiline
               />
+        </View>
 
-      <FlatList
-        data={filteredItems}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No items found</Text>}
-      />
+        <View style={{alignItems: 'flex-end', padding: 5}}>
+          <TouchableOpacity style={styles.proceedBtn}>
+            <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Next</Text>
+            <Icon2 name='chevron-forward' color='#fff' size={15}/>
+          </TouchableOpacity>
+        </View>
+        
+    </View>
+    </ScrollView>
+      
+
+
+              {/* <TextInput 
+                style={[styles.searchBar]}
+                placeholder="Search by item name"
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+              />
+      
+              
+
+              <FlatList
+                data={filteredItems}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No items found</Text>}
+              /> */}
+
+{/* <View style={styles.bottomContainer}>
+        <View style={styles.requestAddContainer}>
+        <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
+          <Text style={styles.requestButtonText}>Request List</Text>
+          {tempRequestCount > 0 && (
+            <View style={styles.notificationBadge}>
+              <Text style={styles.notificationText}>{tempRequestCount}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.helpButton} onPress={() => navigation.navigate('HelpScreen')}>
+          <Text style={styles.helpButtonText}>Help (?)</Text>
+        </TouchableOpacity>
+      </View> */}
 
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={closeModal}>
@@ -461,22 +559,7 @@ export default function InventoryScreen({ navigation }) {
         </TouchableWithoutFeedback>
       </Modal>
 
-      <View style={styles.bottomContainer}>
-        <View style={styles.requestAddContainer}>
-        <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
-          <Text style={styles.requestButtonText}>Request List</Text>
-          {tempRequestCount > 0 && (
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationText}>{tempRequestCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-        </View>
-
-        <TouchableOpacity style={styles.helpButton} onPress={() => navigation.navigate('HelpScreen')}>
-          <Text style={styles.helpButtonText}>Help (?)</Text>
-        </TouchableOpacity>
-      </View>
+      
 
       <Modal
         visible={timeModalVisible}

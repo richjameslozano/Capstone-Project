@@ -1,11 +1,12 @@
 import { StyleSheet } from 'react-native';
+import Header from '../Header';
+import { auth } from '../../backend/firebase/FirebaseConfig';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#e9ecee',
     padding: 16,
-    paddingTop: 40,
   },
 
   /* Section Title */
@@ -13,7 +14,6 @@ export default StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     marginVertical: 10,
-    marginTop: 50,
   },
 
   /* Search Bar */
@@ -25,12 +25,23 @@ export default StyleSheet.create({
   },
 
   /* Picker Styles */
-  picker: {
-    height: 50,
-    width: '100%',
-    backgroundColor: '#F5F5F5',
-    borderRadius: 20,
-    marginBottom: 10,
+  usageSection:{
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8, 
+    backgroundColor: '#d5e1e9',
+    borderRadius: 5
+  },
+
+  usagePicker: {
+    flex: 1,
+    borderRadius: 5,
+    justifyContent: 'center',
+    backgroundColor:'#6e9fc1',
+    height: 'auto',
+    marginLeft: 30,
+    padding:0,
   },
 
   pickerContainer: {
@@ -112,19 +123,32 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  dateButton: {
+  dateSection:{
+    display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#007BFF',
+    height: 'auto',
+    backgroundColor: '#d5e1e9',
+    padding: 8,
+    borderRadius: 5
+  },
+
+  dateButton: {
+    display: 'flex',
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#6e9fc1',
     padding: 10,
     borderRadius: 5,
-    marginBottom: 10,
+    marginLeft: 30,
+    justifyContent: 'space-between'
   },
 
   dateButtonText: {
     color: 'white',
     fontWeight: 'bold',
-    marginRight: 10,
+    fontSize: 15
   },
 
   label: {
@@ -160,41 +184,39 @@ export default StyleSheet.create({
   },
 
   /* Time Picker Modal */
-  timeScroll: {
-    height: 150,
-    width: '100%',
-    marginVertical: 10,
-  },
 
-  timeText: {
-    fontSize: 18,
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-    textAlign: 'center',
-  },
+timeSection:{
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  backgroundColor: '#d5e1e9',
+  borderRadius: 5,
+  padding: 8
+},
+
+timeBtn:{
+  flex: 1,
+},
 
   timeButtonContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginTop: 10,
+    flex:1,
+    marginLeft: 30,
+    gap: 5
   },
 
   timeButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#6e9fc1',
     paddingVertical: 10,
-    paddingHorizontal: 15,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    borderRadius: 5,
   },
 
   timeButtonText: {
     color: 'white',
     fontWeight: 'bold',
-  },
-
-  timeContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 10,
+    fontSize: 14,
+    textAlign: 'center'
   },
 
   /* Bottom Section */
@@ -352,29 +374,56 @@ export default StyleSheet.create({
     opacity: 0.5,
   },
 
-  programRoomContainer: {
+
+
+  programSection:{
+    display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 10,
+    alignItems: 'center',
+    padding: 8, 
+    backgroundColor: '#d5e1e9',
+    borderRadius: 5
   },
 
-  pickerWrapper: {
+  programPicker: {
     flex: 1,
-    marginRight: 8,
-    borderWidth: 1,
-    borderColor: '#ccc',
     borderRadius: 5,
     justifyContent: 'center',
-    height: 45,
+    backgroundColor:'#6e9fc1',
+    height: 'auto',
+    marginLeft: 30,
+    padding:0,
+  },
+
+  programItem:{
+    color: 'white',
+    height: 'auto',
+  },  
+  arrowIcon: {
+    position: 'absolute',
+    right: 10,
+    top: '50%',
+    marginTop: -10,
+    pointerEvents: 'none',
+    zIndex: 1,
+  },
+
+  roomSection:{
+    display: 'flex',
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 8, 
+    backgroundColor: '#d5e1e9',
+    borderRadius: 5
   },
 
   roomInput: {
     flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
+    backgroundColor: '#fff',
     borderRadius: 5,
     paddingHorizontal: 10,
-    height: 45,
+    height: 'auto',
+    marginLeft: 30
   },
 
   timeModalContainer: {
@@ -437,14 +486,65 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
 
-  reasonInput: {
+  noteSection:{
+    display: 'flex',
+    flexDirection: 'column',
+    padding: 8, 
+    backgroundColor: '#fff',
+    borderRadius: 5,
+  },
+
+  noteInput: {
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 8,
     padding: 10,
     marginVertical: 10,
     fontSize: 14,
-    backgroundColor: '#f9f9f9',
-    textAlignVertical: 'top', 
+    backgroundColor: '#fff',
+
   },  
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)', // dim background
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    padding: 16,
+    borderRadius: 12,
+    width: '90%',
+    elevation: 10,
+  },
+  closeButton: {
+    marginTop: 16,
+    alignSelf: 'center',
+    backgroundColor: '#00796B',
+    padding: 10,
+    borderRadius: 8,
+  },
+
+  wholeSection:{
+    padding: 10,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#cde4f4',
+    height: 'auto',
+    gap: 5
+  },
+
+  proceedBtn:{
+    display: 'flex',
+    backgroundColor: '#395a7f',
+    padding: 10,
+    paddingLeft: 20,
+    borderRadius: 5,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  }
+  
 });

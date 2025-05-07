@@ -4,11 +4,11 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../components/styles/HeaderStyle';
 import { useNavigation } from '@react-navigation/native';
 
-export default function Header() {
+export default function Header( {onLayout}) {
   const navigation = useNavigation();
 
   return (
-    <View style={styles.header}>
+    <View onLayout={onLayout} style={styles.header}>
       <TouchableOpacity 
         style={styles.menuButton}
         onPress={() => navigation.openDrawer()}

@@ -60,12 +60,12 @@ const CustomDrawerContent = ({ navigation }) => {
         <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
           <Avatar.Image style={{backgroundColor: '#5e8fb0'}} size={70} source={{ uri: 'https://your-profile-image-url.com' }} />
         </TouchableOpacity>
+        </View>
+      
         <View>
       <Text style={styles.profileName}>{user ? user.name : 'Guest'}</Text>
       <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>Position goes here</Text>   
       </View>
-        </View>
-      
       
       </View>
 
@@ -341,7 +341,7 @@ const styles = StyleSheet.create({
     height: 'auto',
     paddingHorizontal: 20,
     paddingTop: 50,
-    paddingBottom: 30,
+    paddingBottom: 10,
     marginBottom: 15
   },
 
@@ -360,6 +360,7 @@ const styles = StyleSheet.create({
   },
 
   profileName: {
+    marginTop:10,
     fontSize: 18,
     fontWeight: '600',
     color: '#fff',
