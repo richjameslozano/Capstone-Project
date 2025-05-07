@@ -224,7 +224,34 @@ export default function LoginScreen({navigation}) {
       }
     };
 
+    const sendEmail = async (email, name) => {
+      try {
+        const response = await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: email.trim().toLowerCase(),
+            subject: 'Account Registration - Pending Approval',
+            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
+            html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+          }),
+        });
+    
+        const result = await response.json();
+    
+        if (result.success) {
+          console.log('✅ Email sent successfully!');
 
+        } else {
+          console.log('❌ Email failed:', result.error);
+        }
+
+      } catch (error) {
+        console.error('❌ Error sending email:', error);
+      }
+    };   
 
     const handleSignup = async () => {
         setLoading(true);
@@ -302,10 +329,12 @@ export default function LoginScreen({navigation}) {
             role,
             createdAt: serverTimestamp(),
             status: "pending",
-            uid: firebaseUser.uid,
+            // uid: firebaseUser.uid,
           };
       
           await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+
+          sendEmail(email, name);      
       
           setModalMessage("Successfully Registered! Please check your email. Your account is pending ITSO approval.");
           setIsModalVisible(true);
