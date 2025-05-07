@@ -427,8 +427,8 @@ const Login = () => {
       }
   
       // Step 4: Create the Firebase user with email and password
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const firebaseUser = userCredential.user;
+      // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      // const firebaseUser = userCredential.user;
   
       // Step 5: Determine the role based on the job title
       let role = "user";  // Default role is 'user'
@@ -443,34 +443,49 @@ const Login = () => {
       }
   
       // Step 6: Create a new document in the 'pendingaccounts' collection
+      // const sanitizedData = {
+      //   name: name.trim().toLowerCase(),
+      //   email: email.trim().toLowerCase(),
+      //   employeeId: employeeId.trim().replace(/[^\d-]/g, ''),
+      //   jobTitle,
+      //   department,
+      //   role,  // Assign role based on job title
+      //   createdAt: serverTimestamp(),
+      //   status: "pending", // Mark as pending
+      //   // uid: firebaseUser.uid,
+      // };
+  
+      // // Add user data to 'pendingaccounts' collection
+      // await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+
+        // Save data to 'pendingaccounts' collection without creating the Firebase Auth user
       const sanitizedData = {
         name: name.trim().toLowerCase(),
         email: email.trim().toLowerCase(),
         employeeId: employeeId.trim().replace(/[^\d-]/g, ''),
         jobTitle,
         department,
-        role,  // Assign role based on job title
+        role, // Function to determine role based on job title
         createdAt: serverTimestamp(),
-        status: "pending", // Mark as pending
-        uid: firebaseUser.uid,
+        status: "pending",
+        password, // Include password here temporarily for approval process
       };
 
-     // Step 6.1: Send confirmation email
-     await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: email.trim().toLowerCase(),
-        subject: "Account Registration - Pending Approval",
-        text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
-        html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
-      }),
-    });
-  
-      // Add user data to 'pendingaccounts' collection
       await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+
+     // Step 6.1: Send confirmation email
+      await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: email.trim().toLowerCase(),
+          subject: "Account Registration - Pending Approval",
+          text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
+          html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+        }),
+      });
   
       // Step 7: Set the modal message and show the modal
       setModalMessage("Successfully Registered! Please check your email for further instructions. Your account is pending approval from the ITSO.");
@@ -496,6 +511,7 @@ const Login = () => {
       } else {
         setError("Failed to create account. Try again.");
       }
+      
     } finally{
       setIsLoading(false)
       setSignUpMode(false)
