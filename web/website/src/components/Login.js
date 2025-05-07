@@ -455,7 +455,19 @@ const Login = () => {
         uid: firebaseUser.uid,
       };
 
-     
+     // Step 6.1: Send confirmation email
+     await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: email.trim().toLowerCase(),
+        subject: "Account Registration - Pending Approval",
+        text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
+        html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+      }),
+    });
   
       // Add user data to 'pendingaccounts' collection
       await addDoc(collection(db, "pendingaccounts"), sanitizedData);
