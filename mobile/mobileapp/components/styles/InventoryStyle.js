@@ -7,6 +7,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#e9ecee',
     padding: 16,
+    paddingBottom: 0
   },
 
   /* Section Title */
@@ -545,6 +546,14 @@ timeBtn:{
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center'
-  }
+  },
+
+  scrollContainer: {
+
+    flexGrow: 1,
+    paddingBottom: 80,
+    
+  },
+
   
 });
