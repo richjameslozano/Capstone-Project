@@ -347,6 +347,7 @@ export default function LoginScreen({navigation}) {
           setConfirmPassword("");
           setJobTitle("");
           setDepartment("");
+          setError("");
       
         } catch (error) {
           console.error("Sign up error:", error.message);
