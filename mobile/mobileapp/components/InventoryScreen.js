@@ -43,8 +43,6 @@ export default function InventoryScreen({ navigation }) {
   const [selectedUsageTypeInput, setSelectedUsageTypeInput] = useState(''); 
   const today = new Date().toISOString().split('T')[0];
   const { metadata, setMetadata } = useRequestMetadata(); 
-
-
   const [headerHeight, setHeaderHeight] = useState(0);
 
   const handleHeaderLayout = (event) => {
