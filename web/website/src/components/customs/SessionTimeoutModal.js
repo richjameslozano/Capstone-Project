@@ -22,6 +22,7 @@ const SessionTimeoutModal = ({ isVisible, onClose }) => {
           onCancel={onClose}
           footer={null}
           centered
+          zIndex={1005}
           className="notification-modal"
         >
           <p className="notification-message">Your session has expired due to inactivity. You've been logged out. To Continue, Login again.</p>
