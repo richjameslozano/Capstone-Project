@@ -224,7 +224,34 @@ export default function LoginScreen({navigation}) {
       }
     };
 
+    const sendEmail = async (email, name) => {
+      try {
+        const response = await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: email.trim().toLowerCase(),
+            subject: 'Account Registration - Pending Approval',
+            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
+            html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+          }),
+        });
+    
+        const result = await response.json();
+    
+        if (result.success) {
+          console.log('✅ Email sent successfully!');
 
+        } else {
+          console.log('❌ Email failed:', result.error);
+        }
+
+      } catch (error) {
+        console.error('❌ Error sending email:', error);
+      }
+    };   
 
     const handleSignup = async () => {
         setLoading(true);
@@ -302,10 +329,12 @@ export default function LoginScreen({navigation}) {
             role,
             createdAt: serverTimestamp(),
             status: "pending",
-            uid: firebaseUser.uid,
+            // uid: firebaseUser.uid,
           };
       
           await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+
+          sendEmail(email, name);      
       
           setModalMessage("Successfully Registered! Please check your email. Your account is pending ITSO approval.");
           setIsModalVisible(true);
@@ -318,6 +347,7 @@ export default function LoginScreen({navigation}) {
           setConfirmPassword("");
           setJobTitle("");
           setDepartment("");
+          setError("");
       
         } catch (error) {
           console.error("Sign up error:", error.message);
@@ -582,14 +612,18 @@ export default function LoginScreen({navigation}) {
               {isSignup ? "Sign Up" : "Login"}
             </Button> */}
 
-            <CustomButton
-              title={isSignup ? "Sign Up" : "Login"}
-              onPress={isSignup ? handleSignup : handleLogin}
-              icon={isSignup ? "account-plus" : "login"}
-              loading={loading}
-              style={styles.loginButton}
-              labelStyle={styles.loginButtonText}
-            />
+          <CustomButton
+            title={isSignup ? "Sign Up" : "Login"}
+            onPress={isSignup ? handleSignup : handleLogin}
+            icon={isSignup ? "account-plus" : "login"}
+            loading={loading}
+            disabled={!agreedToTerms} // Disable when not agreed
+            style={[
+              styles.loginButton,
+              !agreedToTerms && { backgroundColor: '#ccc' }, // Grey out when disabled
+            ]}
+            labelStyle={styles.loginButtonText}
+          />
 
             {/* Toggle Login/Signup */}
             <TouchableOpacity onPress={() => setIsSignup(!isSignup)}
