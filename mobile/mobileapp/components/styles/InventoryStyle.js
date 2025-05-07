@@ -5,6 +5,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 16,
+    paddingTop: 40,
   },
 
   /* Section Title */

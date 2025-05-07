@@ -32,7 +32,11 @@ export default function UserDashboard({ navigation }) {
   
   return (
     <View style={styles.container2}>
-       <StatusBar style="light" backgroundColor="#1A4572" />
+       <StatusBar
+               translucent
+               backgroundColor="transparent"
+               barStyle="light-content" // or 'light-content' depending on your design
+             />
      <Header/>
 
       <FlatList

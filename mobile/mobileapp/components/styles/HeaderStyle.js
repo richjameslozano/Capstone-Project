@@ -1,4 +1,5 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
+import Header from '../Header';
 
 export default StyleSheet.create({
   header: {
@@ -7,17 +8,18 @@ export default StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 10, 
-    backgroundColor: '#1A4572',
+    backgroundColor: '#395a7f',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 10,
+    paddingVertical: 15,
     elevation: 4, // Adds shadow on Android
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
-    marginBottom:10,
+    paddingTop: StatusBar.currentHeight+5,
   },
   
   logo: {

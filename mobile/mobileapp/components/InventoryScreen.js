@@ -317,7 +317,6 @@ export default function InventoryScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <Header />
-
       <Text style={styles.sectionTitle}>Laboratory Items</Text>
       <TextInput
         style={styles.searchBar}

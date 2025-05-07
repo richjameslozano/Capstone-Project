@@ -5,7 +5,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     padding: 16,
-    height:' 100%'
+    height:' 100%',
   },
 
   // header: {

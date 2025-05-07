@@ -1,5 +1,5 @@
 import React from 'react';
-import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable } from 'react-native';
+import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
 import { NavigationContainer } from '@react-navigation/native';
@@ -50,23 +50,29 @@ const CustomDrawerContent = ({ navigation }) => {
 
   return (
     <View style={styles.drawerContent}>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content" // or 'light-content' depending on your design
+      />
       <View style={styles.upperSection}>
         <View style={styles.headProfile}>
         <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
           <Avatar.Image style={{backgroundColor: '#5e8fb0'}} size={70} source={{ uri: 'https://your-profile-image-url.com' }} />
         </TouchableOpacity>
-        </View>
-      
-      <View style={{paddingTop: 10}}>
-      <Title style={styles.profileName}>{user ? user.name : 'Guest'}</Title>
+        <View>
+      <Text style={styles.profileName}>{user ? user.name : 'Guest'}</Text>
       <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>Position goes here</Text>   
       </View>
+        </View>
+      
+      
       </View>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
   <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
   <Title style={styles.titleStyle}>Profile</Title>
-</TouchableOpacity>
+  </TouchableOpacity>
 
 <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('InventoryScreen')}>
   <Icon2 name="clipboard-list-outline" size={25} style={styles.icon} />
@@ -156,7 +162,13 @@ const CustomAdminDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
 
   return (
+    
     <View style={styles.drawerContent}>
+      <StatusBar
+        translucent
+        backgroundColor="transparent"
+        barStyle="light-content" // or 'light-content' depending on your design
+      />
       <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
         <View style={styles.profileSection}>
           <Avatar.Image size={50} source={{ uri: 'https://your-profile-image-url.com' }} />
@@ -315,6 +327,8 @@ const styles = StyleSheet.create({
   },
 
   drawerContent: {
+    flex: 1,
+    
     height: '100%',
     backgroundColor: 'white', 
     fontFamily: 'sans-serif'
@@ -324,13 +338,14 @@ const styles = StyleSheet.create({
   upperSection:{
     display: 'flex',
     backgroundColor: '#6e9fc1',
-    height: '20%',
-    padding: 20,
+    height: 'auto',
+    paddingHorizontal: 20,
+    paddingTop: 50,
+    paddingBottom: 30,
     marginBottom: 15
   },
 
   profileSection: {
-  
     flexDirection: 'row',
     alignItems: 'center',
     height: 'auto',
@@ -340,7 +355,8 @@ const styles = StyleSheet.create({
   headProfile: {
     display: 'flex',
     flexDirection: 'row',
-    justifyContent: 'space-between'
+    alignItems: 'center',
+    gap: 15
   },
 
   profileName: {
