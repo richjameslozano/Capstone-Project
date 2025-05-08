@@ -371,14 +371,16 @@ export default function LoginScreen({navigation}) {
     style={{ flex: 1, backgroundColor:'white' }}
     keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
   >
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{flex: 1, backgroundColor: 'white' }}>
+    
     <ScrollView
+        showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
         enableOnAndroid={true}
         keyboardShouldPersistTaps="always"
         extraScrollHeight={0} 
         enableAutomaticScroll={true} 
       >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{flex: 1, backgroundColor: 'white' }}>
         <View style={[styles.inner, ]}>
           {/* Header */}
           <View style={styles.header}>
@@ -641,8 +643,9 @@ export default function LoginScreen({navigation}) {
             onClose={() => setForgotPasswordVisible(false)}
           />
         </View>
+        </TouchableWithoutFeedback>
         </ScrollView>
-    </TouchableWithoutFeedback>
+    
   </KeyboardAvoidingView>
 </SafeAreaView>
 

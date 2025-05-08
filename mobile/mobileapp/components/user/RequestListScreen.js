@@ -17,8 +17,9 @@ import { useAuth } from '../contexts/AuthContext';
 import { useRequestMetadata } from '../contexts/RequestMetadataContext';
 import styles from '../styles/userStyle/RequestListStyle';
 import Header from '../Header';
+import { useNavigation } from '@react-navigation/native';
 
-const RequestListScreen = () => {
+const RequestListScreen = ({navigation}) => {
   const { user } = useAuth();
   const [requestList, setRequestList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -30,33 +31,7 @@ const RequestListScreen = () => {
   const [confirmationData, setConfirmationData] = useState(null);
   const [tempDocIdsToDelete, setTempDocIdsToDelete] = useState([]);
 
-   // useEffect(() => {
-  //   if (!user || !user.id) return;
-  
-  //   const tempRequestRef = collection(db, 'accounts', user.id, 'temporaryRequests');
-  
-  //   const unsubscribe = onSnapshot(tempRequestRef, (querySnapshot) => {
-  //     const tempRequestList = querySnapshot.docs.map((doc) => {
-  //       const data = doc.data();
-  //       return {
-  //         id: doc.id,
-  //         ...data,
-  //         selectedItem: {
-  //           value: data.selectedItemId,
-  //           label: data.selectedItemLabel,
-  //         },
-  //       };
-  //     });
-  
-  //     setRequestList(tempRequestList);
-  //     setLoading(false);
-  //   }, (error) => {
-  //     console.error('Error fetching request list in real-time:', error);
-  //     setLoading(false);
-  //   });
-  
-  //   return () => unsubscribe(); // cleanup listener on unmount
-  // }, [user]);
+
   
   useEffect(() => {
     if (!user || !user.id) return;
@@ -101,8 +76,8 @@ const RequestListScreen = () => {
       !metadata?.timeTo ||
       !metadata?.program ||
       !metadata?.room ||
-      !metadata?.reason ||
       !metadata?.usageType
+      
     ) {
       Alert.alert('Missing Info', 'Please go back and fill the required borrowing details.');
       return;
@@ -111,6 +86,7 @@ const RequestListScreen = () => {
     // Show the confirmation modal with the metadata details
     setConfirmationData(metadata);
     setShowConfirmationModal(true);
+    
   };
 
   const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
@@ -398,8 +374,10 @@ const RequestListScreen = () => {
                 <View style={styles.modalContainer}>
                   <Text style={styles.modalTitle}>Confirm Request</Text>
                   <Text style={styles.modalText}>Date Required: {confirmationData?.dateRequired}</Text>
-                  <Text style={styles.modalText}>Start Time: {confirmationData?.timeFrom}</Text>
-                  <Text style={styles.modalText}>End Time: {confirmationData?.timeTo}</Text>
+                  
+                  <Text>Start Time: {`${metadata.timeFrom?.hour}:${metadata.timeFrom?.minute} ${metadata.timeFrom?.period}`}</Text>
+                  <Text>End Time: {`${metadata.timeTo?.hour}:${metadata.timeTo?.minute} ${metadata.timeTo?.period}`}</Text>
+
                   <Text style={styles.modalText}>Program: {confirmationData?.program}</Text>
                   <Text style={styles.modalText}>Room: {confirmationData?.room}</Text>
                   <Text style={styles.modalText}>Reason: {confirmationData?.reason}</Text>
@@ -443,8 +421,11 @@ const RequestListScreen = () => {
 
                         if (requestSuccess) {
                           console.log('Request successfully submitted. Closing modal.');
+                          alert('Request Submitted Succesfully!')
                           setShowConfirmationModal(false); // Close the modal only if the request was successful
+                          navigation.goBack()
                         } else {
+                          alert('There was a problem in processing you request. Try again later.')
                           console.log('Request submission failed. Not closing modal.');
                         }
                       }}

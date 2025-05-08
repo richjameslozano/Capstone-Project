@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView , Platform, Keyboard} from 'react-native';
 import { getDocs, collection, onSnapshot, doc, setDoc, addDoc, query, where, Timestamp } from 'firebase/firestore';
 import { db } from '../backend/firebase/FirebaseConfig';
@@ -11,8 +11,8 @@ import { Calendar } from 'react-native-calendars';
 import { useRequestMetadata } from './contexts/RequestMetadataContext';
 import Header from './Header';
 
-
 import Icon2 from 'react-native-vector-icons/Ionicons'; 
+import { useFocusEffect } from '@react-navigation/native';
 
 export default function InventoryScreen({ navigation }) {
   const { user } = useAuth();
@@ -42,7 +42,8 @@ export default function InventoryScreen({ navigation }) {
   const [room, setRoom] = useState('');
   const [selectedUsageTypeInput, setSelectedUsageTypeInput] = useState(''); 
   const today = new Date().toISOString().split('T')[0];
-  const { metadata, setMetadata } = useRequestMetadata(); 
+  const { metadata, setMetadata } = useRequestMetadata();
+  const [isComplete, setIsComplete] = useState(false); 
   const [headerHeight, setHeaderHeight] = useState(0);
 
   const handleHeaderLayout = (event) => {
@@ -50,30 +51,11 @@ export default function InventoryScreen({ navigation }) {
     setHeaderHeight(height);
   };
 
-    // useEffect(() => {
-  //   const fetchInventory = async () => {
-  //     try {
-  //       const inventoryCollection = collection(db, 'inventory');
-  //       const inventorySnapshot = await getDocs(inventoryCollection);
-  //       const inventoryList = inventorySnapshot.docs.map(doc => ({
-  //         id: doc.id,
-  //         ...doc.data()
-  //       }));
-
-  //       setInventoryItems(inventoryList);
-
-  //       const categoriesList = ['All', ...new Set(inventoryList.map(item => item.type))]; 
-  //       const departmentsList = ['All', ...new Set(inventoryList.map(item => item.department))]; 
-  //       setCategories(categoriesList);
-  //       setDepartments(departmentsList);
-
-  //     } catch (error) {
-  //       console.error("Error fetching inventory: ", error);
-  //     }
-  //   };
-
-  //   fetchInventory();
-  // }, []);
+  useFocusEffect(
+    useCallback(() => {
+      setIsComplete(false); // reset when returning
+    }, [])
+  );
 
   useEffect(() => {
     const inventoryCollection = collection(db, 'inventory');
@@ -182,7 +164,6 @@ export default function InventoryScreen({ navigation }) {
       !metadata?.timeTo || 
       !metadata?.program || 
       !metadata?.room || 
-      !metadata?.reason ||
       !metadata?.usageType
     ) {
       alert('Please fill out all the borrowing details before adding an item.');
@@ -323,23 +304,62 @@ export default function InventoryScreen({ navigation }) {
     }));
   };  
 
+  const [errors, setErrors] = useState({
+    date: false,
+    startTime: false,
+    endTime: false,
+    program: false,
+    room: false,
+    usageType: false,
+  });
+  
+  const handleNext = () => {
+    const newErrors = {
+      date: !selectedDate,
+      startTime: !selectedStartTime,
+      endTime: !selectedEndTime,
+      program: !program,
+      room: !room,
+      usageType: !selectedUsageTypeInput,
+    };
+
+    setErrors(newErrors);
+
+    const hasErrors = Object.values(newErrors).some(Boolean);
+    if (!hasErrors) {
+      setMetadata({
+        dateRequired: selectedDate,
+        timeFrom: selectedStartTime,
+        timeTo: selectedEndTime,
+        program,
+        room,
+        usageType: selectedUsageTypeInput,
+        reason
+      });
+      
+      setIsComplete(true);
+    }
+    };
+
   return (
     <View style={styles.container}>
       <Header onLayout={handleHeaderLayout} />
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{flex: 1 }}>
-  <KeyboardAvoidingView
+
+      {!isComplete && (
+      <KeyboardAvoidingView
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
   
-  <ScrollView 
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
           enableOnAndroid={true}
           keyboardShouldPersistTaps="always"
           extraScrollHeight={0} 
           enableAutomaticScroll={true} >
-
-    <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{flex: 1, overflow: 'visible' }}>
+      <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
       <View style={{flexDirection:'row', alignItems: 'center', marginBottom: 10}}>
         <Icon2 name='clipboard-outline' size={30}/>
         <View style={{flex: 1, marginLeft: 8}}>
@@ -350,11 +370,16 @@ export default function InventoryScreen({ navigation }) {
     <View style={[styles.dateSection]}>
       <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f', width: 100}}>Date Needed:</Text>
 
-      <TouchableOpacity style={styles.dateButton} onPress={() => setCalendarVisible(true)}>
+      <TouchableOpacity style={[
+    styles.dateButton,
+    errors.date && { borderColor: 'red', borderWidth: 1 }
+    ]} 
+    onPress={() => setCalendarVisible(true)}>
+      
         <Text style={styles.dateButtonText}>
           {selectedDate || 'Select Date'}
         </Text>
-        <Icon2 name="chevron-down" type="ionicon" size={20} color='#fff'/>
+        <Icon2 name="chevron-down" type="ionicon" size={20} color='#fff'/>1
       </TouchableOpacity>
 
       {/* Modal with Calendar */}
@@ -390,7 +415,13 @@ export default function InventoryScreen({ navigation }) {
               <View style={styles.timeButtonContainer}>
                 <View style={styles.timeBtn}>
                 <Text style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>start:</Text>
-                    <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('start')}>
+                <TouchableOpacity
+                    style={[
+                      styles.timeButton,
+                      errors.startTime && { borderColor: 'red', borderWidth: 1 }
+                    ]}
+                    onPress={() => openTimePicker('start')}
+>
                       <Text style={styles.timeButtonText}>
                         {formatTime(selectedStartTime)}
                       </Text>
@@ -399,7 +430,13 @@ export default function InventoryScreen({ navigation }) {
                   
                 <View  style={styles.timeBtn}>
                 <Text  style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>end:</Text>
-                    <TouchableOpacity style={styles.timeButton} onPress={() => openTimePicker('end')}>
+                <TouchableOpacity
+                      style={[
+                        styles.timeButton,
+                        errors.endTime && { borderColor: 'red', borderWidth: 1 }
+                      ]}
+                      onPress={() => openTimePicker('end')}
+                    >
                       <Text style={styles.timeButtonText}>
                       {formatTime(selectedEndTime)}
                       </Text>
@@ -411,7 +448,12 @@ export default function InventoryScreen({ navigation }) {
 
           <View style={styles.programSection}>
             <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width:100}}>Select Program:</Text>
-            <View style={styles.programPicker}>
+            <View
+                style={[
+                  styles.programPicker,
+                  errors.program && { borderColor: 'red', borderWidth: 1 }
+                ]}
+              >
                   <Picker
                     selectedValue={program}
                     onValueChange={(itemValue) => {
@@ -441,7 +483,10 @@ export default function InventoryScreen({ navigation }) {
           <View style={styles.roomSection}>
             <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width: 100}}>Room No.</Text>
             <TextInput
-                  style={styles.roomInput}
+                  style={[
+                    styles.roomInput,
+                    errors.room && { borderColor: 'red', borderWidth: 1 }
+                  ]}
                   placeholder="e.g., 929"
                   value={room}
                   keyboardType='numeric'
@@ -455,7 +500,12 @@ export default function InventoryScreen({ navigation }) {
 
           <View style={styles.usageSection}>
                 <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width: 100}}>Usage Type</Text>
-                <View  style={styles.usagePicker}>
+                <View
+                style={[
+                  styles.usagePicker,
+                  errors.usageType && { borderColor: 'red', borderWidth: 1 }
+                ]}
+              >
           <Picker
             selectedValue={selectedUsageTypeInput}
             onValueChange={(itemValue) => {
@@ -500,20 +550,20 @@ export default function InventoryScreen({ navigation }) {
         </View>
 
         <View style={{alignItems: 'flex-end', padding: 5}}>
-          <TouchableOpacity style={styles.proceedBtn}>
+          <TouchableOpacity style={styles.proceedBtn} onPress={() => handleNext()}>
             <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Next</Text>
             <Icon2 name='chevron-forward' color='#fff' size={15}/>
           </TouchableOpacity>
         </View>
-        
-    </View>
-    </ScrollView>
-    </KeyboardAvoidingView>
-    </TouchableWithoutFeedback>
-      
-
-
-              {/* <TextInput 
+        </View>
+        </TouchableWithoutFeedback>
+        </ScrollView>
+        </KeyboardAvoidingView>
+    )}
+    
+  {isComplete && (
+    <View>
+        <TextInput 
                 style={[styles.searchBar]}
                 placeholder="Search by item name"
                 value={searchQuery}
@@ -527,9 +577,9 @@ export default function InventoryScreen({ navigation }) {
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
                 ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No items found</Text>}
-              /> */}
+              /> 
 
-{/* <View style={styles.bottomContainer}>
+ <View style={styles.bottomContainer}>
         <View style={styles.requestAddContainer}>
         <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
           <Text style={styles.requestButtonText}>Request List</Text>
@@ -544,8 +594,19 @@ export default function InventoryScreen({ navigation }) {
         <TouchableOpacity style={styles.helpButton} onPress={() => navigation.navigate('HelpScreen')}>
           <Text style={styles.helpButtonText}>Help (?)</Text>
         </TouchableOpacity>
-      </View> */}
 
+        <TouchableOpacity onPress={()=> setIsComplete(false)}>
+          <Text>Back</Text>
+        </TouchableOpacity>
+      </View> 
+      </View>
+  )}
+      
+
+    
+    
+    
+      
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={closeModal}>
           <View style={styles.modalBackground}>
@@ -678,8 +739,9 @@ export default function InventoryScreen({ navigation }) {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+
     </View>
   );
 }
 
-// Working in progress balikan ko mamaya -rich

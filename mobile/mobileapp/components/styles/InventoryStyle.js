@@ -5,9 +5,9 @@ import { auth } from '../../backend/firebase/FirebaseConfig';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#e9ecee',
-    padding: 16,
-    paddingBottom: 0
+    backgroundColor: '#fff',
+    paddingBottom: 0,
+    overflow: 'visible'
   },
 
   /* Section Title */
@@ -534,7 +534,8 @@ timeBtn:{
     borderWidth: 2,
     borderColor: '#cde4f4',
     height: 'auto',
-    gap: 5
+    gap: 5,
+    overflow: 'visible'
   },
 
   proceedBtn:{
@@ -549,10 +550,7 @@ timeBtn:{
   },
 
   scrollContainer: {
-
-    flexGrow: 1,
-    paddingBottom: 80,
-    
+    padding: 16,
   },
 
   
