@@ -251,7 +251,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
 function UserDrawer() {
   return (
     <Drawer.Navigator
-      initialRouteName="UserDashboard"
+      initialRouteName="InventoryScreen"
       screenOptions={{ headerShown: false }}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
