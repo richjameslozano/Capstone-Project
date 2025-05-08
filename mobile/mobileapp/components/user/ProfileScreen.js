@@ -71,6 +71,9 @@ import { Alert } from 'react-native';
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();  
 
+  const capitalizeInitials = (name) =>
+    name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());  
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
@@ -90,7 +93,11 @@ export default function ProfileScreen({ navigation }) {
 
       <View style={styles.profileDetails}>
         <Text style={styles.label}>Name</Text>
-        <TextInput style={styles.input} value={user?.name || ''} editable={false} />
+        <TextInput
+          style={styles.input}
+          value={capitalizeInitials(user?.name || '')}
+          editable={false}
+        />
 
         <Text style={styles.label}>Email</Text>
         <TextInput style={styles.input} value={user?.email || ''} editable={false} />
