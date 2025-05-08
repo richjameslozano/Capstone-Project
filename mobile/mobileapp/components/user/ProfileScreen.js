@@ -67,6 +67,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/ProfileStyle';
 import { useAuth } from '../contexts/AuthContext';  
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
+import Header from '../Header';
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();  
@@ -85,6 +86,7 @@ export default function ProfileScreen({ navigation }) {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
+        <Header/>
         
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={30} color="white" />
