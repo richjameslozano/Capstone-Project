@@ -45,28 +45,34 @@ LogBox.ignoreLogs([
   'Support for defaultProps will be removed from function components'
 ]);
 
+const capitalizeName = (name) => {
+  return name.replace(/\b\w/g, char => char.toUpperCase());
+};
+
 const CustomDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
 
   return (
     <View style={styles.drawerContent}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="light-content" // or 'light-content' depending on your design
-      />
-      <View style={styles.upperSection}>
-        <View style={styles.headProfile}>
-        <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
-          <Avatar.Image style={{backgroundColor: '#5e8fb0'}} size={70} source={{ uri: 'https://your-profile-image-url.com' }} />
-        </TouchableOpacity>
+        <StatusBar
+          translucent
+          backgroundColor="transparent"
+          barStyle="light-content" // or 'light-content' depending on your design
+        />
+
+        <View style={styles.upperSection}>
+          <View style={styles.headProfile}>
+          <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
+            <Avatar.Image style={{backgroundColor: '#5e8fb0'}} size={70} source={{ uri: 'https://your-profile-image-url.com' }} />
+          </TouchableOpacity>
+          </View>
+        
+          <View>
+            <Text style={styles.profileName}>
+              {user ? capitalizeName(user.name) : 'Guest'}
+            </Text>
+            <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
         </View>
-      
-        <View>
-      <Text style={styles.profileName}>{user ? user.name : 'Guest'}</Text>
-      <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>Position goes here</Text>   
-      </View>
-      
       </View>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
@@ -172,7 +178,11 @@ const CustomAdminDrawerContent = ({ navigation }) => {
       <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
         <View style={styles.profileSection}>
           <Avatar.Image size={50} source={{ uri: 'https://your-profile-image-url.com' }} />
-          <Title style={styles.profileName}>{user ? user.name : 'Guest'}</Title>
+            <Text style={styles.profileName}>
+              {user ? capitalizeName(user.name) : 'Guest'}
+            </Text>
+            
+            <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
         </View>
       </TouchableOpacity>
 
