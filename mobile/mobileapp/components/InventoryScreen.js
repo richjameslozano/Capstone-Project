@@ -63,9 +63,9 @@ export default function InventoryScreen({ navigation }) {
       setSelectedUsageTypeInput(null)
     }, [])
   );
-
+   
   useEffect(() => {
-    const inventoryCollection = collection(db, 'inventory');
+    const inventoryCollection = collection(db, 'inventory');  
   
     const unsubscribe = onSnapshot(
       inventoryCollection,
@@ -352,11 +352,12 @@ export default function InventoryScreen({ navigation }) {
     <View style={styles.container}>
       <Header onLayout={handleHeaderLayout} />
 
-      {!isComplete && (
       <KeyboardAvoidingView
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
+      {isComplete && (
+     
   
         <ScrollView 
           showsVerticalScrollIndicator={false}
@@ -565,11 +566,18 @@ export default function InventoryScreen({ navigation }) {
         </View>
         </TouchableWithoutFeedback>
         </ScrollView>
-        </KeyboardAvoidingView>
+        
     )}
     
-  {isComplete && (
-    <View>
+  {!isComplete && (
+    <ScrollView 
+    showsVerticalScrollIndicator={false}
+    contentContainerStyle={styles.scrollContainer}
+    enableOnAndroid={true}
+    keyboardShouldPersistTaps="always"
+    extraScrollHeight={0} 
+    enableAutomaticScroll={true} >
+    <View style={[styles.wholeSection2,{ marginTop: headerHeight }]}>
         <TextInput 
                 style={[styles.searchBar]}
                 placeholder="Search by item name"
@@ -577,8 +585,6 @@ export default function InventoryScreen({ navigation }) {
                 onChangeText={setSearchQuery}
               />
       
-              
-
               <FlatList
                 data={filteredItems}
                 renderItem={renderItem}
@@ -607,8 +613,9 @@ export default function InventoryScreen({ navigation }) {
         </TouchableOpacity>
       </View> 
       </View>
+      </ScrollView>
   )}
-      
+      </KeyboardAvoidingView>
 
     
     

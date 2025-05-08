@@ -538,6 +538,17 @@ timeBtn:{
     overflow: 'visible'
   },
 
+  wholeSection2:{
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#cde4f4',
+    height: 'auto',
+    gap: 5,
+    overflow: 'visible'
+  },
+
   proceedBtn:{
     display: 'flex',
     backgroundColor: '#395a7f',
