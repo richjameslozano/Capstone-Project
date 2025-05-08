@@ -53,7 +53,7 @@ export default function InventoryScreen({ navigation }) {
 
   useFocusEffect(
     useCallback(() => {
-      setIsComplete(false); // reset when returning
+      setIsComplete(false); 
       setSelectedDate('')
       setSelectedStartTime({ hour: '10', minute: '00', period: 'AM' })
       setSelectedEndTime({ hour: '3', minute: '00', period: 'PM' })
@@ -107,6 +107,18 @@ export default function InventoryScreen({ navigation }) {
   
     return () => unsubscribe(); // cleanup listener on unmount
   }, [user]);  
+
+  useEffect(() => {
+    if (selectedStartTime.hour && selectedStartTime.minute && selectedStartTime.period) {
+      handleStartTimeSelect(selectedStartTime);
+    }
+  }, [selectedStartTime]);
+  
+  useEffect(() => {
+    if (selectedEndTime.hour && selectedEndTime.minute && selectedEndTime.period) {
+      handleEndTimeSelect(selectedEndTime);
+    }
+  }, [selectedEndTime]);  
 
   const filteredItems = inventoryItems.filter((item) => {
     const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.type === selectedCategory;
@@ -609,11 +621,6 @@ export default function InventoryScreen({ navigation }) {
       </View>
   )}
       
-
-    
-    
-    
-      
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={closeModal}>
           <View style={styles.modalBackground}>
@@ -751,4 +758,3 @@ export default function InventoryScreen({ navigation }) {
     </View>
   );
 }
-
