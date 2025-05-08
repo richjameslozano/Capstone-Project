@@ -130,18 +130,26 @@ const Profile = () => {
               >
                 <div style={{ textAlign: "center", marginBottom: 20 }}>
                   <Upload
-                    name="profileImage"
-                    listType="picture"
-                    showUploadList={false}
-                    beforeUpload={() => false}
-                    onChange={handleImageUpload}
-                  >
-                    {imageUrl ? (
-                      <Avatar src={imageUrl} size={100} />
-                    ) : (
-                      <Avatar icon={<UserOutlined />} size={100} />
-                    )}
-                  </Upload>
+                      name="profileImage"
+                      listType="picture"
+                      showUploadList={false}
+                      beforeUpload={() => false}
+                      onChange={handleImageUpload}
+                    >
+                      {imageUrl ? (
+                        <Avatar src={imageUrl} size={100} />
+                      ) : (
+                        <Avatar size={100}>
+                          {formData?.name
+                            ? formData?.name
+                                .split(' ')
+                                .map((n) => n[0])
+                                .join('')
+                                .toUpperCase()
+                            : <UserOutlined />}
+                        </Avatar>
+                      )}
+                    </Upload>
 
                   <div style={{ marginTop: 10 }}>
                     <Button

@@ -11,7 +11,14 @@ export default function Header( {onLayout}) {
     <View onLayout={onLayout} style={styles.header}>
       <TouchableOpacity 
         style={styles.menuButton}
-        onPress={() => navigation.openDrawer()}
+        onPress={() => {
+          if (navigation?.openDrawer) {
+            navigation.openDrawer();
+            
+          } else {
+            console.warn("Drawer navigation not available");
+          }
+        }}
       >
         <Icon name="menu" size={30} color="white" />
       </TouchableOpacity>
