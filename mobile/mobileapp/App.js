@@ -63,7 +63,11 @@ const CustomDrawerContent = ({ navigation }) => {
         <View style={styles.upperSection}>
           <View style={styles.headProfile}>
           <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
-            <Avatar.Image style={{backgroundColor: '#5e8fb0'}} size={70} source={{ uri: 'https://your-profile-image-url.com' }} />
+          {user?.photoURL ? (
+              <Avatar.Image size={50} source={{ uri: user.photoURL }} />
+            ) : (
+              <Avatar.Text size={50} label={getInitials(user?.name)} />
+            )}
           </TouchableOpacity>
           </View>
         
@@ -177,11 +181,16 @@ const CustomAdminDrawerContent = ({ navigation }) => {
       />
       <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
         <View style={styles.profileSection}>
-          <Avatar.Image size={50} source={{ uri: 'https://your-profile-image-url.com' }} />
+            {user?.photoURL ? (
+              <Avatar.Image size={50} source={{ uri: user.photoURL }} />
+            ) : (
+              <Avatar.Text size={50} label={getInitials(user?.name)} />
+            )}
+
             <Text style={styles.profileName}>
               {user ? capitalizeName(user.name) : 'Guest'}
             </Text>
-            
+
             <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
         </View>
       </TouchableOpacity>

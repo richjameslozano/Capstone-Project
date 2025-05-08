@@ -62,17 +62,25 @@
 // }
 
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/ProfileStyle';
 import { useAuth } from '../contexts/AuthContext';  
-import { Alert } from 'react-native';
+import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();  
 
   const capitalizeInitials = (name) =>
     name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());  
+
+  const getInitials = (name) => {
+    if (!name) return '';
+    const words = name.trim().split(' ');
+    return words.length === 1
+      ? words[0][0].toUpperCase()
+      : (words[0][0] + words[1][0]).toUpperCase();
+  };  
 
   return (
     <View style={styles.container}>
@@ -85,10 +93,11 @@ export default function ProfileScreen({ navigation }) {
       </View>
 
       <View style={styles.profileImageContainer}>
-        <Image 
-          source={require('../../assets/favicon.png')} 
-          style={styles.profileImage} 
-        />
+        {user?.photoURL ? (
+          <Avatar.Image size={50} source={{ uri: user.photoURL }} />
+        ) : (
+          <Avatar.Text size={50} label={getInitials(user?.name)} />
+        )}
       </View>
 
       <View style={styles.profileDetails}>
