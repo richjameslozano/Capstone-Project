@@ -17,13 +17,39 @@ export default StyleSheet.create({
     marginVertical: 10,
   },
 
+  searchFilter:{
+    position: 'absolute', 
+    zIndex: 999, 
+    alignSelf: 'center', 
+    width: '100%',
+    height: 'auto',
+    padding: 5,
+    paddingBottom: 20,
+    top: 5,
+  
+  },
+
   /* Search Bar */
   searchBar: {
+    height: 50,
+    flex: 1,
     backgroundColor: '#EDEDED',
+    fontSize: 14,
     padding: 10,
     borderRadius: 10,
-    marginBottom: 10,
+    margin: 0,
+    borderWidth: 1,
+    borderColor: 'gray',
+    // Android shadow
+    elevation: 50,
+  
+    // iOS shadow
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
+  
 
   /* Picker Styles */
   usageSection:{
@@ -222,19 +248,29 @@ timeBtn:{
 
   /* Bottom Section */
   bottomContainer: {
+    width: '100%',
+    display: 'flex',
+    position: 'absolute',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 10,
+    backgroundColor: '#395a7f',
+    padding: 10,
+    borderRadius:20,
+    elevation: 4,
+    bottom: 20,
+    alignSelf: 'center'
   },
 
   requestButton: {
-    backgroundColor: '#00796B',
+    backgroundColor: '#6e9fc1',
     paddingVertical: 10,
     paddingHorizontal: 20,
     borderRadius: 10,
     flexDirection: 'row',
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#a3cae9'
   },
 
   requestButtonText: {
@@ -328,7 +364,6 @@ timeBtn:{
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 20,
   },
 
   addItemButton: {
@@ -539,14 +574,15 @@ timeBtn:{
   },
 
   wholeSection2:{
-    padding: 16,
+    flex: 1, 
+    padding: 8,
     backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 2,
+    borderWidth: 8,
+    borderRadius: 20,
     borderColor: '#cde4f4',
     height: 'auto',
     gap: 5,
-    overflow: 'visible'
+    paddingBottom: 0
   },
 
   proceedBtn:{

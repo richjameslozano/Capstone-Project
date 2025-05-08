@@ -582,29 +582,45 @@ export default function InventoryScreen({ navigation }) {
     )}
     
   {!isComplete && (
-    <ScrollView 
-    showsVerticalScrollIndicator={false}
-    contentContainerStyle={styles.scrollContainer}
-    enableOnAndroid={true}
-    keyboardShouldPersistTaps="always"
-    extraScrollHeight={0} 
-    enableAutomaticScroll={true} >
+    <View style={{flex: 1, backgroundColor: '#cde4f4'}}>
     <View style={[styles.wholeSection2,{ marginTop: headerHeight }]}>
-        <TextInput 
+
+      <View style={styles.searchFilter}>
+      <TextInput 
                 style={[styles.searchBar]}
                 placeholder="Search by item name"
                 value={searchQuery}
                 onChangeText={setSearchQuery}
               />
-      
-              <FlatList
+      </View>
+        
+            
+            <ScrollView
+            showsVerticalScrollIndicator={false}
+            enableOnAndroid={true}
+            keyboardShouldPersistTaps="always"
+            extraScrollHeight={30} 
+            enableAutomaticScroll={true}
+            >
+            <FlatList
+                 style={{flexGrow: 1, paddingBottom: 80, paddingHorizontal: 5, paddingTop:60}}
                 data={filteredItems}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
-                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No items found</Text>}
+                extraScrollHeight={30}
+                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20}}>No items found</Text>}
               /> 
+            </ScrollView>
+      
+              
+              
 
- <View style={styles.bottomContainer}>
+        <View style={styles.bottomContainer}>
+
+        <TouchableOpacity onPress={()=> setIsComplete(false)}>
+          <Text>Back</Text>
+        </TouchableOpacity>
+
         <View style={styles.requestAddContainer}>
         <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
           <Text style={styles.requestButtonText}>Request List</Text>
@@ -615,19 +631,13 @@ export default function InventoryScreen({ navigation }) {
           )}
         </TouchableOpacity>
         </View>
-
-        <TouchableOpacity style={styles.helpButton} onPress={() => navigation.navigate('HelpScreen')}>
-          <Text style={styles.helpButtonText}>Help (?)</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity onPress={()=> setIsComplete(false)}>
-          <Text>Back</Text>
-        </TouchableOpacity>
       </View> 
       </View>
-      </ScrollView>
+      </View>
   )}
-      </KeyboardAvoidingView>
+
+</KeyboardAvoidingView>
+      
 
     
     
