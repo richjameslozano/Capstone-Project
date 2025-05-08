@@ -556,6 +556,7 @@ const Inventory = () => {
             visible={isRowModalVisible}
             footer={null}
             onCancel={() => setIsRowModalVisible(false)}
+            zIndex={1019}
           >
             {selectedRow && (
               <div>
@@ -579,6 +580,7 @@ const Inventory = () => {
             visible={qrModalVisible}
             onCancel={() => setQrModalVisible(false)}
             footer={null}
+            zIndex={1018}
           >
             {selectedQrCode ? (
               <div style={{ textAlign: 'center' }}>
@@ -594,6 +596,7 @@ const Inventory = () => {
             visible={isEditModalVisible}
             onCancel={() => setIsEditModalVisible(false)}
             onOk={() => editForm.submit()}
+            zIndex={1020}
           >
             <Form layout="vertical" form={editForm} onFinish={updateItem}>
               <Row gutter={16}>

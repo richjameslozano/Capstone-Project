@@ -26,6 +26,7 @@ const FinalizeRequestModal = ({
       width={800}
       okText="Confirm and Submit"
       cancelText="Cancel"
+      zIndex={1007}
       closable={false}
     >
       <div className="finalize-title-container" style={{}}>
