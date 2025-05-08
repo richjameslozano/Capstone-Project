@@ -54,6 +54,13 @@ export default function InventoryScreen({ navigation }) {
   useFocusEffect(
     useCallback(() => {
       setIsComplete(false); // reset when returning
+      setSelectedDate('')
+      setSelectedStartTime({ hour: '10', minute: '00', period: 'AM' })
+      setSelectedEndTime({ hour: '3', minute: '00', period: 'PM' })
+      setProgram('')
+      setRoom('')
+      setReason('')
+      setSelectedUsageTypeInput(null)
     }, [])
   );
 
