@@ -467,7 +467,7 @@ const CapexRequest = () => {
 
   const itemsColumns = [
     {
-      title: "Item Description",
+      title: "Item Name",
       dataIndex: "itemDescription",
       key: "itemDescription",
     },
@@ -561,6 +561,7 @@ const CapexRequest = () => {
             title={editingRow ? "Edit Item" : "Add New Item"}
             open={isModalVisible}
             onCancel={handleCancel}
+            zIndex={1011}
             onOk={() => form.submit()}
             okText={editingRow ? "Update" : "Add"}
           >
@@ -575,10 +576,10 @@ const CapexRequest = () => {
             >
               <Form.Item
                 name="itemDescription"
-                label="Item Description"
-                rules={[{ required: true, message: "Please enter the item description!" }]}
+                label="Item Name"
+                rules={[{ required: true, message: "Please enter the item name!" }]}
               >
-                <Input placeholder="Enter item description" />
+                <Input placeholder="Enter item name" />
               </Form.Item>
 
               <Form.Item
@@ -627,6 +628,7 @@ const CapexRequest = () => {
         visible={viewModalVisible}
         onCancel={() => setViewModalVisible(false)}
         footer={null}
+        zIndex={1013}
         width={800}
       >
         {selectedRowDetails && (

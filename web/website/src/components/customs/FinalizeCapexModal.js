@@ -58,6 +58,8 @@ const FinalizeCapexModal = ({ visible, onConfirm, onCancel, totalPrice, dataSour
       open={visible}
       onOk={onConfirm}
       onCancel={onCancel}
+      zIndex={1014}
+      width={'45%'}
       okText="Confirm Submit"
       cancelText="Go Back"
     >

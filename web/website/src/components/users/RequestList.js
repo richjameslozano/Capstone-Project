@@ -387,6 +387,7 @@ const RequestList = () => {
             open={viewDetailsModalVisible}
             onCancel={handleModalClose}
             width={800}
+            zIndex={1008}
             closable={false}
             footer={[
               <Button key="close" onClick={handleModalClose}>
@@ -449,6 +450,7 @@ const RequestList = () => {
             open={isCancelVisible}
             onCancel={() => setIsCancelVisible(false)}
             onOk={handleCancelRequest}
+            zIndex={1009}
             okText="Yes, Cancel"
             cancelText="No"
           >
