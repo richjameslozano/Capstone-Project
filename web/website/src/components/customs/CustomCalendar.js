@@ -153,6 +153,7 @@ const CustomCalendar = ({ onSelectDate }) => {
         onCancel={() => setIsModalVisible(false)}
         footer={null}
         width={700}
+        zIndex={1027}
       >
         {selectedDateRequests.length === 0 ? (
           <p>No approved requests for this date.</p>
