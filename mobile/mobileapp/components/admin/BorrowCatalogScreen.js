@@ -88,6 +88,7 @@ const BorrowCatalogScreen = () => {
         const borrowCatalogCollection = collection(db, "borrowcatalog");
   
         const unsubscribe = onSnapshot(borrowCatalogCollection, (snapshot) => {
+        console.log(`Fetched ${snapshot.docs.length} items`); 
           const data = snapshot.docs.map((doc) => {
             const d = doc.data();
             const requestedItems = Array.isArray(d.requestList)
@@ -201,6 +202,7 @@ const BorrowCatalogScreen = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
         style={styles.list}
+        initialNumToRender={50}
       />
 
       {modalVisible && (
