@@ -204,7 +204,7 @@ export default function LoginScreen({ navigation }) {
     } finally {
       setLoading(false);
     }
-  };
+  }; 
 
   // const handleSignup = async () => {
   //   setLoading(true);
@@ -237,7 +237,7 @@ export default function LoginScreen({ navigation }) {
   
   //     if (!employeePendingSnap.empty || !employeeAccountSnap.empty) {
   //       setError("This employee ID is already registered.");
-  //       return;
+  //       return;  
   //     }
   
   //     if (!emailPendingSnap.empty || !emailAccountSnap.empty) {

@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Layout, Avatar, Button } from "antd";
 import { UserOutlined, MenuFoldOutlined, MenuUnfoldOutlined } from "@ant-design/icons";
 import { useNavigate, useLocation } from "react-router-dom";
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../backend/firebase/FirebaseConfig";
 import "./styles/Header.css";
 
 const { Header } = Layout;
@@ -13,29 +15,55 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
   const role = location.state?.role || localStorage.getItem("role");
   const [userName, setUserName] = useState("User");
   const [jobTitle, setJobTitle] = useState("");
+  const [profileImage, setProfileImage] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 408);
 
-  useEffect(() => {
-    const storedName = localStorage.getItem("userName");
-    const storedJobTitle = localStorage.getItem("userJobTitle");
+  // ✅ Use callback for re-fetching user data
+  const fetchUserData = useCallback(async () => {
+    try {
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) return;
 
-    if (storedName) setUserName(storedName);
-    if (storedJobTitle) setJobTitle(storedJobTitle);
+      const q = query(collection(db, "accounts"), where("email", "==", userEmail));
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userData = querySnapshot.docs[0].data();
+        if (userData.name) setUserName(userData.name);
+        if (userData.jobTitle) setJobTitle(userData.jobTitle);
+        if (userData.profileImage) setProfileImage(userData.profileImage);
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUserData();
 
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 408);
     };
-
     window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
+
+    // ✅ Listen to custom event from profile update (same tab)
+    const handleProfileUpdated = () => {
+      fetchUserData();
+    };
+    window.addEventListener("profileImageUpdated", handleProfileUpdated);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      window.removeEventListener("profileImageUpdated", handleProfileUpdated);
+    };
+  }, [fetchUserData]);
 
   const goToProfile = () => {
     navigate("/main/profile");
   };
 
   const capitalizeName = (name) =>
-    name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());  
+    name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 
   return (
     <Header className={`header ${isMobile ? "header-mobile" : ""}`}>
@@ -55,6 +83,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
         <div
           className={`user-profile ${isMobile ? "profile-mobile" : ""}`}
           onClick={goToProfile}
+          style={{ cursor: "pointer" }}
         >
           {!isMobile && (
             <div className="user-info">
@@ -62,14 +91,15 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
               <div className="user-title">{jobTitle}</div>
             </div>
           )}
-          <Avatar>
-            {userName
-              ? userName
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')
-                  .toUpperCase()
-              : <UserOutlined />}
+          <Avatar src={profileImage || undefined}>
+            {!profileImage &&
+              (userName
+                ? userName
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                : <UserOutlined />)}
           </Avatar>
         </div>
       )}

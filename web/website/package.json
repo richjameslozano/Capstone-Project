@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@sendgrid/mail": "^8.1.5",
     "antd": "^5.24.9",
     "axios": "^1.9.0",
     "bcryptjs": "^3.0.2",
