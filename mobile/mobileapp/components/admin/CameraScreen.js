@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react"; 
 import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import CryptoJS from "crypto-js"; 
+import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
+import { collection, query, where, getDocs } from "firebase/firestore";
+import { db } from "../../backend/firebase/FirebaseConfig"; // Import your Firebase config
 import styles from "../styles/adminStyle/CameraStyle";
 import CONFIG from "../config";
 
@@ -28,7 +30,7 @@ const CameraScreen = ({ navigation }) => {
 
   const animateScanLine = () => {
     Animated.loop(
-      Animated.sequence([
+      Animated.sequence([ 
         Animated.timing(scanLinePosition, {
           toValue: styles.scannerFrame.height,
           duration: 2000,
@@ -58,11 +60,19 @@ const CameraScreen = ({ navigation }) => {
     );
   }
 
-  const handleBarCodeScanned = ({ data }) => {
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`; // Format as "YYYY-MM-DD"
+  };
+
+  const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
 
     setScanned(true);
-    
+
     try {
       // 🔓 Decrypt QR Code Data
       const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
@@ -73,8 +83,71 @@ const CameraScreen = ({ navigation }) => {
       }
 
       const parsedData = JSON.parse(decryptedData);
+      const { itemName } = parsedData; // Extract itemName from QR code
 
-      Alert.alert("QR Code Scanned", `Item: ${parsedData.itemName}\nTimestamp: ${parsedData.timestamp}`);
+      // Get today's date to filter the borrow catalog
+      const todayDate = getTodayDate();
+
+      // Query Firestore to find all records where the item was borrowed today
+      const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
+
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const borrowedItemsDetails = [];
+
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+
+          // Check if the item exists in the request list
+          const borrowedItem = data.requestList.find(
+            (item) => item.itemName === itemName
+          );
+
+          if (borrowedItem) {
+            const borrower = data.userName || "Unknown"; // Assuming userName is the borrower name
+            const borrowedDate = data.dateRequired;
+
+            // Extract time from the top level (not inside requestList)
+            const timeFrom = data.timeFrom || "00:00";
+            const timeTo = data.timeTo || "00:00";
+
+            borrowedItemsDetails.push({
+              borrower,
+              borrowedDate,
+              timeFrom,
+              timeTo
+            });
+          }
+        });
+
+        if (borrowedItemsDetails.length > 0) {
+          // Sort borrowed items by timeFrom
+          borrowedItemsDetails.sort((a, b) => {
+            const [aHours, aMinutes] = a.timeFrom.split(":").map(Number);
+            const [bHours, bMinutes] = b.timeFrom.split(":").map(Number);
+
+            const aTotalMinutes = aHours * 60 + aMinutes;
+            const bTotalMinutes = bHours * 60 + bMinutes;
+
+            return aTotalMinutes - bTotalMinutes; // Sort ascending
+          });
+
+          let detailsMessage = `Item: ${itemName}\n\n`;
+
+          borrowedItemsDetails.forEach((detail) => {
+            detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
+          });
+
+          Alert.alert("Item Borrowed Today", detailsMessage);
+
+        } else {
+          Alert.alert("Item not found", "No records found for this item on today's date.");
+        }
+        
+      } else {
+        Alert.alert("No data found", "No records found for today in the borrow catalog.");
+      }
 
     } catch (error) {
       Alert.alert("Error", "Invalid or unauthorized QR Code.");
@@ -82,6 +155,7 @@ const CameraScreen = ({ navigation }) => {
 
     setTimeout(() => setScanned(false), 1500);
   };
+
 
   return (
     <View style={styles.container}>
