@@ -1,12 +1,13 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
+
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    padding: 16,
+    paddingTop: StatusBar.currentHeight,
+    paddingBottom: 0
   },
 
   card: {
@@ -103,41 +104,40 @@ export default StyleSheet.create({
     paddingVertical: 10,
   },
 
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-  },
+
   inner: {
     flex: 1,
-    justifyContent: 'center',
+    backgroundColor: 'white',
+    paddingTop: 15,
   },
+
   header: {
-    backgroundColor: '#002075',
-    height: '35%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 50,
+    height: '100%',
+    width: '100%',
+    backgroundColor: 'white',
+    alignItems: 'center'
   },
   headerTitle: {
     fontSize: 36,
-    color: '#ffffff',
+    color: '#000',
     fontWeight: 'bold',
   },
+
+  buttonContainer:{
+    width: '100%',
+    alignItems:'center',
+    paddingHorizontal: 50,
+    gap: 10,
+    marginTop: 60
+  },
+
   subHeader: {
     fontSize: 16,
-    color: '#c8e6c9',
+    color: 'gray',
     marginTop: 8,
+    marginBottom: 50
   },
-  loginCard: {
-    flex: 1,
-    backgroundColor: '#ffffff',
-    marginTop: -40,
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-    padding: 20,
-    paddingTop: 30,
-    height: 'auto'
-  },
+
   loginTitle: {
     fontSize: 24,
     fontWeight: 'bold',
@@ -152,13 +152,28 @@ export default StyleSheet.create({
     textAlign: 'center'
   },
 
-  inputContainer: {
-    backgroundColor: '#f3f4f6',
-    borderBottomWidth: 0,
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    marginBottom: 0,
-  },
+inputWrapper: {
+  paddingHorizontal: 0, // avoid padding conflict
+},
+
+animatedInputContainer: {
+  borderWidth: 1,
+  borderRadius: 8,
+  backgroundColor: '#fff',
+  marginBottom: 10,
+  height: 50
+},
+
+inputContainer: {
+  borderBottomWidth: 0, // removes underline
+  paddingBottom: 0,
+},
+
+inputText: {
+  fontSize: 16,
+},
+
+
   
   inputContainer2: {
     backgroundColor: '#f3f4f6',
@@ -173,18 +188,10 @@ export default StyleSheet.create({
   },
 
   forgotPassword: {
-    textAlign: 'right',
     color: '#4B5563',
     marginBottom: 20,
-    marginRight: 110,
-    fontSize: 14,
-  },
 
-  loginButton: {
-    backgroundColor: '#002075',
-  borderRadius: 10,
-  paddingVertical: 10,
-  marginTop: 10,
+    fontSize: 14,
   },
 
   loginButtonText: {
@@ -210,11 +217,8 @@ export default StyleSheet.create({
   },
 
   scrollContainer: {
-
     flexGrow: 1,
-    paddingBottom: 80,
-    backgroundColor: 'white',
-    
+    justifyContent: 'center'
   },
 
   label:{

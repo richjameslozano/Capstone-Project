@@ -33,15 +33,14 @@ export default function CustomButton({
 const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
-    backgroundColor: '#6200ee',
+    backgroundColor: '#395a7f',
     paddingHorizontal: 20,
-    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#002075',
     borderRadius: 10,
     paddingVertical: 10,
-    marginTop: 10,
+    marginTop: 20,
+    width: '100%'
   },
   
   text: {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation } from 'react-native';
+import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler } from 'react-native';
 import { Input, Text, Icon } from 'react-native-elements';
 import { TextInput, Card, HelperText, Menu, Provider, Button, Checkbox  } from 'react-native-paper';
 import { useAuth } from '../components/contexts/AuthContext';
@@ -13,6 +13,7 @@ import ForgotPasswordModal from './ForgotPasswordModal';
 import TermsModal from './customs/TermsModal';
 import {Animated} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 
 export default function LoginScreen({navigation}) {
@@ -27,7 +28,7 @@ export default function LoginScreen({navigation}) {
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
-  const [isSignup, setIsSignup] = useState(false);
+  const [isSignup, setIsSignup] = useState(null);
   const [employeeID, setEmployeeID] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -39,8 +40,41 @@ export default function LoginScreen({navigation}) {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const [isTermsModalVisible, setTermsModalVisible] = useState(false);
 
+  const [isLoginSignup, setIsLoginSignup] = useState(false)
+  const [focusedInput, setFocusedInput] = useState(null);
+  const emailBorderAnim = useRef(new Animated.Value(0)).current;
+  const passwordBorderAnim = useRef(new Animated.Value(0)).current;
+
+  const handleFocus = (input) => {
+  Animated.timing(input === 'email' ? emailBorderAnim : passwordBorderAnim, {
+    toValue: 1,
+    duration: 200,
+    useNativeDriver: false,
+  }).start();
+};
+
+const handleBlur = (input) => {
+  Animated.timing(input === 'email' ? emailBorderAnim : passwordBorderAnim, {
+    toValue: 0,
+    duration: 200,
+    useNativeDriver: false,
+  }).start();
+};
+
+const emailBorderColor = emailBorderAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['#ccc', '#395a7f'] // normal → focused
+});
+
+const passwordBorderColor = passwordBorderAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['#ccc', '#395a7f']
+});
+
+
   const jobOptions = ['Dean', 'Laboratory Custodian', 'Faculty'];
   const deptOptions = ['Medical Technology', 'Nursing', 'Dentistry', 'Optometry'];
+
 
 
 
@@ -365,34 +399,64 @@ export default function LoginScreen({navigation}) {
 
   return (
    
-    <SafeAreaView style={{ flex: 1, backgroundColor: 'white' }}>
-  <KeyboardAvoidingView
-    style={{ flex: 1, backgroundColor:'white' }}
-    keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
-  >
+    <View style={[styles.container, {paddingBottom: !isLoginSignup ? 16: 0}]}>
+      <StatusBar
+                translucent
+                backgroundColor="transparent"
+                barStyle="dark-content" // or 'light-content' depending on your design
+              />
+      
+      {!isLoginSignup && (
+        <View style={styles.inner}>
+          <View style={styles.header}>
+            <Image source={require('./images/login_pic.png')} style={{height: '45%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
+            <Text style={styles.headerTitle}>Hello!</Text>
+            <Text style={styles.subHeader}>Welcome to NU MOA Laboratory System</Text>
+
+             <View style={styles.buttonContainer}>
+              <Text style={{color: 'gray', marginTop: -30}}>Sign in to continue</Text>
+          <TouchableOpacity style={{width: '100%',backgroundColor: '#395a7f', justifyContent: 'center', borderRadius: 30, padding: 10, paddingVertical: 13}}
+            onPress={()=> setIsLoginSignup(true)}
+            >
+            <Text style={{textAlign: 'center', color: 'white', fontSize: 18, fontWeight: 700}}>Login</Text>
+          </TouchableOpacity>
+
+
+          <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#395a7f'}}>
+            <Text style={{textAlign: 'center', color: '#395a7f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
+          </TouchableOpacity>
+        </View>
+
+          <Text style={{position: 'absolute', bottom: 10, color: 'gray'}}>Powered by OnePixel</Text>
+          </View>
+           
+        </View>
+      )}
     
-    <ScrollView
+    
+
+
+          {isLoginSignup && (
+            <>
+<KeyboardAvoidingView
+    style={{ flex: 1}}
+    keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
+    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+  >
+            <KeyboardAwareScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContainer}
+        keyboardShouldPersistTaps="handled"
+        extraScrollHeight={0}
         enableOnAndroid={true}
-        keyboardShouldPersistTaps="always"
-        extraScrollHeight={0} 
-        enableAutomaticScroll={true} 
+        enableAutomaticScroll={true}
       >
-        <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{flex: 1, backgroundColor: 'white' }}>
-        <View style={[styles.inner, ]}>
-          {/* Header */}
-          <View style={styles.header}>
-            <Text style={styles.headerTitle}>Hello!</Text>
-            <Text style={styles.subHeader}>Login to your NULS account.</Text>
-          </View>
 
-          {/* Login Card */}
-          <View style={[styles.loginCard]}>
-            <Text style={isSignup ?styles.signupTitle : styles.loginTitle}>{isSignup ? "Please provide the necessary information" : "Login"}</Text>
-
-            {/* Sign Up Inputs */}
-            {isSignup && (
+            {/* Sign Up Inputs */}  
+            {isSignup 
+            && (
+              
+              
               <View >
                 
                 <Text style={styles.label}>Full Name:<Text style={{color:'red'}}>*</Text></Text>
@@ -502,6 +566,8 @@ export default function LoginScreen({navigation}) {
                 
                 <Input
                   placeholder="Password"
+                  onFocus={() => setIsFocused(true)}
+                  onBlur={() => setIsFocused(false)}
                   leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
                   rightIcon={
                     <Icon
@@ -560,95 +626,120 @@ export default function LoginScreen({navigation}) {
               </View>
             )}
 
-            {/* Login Inputs */}
+
+
+
+
+
             {!isSignup && (
-              <View>
-                <Input
-                  placeholder="Email"
-                  leftIcon={{ type: 'material', name: 'email', color: '#9CA3AF' }}
-                  value={email}
-                  onChangeText={setEmail}
-                  inputContainerStyle={styles.inputContainer}
-                  inputStyle={styles.inputText}
-                />
+                <View style={styles.inner}>
+          <View style={styles.header}>
+            <Image source={require('./images/login_pic.png')} style={{height: '30%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
+            <Text style={styles.headerTitle}>Login</Text>
+            <Text style={styles.subHeader}>Welcome to NU MOA Laboratory System</Text>
+            {/* <Text style={{alignSelf: 'flex-start', marginLeft: 10, color: 'gray', marginBottom: 5}}>Login to your account</Text> */}
 
-                <Input
-                  placeholder="Password"
-                  leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
-                  rightIcon={
-                    <Icon
-                      type="material"
-                      name={showPassword ? 'visibility' : 'visibility-off'}
-                      color="#9CA3AF"
-                      onPress={() => setShowPassword(!showPassword)}
-                    />
-                  }
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                  inputContainerStyle={styles.inputContainer}
-                  inputStyle={styles.inputText}
-                />
-              </View>
-            )}
+            <View style={{width: '100%', paddingHorizontal: 10}}>
+            <Animated.View style={[styles.animatedInputContainer, { borderColor: emailBorderColor, width: '100%' }]}>
+              <Input
+                placeholder="Email"
+                value={email}
+                onChangeText={setEmail}
+                onFocus={() => handleFocus('email')}
+                onBlur={() => handleBlur('email')}
+                inputContainerStyle={styles.inputContainer} // removes underline
+                inputStyle={styles.inputText}
+                leftIcon={{ type: 'material', name: 'email', color: '#9CA3AF' }}
+              />
+              
+            </Animated.View>
 
-            {/* Error Message */}
+            <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%'}]}>
+              <Input
+                placeholder="Password"
+                value={password}
+                onChangeText={setPassword}
+                onFocus={() => handleFocus('password')}
+                onBlur={() => handleBlur('password')}
+                secureTextEntry={!showPassword}
+                inputContainerStyle={styles.inputContainer}
+                inputStyle={styles.inputText}
+                leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
+                rightIcon={
+                  <Icon
+                    type="material"
+                    name={showPassword ? 'visibility' : 'visibility-off'}
+                    color="#9CA3AF"
+                    onPress={() => setShowPassword(!showPassword)}
+                  />
+                }
+              />
+            </Animated.View>
+
             {error ? <Text style={styles.error}>{error}</Text> : null}
 
-            {/* Forgot Password */}
-            {!isSignup && (
-              <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
+                <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
                 <Text style={styles.forgotPassword}>Forgot Password?</Text>
-              </TouchableOpacity>
-            )}
+                </TouchableOpacity>
 
-            {/* Login/Sign Up Button */}
-            {/* <Button
-              mode="contained"
-              onPress={isSignup ? handleSignup : handleLogin}
-              icon={isSignup ? "account-plus" : "login"}
-              style={styles.loginButton}
-              labelStyle={styles.loginButtonText}
-            >
-              {isSignup ? "Sign Up" : "Login"}
-            </Button> */}
+                  <CustomButton
+                    title={isSignup ? "Sign Up" : "Login"}
+                    onPress={isSignup ? handleSignup : handleLogin}
+                    icon={isSignup ? "account-plus" : "login"}
+                    loading={loading}
+                    disabled={isSignup && !agreedToTerms}
+                    style={[
+                      styles.loginButton,
+                      !agreedToTerms && { backgroundColor: '#ccc' }, // Grey out when disabled
+                    ]}
+                    labelStyle={styles.loginButtonText}
+                  />
+            
+            </View>
+  
 
-          <CustomButton
-            title={isSignup ? "Sign Up" : "Login"}
-            onPress={isSignup ? handleSignup : handleLogin}
-            icon={isSignup ? "account-plus" : "login"}
-            loading={loading}
-            disabled={isSignup && !agreedToTerms}
-            style={[
-              styles.loginButton,
-              !agreedToTerms && { backgroundColor: '#ccc' }, // Grey out when disabled
-            ]}
-            labelStyle={styles.loginButtonText}
-          />
+                
 
-            {/* Toggle Login/Signup */}
-            <TouchableOpacity onPress={() => setIsSignup(!isSignup)}
-            >
+           <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
               <Text style={styles.footerText}>
                 {isSignup
                   ? "Already have an account? Login"
                   : `Don't have an account? Sign Up`}
               </Text>
             </TouchableOpacity>
+                   
           </View>
+
+              </View>
+            )}
+
+      
+
+
+
+
+
+
+
+
+
+
+
+
 
           <ForgotPasswordModal
             visible={isForgotPasswordVisible}
             onClose={() => setForgotPasswordVisible(false)}
           />
-        </View>
-        </TouchableWithoutFeedback>
-        </ScrollView>
-    
-  </KeyboardAvoidingView>
-</SafeAreaView>
-
-
+          
+        </KeyboardAwareScrollView>
+        </KeyboardAvoidingView>
+            </>
+          )}
+      
+        
+  
+</View>
   );
 }
 
