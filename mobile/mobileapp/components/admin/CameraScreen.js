@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from "react"; 
+import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import { CameraView, useCameraPermissions } from "expo-camera";
-import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
-import { collection, query, where, getDocs } from "firebase/firestore";
-import { db } from "../../backend/firebase/FirebaseConfig"; // Import your Firebase config
+import CryptoJS from "crypto-js";
+import { collection, query, where, getDocs, Timestamp } from "firebase/firestore";
+import { db } from "../../backend/firebase/FirebaseConfig";
 import styles from "../styles/adminStyle/CameraStyle";
 import CONFIG from "../config";
 
@@ -15,6 +16,9 @@ const CameraScreen = ({ navigation }) => {
   const [cameraType, setCameraType] = useState("back");
   const [scanned, setScanned] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
+  const [todayRequestors, setTodayRequestors] = useState([]);
+  const [selectedRequestor, setSelectedRequestor] = useState(null);
+  const [requestorItems, setRequestorItems] = useState([]);
   const cameraRef = useRef(null);
   const scanLinePosition = useRef(new Animated.Value(0)).current;
 
@@ -28,9 +32,51 @@ const CameraScreen = ({ navigation }) => {
     animateScanLine();
   }, []);
 
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchTodayRequestors();
+      return () => {
+        setTodayRequestors([]); // optional: reset on blur
+      };
+    }, [])
+  );
+
+  const fetchTodayRequestors = async () => {
+    const todayDate = getTodayDate();
+    console.log("Checking Firestore for:", todayDate);
+
+    try {
+      const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
+      const querySnapshot = await getDocs(q);
+      const requestors = [];
+      console.log("Docs found:", querySnapshot.size);
+
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (data.userName && data.requestList) {
+          requestors.push({
+            name: data.userName,
+            timeFrom: data.timeFrom || "N/A",
+            timeTo: data.timeTo || "N/A",
+            requestList: data.requestList,
+          });
+        }
+      });
+
+      setTodayRequestors(requestors);
+    } catch (err) {
+      console.error("Failed to fetch today's requestors", err);
+    }
+  };
+
+  const handleRequestorPress = (requestor) => {
+    setSelectedRequestor(requestor);
+    setRequestorItems(requestor.requestList || []);
+  };
+
   const animateScanLine = () => {
     Animated.loop(
-      Animated.sequence([ 
+      Animated.sequence([
         Animated.timing(scanLinePosition, {
           toValue: styles.scannerFrame.height,
           duration: 2000,
@@ -140,11 +186,10 @@ const CameraScreen = ({ navigation }) => {
           });
 
           Alert.alert("Item Borrowed Today", detailsMessage);
-
         } else {
           Alert.alert("Item not found", "No records found for this item on today's date.");
         }
-        
+
       } else {
         Alert.alert("No data found", "No records found for today in the borrow catalog.");
       }
@@ -156,41 +201,74 @@ const CameraScreen = ({ navigation }) => {
     setTimeout(() => setScanned(false), 1500);
   };
 
+  const handleItemPress = (item) => {
+    Alert.alert("Item Selected", `You tapped on: ${item.itemName}`);
+    // You could also do other actions here, like navigate or fetch related data
+  };
 
   return (
     <View style={styles.container}>
-      <CameraView
-        style={styles.camera}
-        facing={cameraType}
-        ref={cameraRef}
-        barcodeScannerEnabled={true}
-        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
-      >
-        <View style={styles.overlay}>
-          <View style={styles.maskTop} />
-          <View style={styles.maskBottom} />
-          <View style={[styles.maskLeft, { top: (height - frameSize) / 2, height: frameSize }]} />
-          <View style={[styles.maskRight, { top: (height - frameSize) / 2, height: frameSize }]} />
-
-          <View style={styles.scannerFrame}>
-            <View style={[styles.corner, styles.cornerTopLeft]} />
-            <View style={[styles.corner, styles.cornerTopRight]} />
-            <View style={[styles.corner, styles.cornerBottomLeft]} />
-            <View style={[styles.corner, styles.cornerBottomRight]} />
-
-            <Animated.View style={[styles.scanLine, { top: scanLinePosition }]} />
+      {/* Step 1: Show requestor list */}
+      {!selectedRequestor ? (
+        <View style={{ backgroundColor: "#111", padding: 10, width: "100%" }}>
+          <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}>Today's Requestors</Text>
+          {todayRequestors.length > 0 ? (
+            todayRequestors.map((req, index) => (
+              <TouchableOpacity key={index} onPress={() => handleRequestorPress(req)}>
+                <Text style={{ color: "#ccc", fontSize: 14 }}>
+                  • {req.name} ({req.timeFrom} - {req.timeTo})
+                </Text>
+              </TouchableOpacity>
+            ))
+          ) : (
+            <Text style={{ color: "#777" }}>No requests for today</Text>
+          )}
+        </View>
+      ) : (
+        <>
+          {/* Step 2: Show selected requestor's items */}
+          <View style={{ padding: 10, backgroundColor: "#111", width: "100%" }}>
+            <Text style={{ color: "#fff", fontSize: 16, fontWeight: "bold" }}>
+              {selectedRequestor.name}'s Items
+            </Text>
+              {requestorItems.length > 0 ? (
+                requestorItems.map((item, index) => (
+                  <TouchableOpacity key={index} onPress={() => handleItemPress(item)}>
+                    <Text style={{ color: "#ccc" }}>
+                      • {item.itemName}
+                    </Text>
+                  </TouchableOpacity>
+                ))
+              ) : (
+                <Text style={{ color: "#777" }}>No items requested.</Text>
+              )}
+            <TouchableOpacity onPress={() => setSelectedRequestor(null)} style={styles.flipButton}>
+              <Text style={styles.text}>Back to Requestors</Text>
+            </TouchableOpacity>
           </View>
-        </View>
 
-        <View style={styles.controls}>
-          <TouchableOpacity
-            style={styles.flipButton}
-            onPress={() => setCameraType((prev) => (prev === "back" ? "front" : "back"))}
+          {/* Step 3: Show Camera */}
+          <CameraView
+            style={styles.camera}
+            facing={cameraType}
+            ref={cameraRef}
+            barcodeScannerEnabled={true}
+            onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
           >
-            <Text style={styles.text}>Flip</Text>
-          </TouchableOpacity>
-        </View>
-      </CameraView>
+            <View style={styles.overlay}>
+              {/* Scanner frame UI */}
+            </View>
+            <View style={styles.controls}>
+              <TouchableOpacity
+                style={styles.flipButton}
+                onPress={() => setCameraType((prev) => (prev === "back" ? "front" : "back"))}
+              >
+                <Text style={styles.text}>Flip</Text>
+              </TouchableOpacity>
+            </View>
+          </CameraView>
+        </>
+      )}
     </View>
   );
 };
