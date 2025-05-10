@@ -1,97 +1,34 @@
-// import React, { useEffect, useState } from "react";
-// import { Calendar, Badge } from "antd";
-// import { collection, getDocs } from "firebase/firestore";
-// import { db } from "../../backend/firebase/FirebaseConfig"; 
-// import "../styles/customsStyle/CalendarModal.css";
-
-// const CustomCalendar = ({ onSelectDate }) => {
-//   const [approvedRequests, setApprovedRequests] = useState([]);
-
-//   useEffect(() => {
-//     const fetchRequests = async () => {
-//       try {
-//         const querySnapshot = await getDocs(collection(db, "requestlog"));
-//         const requests = [];
-
-//         querySnapshot.forEach((doc) => {
-//           const data = doc.data();
-//           if (data.status === "Approved" && Array.isArray(data.requestList)) {
-//             data.requestList.forEach((item) => {
-//               requests.push({
-//                 date: data.dateRequired, 
-//                 title: item.itemName || "Approved Request"
-//               });
-//             });
-//           }
-//         });
-
-//         setApprovedRequests(requests);
-//       } catch (error) {
-//         console.error("Error fetching approved requests:", error);
-//       }
-//     };
-
-//     fetchRequests();
-//   }, []);
-
-//   const getListData = (value) => {
-//     const dateStr = value.format("YYYY-MM-DD");
-//     return approvedRequests
-//       .filter((item) => item.date === dateStr)
-//       .map((item) => ({ type: "success", content: item.title }));
-//   };
-
-//   const dateCellRender = (value) => {
-//     const listData = getListData(value);
-//     return (
-//       <ul className="events">
-//         {listData.map((item, index) => (
-//           <li key={index}>
-//             <Badge status={item.type} text={item.content} />
-//           </li>
-//         ))}
-//       </ul>
-//     );
-//   };
-
-//   return (
-//     <Calendar
-//       dateCellRender={dateCellRender}
-//       onSelect={(date) => onSelectDate(date)}
-//     />
-//   );
-// };
-
-// export default CustomCalendar;
-
 import React, { useEffect, useState } from "react";
-import { Calendar, Badge, Modal, List, Descriptions } from "antd";
-import { collection, getDocs } from "firebase/firestore";
+import { Calendar, Badge, Modal, List, Descriptions, Select } from "antd";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/customsStyle/CalendarModal.css";
+
+const { Option } = Select;
 
 const CustomCalendar = ({ onSelectDate }) => {
   const [approvedRequests, setApprovedRequests] = useState([]);
   const [selectedDateRequests, setSelectedDateRequests] = useState([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [filterStatus, setFilterStatus] = useState("all");
 
   useEffect(() => {
-    const fetchRequests = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "requestlog"));
+    const unsubscribe = onSnapshot(
+      collection(db, "borrowcatalog"),
+      (querySnapshot) => {
         const requests = [];
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          if (data.status === "Approved" && Array.isArray(data.requestList)) {
+          if (Array.isArray(data.requestList)) {
             data.requestList.forEach((item) => {
               requests.push({
                 date: data.dateRequired,
-                title: item.itemName || "Approved Request",
+                title: item.itemName || "Request",
                 userName: data.userName || "N/A",
                 department: item.department || "N/A",
-                room: item.room || "N/A",
-                status: item.status || "N/A",
+                room: data.room || "N/A",
+                status: data.status || "N/A",
                 quantity: item.quantity || "N/A",
                 condition: item.condition || "N/A",
                 approvedBy: data.approvedBy || "N/A",
@@ -101,22 +38,34 @@ const CustomCalendar = ({ onSelectDate }) => {
         });
 
         setApprovedRequests(requests);
-      } catch (error) {
-        console.error("Error fetching approved requests:", error);
+      },
+      (error) => {
+        console.error("Error in real-time listener:", error);
       }
-    };
+    );
 
-    fetchRequests();
+    return () => unsubscribe();
   }, []);
+
+  // 🔍 Filter logic for events
+  const filteredApprovedRequests = filterStatus === "all" ? approvedRequests : approvedRequests.filter((item) => item.status.toLowerCase() === filterStatus);
 
   const getListData = (value) => {
     const dateStr = value.format("YYYY-MM-DD");
-    return approvedRequests
+    return filteredApprovedRequests
       .filter((item) => item.date === dateStr)
-      .map((item) => ({
-        type: "success",
-        content: `${item.title}`,
-      }));
+      .map((item) => {
+        const status = item.status?.toLowerCase().trim();
+        let type = "default";
+
+        if (status === "borrowed") type = "error";
+        else if (status === "returned") type = "success";
+
+        return {
+          type,
+          content: `${item.title}`,
+        };
+      });
   };
 
   const dateCellRender = (value) => {
@@ -134,18 +83,30 @@ const CustomCalendar = ({ onSelectDate }) => {
 
   const handleDateSelect = (date) => {
     const dateStr = date.format("YYYY-MM-DD");
-    const matchedRequests = approvedRequests.filter((item) => item.date === dateStr);
+    const matchedRequests = filteredApprovedRequests.filter((item) => item.date === dateStr);
     setSelectedDateRequests(matchedRequests);
     setIsModalVisible(true);
-    onSelectDate(date); // keep your original onSelectDate behavior
+    onSelectDate(date);
   };
 
   return (
     <>
-      <Calendar
-        dateCellRender={dateCellRender}
-        onSelect={handleDateSelect}
-      />
+      {/* 🗂️ Filter for status outside of the modal */}
+      <div style={{ marginBottom: 16 }}>
+        <span style={{ marginRight: 8, fontWeight: "bold" }}>Filter by status:</span>
+        <Select
+          value={filterStatus}
+          onChange={setFilterStatus}
+          style={{ width: 200 }}
+        >
+          <Option value="all">All</Option>
+          <Option value="approved">Approved</Option>
+          <Option value="borrowed">Borrowed</Option>
+          <Option value="returned">Returned</Option>
+        </Select>
+      </div>
+
+      <Calendar dateCellRender={dateCellRender} onSelect={handleDateSelect} />
 
       <Modal
         title="Approved Requests"
@@ -163,11 +124,13 @@ const CustomCalendar = ({ onSelectDate }) => {
             dataSource={selectedDateRequests}
             renderItem={(item, index) => (
               <List.Item key={index}>
+                <div style={{ marginBottom: 8, fontWeight: "bold", color: "#1890ff" }}>
+                  Status: {item.status}
+                </div>
                 <Descriptions column={2} bordered size="small">
                   <Descriptions.Item label="Item Name">{item.title}</Descriptions.Item>
                   <Descriptions.Item label="Quantity">{item.quantity}</Descriptions.Item>
                   <Descriptions.Item label="Condition">{item.condition}</Descriptions.Item>
-                  <Descriptions.Item label="Status">{item.status}</Descriptions.Item>
                   <Descriptions.Item label="Room">{item.room}</Descriptions.Item>
                   <Descriptions.Item label="Department">{item.department}</Descriptions.Item>
                   <Descriptions.Item label="Approved By">{item.approvedBy}</Descriptions.Item>

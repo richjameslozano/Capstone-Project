@@ -127,35 +127,34 @@ import "./styles/Dashboard.css";
     setShowPolicies(false);    
    };
 
-   const handleDateSelect = async (date) => {
+  const handleDateSelect = async (date) => {
     setSelectedDate(date);
     const selectedDateStr = date.format("YYYY-MM-DD"); 
-  
-    // Fetch events from 'requestlog' collection based on selectedDate
+
     const q = query(
-      collection(db, "requestlog"),
-      where("dateRequired", "==", selectedDateStr),
-      where("status", "==", "Approved")
+      collection(db, "borrowcatalog"),
+      where("dateRequired", "==", selectedDateStr)
+      // Removed the status == "Approved" filter
     );
-  
+
     const querySnapshot = await getDocs(q);
     const items = [];
-  
+
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       if (Array.isArray(data.requestList)) {
         data.requestList.forEach((item) => {
           items.push({
             id: doc.id,
-            title: item.itemName || "Approved Request",
-            description: `Quantity: ${item.quantity}`, // Optional detail
+            title: item.itemName || "Request",
+            description: `Quantity: ${item.quantity} | Status: ${item.status}`,
           });
         });
       }
     });
-  
+
     setEventsOnSelectedDate(items);
-  };  
+  };
  
    const summaryCards = [
      { title: "Pending Requests", count: pendingRequestCount, color: "#fa541c", icon: "📄" },
