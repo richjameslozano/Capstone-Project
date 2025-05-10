@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react"; 
 import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
@@ -30,7 +30,7 @@ const CameraScreen = ({ navigation }) => {
 
   const animateScanLine = () => {
     Animated.loop(
-      Animated.sequence([
+      Animated.sequence([ 
         Animated.timing(scanLinePosition, {
           toValue: styles.scannerFrame.height,
           duration: 2000,
@@ -60,6 +60,14 @@ const CameraScreen = ({ navigation }) => {
     );
   }
 
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = (today.getMonth() + 1).toString().padStart(2, '0');
+    const day = today.getDate().toString().padStart(2, '0');
+    return `${year}-${month}-${day}`; // Format as "YYYY-MM-DD"
+  };
+
   const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
 
@@ -77,8 +85,11 @@ const CameraScreen = ({ navigation }) => {
       const parsedData = JSON.parse(decryptedData);
       const { itemName } = parsedData; // Extract itemName from QR code
 
-      // Query Firestore to find all records where the item was borrowed
-      const q = query(collection(db, "borrowcatalog"));
+      // Get today's date to filter the borrow catalog
+      const todayDate = getTodayDate();
+
+      // Query Firestore to find all records where the item was borrowed today
+      const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
 
       const querySnapshot = await getDocs(q);
 
@@ -87,7 +98,7 @@ const CameraScreen = ({ navigation }) => {
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          
+
           // Check if the item exists in the request list
           const borrowedItem = data.requestList.find(
             (item) => item.itemName === itemName
@@ -96,10 +107,10 @@ const CameraScreen = ({ navigation }) => {
           if (borrowedItem) {
             const borrower = data.userName || "Unknown"; // Assuming userName is the borrower name
             const borrowedDate = data.dateRequired;
-            
+
             // Extract time from the top level (not inside requestList)
-            const timeFrom = data.timeFrom || "N/A";
-            const timeTo = data.timeTo || "N/A";
+            const timeFrom = data.timeFrom || "00:00";
+            const timeTo = data.timeTo || "00:00";
 
             borrowedItemsDetails.push({
               borrower,
@@ -111,18 +122,31 @@ const CameraScreen = ({ navigation }) => {
         });
 
         if (borrowedItemsDetails.length > 0) {
+          // Sort borrowed items by timeFrom
+          borrowedItemsDetails.sort((a, b) => {
+            const [aHours, aMinutes] = a.timeFrom.split(":").map(Number);
+            const [bHours, bMinutes] = b.timeFrom.split(":").map(Number);
+
+            const aTotalMinutes = aHours * 60 + aMinutes;
+            const bTotalMinutes = bHours * 60 + bMinutes;
+
+            return aTotalMinutes - bTotalMinutes; // Sort ascending
+          });
+
           let detailsMessage = `Item: ${itemName}\n\n`;
 
-          borrowedItemsDetails.forEach((detail, index) => {
+          borrowedItemsDetails.forEach((detail) => {
             detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
           });
 
-          Alert.alert("Item Borrowed", detailsMessage);
+          Alert.alert("Item Borrowed Today", detailsMessage);
+
         } else {
-          Alert.alert("Item not found", "No records found for this item.");
+          Alert.alert("Item not found", "No records found for this item on today's date.");
         }
+        
       } else {
-        Alert.alert("No data found", "No records in the borrow catalog.");
+        Alert.alert("No data found", "No records found for today in the borrow catalog.");
       }
 
     } catch (error) {
@@ -131,6 +155,7 @@ const CameraScreen = ({ navigation }) => {
 
     setTimeout(() => setScanned(false), 1500);
   };
+
 
   return (
     <View style={styles.container}>
