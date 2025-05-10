@@ -1,15 +1,15 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { db } from "../backend/firebase/FirebaseConfig"; 
 import SessionTimeoutModal from './customs/SessionTimeoutModal';
-
-
 
 export function TimeoutProvider({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
     const timeoutRef = useRef();
     const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
-    const SESSION_TIMEOUT = 600000; // 60 seconds change when desired
+    const SESSION_TIMEOUT = 60000; // 60 seconds change when desired
     const exemptedRoutes = ['/', '/signup']; // Routes that should not trigger timeout
 
     useEffect(() => {
@@ -19,6 +19,7 @@ export function TimeoutProvider({ children }) {
             clearTimeout(timeoutRef.current);
             setIsModalVisible(false); // Hide modal on activity
             timeoutRef.current = setTimeout(() => {
+                logoutUser();
                 setIsModalVisible(true); // Show modal on session timeout
                 navigate('/'); // Example action on timeout
             }, SESSION_TIMEOUT);
@@ -42,10 +43,35 @@ export function TimeoutProvider({ children }) {
             window.removeEventListener('scroll', handleActivity);
         };
     }, [navigate, location.pathname]);
+
     const handleLogout = () => {
         // Clear user session and redirect to login
         localStorage.clear(); // Clear local storage
         navigate('/'); // Redirect to login page
+    };
+
+    const logoutUser = async () => {
+        const userId = localStorage.getItem("userId");
+        const userName = localStorage.getItem("userName") || "Unknown User";
+
+        // Clear local storage and perform logout action
+        localStorage.clear();
+
+        // Log logout activity to Firestore
+        if (userId) {
+        try {
+            await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+            action: "User Logged Out (Website)",
+            userName,
+            timestamp: serverTimestamp(),
+            });
+        } catch (error) {
+            console.error("Error logging logout:", error);
+        }
+        }
+
+        // Redirect to the home page or login page
+        navigate("/", { replace: true });
     };
 
     const handleModalClose = () => {

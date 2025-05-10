@@ -59,6 +59,7 @@ const CustomCalendar = ({ onSelectDate }) => {
         let type = "default";
 
         if (status === "borrowed") type = "error";
+        
         else if (status === "returned") type = "success";
 
         return {
