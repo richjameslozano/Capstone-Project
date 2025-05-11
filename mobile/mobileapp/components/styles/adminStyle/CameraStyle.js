@@ -10,6 +10,7 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000',
+    marginTop: 100,
   },
 
   camera: {
@@ -84,6 +85,7 @@ export default StyleSheet.create({
     height: (height - frameSize) / 2,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
+
   maskBottom: {
     position: 'absolute',
     bottom: 0,
@@ -91,6 +93,7 @@ export default StyleSheet.create({
     height: (height - frameSize) / 2,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
+
   maskLeft: {
     position: 'absolute',
     left: 0,
@@ -98,6 +101,7 @@ export default StyleSheet.create({
     height: frameSize,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
   },
+
   maskRight: {
     position: 'absolute',
     right: 0,
