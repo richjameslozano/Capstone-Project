@@ -75,110 +75,94 @@ const CameraScreen = ({ onClose }) => {
   };
 
   const handleBarCodeScanned = async ({ data }) => {
-  if (scanned) return;
+    if (scanned) return;
 
-  setScanned(true);
+    setScanned(true);
 
-  try {
-    // 🔓 Decrypt QR Code Data
-    const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
-    const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+    try {
+      const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+      const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 
-    if (!decryptedData) {
-      throw new Error("Invalid QR Code");
-    }
+      if (!decryptedData) throw new Error("Invalid QR Code");
 
-    const parsedData = JSON.parse(decryptedData);
-    const { itemName } = parsedData; // Extract itemName from QR code
+      const parsedData = JSON.parse(decryptedData);
+      const { itemName } = parsedData;
 
-    // Get today's date to filter the borrow catalog
-    const todayDate = getTodayDate();
+      const todayDate = getTodayDate();
+      const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
+      const querySnapshot = await getDocs(q);
 
-    // Query Firestore to find all records where the item was borrowed today
-    const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
-
-    const querySnapshot = await getDocs(q);
-
-    if (!querySnapshot.empty) {
+      let found = false;
+      let alreadyDeployed = false;
+      let invalidStatus = false;
       const borrowedItemsDetails = [];
 
-      for (const docSnap of querySnapshot.docs) {
-        const data = docSnap.data();
+      if (!querySnapshot.empty) {
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+          const borrowedItem = data.requestList.find((item) => item.itemName === itemName);
 
-        // Check if the item exists in the request list
-        const borrowedItem = data.requestList.find(
-          (item) => item.itemName === itemName
-        );
+          if (borrowedItem) {
+            found = true;
+            const currentStatus = borrowedItem.status?.toLowerCase();
 
-        if (borrowedItem) {
-          const borrower = data.userName || "Unknown";
-          const borrowedDate = data.dateRequired;
-          const timeFrom = data.timeFrom || "00:00";
-          const timeTo = data.timeTo || "00:00";
+            if (currentStatus === "borrowed") {
+              const updatedRequestList = data.requestList.map((item) =>
+                item.itemName === itemName ? { ...item, status: "deployed" } : item
+              );
 
-          const currentStatus = borrowedItem.status?.toLowerCase();
+              await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
+                requestList: updatedRequestList,
+                status: "Deployed"
+              });
 
-          if (currentStatus === "borrowed") {
-            // ✅ Update the item status to "deployed"
-            const updatedRequestList = data.requestList.map((item) =>
-              item.itemName === itemName ? { ...item, status: "deployed" } : item
-            );
-
-            // Update the document in Firestore
-            await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
-              requestList: updatedRequestList,
-              status: "Deployed" // update root-level status
-            });
-
-            borrowedItemsDetails.push({
-              borrower,
-              borrowedDate,
-              timeFrom,
-              timeTo
-            });
-
-          } else if (currentStatus === "deployed") {
-            Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
-          } else {
-            Alert.alert("Invalid Status", `Item "${itemName}" is not currently in a 'Borrowed' status.`);
+              borrowedItemsDetails.push({
+                borrower: data.userName || "Unknown",
+                borrowedDate: data.dateRequired,
+                timeFrom: data.timeFrom || "00:00",
+                timeTo: data.timeTo || "00:00"
+              });
+            } else if (currentStatus === "deployed") {
+              alreadyDeployed = true;
+            } else {
+              invalidStatus = true;
+            }
           }
         }
-      }
 
-      if (borrowedItemsDetails.length > 0) {
-        // Sort borrowed items by timeFrom
-        borrowedItemsDetails.sort((a, b) => {
-          const [aHours, aMinutes] = a.timeFrom.split(":").map(Number);
-          const [bHours, bMinutes] = b.timeFrom.split(":").map(Number);
+        if (borrowedItemsDetails.length > 0) {
+          borrowedItemsDetails.sort((a, b) => {
+            const [aH, aM] = a.timeFrom.split(":").map(Number);
+            const [bH, bM] = b.timeFrom.split(":").map(Number);
+            return aH * 60 + aM - (bH * 60 + bM);
+          });
 
-          const aTotalMinutes = aHours * 60 + aMinutes;
-          const bTotalMinutes = bHours * 60 + bMinutes;
+          let detailsMessage = `Item: ${itemName}\n\n`;
+          borrowedItemsDetails.forEach((detail) => {
+            detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
+          });
 
-          return aTotalMinutes - bTotalMinutes; // Sort ascending
-        });
+          Alert.alert("Item Deployed", detailsMessage);
 
-        let detailsMessage = `Item: ${itemName}\n\n`;
+        } else if (alreadyDeployed) {
+          Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
 
-        borrowedItemsDetails.forEach((detail) => {
-          detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
-        });
+        } else if (invalidStatus) {
+          Alert.alert("Invalid Status", `Item "${itemName}" is not currently in a 'Borrowed' status.`);
+          
+        } else if (!found) {
+          Alert.alert("Item not found", "No records found for this item on today's date.");
 
-        Alert.alert("Item Borrowed Today", detailsMessage);
-
+        }
       } else {
-        Alert.alert("Item not found", "No records found for this item on today's date.");
+        Alert.alert("No data found", "No records found for today in the borrow catalog.");
       }
-
-    } else {
-      Alert.alert("No data found", "No records found for today in the borrow catalog.");
+    } catch (error) {
+      Alert.alert("Error", "Invalid or unauthorized QR Code.");
     }
 
-  } catch (error) {
-    Alert.alert("Error", "Invalid or unauthorized QR Code.");
-  }
-
-  setTimeout(() => setScanned(false), 1500);
-};
+    setTimeout(() => setScanned(false), 1500);
+  };
 
   return (
     <View style={styles.container}>
