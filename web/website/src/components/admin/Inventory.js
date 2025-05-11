@@ -54,6 +54,7 @@ const Inventory = () => {
   const [isRowModalVisible, setIsRowModalVisible] = useState(false);
   const [qrModalVisible, setQrModalVisible] = useState(false);
   const [selectedQrCode, setSelectedQrCode] = useState('');
+  const [selectedItemName, setSelectedItemName] = useState(null);
   const [isItemModalVisible, setIsItemModalVisible] = useState(false);
   const [isQrModalVisible, setIsQrModalVisible] = useState(false);
   const [isViewQRModalVisible, setIsViewQRModalVisible] = useState(false);
@@ -313,6 +314,7 @@ const Inventory = () => {
           type="link"
           onClick={() => {
             setSelectedQrCode(qrCode);
+            setSelectedItemName(record.itemName);
             setQrModalVisible(true);
           }}
         >
@@ -614,12 +616,15 @@ const Inventory = () => {
             footer={null}
             zIndex={1018}
           >
-            {selectedQrCode ? (
+            {selectedItemName && (
               <div style={{ textAlign: 'center' }}>
-                <QRCodeCanvas value={selectedQrCode} size={200} />
+                <p><strong>Item Name:</strong> {selectedItemName}</p>
+                {selectedQrCode ? (
+                  <QRCodeCanvas value={selectedQrCode} size={200} />
+                ) : (
+                  <p>No QR Code Available</p>
+                )}
               </div>
-            ) : (
-              <p>No QR Code Available</p>
             )}
           </Modal>
 
