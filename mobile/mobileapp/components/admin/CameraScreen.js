@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import styles from "../styles/adminStyle/CameraStyle";
 import CONFIG from "../config";
@@ -73,49 +73,62 @@ const CameraScreen = ({ onClose }) => {
   const handleBackButton = () => {
     onClose(); // Call onClose to reset the state and go back
   };
+
   const handleBarCodeScanned = async ({ data }) => {
-    if (scanned) return;
+  if (scanned) return;
 
-    setScanned(true);
+  setScanned(true);
 
-    try {
-      // 🔓 Decrypt QR Code Data
-      const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
-      const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+  try {
+    // 🔓 Decrypt QR Code Data
+    const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+    const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 
-      if (!decryptedData) {
-        throw new Error("Invalid QR Code");
-      }
+    if (!decryptedData) {
+      throw new Error("Invalid QR Code");
+    }
 
-      const parsedData = JSON.parse(decryptedData);
-      const { itemName } = parsedData; // Extract itemName from QR code
+    const parsedData = JSON.parse(decryptedData);
+    const { itemName } = parsedData; // Extract itemName from QR code
 
-      // Get today's date to filter the borrow catalog
-      const todayDate = getTodayDate();
+    // Get today's date to filter the borrow catalog
+    const todayDate = getTodayDate();
 
-      // Query Firestore to find all records where the item was borrowed today
-      const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
+    // Query Firestore to find all records where the item was borrowed today
+    const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
 
-      const querySnapshot = await getDocs(q);
+    const querySnapshot = await getDocs(q);
 
-      if (!querySnapshot.empty) {
-        const borrowedItemsDetails = [];
+    if (!querySnapshot.empty) {
+      const borrowedItemsDetails = [];
 
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
+      for (const docSnap of querySnapshot.docs) {
+        const data = docSnap.data();
 
-          // Check if the item exists in the request list
-          const borrowedItem = data.requestList.find(
-            (item) => item.itemName === itemName
-          );
+        // Check if the item exists in the request list
+        const borrowedItem = data.requestList.find(
+          (item) => item.itemName === itemName
+        );
 
-          if (borrowedItem) {
-            const borrower = data.userName || "Unknown"; // Assuming userName is the borrower name
-            const borrowedDate = data.dateRequired;
+        if (borrowedItem) {
+          const borrower = data.userName || "Unknown";
+          const borrowedDate = data.dateRequired;
+          const timeFrom = data.timeFrom || "00:00";
+          const timeTo = data.timeTo || "00:00";
 
-            // Extract time from the top level (not inside requestList)
-            const timeFrom = data.timeFrom || "00:00";
-            const timeTo = data.timeTo || "00:00";
+          const currentStatus = borrowedItem.status?.toLowerCase();
+
+          if (currentStatus === "borrowed") {
+            // ✅ Update the item status to "deployed"
+            const updatedRequestList = data.requestList.map((item) =>
+              item.itemName === itemName ? { ...item, status: "deployed" } : item
+            );
+
+            // Update the document in Firestore
+            await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
+              requestList: updatedRequestList,
+              status: "Deployed" // update root-level status
+            });
 
             borrowedItemsDetails.push({
               borrower,
@@ -123,44 +136,49 @@ const CameraScreen = ({ onClose }) => {
               timeFrom,
               timeTo
             });
+
+          } else if (currentStatus === "deployed") {
+            Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
+          } else {
+            Alert.alert("Invalid Status", `Item "${itemName}" is not currently in a 'Borrowed' status.`);
           }
-        });
-
-        if (borrowedItemsDetails.length > 0) {
-          // Sort borrowed items by timeFrom
-          borrowedItemsDetails.sort((a, b) => {
-            const [aHours, aMinutes] = a.timeFrom.split(":").map(Number);
-            const [bHours, bMinutes] = b.timeFrom.split(":").map(Number);
-
-            const aTotalMinutes = aHours * 60 + aMinutes;
-            const bTotalMinutes = bHours * 60 + bMinutes;
-
-            return aTotalMinutes - bTotalMinutes; // Sort ascending
-          });
-
-          let detailsMessage = `Item: ${itemName}\n\n`;
-
-          borrowedItemsDetails.forEach((detail) => {
-            detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
-          });
-
-          Alert.alert("Item Borrowed Today", detailsMessage);
-
-        } else {
-          Alert.alert("Item not found", "No records found for this item on today's date.");
         }
-        
-      } else {
-        Alert.alert("No data found", "No records found for today in the borrow catalog.");
       }
 
-    } catch (error) {
-      Alert.alert("Error", "Invalid or unauthorized QR Code.");
+      if (borrowedItemsDetails.length > 0) {
+        // Sort borrowed items by timeFrom
+        borrowedItemsDetails.sort((a, b) => {
+          const [aHours, aMinutes] = a.timeFrom.split(":").map(Number);
+          const [bHours, bMinutes] = b.timeFrom.split(":").map(Number);
+
+          const aTotalMinutes = aHours * 60 + aMinutes;
+          const bTotalMinutes = bHours * 60 + bMinutes;
+
+          return aTotalMinutes - bTotalMinutes; // Sort ascending
+        });
+
+        let detailsMessage = `Item: ${itemName}\n\n`;
+
+        borrowedItemsDetails.forEach((detail) => {
+          detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
+        });
+
+        Alert.alert("Item Borrowed Today", detailsMessage);
+
+      } else {
+        Alert.alert("Item not found", "No records found for this item on today's date.");
+      }
+
+    } else {
+      Alert.alert("No data found", "No records found for today in the borrow catalog.");
     }
 
-    setTimeout(() => setScanned(false), 1500);
-  };
+  } catch (error) {
+    Alert.alert("Error", "Invalid or unauthorized QR Code.");
+  }
 
+  setTimeout(() => setScanned(false), 1500);
+};
 
   return (
     <View style={styles.container}>
