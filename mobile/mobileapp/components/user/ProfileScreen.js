@@ -1,228 +1,124 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  Layout,
-  Card,
-  Row,
-  Col,
-  Upload,
-  Avatar,
-  Button,
-  Typography,
-  message,
-} from "antd";
-import { UserOutlined, UploadOutlined } from "@ant-design/icons";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-} from "firebase/firestore";
-import { db, storage } from "../backend/firebase/FirebaseConfig";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import "./styles/Profile.css";
+// import React from 'react';
+// import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
+// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+// import styles from '../styles/userStyle/ProfileStyle';
 
-const { Content } = Layout;
-const { Title, Text } = Typography;
+// export default function ProfileScreen({ route, navigation }) {
+//   const { userData } = route.params || {};
 
-const Profile = () => {
-  const [formData, setFormData] = useState(null);
-  const [imageUrl, setImageUrl] = useState(null);
-  const [userDocRef, setUserDocRef] = useState(null);
-  const fileInputRef = useRef();
+//   return (
+//     <View style={styles.container}>
+//       <View style={styles.header}>
+//         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+//           <Icon name="arrow-left" size={30} color="white" />
+//         </TouchableOpacity>
+//         <Text style={styles.headerTitle}>Profile</Text>
+//       </View>
 
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userEmail = localStorage.getItem("userEmail");
+//       <View style={styles.profileImageContainer}>
+//         <Image 
+//           source={require('../../assets/favicon.png')} 
+//           style={styles.profileImage} 
+//         />
+//       </View>
 
-        if (!userEmail) {
-          console.error("No logged-in user found.");
-          return;
-        }
+//       <View style={styles.profileDetails}>
+//         <Text style={styles.label}>Name</Text>
+//         <TextInput 
+//           style={styles.input} 
+//           value={userData?.name || ''} 
+//           editable={false} 
+//         />
 
-        const q = query(
-          collection(db, "accounts"),
-          where("email", "==", userEmail)
-        );
-        const querySnapshot = await getDocs(q);
+//         <Text style={styles.label}>Email</Text>
+//         <TextInput 
+//           style={styles.input} 
+//           value={userData?.email || ''} 
+//           editable={false}
+//           keyboardType="email-address"
+//         />
 
-        if (!querySnapshot.empty) {
-          const userDoc = querySnapshot.docs[0];
-          const userData = userDoc.data();
-          setUserDocRef(userDoc.ref);
-          setFormData(userData);
+//         <Text style={styles.label}>Role</Text>
+//         <TextInput 
+//           style={styles.input} 
+//           value={userData?.role || ''} 
+//           editable={false}
+//         />
 
-          if (userData.profileImage) {
-            setImageUrl(userData.profileImage);
-          }
-        } else {
-          console.error("No user data found.");
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
+//         <Text style={styles.label}>Department</Text>
+//         <TextInput 
+//           style={styles.input} 
+//           value={userData?.department || ''} 
+//           editable={false}
+//         />
+//       </View>
 
-    fetchUserData();
-  }, []);
+//       <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate('LoginScreen')}>
+//         <Icon name="logout" size={24} color="white" />
+//         <Text style={styles.logoutText}>Logout</Text>
+//       </TouchableOpacity>
+//     </View>
+//   );
+// }
 
-  const handleImageUpload = (file) => {
-    if (!file) return;
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import styles from '../styles/userStyle/ProfileStyle';
+import { useAuth } from '../contexts/AuthContext';  
+import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
+import Header from '../Header';
 
-    const storageRef = ref(storage, `profileImages/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+export default function ProfileScreen({ navigation }) {
+  const { user, logout } = useAuth();  
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
-      },
-      (error) => {
-        console.error("Error uploading image:", error);
-        message.error("Failed to upload image.");
-      },
-      async () => {
-        try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-          setImageUrl(downloadURL);
+  const capitalizeInitials = (name) =>
+    name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());  
 
-          if (userDocRef) {
-            await updateDoc(userDocRef, { profileImage: downloadURL });
-            message.success("Profile image updated successfully!");
-
-            // Trigger a custom event for header update
-            window.dispatchEvent(
-              new CustomEvent("profileImageUpdated", { detail: downloadURL })
-            );
-          }
-        } catch (error) {
-          console.error("Error fetching download URL:", error);
-          message.error("Failed to update profile image.");
-        }
-      }
-    );
-  };
-
-  const capitalizeName = (name) => {
-    return name
-      .toLowerCase()
-      .replace(/\b\w/g, (char) => char.toUpperCase());
-  };
+  const getInitials = (name) => {
+    if (!name) return '';
+    const words = name.trim().split(' ');
+    return words.length === 1
+      ? words[0][0].toUpperCase()
+      : (words[0][0] + words[1][0]).toUpperCase();
+  };  
 
   return (
-    <Layout>
-      <Layout className="site-layout">
-        <Content className="profile-content">
-          <Row justify="center" align="middle" style={{ width: "100%" }}>
-            <Col xs={24} sm={18} md={12} lg={8}>
-              <Card
-                title="User Profile"
-                bordered={false}
-                style={{ width: "100%", maxWidth: "600px" }}
-              >
-                <div style={{ textAlign: "center", marginBottom: 20 }}>
-                  <Upload
-                    name="profileImage"
-                    listType="picture"
-                    showUploadList={false}
-                    onChange={(info) => {
-                      const file = info.file.originFileObj;
-                      if (file) {
-                        handleImageUpload(file);
-                      }
-                    }}
-                    beforeUpload={() => false}
-                  >
-                    {imageUrl ? (
-                      <Avatar src={imageUrl} size={100} />
-                    ) : (
-                      <Avatar size={100}>
-                        {formData?.name
-                          ? formData.name
-                              .split(" ")
-                              .map((n) => n[0])
-                              .join("")
-                              .toUpperCase()
-                          : <UserOutlined />}
-                      </Avatar>
-                    )}
-                  </Upload>
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Header/>
+        
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-left" size={30} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Profile</Text>
+      </View>
 
-                  <div style={{ marginTop: 10 }}>
-                    <Button
-                      icon={<UploadOutlined />}
-                      className="upload-btn"
-                      onClick={() => fileInputRef.current.click()}
-                    >
-                      Change Profile Picture
-                    </Button>
+      <View style={styles.profileImageContainer}>
+        {user?.photoURL ? (
+          <Avatar.Image size={50} source={{ uri: user.photoURL }} />
+        ) : (
+          <Avatar.Text size={50} label={getInitials(user?.name)} />
+        )}
+      </View>
 
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="image/*"
-                      style={{ display: "none" }}
-                      onChange={(e) => {
-                        const file = e.target.files[0];
-                        if (file) {
-                          handleImageUpload(file);
-                          e.target.value = null; // reset input
-                        }
-                      }}
-                    />
-                  </div>
+      <View style={styles.profileDetails}>
+        <Text style={styles.label}>Name</Text>
+        <TextInput
+          style={styles.input}
+          value={capitalizeInitials(user?.name || '')}
+          editable={false}
+        />
 
-                  <Title level={5} style={{ marginTop: 10 }}>
-                    {formData?.name
-                      ? capitalizeName(formData.name)
-                      : "No Name Available"}
-                  </Title>
+        <Text style={styles.label}>Email</Text>
+        <TextInput style={styles.input} value={user?.email || ''} editable={false} />
 
-                  <Text type="secondary">
-                    {formData?.email || "No Email Available"}
-                  </Text>
-                </div>
-              </Card>
+        <Text style={styles.label}>Email</Text>
+        <TextInput style={styles.input} value={user?.jobTitle || ''} editable={false} />
 
-              {formData && (
-                <Card
-                  title="Profile Summary"
-                  style={{ marginTop: 20 }}
-                  bordered={false}
-                >
-                  {formData.profileImage && (
-                    <Avatar
-                      src={formData.profileImage}
-                      size={100}
-                      style={{ marginBottom: 10 }}
-                    />
-                  )}
-                  <p>
-                    <strong>Name:</strong>{" "}
-                    {formData?.name
-                      ? capitalizeName(formData.name)
-                      : "No Name Available"}
-                  </p>
-                  <p>
-                    <strong>Department:</strong> {formData.department || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Job Title:</strong> {formData.jobTitle || "N/A"}
-                  </p>
-                  <p>
-                    <strong>Email:</strong> {formData.email || "N/A"}
-                  </p>
-                </Card>
-              )}
-            </Col>
-          </Row>
-        </Content>
-      </Layout>
-    </Layout>
+        <Text style={styles.label}>Department</Text>
+        <TextInput style={styles.input} value={user?.department || ''} editable={false} />
+      </View>
+    </View>
   );
-};
-
-export default Profile;
+}
