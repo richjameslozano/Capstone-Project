@@ -74,9 +74,11 @@ const CustomCalendar = ({ onSelectDate }) => {
         const status = item.status?.toLowerCase().trim();
         let type = "default";
 
-        if (status === "borrowed") type = "error";
-        
-        else if (status === "returned") type = "success";
+        // Mapping the status to Badge type
+        if (status === "borrowed") type = "warning";
+        else if (status === "deployed") type = "processing";
+        else if (status === "returned") type = "error";
+        else if (status === "approved") type = "success";
 
         return {
           type,
