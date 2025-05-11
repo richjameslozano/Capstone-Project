@@ -121,6 +121,7 @@ const CustomCalendar = ({ onSelectDate }) => {
             <Option value="all">All</Option>
             <Option value="approved">Approved</Option>
             <Option value="borrowed">Borrowed</Option>
+            <Option value="deployed">Deployed</Option>
             <Option value="returned">Returned</Option>
           </Select>
         </div>
