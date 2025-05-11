@@ -9,6 +9,7 @@ const firebaseConfig = {
   authDomain: "nuls-8c12b.firebaseapp.com",
   projectId: "nuls-8c12b",
   storageBucket: "nuls-8c12b.firebasestorage.app", // Ensure the storage bucket is correct
+  // storageBucket: "nuls-8c12b.appspot.com",
   messagingSenderId: "107113670988",
   appId: "1:107113670988:web:b12a5dbda7937af3e487e9",
   measurementId: "G-9048NY7E4D",

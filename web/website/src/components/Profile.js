@@ -60,9 +60,11 @@ const Profile = () => {
             
             setImageUrl(userData.profileImage);
           }
+
         } else {
           console.error("No user data found.");
         }
+
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -89,26 +91,25 @@ const Profile = () => {
         message.error("Failed to upload image.");
       },
       async () => {
-  try {
-    const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-    setImageUrl(downloadURL);
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          setImageUrl(downloadURL);
 
-    if (userDocRef) {
-      await updateDoc(userDocRef, { profileImage: downloadURL });
-      message.success("Profile image updated successfully!");
+          if (userDocRef) {
+            await updateDoc(userDocRef, { profileImage: downloadURL });
+            message.success("Profile image updated successfully!");
 
-      // 🔥 Reload the whole page after successful upload
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000); // 1 second delay for user to see the success message
-    }
-  } catch (error) {
-    console.error("Error fetching download URL:", error);
-    message.error("Failed to update profile image.");
-  }
-}
-
-
+            // 🔥 Reload the whole page after successful upload
+            setTimeout(() => {
+              window.location.reload();
+            }, 1000); // 1 second delay for user to see the success message
+          }
+          
+        } catch (error) {
+          console.error("Error fetching download URL:", error);
+          message.error("Failed to update profile image.");
+        }
+      }
     );
   };
 
