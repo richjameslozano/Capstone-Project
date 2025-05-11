@@ -198,13 +198,13 @@ const Profile = () => {
                   style={{ marginTop: 20 }}
                   bordered={false}
                 >
-                  {formData.profileImage && (
+                  {/* {formData.profileImage && (
                     <Avatar
                       src={formData.profileImage}
                       size={100}
                       style={{ marginBottom: 10 }}
                     />
-                  )}
+                  )} */}
                   <p>
                     <strong>Name:</strong>{" "}
                     {formData?.name ? capitalizeName(formData.name) : "No Name Available"}
