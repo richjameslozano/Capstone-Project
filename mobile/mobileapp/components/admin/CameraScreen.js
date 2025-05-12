@@ -12,7 +12,7 @@ const { width, height } = Dimensions.get("window");
 const frameSize = width * 0.7;
 const SECRET_KEY = CONFIG.SECRET_KEY;
 
-const CameraScreen = ({ onClose }) => {
+const CameraScreen = ({ onClose, selectedItem }) => {
   const [cameraType, setCameraType] = useState("back");
   const [scanned, setScanned] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
@@ -74,6 +74,18 @@ const CameraScreen = ({ onClose }) => {
     onClose(); // Call onClose to reset the state and go back
   };
 
+  const logRequestOrReturn = async (userId, userName, action) => {
+    try {
+      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+        action, // e.g., "Added a Capex Item", "Requested Items", etc.
+        userName,
+        timestamp: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error logging request or return activity:", error);
+    }
+  };
+
   const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
 
@@ -100,20 +112,53 @@ const CameraScreen = ({ onClose }) => {
       if (!querySnapshot.empty) {
         for (const docSnap of querySnapshot.docs) {
           const data = docSnap.data();
-          const borrowedItem = data.requestList.find((item) => item.itemName === itemName);
+          // const borrowedItem = data.requestList.find((item) => item.itemName === itemName);
+          const borrowedItem = data.requestList.find(
+            (item) =>
+              item.itemName === itemName &&
+              item.selectedItemId === selectedItem.selectedItemId &&
+              item.labRoom === selectedItem.labRoom &&
+              item.quantity === selectedItem.quantity &&
+              item.program === selectedItem.program
+          );
 
           if (borrowedItem) {
             found = true;
-            const currentStatus = borrowedItem.status?.toLowerCase();
+            const currentStatus = data.status?.toLowerCase();
+
+            // if (currentStatus === "borrowed") {
+            //   const updatedRequestList = data.requestList.map((item) =>
+            //     item.itemName === itemName ? { ...item, status: "deployed" } : item
+            //   );
+
+            //   await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
+            //     requestList: updatedRequestList,
+            //     status: "Deployed"
+            //   });
 
             if (currentStatus === "borrowed") {
-              const updatedRequestList = data.requestList.map((item) =>
-                item.itemName === itemName ? { ...item, status: "deployed" } : item
-              );
+              const updatedRequestList = data.requestList.map((item) => {
+                if (item.itemName === itemName) {
+                  const newCount = (item.scannedCount || 0) + 1;
+                  return {
+                    ...item,
+                    // status: "deployed",
+                    scannedCount: newCount
+                  };
+                }
+                return item;
+              });
+
+              // await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
+              //   requestList: updatedRequestList,
+              //   status: "Deployed"
+              // });
+
+              const allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity); 
 
               await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
                 requestList: updatedRequestList,
-                status: "Deployed"
+                ...(allDeployed && { status: "Deployed" })
               });
 
               borrowedItemsDetails.push({
@@ -122,8 +167,10 @@ const CameraScreen = ({ onClose }) => {
                 timeFrom: data.timeFrom || "00:00",
                 timeTo: data.timeTo || "00:00"
               });
+
             } else if (currentStatus === "deployed") {
               alreadyDeployed = true;
+
             } else {
               invalidStatus = true;
             }
@@ -143,6 +190,7 @@ const CameraScreen = ({ onClose }) => {
           });
 
           Alert.alert("Item Deployed", detailsMessage);
+          // await logRequestOrReturn(user.id, user.name, `Deployed ${itemName} for ${detail.borrower}`);
 
         } else if (alreadyDeployed) {
           Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
@@ -154,9 +202,11 @@ const CameraScreen = ({ onClose }) => {
           Alert.alert("Item not found", "No records found for this item on today's date.");
 
         }
+
       } else {
         Alert.alert("No data found", "No records found for today in the borrow catalog.");
       }
+      
     } catch (error) {
       Alert.alert("Error", "Invalid or unauthorized QR Code.");
     }

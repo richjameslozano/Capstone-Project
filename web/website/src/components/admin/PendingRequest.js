@@ -342,6 +342,7 @@ const PendingRequest = () => {
           timeFrom: item.timeFrom || "N/A",
           timeTo: item.timeTo || "N/A",
           usageType: item.usageType || "N/A",
+          scannedCount: 0,
         }));
   
         const borrowCatalogEntry = {
@@ -660,6 +661,7 @@ const PendingRequest = () => {
           timeFrom: item.timeFrom || "N/A",
           timeTo: item.timeTo || "N/A",
           usageType: item.usageType || "N/A",
+          scannedCount: 0,
         }));
   
         const borrowCatalogEntry = {
@@ -1056,6 +1058,7 @@ const PendingRequest = () => {
           timeFrom: item.timeFrom || "N/A",  // Time From
           timeTo: item.timeTo || "N/A",  // Time To
           usageType: item.usageType || "N/A",  // Usage type (e.g., Community Extension)
+          scannedCount: 0,
         }));
 
         // Create a borrow catalog entry with the formatted fixed items

@@ -722,11 +722,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               </View>
             )}
 
-
-
-
-
-
             {!isSignup && (
                 <View style={styles.inner}>
           <View style={styles.header}>
@@ -808,17 +803,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
               </View>
             )}
-
-      
-
-
-
-
-
-
-
-
-
           <ForgotPasswordModal
             visible={isForgotPasswordVisible}
             onClose={() => setForgotPasswordVisible(false)}
@@ -828,9 +812,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         </KeyboardAvoidingView>
             </>
           )}
-      
-        
-  
+
 </View>
   );
 }
