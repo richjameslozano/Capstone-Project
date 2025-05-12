@@ -157,10 +157,16 @@ const RequestLogScreen = () => {
     setSelectedLog(log.fullData);
     setModalVisible(true);
   };
-
+  const [headerHeight, setHeaderHeight] = useState(0);
+  
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
   return (
     <View style={styles.container}>
-      <Header/>
+      <Header onLayout={handleHeaderLayout} />
+      <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
       <Text style={styles.pageTitle}>Request Log</Text>
 
       <TextInput
@@ -255,7 +261,7 @@ const RequestLogScreen = () => {
     </View>
   </View>
 </Modal>
-
+</View>
     </View>
   );
 };

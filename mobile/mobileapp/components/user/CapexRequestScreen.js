@@ -36,6 +36,7 @@ const CapexRequestScreen = () => {
   const [justification, setJustification] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
   const { user } = useAuth();
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const userId = getAuth().currentUser?.id;
   const userName = getAuth().currentUser?.displayName;
@@ -274,10 +275,14 @@ const CapexRequestScreen = () => {
       Alert.alert("Error", "Submission failed");
     }
   }  
-
+const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
   return (
     <View style={styles.container}>
-      <Header/>
+      <Header onLayout={handleHeaderLayout} />
+      <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
       <Text style={styles.title}>CAPEX Request</Text>
 
       <View style={styles.tableContainer}>
@@ -305,6 +310,7 @@ const CapexRequestScreen = () => {
             </View>
           </View>
         ))}
+      </View>
       </View>
 
       <Text style={styles.total}>Total: ₱{totalPrice.toLocaleString()}</Text>
@@ -358,7 +364,8 @@ const CapexRequestScreen = () => {
               style={styles.input}
             />
 
-            <Button title="Save" onPress={handleSave} />
+            <Button title="Save" color="#6E9FC1" onPress={handleSave} />
+            <View style={{ height: 10 }} />
             <Button title="Cancel" color="gray" onPress={resetForm} />
           </View>
         </View>

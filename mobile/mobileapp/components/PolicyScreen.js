@@ -1,7 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, FlatList, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from './styles/PolicyStyle';
+import Header from './Header';
+
 
 export default function PolicyScreen({ navigation }) {
   const policies = [
@@ -12,16 +14,17 @@ export default function PolicyScreen({ navigation }) {
     { id: '5', title: 'Emergency Procedures', description: 'Know the emergency exits and first aid locations.' },
   ];
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+  
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
   return (
     <View style={styles.container}>
-      {/* Back Button */}
-      {/* <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-left" size={30} color="white" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Policies</Text>
-      </View> */}
-
+    <Header onLayout={handleHeaderLayout} />
+  <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
+    <Text style={styles.title}>POLICY</Text>
       <FlatList
         data={policies}
         keyExtractor={(item) => item.id}
@@ -30,8 +33,18 @@ export default function PolicyScreen({ navigation }) {
             <Text style={styles.cardTitle}>{item.title}</Text>
             <Text style={styles.cardDescription}>{item.description}</Text>
           </View>
+          
         )}
       />
+      </View>
     </View>
   );
 }
+
+      {/* Back Button */}
+      {/* <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="arrow-left" size={30} color="white" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>Policies</Text>
+      </View> */}
