@@ -343,6 +343,7 @@ const handleHeaderLayout = (event) => {
               onChangeText={setItemDescription}
               style={styles.input}
             />
+            
             <TextInput
               placeholder="Quantity"
               keyboardType="numeric"
@@ -350,6 +351,7 @@ const handleHeaderLayout = (event) => {
               onChangeText={setQty}
               style={styles.input}
             />
+
             <TextInput
               placeholder="Estimated Cost"
               keyboardType="numeric"
@@ -357,6 +359,7 @@ const handleHeaderLayout = (event) => {
               onChangeText={setEstimatedCost}
               style={styles.input}
             />
+
             <TextInput
               placeholder="Justification"
               value={justification}
