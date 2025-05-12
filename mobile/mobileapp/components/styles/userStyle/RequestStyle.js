@@ -6,7 +6,22 @@ export default StyleSheet.create({
     backgroundColor: '#fff',
     paddingHorizontal: 16,
   },
+
+  containerInner:{
+    flex:1,
+    backgroundColor:'#e9ecee'
+  },
   
+  topNav:{
+    position: 'absolute',
+    flex:1,
+    right: 0,
+    left: 0,
+    height: 'auto',
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    zIndex: 999,
+  },
   title: {
     fontSize: 22,
     fontWeight: 'bold',

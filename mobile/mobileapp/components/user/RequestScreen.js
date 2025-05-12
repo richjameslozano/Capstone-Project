@@ -35,6 +35,13 @@ export default function RequestScreen() {
 
   const { user } = useAuth();
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+  
+    const handleHeaderLayout = (event) => {
+      const { height } = event.nativeEvent.layout;
+      setHeaderHeight(height);
+    };
+
   // const fetchRequests = async () => {
   //   setLoading(true);
   //   try {
@@ -233,7 +240,21 @@ export default function RequestScreen() {
   return (
     
     <View style={styles.container}>
-      <Header />
+      <Header onLayout={handleHeaderLayout} />
+      <View style={[styles.topNav, {top:headerHeight}]}>
+
+        <TouchableOpacity style={{width: '50%', backgroundColor: '#e9ecee',justifyContent:'center',alignItems:'center',paddingVertical: 15}}>
+          <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={{width: '50%', backgroundColor: 'white',justifyContent:'center',alignItems:'center',paddingVertical: 15, borderLeftColor: '#acacac', borderLeftWidth:1}}>
+          <Text style={{fontWeight: 'bold', fontSize: 15}}>Pending</Text>
+        </TouchableOpacity>
+        
+      </View>
+
+      <View style={[styles.containerInner, {paddingTop: headerHeight}]}>
+        
       <Text style={styles.title}>📋 Request List</Text>
 
       {loading ? (
@@ -249,6 +270,7 @@ export default function RequestScreen() {
         />
       )}
 
+      </View>
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <ScrollView style={styles.modalContent}>

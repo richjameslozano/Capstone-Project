@@ -104,7 +104,7 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Search Items</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserHistoryLogScreen')}>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('RequestScreen')}>
         <Icon2 name="history" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Status Board</Title>
       </TouchableOpacity>
@@ -119,7 +119,7 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Calendar</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('RequestListScreen')}>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('RequestScreen')}>
         <Icon2 name="file-document-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Request List</Title>
       </TouchableOpacity>
