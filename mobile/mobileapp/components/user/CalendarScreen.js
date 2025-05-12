@@ -8,10 +8,15 @@ export default function CalendarScreen() {
   const [selectedDate, setSelectedDate] = useState('');
 
   const today = new Date().toISOString().split('T')[0]; 
-
+ const [headerHeight, setHeaderHeight] = useState(0);
+   const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
   return (
     <View style={styles.container}>
-      <Header/>
+      <Header onLayout={handleHeaderLayout} />
+      <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
       <View style={styles.content}>
       <Text style={styles.title}>Select a Date</Text>
 
@@ -28,6 +33,7 @@ export default function CalendarScreen() {
       />
 
       {selectedDate ? <Text style={styles.selectedDate}>Selected: {selectedDate}</Text> : null}
+      </View>
       </View>
     </View>
   );

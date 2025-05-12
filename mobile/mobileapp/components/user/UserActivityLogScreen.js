@@ -22,7 +22,12 @@ const UserActivityLogScreen = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-
+  const [headerHeight, setHeaderHeight] = useState(0);
+  
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
   // const fetchActivityLogs = async () => {
   //   try {
   //     const activityRef = collection(db, `accounts/${user.id}/activitylog`);
@@ -154,7 +159,9 @@ const UserActivityLogScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <Header onLayout={handleHeaderLayout} />
+        <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
+      
 
       <Text style={styles.title}>⏰ Activity Log</Text>
 
@@ -221,6 +228,7 @@ const UserActivityLogScreen = () => {
           </View>
         </View>
       </Modal>
+    </View>
     </View>
   );
 };

@@ -13,7 +13,7 @@ export default StyleSheet.create({
     marginBottom: 10,
     textAlign: 'center',
     color: '#333',
-    marginTop: 50,
+    marginTop: 20,
   },
 
   total: {
@@ -21,7 +21,7 @@ export default StyleSheet.create({
     fontWeight: '600',
     marginBottom: 20,
     color: '#444',
-    textAlign: 'center',
+    textAlign: 'right',
   },
 
   item: {
@@ -84,7 +84,7 @@ export default StyleSheet.create({
   },
 
   buttonPrimary: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#6E9FC1',
     padding: 12,
     borderRadius: 8,
     marginVertical: 6,
@@ -121,14 +121,23 @@ export default StyleSheet.create({
   },
   
   tableHeader: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#395A7E',
   },
-  
+
+  // tableRow: {
+  //   flexDirection: 'row',
+  //   borderBottomWidth: 1,
+  //   borderColor: '#ddd',
+  //   paddingVertical: 10,
+  // },
   tableRow: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderColor: '#ddd',
-  },
+  flexDirection: 'row',       
+  backgroundColor: '#fff',
+  paddingVertical: 10,
+  borderRadius: 6,          
+  shadowOpacity: 0.05,
+  shadowRadius: 2,
+},
   
   tableCell: {
     flex: 1,

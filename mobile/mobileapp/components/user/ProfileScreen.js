@@ -61,7 +61,7 @@
 //   );
 // }
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/ProfileStyle';
@@ -82,11 +82,18 @@ export default function ProfileScreen({ navigation }) {
       ? words[0][0].toUpperCase()
       : (words[0][0] + words[1][0]).toUpperCase();
   };  
-
+    const [headerHeight, setHeaderHeight] = useState(0);
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
   return (
     <View style={styles.container}>
+      <Header onLayout={handleHeaderLayout} />
+      <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
       <View style={styles.header}>
-        <Header/>
+      
+       
         
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="arrow-left" size={30} color="white" />
@@ -101,6 +108,7 @@ export default function ProfileScreen({ navigation }) {
           <Avatar.Text size={50} label={getInitials(user?.name)} />
         )}
       </View>
+      
 
       <View style={styles.profileDetails}>
         <Text style={styles.label}>Name</Text>
@@ -119,6 +127,7 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.label}>Department</Text>
         <TextInput style={styles.input} value={user?.department || ''} editable={false} />
       </View>
+    </View>
     </View>
   );
 }
