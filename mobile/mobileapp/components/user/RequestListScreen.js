@@ -18,6 +18,8 @@ import { useRequestMetadata } from '../contexts/RequestMetadataContext';
 import styles from '../styles/userStyle/RequestListStyle';
 import Header from '../Header';
 import { useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/Ionicons';
+import { Checkbox  } from 'react-native-paper';
 
 const RequestListScreen = ({navigation}) => {
   const { user } = useAuth();
@@ -30,7 +32,12 @@ const RequestListScreen = ({navigation}) => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false); 
   const [confirmationData, setConfirmationData] = useState(null);
   const [tempDocIdsToDelete, setTempDocIdsToDelete] = useState([]);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
 
   
   useEffect(() => {
@@ -263,20 +270,21 @@ const RequestListScreen = ({navigation}) => {
   };  
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => openModal(item)} style={styles.cardTouchable}>
+    <View style={{flex: 1, flexDirection: 'row', marginBottom: 5, elevation: 1, backgroundColor: 'white', borderRadius: 10}}>
+    <TouchableOpacity onPress={() => openModal(item)} style={[styles.touchable, {borderBottomColor: '#395a7f'}]}>
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.title}>{item.selectedItem?.label}</Text>
-          <TouchableOpacity onPress={() => confirmRemoveItem(item)} >
-            <Text style={styles.xIcon}>✕</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text>Quantity: {item.quantity}</Text>
+          <Text>Quantity: {item.quantity}</Text>
         <Text>Category: {item.category}</Text>
         <Text>Status: {item.status}</Text>
       </View>
+        </View>
     </TouchableOpacity>
+    <TouchableOpacity onPress={() => confirmRemoveItem(item)} style={styles.trash} >
+            <Icon name='trash' size={15} color='#fff'/>
+          </TouchableOpacity>
+    </View>
   );
 
   if (loading) {
@@ -288,22 +296,50 @@ const RequestListScreen = ({navigation}) => {
   }
 
   return (
-    <View style={styles.container}>
-      <Header />
-
-      <View style={styles.tableContainer}>
+    <View style={[styles.container]}>
+       <Header onLayout={handleHeaderLayout} />
         <FlatList
+        style={{ paddingHorizontal: 5, marginTop: headerHeight+5, paddingTop: 10, backgroundColor:'#fff', borderRadius: 10}}
+        showsVerticalScrollIndicator={false}
+        
+        scrollEnabled={true}
           data={requestList}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           ListEmptyComponent={<Text style={styles.emptyText}>No requests found.</Text>}
         />
-      </View>
+   
 
-      <TouchableOpacity style={styles.requestButton} onPress={handleRequestNow}>
-        <Text style={styles.requestButtonText}>Request Now</Text>
+      
+      <View style={styles.bottomNav}>
+        <Text style={{backgroundColor: '#f5f5f5',borderBottomColor: '#e9ecee',borderBottomWidth: 1, paddingLeft: 20, fontSize:11, color: 'gray'}}><Text style={{fontWeight:'bold'}}>Note: </Text>Finalize your item list before submitting</Text>
+        
+
+        <View style={{flex:1, flexDirection: 'row', paddingLeft:5}}>
+          
+          
+          <View style={{flex:1, width: '70%', flexDirection: 'row'}}>
+            <View style={{width: '50%', flexDirection: 'row', alignItems:'center'}}>
+            <Checkbox
+            />
+          <Text>Select All</Text>
+          </View>
+
+          <TouchableOpacity style={{width: '50%', backgroundColor: '#a3cae9', justifyContent:'center', alignItems: 'center'}}>
+            <Text style={styles.requestButtonText}>
+              Add to Drafts
+            </Text>
+          </TouchableOpacity>
+        </View>
+        
+
+        <TouchableOpacity style={styles.requestButton} onPress={handleRequestNow}>
+        <Text style={styles.requestButtonText}>Submit</Text>
       </TouchableOpacity>
+        </View>
+      
+      </View>
 
       <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={closeModal}>
         <View style={styles.modalBackground}>

@@ -3,12 +3,14 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f9f9f9',
-    padding: 16,
+    backgroundColor: '#efefef',
+    padding: 8,
+    paddingTop: 0,
+    paddingBottom: 45,
   },
 
   listContent: {
-    paddingBottom: 24,
+    paddingBottom: 40,
   },
 
   card: {
@@ -21,6 +23,19 @@ export default StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
+  },
+
+  touchable:{
+    height: '100%',
+    flexDirection: 'row',
+    width: '85%',
+    backgroundColor: 'white',
+    borderWidth: 1,
+    borderEndWidth:0,
+    borderBottomWidth: 3,
+    borderColor: '#e9ecee',
+    borderStartStartRadius: 5,
+    borderBottomStartRadius: 5,
   },
 
   title: {
@@ -42,22 +57,14 @@ export default StyleSheet.create({
     alignItems: 'center',
   },
 
-  tableContainer: {
-    flex: 1,
-    marginTop: 80,
-  },
+
 
   requestButton: {
-    backgroundColor: '#4CAF50',
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    marginBottom: 20,
+    backgroundColor: '#395a7f',
+    paddingVertical: 15,
     alignItems: 'center',
-    position: 'absolute',
-    bottom: 20,
-    left: 16,
-    right: 16,
+    paddingHorizontal: 10,
+    width: '30%'
   },
 
   requestButtonModal: {
@@ -182,22 +189,19 @@ export default StyleSheet.create({
   },
 
   card: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 3,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    flexDirection: 'column',
+    width: '85%',
+    padding: 10
   },
 
-  cardHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  trash:{
+    height: '100%',
+    justifyContent: 'center',
+    backgroundColor: '#18496e',
+    width: '15%',
     alignItems: 'center',
-    marginBottom: 6,
+    borderEndEndRadius: 5,
+    borderTopEndRadius: 5
   },
 
   table: {
@@ -233,5 +237,19 @@ export default StyleSheet.create({
     paddingHorizontal: 8,
     fontSize: 14,
   },
+
+  bottomNav:{
+    position: 'absolute',
+    bottom: 0,
+    flex:1,
+    right: 0,
+    left: 0,
+    height: 'auto',
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    flexDirection: 'column',
+    borderTopWidth: 1,
+    borderColor: '#e9ecee'
+  },  
   
 });
