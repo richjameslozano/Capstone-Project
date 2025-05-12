@@ -167,10 +167,12 @@ animatedInputContainer: {
 inputContainer: {
   borderBottomWidth: 0, // removes underline
   paddingBottom: 0,
+  paddingTop: 0,
 },
 
 inputText: {
   fontSize: 16,
+  textAlign:'center'
 },
 
 
@@ -230,9 +232,10 @@ inputText: {
 
   menucontainer:{
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingLeft: 10,
-    paddingRight: 10,
-    
+    gap: 20,
+    width: '100%',
+    paddingVertical: 10,
+    justifyContent: 'center',
+    paddingTop: 0
   }
 });

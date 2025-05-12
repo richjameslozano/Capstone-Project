@@ -41,35 +41,77 @@ export default function LoginScreen({navigation}) {
   const [isTermsModalVisible, setTermsModalVisible] = useState(false);
 
   const [isLoginSignup, setIsLoginSignup] = useState(false)
-  const [focusedInput, setFocusedInput] = useState(null);
-  const emailBorderAnim = useRef(new Animated.Value(0)).current;
-  const passwordBorderAnim = useRef(new Animated.Value(0)).current;
+  const nameBorderAnim = useRef(new Animated.Value(0)).current;
+const emailBorderAnim = useRef(new Animated.Value(0)).current;
+const employeeIDBorderAnim = useRef(new Animated.Value(0)).current;
+const passwordBorderAnim = useRef(new Animated.Value(0)).current;
+const confirmPasswordBorderAnim = useRef(new Animated.Value(0)).current;
 
-  const handleFocus = (input) => {
-  Animated.timing(input === 'email' ? emailBorderAnim : passwordBorderAnim, {
-    toValue: 1,
-    duration: 200,
-    useNativeDriver: false,
-  }).start();
+  const [focusStates, setFocusStates] = useState({
+  name: false,
+  email: false,
+  employeeID: false,
+  password: false,
+  confirmPassword: false,
+});
+
+
+const handleFocus = (field) => {
+  setFocusStates((prev) => ({ ...prev, [field]: true }));
+  animateBorder(field, 1);
 };
 
-const handleBlur = (input) => {
-  Animated.timing(input === 'email' ? emailBorderAnim : passwordBorderAnim, {
-    toValue: 0,
-    duration: 200,
-    useNativeDriver: false,
-  }).start();
+const handleBlur = (field) => {
+  setFocusStates((prev) => ({ ...prev, [field]: false }));
+  animateBorder(field, 0);
 };
+
+const animateBorder = (field, toValue) => {
+  let animRef = null;
+
+  switch (field) {
+    case 'name': animRef = nameBorderAnim; break;
+    case 'email': animRef = emailBorderAnim; break;
+    case 'employeeID': animRef = employeeIDBorderAnim; break;
+    case 'password': animRef = passwordBorderAnim; break;
+    case 'confirmPassword': animRef = confirmPasswordBorderAnim; break;
+  }
+
+  if (animRef) {
+    Animated.timing(animRef, {
+      toValue,
+      duration: 200,
+      useNativeDriver: false,
+    }).start();
+  }
+};
+
+
+const nameBorderColor = nameBorderAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['#ccc', '#395a7f']
+});
 
 const emailBorderColor = emailBorderAnim.interpolate({
   inputRange: [0, 1],
-  outputRange: ['#ccc', '#395a7f'] // normal → focused
+  outputRange: ['#ccc', '#395a7f']
+});
+
+const employeeIDBorderColor = employeeIDBorderAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['#ccc', '#395a7f']
 });
 
 const passwordBorderColor = passwordBorderAnim.interpolate({
   inputRange: [0, 1],
   outputRange: ['#ccc', '#395a7f']
 });
+
+const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
+  inputRange: [0, 1],
+  outputRange: ['#ccc', '#395a7f']
+});
+
 
 
   const jobOptions = ['Dean', 'Laboratory Custodian', 'Faculty'];
@@ -422,7 +464,9 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
           </TouchableOpacity>
 
 
-          <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#395a7f'}}>
+          <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#395a7f'}}
+          onPress={() => {setIsLoginSignup(true), setIsSignup(true)}}
+          >
             <Text style={{textAlign: 'center', color: '#395a7f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
           </TouchableOpacity>
         </View>
@@ -457,34 +501,47 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
             && (
               
               
-              <View >
-                
+              <View style={[styles.inner, {padding: 20}]}>
+                <View style={{alignItems: 'center', paddingTop: 30, paddingBottom: 25, borderBottomWidth: 2, marginBottom: 25, borderColor: '#395a7f'}}>
+                  <Text style={{textAlign: 'center', color: 'black', fontSize: 28, fontWeight: 700}}>Signing Up</Text>
+                </View>
+
                 <Text style={styles.label}>Full Name:<Text style={{color:'red'}}>*</Text></Text>
+              <Animated.View style={[styles.animatedInputContainer, { borderColor: nameBorderColor, width: '100%' }]}>
                 <Input
                   placeholder="Enter Full Name"
                   value={name}
                   onChangeText={setName}
                   mode="outlined"
-                  inputStyle={styles.inputText}
-                  inputContainerStyle={styles.inputContainer}
+                  onFocus={() => handleFocus('name')}
+                onBlur={() => handleBlur('name')}
+                inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
+                inputStyle={styles.inputText}
                 />
+              </Animated.View>
                 
                 <Text style={styles.label}>Email:<Text style={{color:'red'}}>*</Text></Text>
+              <Animated.View style={[styles.animatedInputContainer, { borderColor: emailBorderColor, width: '100%' }]}>
                 <Input
                   placeholder="Enter Email Address (NU account)"
                   value={signUpEmail}
                   onChangeText={setSignUpEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  inputStyle={styles.inputText}
-                  inputContainerStyle={styles.inputContainer2}
+                   onFocus={() => handleFocus('email')}
+                onBlur={() => handleBlur('email')}
+                  inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
+                inputStyle={styles.inputText}
                 />
                 {signUpEmail.length > 0 && !signUpEmail.includes('@') ? (
                 <HelperText type="error" style={{ marginTop: '-25', marginBottom: '10'}}>Enter a valid email address.</HelperText>
                     ) : null}
+              </Animated.View>
 
 
                 <Text style={styles.label}>Employee ID:<Text style={{color:'red'}}>*</Text></Text>
+
+                <Animated.View style={[styles.animatedInputContainer, { borderColor: employeeIDBorderColor, width: '100%' }]}>
                 <Input
                   placeholder="e.g., 30-0912"
                   value={employeeID}
@@ -498,12 +555,16 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
                   }}
                   keyboardType="numeric"
                   maxLength={7}
-                  mode="outlined"
-                  inputStyle={styles.inputText}
-                  inputContainerStyle={styles.inputContainer}
+                  mode="outlined"s
+                  onFocus={() => handleFocus('employeeID')}
+                onBlur={() => handleBlur('employeeID')}
+                  inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
+                inputStyle={styles.inputText}
                 />
+                </Animated.View>
 
                 {/* Job Title Menu */}
+              <Text style={styles.label}>Select Job Title/Department<Text style={{color:'red'}}>*</Text></Text>
               <View style={styles.menucontainer}>
               <Menu
                 visible={jobMenuVisible}
@@ -515,17 +576,21 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
                   mode="outlined"
                   onPress={() => setJobMenuVisible(true)}
                     style={{
-                    borderWidth: 1,
-                    borderColor: '#9CA3AF',
+                    borderWidth: 2,
+                    borderColor: '#395a7f',
                     borderRadius: 8,
                     marginBottom: 10,
+                    height: 50,
+                    justifyContent: 'center',
+                    backgroundColor: '#6e9fc1',
+                    maxWidth: 140
                   }}
                   labelStyle={{
                     fontSize: 14,
-                    color: '#1F2937', // Darker text
+                    color: '#fff', // Darker text
                   }}
                 >
-                  {jobTitle || 'Select Job Title'}
+                  {jobTitle || 'Job Title'}
                 </Button>
                 
                 }
@@ -541,21 +606,25 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
                 anchor={
                   <Button mode="outlined" onPress={() => setDeptMenuVisible(true)} 
                   style={{
-                    borderWidth: 1,
-                    borderColor: '#9CA3AF',
+                    borderWidth: 2,
+                    borderColor: '#395a7f',
                     borderRadius: 8,
                     marginBottom: 10,
+                    height: 50,
+                    justifyContent: 'center',
+                    backgroundColor: '#6e9fc1',
+                    maxWidth: 140
                   }}
                   labelStyle={{
                     fontSize: 14,
-                    color: '#1F2937', // Darker text
+                    color: '#fff', // Darker text
                   }}>
-                    {department || 'Select Department'}
+                    {department || 'Department'}
                   </Button>
                 }
               >
                 {deptOptions.map(option => (
-                  <Menu.Item key={option} onPress={() => { setDepartment(option); setDeptMenuVisible(false); }} title={option} />
+                  <Menu.Item key={option} onPress={() => { setDepartment(option); setDeptMenuVisible(false); }} title={option}/>
                 ))}
               </Menu>
               </View>
@@ -563,11 +632,9 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
 
                 {/* Password Inputs */}
                 <Text style={styles.label}>Password:<Text style={{color:'red'}}>*</Text></Text>
-                
+                  <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%' }]}>
                 <Input
                   placeholder="Password"
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
                   leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
                   rightIcon={
                     <Icon
@@ -580,31 +647,37 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
                   value={signUpPassword}
                   onChangeText={setSignUpPassword}
                   secureTextEntry={secureTextEntry}
-                  inputContainerStyle={styles.inputContainer}
-                  inputStyle={styles.inputText}
+                  onFocus={() => handleFocus('password')}
+                onBlur={() => handleBlur('password')}
+                  inputContainerStyle={[styles.inputContainer]} // removes underline
+                inputStyle={styles.inputText}
                 />
+                </Animated.View>
 
 
                 <Text style={styles.label}>Confirm Password:<Text style={{color:'red'}}>*</Text></Text>
                 
-
+                 <Animated.View style={[styles.animatedInputContainer, { borderColor: confirmPasswordBorderColor, width: '100%' }]}>
                 <Input
-                  placeholder="Password"
+                  placeholder="confirm password"
                   leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
                   rightIcon={
                     <Icon
                       type="material"
-                      name={showPassword ? 'visibility' : 'visibility-off'}
+                      name={secureTextEntry ? 'visibility' : 'visibility-off'}
                       color="#9CA3AF"
-                      
+                      onPress={() => setSecureTextEntry(!secureTextEntry)}
                     />
                   }
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                   secureTextEntry={secureTextEntry}
-                  inputContainerStyle={styles.inputContainer}
-                  inputStyle={styles.inputText}
+                 onFocus={() => handleFocus('confirmPassword')}
+                  onBlur={() => handleBlur('confirmPassword')}
+                  inputContainerStyle={[styles.inputContainer]} // removes underline
+                inputStyle={styles.inputText}
                 />
+                </Animated.View>
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                   <Checkbox
@@ -617,11 +690,34 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
                     </Text>
                   </TouchableOpacity>
 
+                    
+                  
+
                   <TermsModal
                     visible={isTermsModalVisible}
                     onClose={() => setTermsModalVisible(false)}
                   />
                 </View>
+
+                <CustomButton
+                    title={isSignup ? "Sign Up" : "Login"}
+                    onPress={isSignup ? handleSignup : handleLogin}
+                    icon={isSignup ? "account-plus" : "login"}
+                    loading={loading}
+                    disabled={isSignup && !agreedToTerms}
+                    style={[
+                      styles.loginButton,
+                      !agreedToTerms && { backgroundColor: '#ccc' }, // Grey out when disabled
+                    ]}
+                    labelStyle={styles.loginButtonText}
+                  />
+                  <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
+              <Text style={styles.footerText}>
+                {isSignup
+                  ? "Already have an account? Login"
+                  : `Don't have an account? Sign Up`}
+              </Text>
+            </TouchableOpacity>
              
               </View>
             )}
@@ -714,10 +810,6 @@ const passwordBorderColor = passwordBorderAnim.interpolate({
             )}
 
       
-
-
-
-
 
 
 
