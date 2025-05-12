@@ -3,8 +3,9 @@ import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
-import { collection, query, where, getDocs, doc, updateDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
+import { useAuth } from '../contexts/AuthContext';
 import styles from "../styles/adminStyle/CameraStyle";
 import CONFIG from "../config";
 
@@ -13,6 +14,7 @@ const frameSize = width * 0.7;
 const SECRET_KEY = CONFIG.SECRET_KEY;
 
 const CameraScreen = ({ onClose, selectedItem }) => {
+  const { user } = useAuth();
   const [cameraType, setCameraType] = useState("back");
   const [scanned, setScanned] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
@@ -81,6 +83,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
         userName,
         timestamp: serverTimestamp(),
       });
+
     } catch (error) {
       console.error("Error logging request or return activity:", error);
     }
@@ -190,7 +193,13 @@ const CameraScreen = ({ onClose, selectedItem }) => {
           });
 
           Alert.alert("Item Deployed", detailsMessage);
-          // await logRequestOrReturn(user.id, user.name, `Deployed ${itemName} for ${detail.borrower}`);
+
+          const firstDetail = borrowedItemsDetails[0];
+          await logRequestOrReturn(
+            user.id,
+            user.name || "Unknown",
+            `Deployed "${itemName}" to ${firstDetail.borrower} in ${selectedItem.labRoom}`
+          );
 
         } else if (alreadyDeployed) {
           Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
@@ -208,7 +217,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
       }
       
     } catch (error) {
-      Alert.alert("Error", "Invalid or unauthorized QR Code.");
+      // Alert.alert("Error", "Invalid or unauthorized QR Code.");
     }
 
     setTimeout(() => setScanned(false), 1500);
