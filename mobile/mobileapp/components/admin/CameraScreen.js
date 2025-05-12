@@ -12,7 +12,7 @@ const { width, height } = Dimensions.get("window");
 const frameSize = width * 0.7;
 const SECRET_KEY = CONFIG.SECRET_KEY;
 
-const CameraScreen = ({ onClose }) => {
+const CameraScreen = ({ onClose, selectedItem }) => {
   const [cameraType, setCameraType] = useState("back");
   const [scanned, setScanned] = useState(false);
   const [permission, requestPermission] = useCameraPermissions();
@@ -74,6 +74,18 @@ const CameraScreen = ({ onClose }) => {
     onClose(); // Call onClose to reset the state and go back
   };
 
+  const logRequestOrReturn = async (userId, userName, action) => {
+    try {
+      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+        action, // e.g., "Added a Capex Item", "Requested Items", etc.
+        userName,
+        timestamp: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error logging request or return activity:", error);
+    }
+  };
+
   const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
 
@@ -100,7 +112,15 @@ const CameraScreen = ({ onClose }) => {
       if (!querySnapshot.empty) {
         for (const docSnap of querySnapshot.docs) {
           const data = docSnap.data();
-          const borrowedItem = data.requestList.find((item) => item.itemName === itemName);
+          // const borrowedItem = data.requestList.find((item) => item.itemName === itemName);
+          const borrowedItem = data.requestList.find(
+            (item) =>
+              item.itemName === itemName &&
+              item.selectedItemId === selectedItem.selectedItemId &&
+              item.labRoom === selectedItem.labRoom &&
+              item.quantity === selectedItem.quantity &&
+              item.program === selectedItem.program
+          );
 
           if (borrowedItem) {
             found = true;
@@ -170,6 +190,7 @@ const CameraScreen = ({ onClose }) => {
           });
 
           Alert.alert("Item Deployed", detailsMessage);
+          // await logRequestOrReturn(user.id, user.name, `Deployed ${itemName} for ${detail.borrower}`);
 
         } else if (alreadyDeployed) {
           Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);

@@ -21,31 +21,6 @@ const RequestedItemsScreen = ({ route, navigation }) => {
   const [showScanner, setShowScanner] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
-  // useEffect(() => {
-  //   const fetchRequestedItems = async () => {
-  //     const todayDate = getTodayDate();
-  //     const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
-  //     const querySnapshot = await getDocs(q);
-  //     const itemsData = [];
-
-  //     querySnapshot.forEach((doc) => {
-  //       const data = doc.data();
-  //       if (data.userName === userName && data.requestList) {
-  //         // Check if the status of the whole request is 'Deployed'
-  //         const isDeployed = data.status === "Deployed"; 
-
-  //         data.requestList.forEach((item) => {
-  //           itemsData.push({ ...item, isDeployed });
-  //         });
-  //       }
-  //     });
-
-  //     setRequestedItems(itemsData);
-  //   };
-
-  //   fetchRequestedItems();
-  // }, [userName]);
-
   useEffect(() => {
   const todayDate = getTodayDate();
   const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
@@ -97,12 +72,12 @@ const RequestedItemsScreen = ({ route, navigation }) => {
     <View style={styles.container}>
       <Header />
       
-      {showScanner ? (
-        <CameraScreen
-          item={selectedItem}
-          onClose={handleCloseScanner}
-        />
-      ) : (
+      {showScanner && selectedItem ? (
+          <CameraScreen
+            selectedItem={selectedItem}
+            onClose={handleCloseScanner}
+          />
+        ) : (
         <>
           <Text style={styles.title}>Requested Items for {userName}</Text>
           <FlatList
