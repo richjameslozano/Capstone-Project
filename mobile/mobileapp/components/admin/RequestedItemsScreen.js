@@ -1,6 +1,7 @@
+
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
-import { collection, query, where, getDocs } from "firebase/firestore";
+import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import CameraScreen from "./CameraScreen";
 import styles from "../styles/adminStyle/RequestedItemsStyle";
@@ -20,27 +21,67 @@ const RequestedItemsScreen = ({ route, navigation }) => {
   const [showScanner, setShowScanner] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // useEffect(() => {
+  //   const fetchRequestedItems = async () => {
+  //     const todayDate = getTodayDate();
+  //     const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
+  //     const querySnapshot = await getDocs(q);
+  //     const itemsData = [];
+
+  //     querySnapshot.forEach((doc) => {
+  //       const data = doc.data();
+  //       if (data.userName === userName && data.requestList) {
+  //         // Check if the status of the whole request is 'Deployed'
+  //         const isDeployed = data.status === "Deployed"; 
+
+  //         data.requestList.forEach((item) => {
+  //           itemsData.push({ ...item, isDeployed });
+  //         });
+  //       }
+  //     });
+
+  //     setRequestedItems(itemsData);
+  //   };
+
+  //   fetchRequestedItems();
+  // }, [userName]);
+
   useEffect(() => {
-    const fetchRequestedItems = async () => {
-      const todayDate = getTodayDate();
-      const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
-      const querySnapshot = await getDocs(q);
-      const itemsData = [];
+  const todayDate = getTodayDate();
+  const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
 
-      querySnapshot.forEach((doc) => {
-        const data = doc.data();
-        if (data.userName === userName && data.requestList) {
-          data.requestList.forEach((item) => {
-            itemsData.push(item);
+  const unsubscribe = onSnapshot(q, (querySnapshot) => {
+    const itemsData = [];
+
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+
+      if (data.userName === userName && data.requestList) {
+        const isDeployed = data.status === "Deployed";
+
+        data.requestList.forEach((item, index) => {
+          itemsData.push({
+            ...item,
+            isDeployed,
+            requestId: docSnap.id,
+            requestIndex: index, // optional, helpful for debug
+            requestMeta: {
+              timeFrom: data.timeFrom,
+              timeTo: data.timeTo,
+              borrower: data.userName,
+              dateRequired: data.dateRequired,
+              status: data.status
+            }
           });
-        }
-      });
+        });
+      }
+    });
 
-      setRequestedItems(itemsData);
-    };
+    setRequestedItems(itemsData);
+  });
 
-    fetchRequestedItems();
-  }, [userName]);
+  return () => unsubscribe(); // Cleanup
+}, [userName]);
 
   const handleItemClick = (item) => {
     setSelectedItem(item);
@@ -49,12 +90,13 @@ const RequestedItemsScreen = ({ route, navigation }) => {
 
   const handleCloseScanner = () => {
     setShowScanner(false);
-    setSelectedItem(null);  // Reset selected item when scanner is closed
+    setSelectedItem(null);
   };
 
   return (
     <View style={styles.container}>
       <Header />
+      
       {showScanner ? (
         <CameraScreen
           item={selectedItem}
@@ -70,7 +112,9 @@ const RequestedItemsScreen = ({ route, navigation }) => {
                 style={styles.itemButton}
                 onPress={() => handleItemClick(item)}
               >
-                <Text style={styles.itemText}>{item.itemName}</Text>
+                <Text style={styles.itemText}>
+                  {item.itemName} {item.isDeployed ? "(Deployed)" : ""}
+                </Text>
               </TouchableOpacity>
             )}
             keyExtractor={(item, index) => `${item.itemName}-${index}`}

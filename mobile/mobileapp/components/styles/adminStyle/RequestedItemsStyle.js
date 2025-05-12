@@ -13,6 +13,7 @@ export default StyleSheet.create({
     marginBottom: 20,
     color: "#333",
     textAlign: "center",
+    marginTop: 100,
   },
 
   itemButton: {

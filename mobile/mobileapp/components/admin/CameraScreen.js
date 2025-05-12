@@ -122,7 +122,7 @@ const CameraScreen = ({ onClose }) => {
                   const newCount = (item.scannedCount || 0) + 1;
                   return {
                     ...item,
-                    status: "deployed",
+                    // status: "deployed",
                     scannedCount: newCount
                   };
                 }
