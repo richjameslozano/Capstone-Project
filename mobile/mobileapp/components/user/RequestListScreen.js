@@ -410,9 +410,10 @@ const RequestListScreen = ({navigation}) => {
                 <View style={styles.modalContainer}>
                   <Text style={styles.modalTitle}>Confirm Request</Text>
                   <Text style={styles.modalText}>Date Required: {confirmationData?.dateRequired}</Text>
-                  
-                  <Text>Start Time: {`${metadata.timeFrom?.hour}:${metadata.timeFrom?.minute} ${metadata.timeFrom?.period}`}</Text>
-                  <Text>End Time: {`${metadata.timeTo?.hour}:${metadata.timeTo?.minute} ${metadata.timeTo?.period}`}</Text>
+
+                  {/* Use the formatted time strings directly */}
+                  <Text>Start Time: {metadata.timeFrom}</Text>
+                  <Text>End Time: {metadata.timeTo}</Text>
 
                   <Text style={styles.modalText}>Program: {confirmationData?.program}</Text>
                   <Text style={styles.modalText}>Room: {confirmationData?.room}</Text>
@@ -457,18 +458,17 @@ const RequestListScreen = ({navigation}) => {
 
                         if (requestSuccess) {
                           console.log('Request successfully submitted. Closing modal.');
-                          alert('Request Submitted Succesfully!')
+                          alert('Request Submitted Successfully!');
                           setShowConfirmationModal(false); // Close the modal only if the request was successful
-                          navigation.goBack()
+                          navigation.goBack();
                         } else {
-                          alert('There was a problem in processing you request. Try again later.')
+                          alert('There was a problem processing your request. Try again later.');
                           console.log('Request submission failed. Not closing modal.');
                         }
                       }}
                     >
                       <Text style={styles.confirmButtonText}>Confirm</Text>
                     </TouchableOpacity>
-
                   </View>
                 </View>
               </TouchableWithoutFeedback>
