@@ -16,70 +16,7 @@ const BorrowCatalog = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-
-  // useEffect(() => {
-  //   const fetchCatalogData = async () => {
-  //     try {
-  //       const borrowCatalogCollection = collection(db, "borrowcatalog");
-  //       const borrowCatalogSnapshot = await getDocs(borrowCatalogCollection);
-  //       const catalogData = borrowCatalogSnapshot.docs.map((doc) => {
-  //         const data = doc.data();
-
-  //         const formatDate = (timestamp) => {
-  //           return timestamp instanceof Date ? timestamp.toLocaleDateString() : "N/A";
-  //         };          
-
-  //         const requestedItems = Array.isArray(data.requestList)
-  //           ? data.requestList.map((item) => ({
-  //               itemId: item.itemIdFromInventory,
-  //               itemName: item.itemName,
-  //               quantity: item.quantity,
-  //               category: item.category,
-  //               condition: item.condition,
-  //               department: item.department,
-  //               labRoom: item.labRoom,
-  //             }))
-  //           : [];
-
-  //         return {
-  //           id: doc.id,
-  //           timestamp: data.timestamp || null,
-  //           requestor: data.userName || "N/A",
-  //           userName: data.userName || "N/A",
-  //           approvedBy: data.approvedBy || "N/A",
-  //           formatDate,
-  //           reason: data.reason || "N/A",
-  //           dateRequired: data.dateRequired || "N/A",
-  //           timeFrom: data.timeFrom || "N/A",
-  //           timeTo: data.timeTo || "N/A",
-  //           courseDescription: data.courseDescription || "N/A",
-  //           courseCode: data.courseCode || "N/A",
-  //           program: data.program || "N/A",
-  //           room: data.room || "N/A",
-  //           requestList: Array.isArray(data.requestList) ? data.requestList : [],
-  //           requestedItems,
-  //           status: data.status || "Pending",
-  //         };
-  //       });
-
-  //       const sortedCatalogData = catalogData.sort((a, b) => {
-  //         if (a.timestamp && b.timestamp) {
-  //           const timeA = a.timestamp.seconds * 1000 + a.timestamp.nanoseconds / 1000000;
-  //           const timeB = b.timestamp.seconds * 1000 + b.timestamp.nanoseconds / 1000000;
-  //           return timeB - timeA;  // Sort by precise timestamp including nanoseconds, most recent first
-  //         }
-  //         return 0;
-  //       });
-
-  //       setCatalog(sortedCatalogData);
-
-  //     } catch (error) {
-  //       console.error("Error fetching borrow catalog:", error);
-  //     }
-  //   };
-
-  //   fetchCatalogData();
-  // }, []);
+  const [statusFilter, setStatusFilter] = useState("All");
 
   useEffect(() => {
     const fetchCatalogData = () => {
@@ -156,12 +93,21 @@ const BorrowCatalog = () => {
     setSearchQuery(value);
   };
 
-  const filteredCatalog = catalog.filter(
-    (item) =>
+  const handleStatusFilter = (status) => {
+    setStatusFilter(status);
+  };
+
+  const filteredCatalog = catalog.filter((item) => {
+    const matchesSearch =
       item.requestor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.courseDescription?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.dateRequired?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+      item.dateRequired?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === "All" || item.status === statusFilter;
+
+    return matchesSearch && matchesStatus;
+  });
 
   const columns = [
     {
@@ -268,9 +214,22 @@ const BorrowCatalog = () => {
                 onSearch={handleSearch}
               />
             </Col>
+            
             <Col>
-              <Button type="default" onClick={() => setSearchQuery("")}>
+              <Button type={statusFilter === "All" ? "primary" : "default"} onClick={() => handleStatusFilter("All")}>
                 All
+              </Button>
+              <Button type={statusFilter === "Borrowed" ? "primary" : "default"} onClick={() => handleStatusFilter("Borrowed")}>
+                Borrowed
+              </Button>
+              <Button type={statusFilter === "Returned" ? "primary" : "default"} onClick={() => handleStatusFilter("Returned")}>
+                Returned
+              </Button>
+              <Button type={statusFilter === "Approved" ? "primary" : "default"} onClick={() => handleStatusFilter("Approved")}>
+                Approved
+              </Button>
+              <Button type={statusFilter === "Deployed" ? "primary" : "default"} onClick={() => handleStatusFilter("Deployed")}>
+                Deployed
               </Button>
             </Col>
           </Row>
