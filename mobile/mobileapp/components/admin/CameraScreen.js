@@ -140,17 +140,38 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             //   });
 
             if (currentStatus === "borrowed") {
-              const updatedRequestList = data.requestList.map((item) => {
-                if (item.itemName === itemName) {
-                  const newCount = (item.scannedCount || 0) + 1;
-                  return {
-                    ...item,
-                    // status: "deployed",
-                    scannedCount: newCount
-                  };
-                }
-                return item;
-              });
+              // const updatedRequestList = data.requestList.map((item) => {
+              //   if (item.itemName === itemName) {
+              //     const newCount = (item.scannedCount || 0) + 1;
+              //     return {
+              //       ...item,
+              //       // status: "deployed",
+              //       scannedCount: newCount
+              //     };
+              //   }
+              //   return item;
+              // });
+
+                const updatedRequestList = data.requestList.map((item) => {
+                  if (item.itemName === itemName) {
+                    const currentCount = item.scannedCount || 0;
+                    const maxCount = item.quantity || 1;
+
+                    // Only increment if under the allowed quantity
+                    if (currentCount < maxCount) {
+                      return {
+                        ...item,
+                        scannedCount: currentCount + 1,
+                      };
+                    } else {
+                      // Optional: Alert or handle over-scan here
+                      console.warn("Scan limit reached for", item.itemName);
+                      message.warning(`Maximum scans reached for "${item.itemName}".`);
+                      return item;
+                    }
+                  }
+                  return item;
+                }); 
 
               // await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
               //   requestList: updatedRequestList,
