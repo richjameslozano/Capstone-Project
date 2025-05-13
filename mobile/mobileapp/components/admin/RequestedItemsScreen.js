@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
@@ -31,15 +30,36 @@ const RequestedItemsScreen = ({ route, navigation }) => {
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
 
-      if (data.userName === userName && data.requestList) {
-        const isDeployed = data.status === "Deployed";
+      // if (data.userName === userName && data.requestList) {
+      //   const isDeployed = data.status === "Deployed";
 
+      //   data.requestList.forEach((item, index) => {
+      //     itemsData.push({
+      //       ...item,
+      //       isDeployed,
+      //       requestId: docSnap.id,
+      //       requestIndex: index, // optional, helpful for debug
+      //       requestMeta: {
+      //         timeFrom: data.timeFrom,
+      //         timeTo: data.timeTo,
+      //         borrower: data.userName,
+      //         dateRequired: data.dateRequired,
+      //         status: data.status
+      //       }
+      //     });
+      //   });
+      // }
+      if (
+        data.userName === userName &&
+        data.requestList &&
+        (data.status === "Deployed" || data.status === "Returned")
+      ) {
         data.requestList.forEach((item, index) => {
           itemsData.push({
             ...item,
-            isDeployed,
             requestId: docSnap.id,
-            requestIndex: index, // optional, helpful for debug
+            requestIndex: index,
+            status: data.status, // Save actual status here
             requestMeta: {
               timeFrom: data.timeFrom,
               timeTo: data.timeTo,
@@ -50,6 +70,7 @@ const RequestedItemsScreen = ({ route, navigation }) => {
           });
         });
       }
+
     });
 
     setRequestedItems(itemsData);
@@ -88,7 +109,7 @@ const RequestedItemsScreen = ({ route, navigation }) => {
                 onPress={() => handleItemClick(item)}
               >
                 <Text style={styles.itemText}>
-                  {item.itemName} {item.isDeployed ? "(Deployed)" : ""}
+                  {item.itemName} {item.status ? `(${item.status})` : ""}
                 </Text>
               </TouchableOpacity>
             )}
