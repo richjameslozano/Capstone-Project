@@ -157,12 +157,7 @@ const RequestLogScreen = () => {
     setSelectedLog(log.fullData);
     setModalVisible(true);
   };
-  const [headerHeight, setHeaderHeight] = useState(0);
-  
-  const handleHeaderLayout = (event) => {
-    const { height } = event.nativeEvent.layout;
-    setHeaderHeight(height);
-  };
+
   return (
     <View style={styles.container}>
       <Header onLayout={handleHeaderLayout} />
@@ -178,10 +173,9 @@ const RequestLogScreen = () => {
 
       {/* Table Header */}
       <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
-        <Text style={[styles.tableHeaderText, { flex: 2 }]}>Date</Text>
-        <Text style={[styles.tableHeaderText, { flex: 2 }]}>Time</Text>
-        <Text style={[styles.tableHeaderText, { flex: 3 }]}>Action</Text>
-        <Text style={[styles.tableHeaderText, { flex: 3 }]}>Reviewed by</Text>
+        <Text style={[styles.tableHeaderText, { flex: 1 }]}>Date</Text>
+        <Text style={[styles.tableHeaderText, { flex: 1 }]}>Action</Text>
+        <Text style={[styles.tableHeaderText, { flex: 1 }]}>By</Text>
       </View>
 
       <ScrollView style={styles.content}>
@@ -191,10 +185,10 @@ const RequestLogScreen = () => {
             onPress={() => handleRowPress(log)}
             style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}
           >
-            <View style={{ flexDirection: 'row', }}>
-              <Text style={[styles.tableCell, { flex: 3}]}>{log.date}</Text>
-              <Text style={[styles.tableCell, { flex: 3 }]}>{log.action}</Text>
-              <Text style={[styles.tableCell, { flex: 2 }]}>{log.by}</Text>
+            <View style={{ flexDirection: 'row' }}>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{log.date}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{log.action}</Text>
+              <Text style={[styles.tableCell, { flex: 1 }]}>{log.by}</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -210,17 +204,17 @@ const RequestLogScreen = () => {
       </Text>
 
       <ScrollView style={{ maxHeight: 400, width: '100%' }}>
-        <Text style={styles.modalText}>By:                      {selectedLog?.userName || 'Unknown User'}</Text>
-        <Text style={styles.modalText}>Program:           {selectedLog?.program || 'N/A'}</Text>
-        <Text style={styles.modalText}>Reason:            {selectedLog?.reason || 'N/A'}</Text>
-        <Text style={styles.modalText}>Room:               {selectedLog?.room || 'N/A'}</Text>
+        <Text style={styles.modalText}>By: {selectedLog?.userName || 'Unknown User'}</Text>
+        <Text style={styles.modalText}>Program: {selectedLog?.program || 'N/A'}</Text>
+        <Text style={styles.modalText}>Reason: {selectedLog?.reason || 'N/A'}</Text>
+        <Text style={styles.modalText}>Room: {selectedLog?.room || 'N/A'}</Text>
         <Text style={styles.modalText}>
-          Time:               {' '}
+          Time:{' '}
           {selectedLog?.timeFrom && selectedLog?.timeTo
             ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
             : 'N/A'}
         </Text>
-        <Text style={styles.modalText}>Date Needed:  {selectedLog?.dateRequired || 'N/A'}</Text>
+        <Text style={styles.modalText}>Date Required: {selectedLog?.dateRequired || 'N/A'}</Text>
 
         <Text style={[styles.modalText, { fontWeight: 'bold', marginTop: 10 }]}>Items:</Text>
 
@@ -229,9 +223,8 @@ const RequestLogScreen = () => {
             <View style={[styles.tableHeader, { flexDirection: 'row', borderTopLeftRadius: 5, borderTopRightRadius: 5 }]}>
               <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item</Text>
               <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
-              <Text style={[styles.tableHeaderText, { flex: 2 }]}>Status</Text>
-              <Text style={[styles.tableHeaderText, { flex: 2 }]}>Category</Text>
-              <Text style={[styles.tableHeaderText, { flex: 2 }]}>Condition</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text>
             </View>
 
             {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
@@ -239,14 +232,13 @@ const RequestLogScreen = () => {
                 key={index}
                 style={[
                   index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
-                  { flexDirection: 'row', paddingVertical: 5, paddingHorizontal:2 },
+                  { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 4 },
                 ]}
               >
-                <Text style={[styles.tableCell, { flex: 2.4 }]}>{item.itemName}</Text>
+                <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemName}</Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
-                <Text style={[styles.tableCell, { flex: 2 }]}>{item.status}</Text>
-                <Text style={[styles.tableCell, { flex: 2.2 }]}>{item.category || '—'}</Text>
-                <Text style={[styles.tableCell, { flex: 2 }]}>{item.condition || '—'}</Text>
+                <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
+                <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text>
               </View>
             ))}
           </View>
@@ -261,7 +253,7 @@ const RequestLogScreen = () => {
     </View>
   </View>
 </Modal>
-</View>
+
     </View>
   );
 };

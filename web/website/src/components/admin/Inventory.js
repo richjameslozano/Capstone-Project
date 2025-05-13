@@ -20,7 +20,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -65,37 +65,41 @@ const Inventory = () => {
   const db = getFirestore();
 
   useEffect(() => {
-    const fetchInventory = async () => {
+    const inventoryRef = collection(db, "inventory");
+
+    const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
       try {
-        const snapshot = await getDocs(collection(db, "inventory"));
-        console.log(snapshot);
-        const items = snapshot.docs.map((doc, index) => {
-          const data = doc.data();
-  
-          const entryDate = data.entryDate ? data.entryDate : "N/A"; 
-          const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
-        
-  
-          return {
-            id: index + 1,
-            itemId: data.itemId,
-            item: data.itemName,
-            entryDate,
-            expiryDate,
-            qrCode: data.qrCode,
-            ...data,
-          };
-        });
-  
-        setDataSource(items);  
+        const items = snapshot.docs
+          .map((doc, index) => {
+            const data = doc.data();
+
+            const entryDate = data.entryDate ? data.entryDate : "N/A";
+            const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
+
+            return {
+              id: index + 1,
+              itemId: data.itemId,
+              item: data.itemName,
+              entryDate,
+              expiryDate,
+              qrCode: data.qrCode,
+              ...data,
+            };
+          })
+          .sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+
+        setDataSource(items);
         setCount(items.length);
+        
       } catch (error) {
-        console.error("Error fetching inventory:", error);
+        console.error("Error processing inventory snapshot: ", error);
       }
-    };
-  
-    fetchInventory();
-  }, []);  
+    }, (error) => {
+      console.error("Error fetching inventory with onSnapshot: ", error);
+    });
+
+    return () => unsubscribe(); // Clean up the listener on unmount
+  }, []);
 
   const filteredData = dataSource.filter((item) => {
     const matchesSearch = searchText

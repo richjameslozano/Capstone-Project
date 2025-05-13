@@ -13,33 +13,70 @@ const CustomCalendar = ({ onSelectDate }) => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterProgram, setFilterProgram] = useState("all");
 
+  // useEffect(() => {
+  //   const unsubscribe = onSnapshot(
+  //     collection(db, "borrowcatalog"),
+  //     (querySnapshot) => {
+  //       const requests = [];
+
+  //       querySnapshot.forEach((doc) => {
+  //         const data = doc.data();
+  //         if (Array.isArray(data.requestList)) {
+  //           data.requestList.forEach((item) => {
+  //             requests.push({
+  //               date: data.dateRequired,
+  //               title: item.itemName || "Request",
+  //               userName: data.userName || "N/A",
+  //               department: item.department || "N/A",
+  //               room: data.room || "N/A",
+  //               status: data.status || "N/A",
+  //               quantity: item.quantity || "N/A",
+  //               condition: item.condition || "N/A",
+  //               approvedBy: data.approvedBy || "N/A",
+  //               program: data.program || "N/A", 
+  //             });
+  //           });
+  //         }
+  //       });
+
+  //       setApprovedRequests(requests);
+  //     },
+  //     (error) => {
+  //       console.error("Error in real-time listener:", error);
+  //     }
+  //   );
+
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "borrowcatalog"),
       (querySnapshot) => {
-        const requests = [];
+        const groupedRequests = {};
 
         querySnapshot.forEach((doc) => {
           const data = doc.data();
+          const key = `${data.userName}-${data.dateRequired}`;
+
+          if (!groupedRequests[key]) {
+            groupedRequests[key] = {
+              date: data.dateRequired,
+              userName: data.userName || "N/A",
+              room: data.room || "N/A",
+              status: data.status || "N/A",
+              approvedBy: data.approvedBy || "N/A",
+              program: data.program || "N/A",
+              requestList: [], // holds all items requested by this user on this date
+            };
+          }
+
           if (Array.isArray(data.requestList)) {
-            data.requestList.forEach((item) => {
-              requests.push({
-                date: data.dateRequired,
-                title: item.itemName || "Request",
-                userName: data.userName || "N/A",
-                department: item.department || "N/A",
-                room: data.room || "N/A",
-                status: data.status || "N/A",
-                quantity: item.quantity || "N/A",
-                condition: item.condition || "N/A",
-                approvedBy: data.approvedBy || "N/A",
-                program: data.program || "N/A", 
-              });
-            });
+            groupedRequests[key].requestList.push(...data.requestList);
           }
         });
 
-        setApprovedRequests(requests);
+        setApprovedRequests(Object.values(groupedRequests));
       },
       (error) => {
         console.error("Error in real-time listener:", error);
@@ -50,9 +87,9 @@ const CustomCalendar = ({ onSelectDate }) => {
   }, []);
 
   useEffect(() => {
-  console.log("Filter program:", filterProgram);
-  console.log("Filtered requests:", filteredApprovedRequests);
-}, [filterStatus, filterProgram, approvedRequests]);
+    console.log("Filter program:", filterProgram);
+    console.log("Filtered requests:", filteredApprovedRequests);
+  }, [filterStatus, filterProgram, approvedRequests]);
 
 
   const filteredApprovedRequests = approvedRequests.filter((item) => {
@@ -66,6 +103,26 @@ const CustomCalendar = ({ onSelectDate }) => {
     return statusMatches && programMatches;
   });
 
+  // const getListData = (value) => {
+  //   const dateStr = value.format("YYYY-MM-DD");
+  //   return filteredApprovedRequests
+  //     .filter((item) => item.date === dateStr)
+  //     .map((item) => {
+  //       const status = item.status?.toLowerCase().trim();
+  //       let type = "default";
+
+  //       if (status === "borrowed") type = "warning";
+  //       else if (status === "deployed") type = "processing";
+  //       else if (status === "returned") type = "error";
+  //       else if (status === "approved") type = "success";
+
+  //       return {
+  //         type,
+  //         content: `${item.title}`,
+  //       };
+  //     });
+  // };
+
   const getListData = (value) => {
     const dateStr = value.format("YYYY-MM-DD");
     return filteredApprovedRequests
@@ -74,7 +131,6 @@ const CustomCalendar = ({ onSelectDate }) => {
         const status = item.status?.toLowerCase().trim();
         let type = "default";
 
-        // Mapping the status to Badge type
         if (status === "borrowed") type = "warning";
         else if (status === "deployed") type = "processing";
         else if (status === "returned") type = "error";
@@ -82,7 +138,7 @@ const CustomCalendar = ({ onSelectDate }) => {
 
         return {
           type,
-          content: `${item.title}`,
+          content: `${item.userName}`,
         };
       });
   };
@@ -160,17 +216,31 @@ const CustomCalendar = ({ onSelectDate }) => {
             renderItem={(item, index) => (
               <List.Item key={index}>
                 <div style={{ marginBottom: 8, fontWeight: "bold", color: "#1890ff" }}>
-                  Status: {item.status}
+                  Requested By: {item.userName} | Status: {item.status}
                 </div>
                 <Descriptions column={2} bordered size="small">
-                  <Descriptions.Item label="Item Name">{item.title}</Descriptions.Item>
-                  <Descriptions.Item label="Quantity">{item.quantity}</Descriptions.Item>
-                  <Descriptions.Item label="Condition">{item.condition}</Descriptions.Item>
                   <Descriptions.Item label="Room">{item.room}</Descriptions.Item>
-                  <Descriptions.Item label="Department">{item.department}</Descriptions.Item>
+                  <Descriptions.Item label="Department">
+                    {item.requestList[0]?.department || "N/A"}
+                  </Descriptions.Item>
                   <Descriptions.Item label="Approved By">{item.approvedBy}</Descriptions.Item>
-                  <Descriptions.Item label="Requested By">{item.userName}</Descriptions.Item>
+                  <Descriptions.Item label="Program">{item.program}</Descriptions.Item>
                 </Descriptions>
+                <div style={{ marginTop: 12 }}>
+                  <b>Requested Items:</b>
+                  <List
+                    dataSource={item.requestList}
+                    renderItem={(reqItem, reqIdx) => (
+                      <List.Item key={reqIdx}>
+                        <Descriptions column={3} size="small" bordered>
+                          <Descriptions.Item label="Item Name">{reqItem.itemName}</Descriptions.Item>
+                          <Descriptions.Item label="Quantity">{reqItem.quantity}</Descriptions.Item>
+                          <Descriptions.Item label="Condition">{reqItem.condition}</Descriptions.Item>
+                        </Descriptions>
+                      </List.Item>
+                    )}
+                  />
+                </div>
               </List.Item>
             )}
           />

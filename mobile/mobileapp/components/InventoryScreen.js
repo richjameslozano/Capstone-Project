@@ -285,16 +285,27 @@ export default function InventoryScreen({ navigation }) {
 
   const formatTime = ({ hour, minute, period }) => `${hour}:${minute} ${period}`;
 
+  // const convertTo24Hour = ({ hour, minute, period }) => {
+  //   let hours = parseInt(hour);
+  //   if (period === 'PM' && hours !== 12) hours += 12;
+  //   if (period === 'AM' && hours === 12) hours = 0;
+  
+  //   // Format to HH:mm (24-hour format)
+  //   const formattedHour = hours.toString().padStart(2, '0'); // Add leading zero if necessary
+  //   const formattedMinute = minute.toString().padStart(2, '0'); // Add leading zero if necessary
+  //   return `${formattedHour}:${formattedMinute}`;
+  // };  
+
   const convertTo24Hour = ({ hour, minute, period }) => {
     let hours = parseInt(hour);
     if (period === 'PM' && hours !== 12) hours += 12;
     if (period === 'AM' && hours === 12) hours = 0;
-  
+
     // Format to HH:mm (24-hour format)
     const formattedHour = hours.toString().padStart(2, '0'); // Add leading zero if necessary
     const formattedMinute = minute.toString().padStart(2, '0'); // Add leading zero if necessary
-    return `${formattedHour}:${formattedMinute}`;
-  };  
+    return `${formattedHour}:${formattedMinute}`; // Return as HH:mm
+  };
 
   const openTimePicker = (type) => {
     setTimePickerType(type);
@@ -302,26 +313,24 @@ export default function InventoryScreen({ navigation }) {
   };
   
   const handleStartTimeSelect = (startTime) => {
-    // Save the selected start time
-    setSelectedStartTime(startTime);
-  
     // Convert to 24-hour format and save to metadata
+    const formattedStartTime = convertTo24Hour(startTime);
+
     setMetadata((prevMetadata) => ({
       ...prevMetadata,
-      timeFrom: convertTo24Hour(startTime), // Convert to 24-hour format and save
+      timeFrom: formattedStartTime, // Save as string like "04:04"
     }));
   };
-  
+
   const handleEndTimeSelect = (endTime) => {
-    // Save the selected end time
-    setSelectedEndTime(endTime);
-  
     // Convert to 24-hour format and save to metadata
+    const formattedEndTime = convertTo24Hour(endTime);
+
     setMetadata((prevMetadata) => ({
       ...prevMetadata,
-      timeTo: convertTo24Hour(endTime), // Convert to 24-hour format and save
+      timeTo: formattedEndTime, // Save as string like "07:07"
     }));
-  };  
+  };
 
   const [errors, setErrors] = useState({
     date: false,

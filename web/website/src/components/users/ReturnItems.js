@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Table, Button, Modal, Typography, Row, Col, Select } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
-import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc, onSnapshot, query, where } from "firebase/firestore";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/adminStyle/RequestLog.css";
@@ -20,14 +20,16 @@ const ReturnItems = () => {
   const [itemConditions, setItemConditions] = useState({});
 
   useEffect(() => {
-    const fetchRequestLogs = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      console.error("User ID not found");
+      return;
+    }
+
+    const userRequestLogRef = collection(db, `accounts/${userId}/userrequestlog`);
+
+    const unsubscribe = onSnapshot(userRequestLogRef, (querySnapshot) => {
       try {
-        const userId = localStorage.getItem("userId");
-        if (!userId) throw new Error("User ID not found");
-
-        const userRequestLogRef = collection(db, `accounts/${userId}/userrequestlog`);
-        const querySnapshot = await getDocs(userRequestLogRef);
-
         const logs = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           const rawTimestamp = data.rawTimestamp;
@@ -41,6 +43,7 @@ const ReturnItems = () => {
               parsedRawTimestamp = rawTimestamp.toDate().toLocaleString("en-PH", {
                 timeZone: "Asia/Manila",
               });
+
             } catch (e) {
               console.warn(`Error formatting rawTimestamp for doc ${doc.id}:`, e);
             }
@@ -51,6 +54,7 @@ const ReturnItems = () => {
               parsedTimestamp = timestamp.toDate().toLocaleString("en-PH", {
                 timeZone: "Asia/Manila",
               });
+
             } catch (e) {
               console.warn(`Error formatting timestamp for doc ${doc.id}:`, e);
             }
@@ -70,7 +74,7 @@ const ReturnItems = () => {
             approvedBy: data.approvedBy ?? "N/A",
             rawTimestamp: rawTimestamp ?? null,
             processDate: parsedRawTimestamp,
-            timestamp: parsedTimestamp, 
+            timestamp: parsedTimestamp,
             raw: data,
           };
         });
@@ -85,11 +89,14 @@ const ReturnItems = () => {
         setHistoryData(logs);
 
       } catch (error) {
-        console.error("Error fetching request logs: ", error);
+        console.error("Error processing request logs snapshot: ", error);
       }
-    };
 
-    fetchRequestLogs();
+    }, (error) => {
+      console.error("Error fetching request logs with onSnapshot: ", error);
+    });
+
+    return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
 
   const columns = [
@@ -197,7 +204,8 @@ const ReturnItems = () => {
               ...item,
               returnedQuantity: returnQty,
               condition: itemConditions[item.itemIdFromInventory] || item.condition || "Good",
-              status: "Returned",
+              // status: "Returned",
+              scannedCount: 0,
               dateReturned: currentDateString,
             };
           })
@@ -210,10 +218,27 @@ const ReturnItems = () => {
       await setDoc(returnedRef, fullReturnData);
       await setDoc(userReturnedRef, fullReturnData);
   
-      // Update full data in original borrowcatalog
-      const borrowDocRef = doc(db, "borrowcatalog", selectedRequest.requisitionId);
-      await setDoc(borrowDocRef, fullReturnData, { merge: true });
-  
+      const borrowQuery = query(
+        collection(db, "borrowcatalog"),
+        where("userName", "==", selectedRequest.raw?.userName),
+        where("dateRequired", "==", selectedRequest.raw?.dateRequired),
+        where("room", "==", selectedRequest.raw?.room),
+        where("timeFrom", "==", selectedRequest.raw?.timeFrom),
+        where("timeTo", "==", selectedRequest.raw?.timeTo)
+      );
+
+      const querySnapshot = await getDocs(borrowQuery);
+
+      if (!querySnapshot.empty) {
+        const docToUpdate = querySnapshot.docs[0];
+        const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
+        
+        await setDoc(borrowDocRef, fullReturnData, { merge: true });
+        console.log("Successfully updated the borrowcatalog document.");
+      } else {
+        console.error("⚠️ No matching document found in borrowcatalog.");
+      }
+
       // 🗑️ Delete from userrequestlog
       const userRequestLogRef = doc(
         db,
@@ -273,10 +298,10 @@ const ReturnItems = () => {
             </Button>
 
             <Button
-              type={filterStatus === "Declined" ? "primary" : "default"}
-              onClick={() => setFilterStatus("Declined")}
+              type={filterStatus === "Deployed" ? "primary" : "default"}
+              onClick={() => setFilterStatus("Deployed")}
             >
-              Declined
+              Deployed
             </Button>
           </div>
 
@@ -294,13 +319,17 @@ const ReturnItems = () => {
           title="📄 Requisition Slip"
           visible={modalVisible}
           onCancel={closeModal}
+          zIndex={1012}
           footer={[
             <Button key="close" onClick={closeModal}>
               Back
             </Button>,
-            <Button key="return" type="primary" onClick={handleReturn}>
-              Return
-            </Button>,
+            
+            selectedRequest?.status === "Deployed" && (
+              <Button key="return" type="primary" onClick={handleReturn}>
+                Return
+              </Button>
+            ),
           ]}
           width={800}
         >
@@ -362,8 +391,8 @@ const ReturnItems = () => {
                   
                       const handleChange = (e) => {
                         let input = Number(e.target.value);
-                        if (input > record.quantity) input = record.quantity; // prevent excess
-                        if (input < 1) input = 1; // enforce min
+                        if (input > record.quantity) input = record.quantity; 
+                        if (input < 1) input = 1; 
                   
                         setReturnQuantities((prev) => ({
                           ...prev,
@@ -412,6 +441,7 @@ const ReturnItems = () => {
                 <Col span={12}>
                   <Text strong>Reason:</Text> {selectedRequest.reason}
                 </Col>
+
                 <Col span={12} style={{ textAlign: "right" }}>
                   <Text strong>Approved By:</Text> {selectedRequest.approvedBy ?? "N/A"}
                 </Col>

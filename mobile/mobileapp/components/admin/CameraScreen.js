@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { useAuth } from '../contexts/AuthContext';
 import styles from "../styles/adminStyle/CameraStyle";
@@ -112,10 +112,13 @@ const CameraScreen = ({ onClose, selectedItem }) => {
       let invalidStatus = false;
       const borrowedItemsDetails = [];
 
+      let requestorUserId = null;
+      let requestorLogData = null;
+      let allDeployed = false; // ✅ Moved outside the loop
+
       if (!querySnapshot.empty) {
         for (const docSnap of querySnapshot.docs) {
           const data = docSnap.data();
-          // const borrowedItem = data.requestList.find((item) => item.itemName === itemName);
           const borrowedItem = data.requestList.find(
             (item) =>
               item.itemName === itemName &&
@@ -129,35 +132,29 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             found = true;
             const currentStatus = data.status?.toLowerCase();
 
-            // if (currentStatus === "borrowed") {
-            //   const updatedRequestList = data.requestList.map((item) =>
-            //     item.itemName === itemName ? { ...item, status: "deployed" } : item
-            //   );
-
-            //   await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
-            //     requestList: updatedRequestList,
-            //     status: "Deployed"
-            //   });
-
             if (currentStatus === "borrowed") {
               const updatedRequestList = data.requestList.map((item) => {
                 if (item.itemName === itemName) {
-                  const newCount = (item.scannedCount || 0) + 1;
-                  return {
-                    ...item,
-                    // status: "deployed",
-                    scannedCount: newCount
-                  };
+                  const currentCount = item.scannedCount || 0;
+                  const maxCount = item.quantity || 1;
+
+                  if (currentCount < maxCount) {
+                    return {
+                      ...item,
+                      scannedCount: currentCount + 1,
+                    };
+
+                  } else {
+                    console.warn("Scan limit reached for", item.itemName);
+                    message.warning(`Maximum scans reached for "${item.itemName}".`);
+                    return item;
+                  }
                 }
+
                 return item;
               });
 
-              // await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
-              //   requestList: updatedRequestList,
-              //   status: "Deployed"
-              // });
-
-              const allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity); 
+              allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity); // ✅ Assigned here
 
               await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
                 requestList: updatedRequestList,
@@ -170,6 +167,17 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 timeFrom: data.timeFrom || "00:00",
                 timeTo: data.timeTo || "00:00"
               });
+
+              // Store user ID and log data for later historylog write
+              requestorUserId = data.accountId;
+              requestorLogData = {
+                ...data,
+                action: "Deployed",
+                deployedBy: user.name || "Unknown",
+                deployedById: user.id,
+                deployedAt: getTodayDate(),
+                timestamp: serverTimestamp()
+              };
 
             } else if (currentStatus === "deployed") {
               alreadyDeployed = true;
@@ -201,22 +209,60 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             `Deployed "${itemName}" to ${firstDetail.borrower} in ${selectedItem.labRoom}`
           );
 
+          if (allDeployed && requestorUserId && requestorLogData) {
+            try {
+              console.log("Writing to historylog for:", requestorUserId);
+              await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), requestorLogData);
+
+            } catch (error) {
+              console.error("Failed to write to historylog:", error);
+            }
+
+          } else {
+            console.warn("Missing requestorUserId or log data.");
+          }
+
+          try {
+            const userRequestQuery = query(
+              collection(db, `accounts/${requestorUserId}/userrequestlog`),
+              where("dateRequired", "==", getTodayDate())
+            );
+
+            const userRequestSnapshot = await getDocs(userRequestQuery);
+
+            userRequestSnapshot.forEach(async (docSnap) => {
+              const docData = docSnap.data();
+              const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+
+              if (hasMatchingItem) {
+                await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
+                  status: "Deployed"
+                });
+
+                console.log("✅ userrequestlog status updated to 'Deployed'");
+              }
+            });
+            
+          } catch (err) {
+            console.error("❌ Failed to update userrequestlog:", err);
+          }
+
         } else if (alreadyDeployed) {
           Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
 
         } else if (invalidStatus) {
           Alert.alert("Invalid Status", `Item "${itemName}" is not currently in a 'Borrowed' status.`);
-          
+
         } else if (!found) {
           Alert.alert("Item not found", "No records found for this item on today's date.");
-
         }
 
       } else {
         Alert.alert("No data found", "No records found for today in the borrow catalog.");
       }
-      
+
     } catch (error) {
+      console.error("QR Scan Error:", error);
       // Alert.alert("Error", "Invalid or unauthorized QR Code.");
     }
 
