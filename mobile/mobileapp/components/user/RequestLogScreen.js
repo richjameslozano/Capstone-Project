@@ -167,7 +167,7 @@ const RequestLogScreen = () => {
     <View style={styles.container}>
       <Header onLayout={handleHeaderLayout} />
       <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
-      <Text style={styles.pageTitle}>Request LogZZZ</Text>
+      <Text style={styles.pageTitle}>Request LogZs</Text>
 
       <TextInput
         style={[styles.modalText, { borderBottomWidth: 1, marginBottom: 10 }]}
