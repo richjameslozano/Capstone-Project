@@ -90,154 +90,159 @@ const CameraScreen = ({ onClose, selectedItem }) => {
   };
 
   const handleBarCodeScanned = async ({ data }) => {
-  if (scanned) return;
+    if (scanned) return;
 
-  setScanned(true);
+    setScanned(true);
 
-  try {
-    const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
-    const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+    try {
+      const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+      const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
 
-    if (!decryptedData) throw new Error("Invalid QR Code");
+      if (!decryptedData) throw new Error("Invalid QR Code");
 
-    const parsedData = JSON.parse(decryptedData);
-    const { itemName } = parsedData;
+      const parsedData = JSON.parse(decryptedData);
+      const { itemName } = parsedData;
 
-    const todayDate = getTodayDate();
-    const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
-    const querySnapshot = await getDocs(q);
+      const todayDate = getTodayDate();
+      const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
+      const querySnapshot = await getDocs(q);
 
-    let found = false;
-    let alreadyDeployed = false;
-    let invalidStatus = false;
-    const borrowedItemsDetails = [];
+      let found = false;
+      let alreadyDeployed = false;
+      let invalidStatus = false;
+      const borrowedItemsDetails = [];
 
-    let requestorUserId = null;
-    let requestorLogData = null;
+      let requestorUserId = null;
+      let requestorLogData = null;
+      let allDeployed = false; // ✅ Moved outside the loop
 
-    if (!querySnapshot.empty) {
-      for (const docSnap of querySnapshot.docs) {
-        const data = docSnap.data();
-        const borrowedItem = data.requestList.find(
-          (item) =>
-            item.itemName === itemName &&
-            item.selectedItemId === selectedItem.selectedItemId &&
-            item.labRoom === selectedItem.labRoom &&
-            item.quantity === selectedItem.quantity &&
-            item.program === selectedItem.program
-        );
+      if (!querySnapshot.empty) {
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+          const borrowedItem = data.requestList.find(
+            (item) =>
+              item.itemName === itemName &&
+              item.selectedItemId === selectedItem.selectedItemId &&
+              item.labRoom === selectedItem.labRoom &&
+              item.quantity === selectedItem.quantity &&
+              item.program === selectedItem.program
+          );
 
-        if (borrowedItem) {
-          found = true;
-          const currentStatus = data.status?.toLowerCase();
+          if (borrowedItem) {
+            found = true;
+            const currentStatus = data.status?.toLowerCase();
 
-          if (currentStatus === "borrowed") {
-            const updatedRequestList = data.requestList.map((item) => {
-              if (item.itemName === itemName) {
-                const currentCount = item.scannedCount || 0;
-                const maxCount = item.quantity || 1;
+            if (currentStatus === "borrowed") {
+              const updatedRequestList = data.requestList.map((item) => {
+                if (item.itemName === itemName) {
+                  const currentCount = item.scannedCount || 0;
+                  const maxCount = item.quantity || 1;
 
-                if (currentCount < maxCount) {
-                  return {
-                    ...item,
-                    scannedCount: currentCount + 1,
-                  };
-                } else {
-                  console.warn("Scan limit reached for", item.itemName);
-                  message.warning(`Maximum scans reached for "${item.itemName}".`);
-                  return item;
+                  if (currentCount < maxCount) {
+                    return {
+                      ...item,
+                      scannedCount: currentCount + 1,
+                    };
+
+                  } else {
+                    console.warn("Scan limit reached for", item.itemName);
+                    message.warning(`Maximum scans reached for "${item.itemName}".`);
+                    return item;
+                  }
                 }
-              }
-              return item;
-            });
 
-            const allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity); 
+                return item;
+              });
 
-            await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
-              requestList: updatedRequestList,
-              ...(allDeployed && { status: "Deployed" })
-            });
+              allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity); // ✅ Assigned here
 
-            borrowedItemsDetails.push({
-              borrower: data.userName || "Unknown",
-              borrowedDate: data.dateRequired,
-              timeFrom: data.timeFrom || "00:00",
-              timeTo: data.timeTo || "00:00"
-            });
+              await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
+                requestList: updatedRequestList,
+                ...(allDeployed && { status: "Deployed" })
+              });
 
-            // Store user ID and log data for later historylog write
-            requestorUserId = data.accountId;
-            requestorLogData = {
-              ...data,
-              action: "Deployed",
-              deployedBy: user.name || "Unknown",
-              deployedById: user.id,
-              deployedAt: getTodayDate(),
-              timestamp: serverTimestamp()
-            };
+              borrowedItemsDetails.push({
+                borrower: data.userName || "Unknown",
+                borrowedDate: data.dateRequired,
+                timeFrom: data.timeFrom || "00:00",
+                timeTo: data.timeTo || "00:00"
+              });
 
-          } else if (currentStatus === "deployed") {
-            alreadyDeployed = true;
+              // Store user ID and log data for later historylog write
+              requestorUserId = data.accountId;
+              requestorLogData = {
+                ...data,
+                action: "Deployed",
+                deployedBy: user.name || "Unknown",
+                deployedById: user.id,
+                deployedAt: getTodayDate(),
+                timestamp: serverTimestamp()
+              };
+
+            } else if (currentStatus === "deployed") {
+              alreadyDeployed = true;
+
+            } else {
+              invalidStatus = true;
+            }
+          }
+        }
+
+        if (borrowedItemsDetails.length > 0) {
+          borrowedItemsDetails.sort((a, b) => {
+            const [aH, aM] = a.timeFrom.split(":").map(Number);
+            const [bH, bM] = b.timeFrom.split(":").map(Number);
+            return aH * 60 + aM - (bH * 60 + bM);
+          });
+
+          let detailsMessage = `Item: ${itemName}\n\n`;
+          borrowedItemsDetails.forEach((detail) => {
+            detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
+          });
+
+          Alert.alert("Item Deployed", detailsMessage);
+
+          const firstDetail = borrowedItemsDetails[0];
+          await logRequestOrReturn(
+            user.id,
+            user.name || "Unknown",
+            `Deployed "${itemName}" to ${firstDetail.borrower} in ${selectedItem.labRoom}`
+          );
+
+          if (allDeployed && requestorUserId && requestorLogData) {
+            try {
+              console.log("Writing to historylog for:", requestorUserId);
+              await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), requestorLogData);
+
+            } catch (error) {
+              console.error("Failed to write to historylog:", error);
+            }
+
           } else {
-            invalidStatus = true;
+            console.warn("Missing requestorUserId or log data.");
           }
-        }
-      }
 
-      if (borrowedItemsDetails.length > 0) {
-        borrowedItemsDetails.sort((a, b) => {
-          const [aH, aM] = a.timeFrom.split(":").map(Number);
-          const [bH, bM] = b.timeFrom.split(":").map(Number);
-          return aH * 60 + aM - (bH * 60 + bM);
-        });
+        } else if (alreadyDeployed) {
+          Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
 
-        let detailsMessage = `Item: ${itemName}\n\n`;
-        borrowedItemsDetails.forEach((detail) => {
-          detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
-        });
+        } else if (invalidStatus) {
+          Alert.alert("Invalid Status", `Item "${itemName}" is not currently in a 'Borrowed' status.`);
 
-        Alert.alert("Item Deployed", detailsMessage);
-
-        const firstDetail = borrowedItemsDetails[0];
-        await logRequestOrReturn(
-          user.id,
-          user.name || "Unknown",
-          `Deployed "${itemName}" to ${firstDetail.borrower} in ${selectedItem.labRoom}`
-        );
-
-        if (requestorUserId && requestorLogData) {
-          try {
-            console.log("Writing to historylog for:", requestorUserId);
-            await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), requestorLogData);
-          } catch (error) {
-            console.error("Failed to write to historylog:", error);
-          }
-        } else {
-          console.warn("Missing requestorUserId or log data.");
+        } else if (!found) {
+          Alert.alert("Item not found", "No records found for this item on today's date.");
         }
 
-      } else if (alreadyDeployed) {
-        Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
-
-      } else if (invalidStatus) {
-        Alert.alert("Invalid Status", `Item "${itemName}" is not currently in a 'Borrowed' status.`);
-
-      } else if (!found) {
-        Alert.alert("Item not found", "No records found for this item on today's date.");
+      } else {
+        Alert.alert("No data found", "No records found for today in the borrow catalog.");
       }
 
-    } else {
-      Alert.alert("No data found", "No records found for today in the borrow catalog.");
+    } catch (error) {
+      console.error("QR Scan Error:", error);
+      // Alert.alert("Error", "Invalid or unauthorized QR Code.");
     }
 
-  } catch (error) {
-    console.error("QR Scan Error:", error);
-    // Alert.alert("Error", "Invalid or unauthorized QR Code.");
-  }
-
-  setTimeout(() => setScanned(false), 1500);
-};
-
+    setTimeout(() => setScanned(false), 1500);
+  };
 
   return (
     <View style={styles.container}>
