@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Table, Button, Modal, Typography, Row, Col, Select } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
-import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc, onSnapshot } from "firebase/firestore";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/adminStyle/RequestLog.css";
@@ -20,14 +20,16 @@ const ReturnItems = () => {
   const [itemConditions, setItemConditions] = useState({});
 
   useEffect(() => {
-    const fetchRequestLogs = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      console.error("User ID not found");
+      return;
+    }
+
+    const userRequestLogRef = collection(db, `accounts/${userId}/userrequestlog`);
+
+    const unsubscribe = onSnapshot(userRequestLogRef, (querySnapshot) => {
       try {
-        const userId = localStorage.getItem("userId");
-        if (!userId) throw new Error("User ID not found");
-
-        const userRequestLogRef = collection(db, `accounts/${userId}/userrequestlog`);
-        const querySnapshot = await getDocs(userRequestLogRef);
-
         const logs = querySnapshot.docs.map((doc) => {
           const data = doc.data();
           const rawTimestamp = data.rawTimestamp;
@@ -41,6 +43,7 @@ const ReturnItems = () => {
               parsedRawTimestamp = rawTimestamp.toDate().toLocaleString("en-PH", {
                 timeZone: "Asia/Manila",
               });
+
             } catch (e) {
               console.warn(`Error formatting rawTimestamp for doc ${doc.id}:`, e);
             }
@@ -51,6 +54,7 @@ const ReturnItems = () => {
               parsedTimestamp = timestamp.toDate().toLocaleString("en-PH", {
                 timeZone: "Asia/Manila",
               });
+
             } catch (e) {
               console.warn(`Error formatting timestamp for doc ${doc.id}:`, e);
             }
@@ -70,7 +74,7 @@ const ReturnItems = () => {
             approvedBy: data.approvedBy ?? "N/A",
             rawTimestamp: rawTimestamp ?? null,
             processDate: parsedRawTimestamp,
-            timestamp: parsedTimestamp, 
+            timestamp: parsedTimestamp,
             raw: data,
           };
         });
@@ -83,13 +87,16 @@ const ReturnItems = () => {
         });
 
         setHistoryData(logs);
-
+        
       } catch (error) {
-        console.error("Error fetching request logs: ", error);
+        console.error("Error processing request logs snapshot: ", error);
       }
-    };
 
-    fetchRequestLogs();
+    }, (error) => {
+      console.error("Error fetching request logs with onSnapshot: ", error);
+    });
+
+    return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
 
   const columns = [
