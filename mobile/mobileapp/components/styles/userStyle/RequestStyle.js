@@ -9,19 +9,39 @@ export default StyleSheet.create({
 
   containerInner:{
     flex:1,
-    backgroundColor:'#e9ecee'
+    backgroundColor:'#fff',
+  },
+
+  page:{
+    flex: 1,
+    paddingTop: 60
   },
   
   topNav:{
     position: 'absolute',
-    flex:1,
-    right: 0,
+    flex: 1
+,   right: 0,
     left: 0,
     height: 'auto',
     backgroundColor: '#fff',
     flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
     zIndex: 999,
+    // borderBottomColor: '#acacac',
+    // borderBottomWidth: 1,
+    paddingBottom: 10,
+    gap: 20
   },
+   border: { 
+    position: 'absolute', 
+    bottom: 0, 
+    width: '25%', 
+    height: 5, 
+    backgroundColor: '#000',
+    borderRadius: 20, 
+    left: 75 },
+
   title: {
     fontSize: 22,
     fontWeight: 'bold',

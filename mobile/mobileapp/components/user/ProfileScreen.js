@@ -1,73 +1,12 @@
-// import React from 'react';
-// import { View, Text, TextInput, TouchableOpacity, Image } from 'react-native';
-// import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-// import styles from '../styles/userStyle/ProfileStyle';
-
-// export default function ProfileScreen({ route, navigation }) {
-//   const { userData } = route.params || {};
-
-//   return (
-//     <View style={styles.container}>
-//       <View style={styles.header}>
-//         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-//           <Icon name="arrow-left" size={30} color="white" />
-//         </TouchableOpacity>
-//         <Text style={styles.headerTitle}>Profile</Text>
-//       </View>
-
-//       <View style={styles.profileImageContainer}>
-//         <Image 
-//           source={require('../../assets/favicon.png')} 
-//           style={styles.profileImage} 
-//         />
-//       </View>
-
-//       <View style={styles.profileDetails}>
-//         <Text style={styles.label}>Name</Text>
-//         <TextInput 
-//           style={styles.input} 
-//           value={userData?.name || ''} 
-//           editable={false} 
-//         />
-
-//         <Text style={styles.label}>Email</Text>
-//         <TextInput 
-//           style={styles.input} 
-//           value={userData?.email || ''} 
-//           editable={false}
-//           keyboardType="email-address"
-//         />
-
-//         <Text style={styles.label}>Role</Text>
-//         <TextInput 
-//           style={styles.input} 
-//           value={userData?.role || ''} 
-//           editable={false}
-//         />
-
-//         <Text style={styles.label}>Department</Text>
-//         <TextInput 
-//           style={styles.input} 
-//           value={userData?.department || ''} 
-//           editable={false}
-//         />
-//       </View>
-
-//       <TouchableOpacity style={styles.logoutButton} onPress={() => navigation.navigate('LoginScreen')}>
-//         <Icon name="logout" size={24} color="white" />
-//         <Text style={styles.logoutText}>Logout</Text>
-//       </TouchableOpacity>
-//     </View>
-//   );
-// }
-
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Image, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Image, Alert, StatusBar } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/ProfileStyle';
 import { useAuth } from '../contexts/AuthContext';  
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
 import Header from '../Header';
+import { addDoc, collection, serverTimestamp } from '@firebase/firestore';
+import { db } from '../../backend/firebase/FirebaseConfig';
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();  
@@ -88,46 +27,109 @@ export default function ProfileScreen({ navigation }) {
     setHeaderHeight(height);
   };
   return (
-    <View style={styles.container}>
-      <Header onLayout={handleHeaderLayout} />
-      <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
-      <View style={styles.header}>
-      
-       
-        
+    <View style={[styles.container, {paddingTop: headerHeight+5}]}>
+      <StatusBar
+                translucent
+                backgroundColor="transparent"
+                barStyle="dark-content" // or 'light-content' depending on your design
+              />
+
+      <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <Icon name="arrow-left" size={30} color="white" />
+          <Icon name="keyboard-backspace" size={28} color="black" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profile</Text>
+          <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 16}}>My Account</Text>
+        <TouchableOpacity style={{padding: 2}}>
+          <Icon name="dots-vertical" size={24} color="#000" />
+        </TouchableOpacity>
       </View>
-
-      <View style={styles.profileImageContainer}>
+  
+      
+    <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 20, paddingHorizontal: 10 }}>
+      <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+      <Icon name='account-circle-outline' size={20} color='#6abce2'/>
+      <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Profile</Text>
+      </View>
+      <TouchableOpacity style={styles.profileImageContainer}>
         {user?.photoURL ? (
-          <Avatar.Image size={50} source={{ uri: user.photoURL }} />
+          <Avatar.Image size={80} source={{ uri: user.photoURL }} />
         ) : (
-          <Avatar.Text size={50} label={getInitials(user?.name)} />
+          <Avatar.Text size={80} label={getInitials(user?.name)} backgroundColor='#6e9fc1'/>
         )}
-      </View>
+      </TouchableOpacity>
+      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 19}}>{capitalizeInitials(user?.name)}</Text>
+      <Text style={{textAlign: 'center', color: 'gray'}}>{user?.jobTitle}</Text>
+    </View>
+      
       
 
-      <View style={styles.profileDetails}>
-        <Text style={styles.label}>Name</Text>
-        <TextInput
-          style={styles.input}
-          value={capitalizeInitials(user?.name || '')}
-          editable={false}
-        />
-
-        <Text style={styles.label}>Email</Text>
-        <TextInput style={styles.input} value={user?.email || ''} editable={false} />
-
-        <Text style={styles.label}>Email</Text>
-        <TextInput style={styles.input} value={user?.jobTitle || ''} editable={false} />
-
-        <Text style={styles.label}>Department</Text>
-        <TextInput style={styles.input} value={user?.department || ''} editable={false} />
+      <View style={styles.secondSection}>
+        <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 8}}>
+      <Icon name='information-outline' size={20} color='#6abce2'/>
+      <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Info</Text>
       </View>
+
+      <View style={{gap: 5}}>
+      <View style={styles.info}>
+        <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.email}</Text>
+        <Text style={styles.label}>Email</Text>
+      </View>
+
+      <View style={styles.info}>
+        <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.department}</Text>
+        <Text style={styles.label}>Department</Text>
+      </View>
+
+      <View style={styles.info}>
+        <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.employeeId}</Text>
+        <Text style={styles.label}>Employee ID</Text>
+      </View>
+      </View>
+      </View>
+
+     
+      <TouchableOpacity style={{width: '100%', backgroundColor: 'white', justifyContent: 'center', alignItems: 'center', flexDirection: 'row', paddingVertical: 15, backgroundColor: '#fff', borderRadius: 8, gap: 5}}
+      onPress={() => {
+                Alert.alert(
+                  "Logout Confirmation",
+                  "Are you sure you want to log out?",
+                  [
+                    { text: "Cancel", style: "cancel" },
+                    {
+                      text: "Logout",
+                      style: "destructive",
+                      onPress: async () => {
+                        try {
+                          if (user?.id) {
+                            await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
+                              action: "User Logged Out (Mobile)",
+                              userName: user.name || "User",
+                              timestamp: serverTimestamp(),
+                            });
+      
+                          } else {
+                            console.warn("No user data available for logout log.");
+                          }
+      
+                        } catch (error) {
+                          console.error("Error logging logout:", error);
+      
+                        } finally {
+                          logout();
+                          navigation.replace("Login");
+                        }
+                      },
+                    },
+                  ]
+                );
+              }}
+      >
+        <Icon name='logout' size={20} color='#6abce2'/>
+        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#6abce2'}}>Log Out</Text>
+      </TouchableOpacity>
+     
+    
     </View>
-    </View>
+
   );
 }

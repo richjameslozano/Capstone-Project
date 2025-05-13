@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   FlatList,
@@ -8,6 +8,8 @@ import {
   Alert,
   ActivityIndicator,
   ScrollView,
+  Animated,
+  Easing
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import {
@@ -26,7 +28,7 @@ import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/RequestStyle';
 import Header from '../Header';
-
+import PagerView from 'react-native-pager-view';
 export default function RequestScreen() {
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -237,27 +239,56 @@ export default function RequestScreen() {
     fetchRequests();
   }, []);
 
+  const position = useRef(new Animated.Value(0)).current; // Animated value for swipe position
+
+  // Interpolate the border position
+  const borderTranslateX = position.interpolate({
+  inputRange: [0, 1],
+  outputRange: [0, 142], // Adjust 150 to match your tab width
+});
+
+const pagerRef = useRef(null);
+
+
   return (
     
     <View style={styles.container}>
       <Header onLayout={handleHeaderLayout} />
       <View style={[styles.topNav, {top:headerHeight}]}>
-
-        <TouchableOpacity style={{width: '50%', backgroundColor: '#e9ecee',justifyContent:'center',alignItems:'center',paddingVertical: 15}}>
+        <TouchableOpacity style={{width: '25%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center',paddingTop: 15}}
+          onPress={() => pagerRef.current.setPage(0)}
+        >
           <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
+          {/* <View style={{borderBottomWidth: 5, borderColor: '#000', width: '50%', borderRadius: 20, marginTop: 5}}></View> */}
         </TouchableOpacity>
 
-        <TouchableOpacity style={{width: '50%', backgroundColor: 'white',justifyContent:'center',alignItems:'center',paddingVertical: 15, borderLeftColor: '#acacac', borderLeftWidth:1}}>
+        <Text style={{fontSize: 20, color: 'gray', paddingTop: 10}}>|</Text>
+
+        <TouchableOpacity style={{width: '25%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center',paddingTop:15}}
+        onPress={() => pagerRef.current.setPage(1)}
+        >
           <Text style={{fontWeight: 'bold', fontSize: 15}}>Pending</Text>
+          {/* <View style={{borderBottomWidth: 5, borderColor: '#000', width: '50%', borderRadius: 20, marginTop: 5}}></View> */}
         </TouchableOpacity>
-        
+
+         <Animated.View style={[styles.border, { transform: [{ translateX: borderTranslateX }] }]} />
       </View>
 
-      <View style={[styles.containerInner, {paddingTop: headerHeight}]}>
-        
-      <Text style={styles.title}>📋 Request List</Text>
-
-      {loading ? (
+      <PagerView ref={pagerRef} style={[styles.containerInner, {marginTop: headerHeight}]} initialPage={0}
+      onPageScroll={(event) => {
+          Animated.spring(position, {
+    toValue: event.nativeEvent.position,
+    stiffness: 200, // Adjust bounce effect
+    damping: 50, // Smooth motion
+    useNativeDriver: false,
+  }).start();
+      }}
+      >
+      <View key="1" style={styles.page}>
+       
+      </View>
+      <View key="2" style={styles.page}>
+         {loading ? (
         <ActivityIndicator size="large" color="#1890ff" style={{ marginTop: 30 }} />
       ) : requests.length === 0 ? (
         <Text style={{ textAlign: 'center', marginTop: 20 }}>No requests found.</Text>
@@ -269,8 +300,16 @@ export default function RequestScreen() {
           contentContainerStyle={styles.listContainer}
         />
       )}
-
       </View>
+      {/* <View key="3" style={styles.page}><Text>Page 3</Text></View> */}
+      
+      {/* <Text style={styles.title}>📋 Request List</Text> */}
+
+    
+      </PagerView>
+
+
+
       <Modal visible={modalVisible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <ScrollView style={styles.modalContent}>

@@ -74,9 +74,9 @@ const CustomDrawerContent = ({ navigation }) => {
           <View style={styles.headProfile}>
           <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
           {user?.photoURL ? (
-              <Avatar.Image size={50} source={{ uri: user.photoURL }} />
+              <Avatar.Image size={65} source={{ uri: user.photoURL }} />
             ) : (
-              <Avatar.Text size={50} label={getInitials(user?.name)} />
+              <Avatar.Text size={65} backgroundColor='#a3cae9' label={getInitials(user?.name)} />
             )}
           </TouchableOpacity>
           </View>
@@ -91,7 +91,7 @@ const CustomDrawerContent = ({ navigation }) => {
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
         <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Profile</Title>
+        <Title style={styles.titleStyle}>My Account</Title>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('InventoryScreen')}>
@@ -119,7 +119,7 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Calendar</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('RequestScreen')}>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserHistoryLogScreen')}>
         <Icon2 name="file-document-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Request List</Title>
       </TouchableOpacity>
@@ -382,7 +382,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 'auto',
-    maxWidth: 70
+    maxWidth: 70,
   },
 
   headProfile: {

@@ -418,7 +418,7 @@ export default function InventoryScreen({ navigation }) {
                 setMetadata((prev) => ({ ...prev, dateRequired: day.dateString }));
               }}
               markedDates={{
-                [selectedDate]: { selected: true, selectedColor: '#00796B' },
+                [selectedDate]: { selected: true, selectedColor: '#00796B' }
               }}
               minDate={today}
             />

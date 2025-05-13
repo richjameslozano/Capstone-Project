@@ -1,34 +1,31 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-  },
+    backgroundColor: '#e9ecee',
+    padding: 7,
+    gap: 5
+  },  
 
-  header: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 10, // Keeps it above other content
-    backgroundColor: '#1A4572', // Header background color
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'flex-start',
-    padding: 10,
-    elevation: 4, // Adds shadow on Android
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 3,
-    marginBottom:40,
-  },
 
-  backButton: {
-    marginRight: 10,
-  },
+
+  
+profileHeader:{
+  position: 'absolute',
+  backgroundColor: '#fff',
+  flex: 1,
+  paddingTop: StatusBar.currentHeight+15,
+  left: 0,
+  right:0,
+  flexDirection: 'row',
+  paddingBottom: 10,
+  paddingHorizontal: 15,
+  alignItems: 'center',
+  justifyContent:'space-between',
+  borderBottomWidth: 1,
+  borderColor: '#e9ecee'
+},
 
   headerTitle: {
     color: 'white',
@@ -38,7 +35,8 @@ export default StyleSheet.create({
 
   profileImageContainer: {
     alignItems: 'center',
-    marginTop: 60,
+    marginBottom: 10,
+    marginTop: 30
   },
 
   profileImage: {
@@ -49,16 +47,27 @@ export default StyleSheet.create({
     borderColor: '#00796B',
   },
 
+  secondSection:{
+    height: 'auto',
+    backgroundColor: '#fff',
+    borderRadius: 8, 
+    paddingTop: 8, 
+    paddingBottom: 10, 
+    paddingHorizontal: 10 
+  },
+
   profileDetails: {
     marginTop: 20,
     paddingHorizontal: 10,
   },
 
   label: {
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: 'bold',
-    marginTop: 10,
+    color: '#b5b5b5',
   },
+
+  info:{backgroundColor: '#fff', borderRadius: 5, paddingHorizontal: 10, paddingVertical: 8},
 
   input: {
     backgroundColor: 'white',
