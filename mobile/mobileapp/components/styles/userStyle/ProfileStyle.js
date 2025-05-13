@@ -67,7 +67,7 @@ profileHeader:{
     color: '#b5b5b5',
   },
 
-  info:{backgroundColor: '#fff', borderRadius: 5, paddingHorizontal: 10, paddingVertical: 8},
+  info:{backgroundColor: '#fff', borderRadius: 5, paddingHorizontal: 10, paddingVertical: 8, flexDirection: 'row', alignItems: 'center', gap: 10},
 
   input: {
     backgroundColor: 'white',

@@ -71,18 +71,27 @@ export default function ProfileScreen({ navigation }) {
 
       <View style={{gap: 5}}>
       <View style={styles.info}>
+        <Icon name='email-outline' size={20} color='#6e9fc1'/>
+        <View>
         <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.email}</Text>
         <Text style={styles.label}>Email</Text>
+        </View>
       </View>
 
       <View style={styles.info}>
+        <Icon name='domain' size={20} color='#6e9fc1'/>
+        <View>
         <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.department}</Text>
         <Text style={styles.label}>Department</Text>
+        </View>
       </View>
 
       <View style={styles.info}>
+        <Icon name='badge-account-outline' size={20} color='#6e9fc1'/>
+        <View>
         <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.employeeId}</Text>
         <Text style={styles.label}>Employee ID</Text>
+        </View>
       </View>
       </View>
       </View>
