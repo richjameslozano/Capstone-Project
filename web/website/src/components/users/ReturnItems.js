@@ -87,7 +87,7 @@ const ReturnItems = () => {
         });
 
         setHistoryData(logs);
-        
+
       } catch (error) {
         console.error("Error processing request logs snapshot: ", error);
       }
@@ -280,10 +280,10 @@ const ReturnItems = () => {
             </Button>
 
             <Button
-              type={filterStatus === "Declined" ? "primary" : "default"}
-              onClick={() => setFilterStatus("Declined")}
+              type={filterStatus === "Deployed" ? "primary" : "default"}
+              onClick={() => setFilterStatus("Deployed")}
             >
-              Declined
+              Deployed
             </Button>
           </div>
 
@@ -301,13 +301,17 @@ const ReturnItems = () => {
           title="📄 Requisition Slip"
           visible={modalVisible}
           onCancel={closeModal}
+          zIndex={1012}
           footer={[
             <Button key="close" onClick={closeModal}>
               Back
             </Button>,
-            <Button key="return" type="primary" onClick={handleReturn}>
-              Return
-            </Button>,
+            
+            selectedRequest?.status === "Deployed" && (
+              <Button key="return" type="primary" onClick={handleReturn}>
+                Return
+              </Button>
+            ),
           ]}
           width={800}
         >
@@ -369,8 +373,8 @@ const ReturnItems = () => {
                   
                       const handleChange = (e) => {
                         let input = Number(e.target.value);
-                        if (input > record.quantity) input = record.quantity; // prevent excess
-                        if (input < 1) input = 1; // enforce min
+                        if (input > record.quantity) input = record.quantity; 
+                        if (input < 1) input = 1; 
                   
                         setReturnQuantities((prev) => ({
                           ...prev,
@@ -419,6 +423,7 @@ const ReturnItems = () => {
                 <Col span={12}>
                   <Text strong>Reason:</Text> {selectedRequest.reason}
                 </Col>
+
                 <Col span={12} style={{ textAlign: "right" }}>
                   <Text strong>Approved By:</Text> {selectedRequest.approvedBy ?? "N/A"}
                 </Col>
