@@ -27,3 +27,25 @@
   background-color: #e6f7ff; /* Light blue highlight */
 }
   
+.pdf-format {
+  background: white !important;
+  color: black !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 12pt !important;
+  padding: 20px !important;
+  overflow: visible !important;
+  max-height: none !important;
+  box-shadow: none !important;
+}
+.pdf-format table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+}
+.pdf-format th, .pdf-format td {
+  border: 1px solid #000 !important;
+  padding: 5px !important;
+  font-size: 11pt !important;
+}
+.pdf-format th {
+  background-color: #f0f0f0 !important;
+}
