@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Table, Button, Modal, Typography, Row, Col, Select } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
-import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc, onSnapshot } from "firebase/firestore";
+import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc, onSnapshot, query, where } from "firebase/firestore";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/adminStyle/RequestLog.css";
@@ -204,7 +204,8 @@ const ReturnItems = () => {
               ...item,
               returnedQuantity: returnQty,
               condition: itemConditions[item.itemIdFromInventory] || item.condition || "Good",
-              status: "Returned",
+              // status: "Returned",
+              scannedCount: 0,
               dateReturned: currentDateString,
             };
           })
@@ -217,10 +218,27 @@ const ReturnItems = () => {
       await setDoc(returnedRef, fullReturnData);
       await setDoc(userReturnedRef, fullReturnData);
   
-      // Update full data in original borrowcatalog
-      const borrowDocRef = doc(db, "borrowcatalog", selectedRequest.requisitionId);
-      await setDoc(borrowDocRef, fullReturnData, { merge: true });
-  
+      const borrowQuery = query(
+        collection(db, "borrowcatalog"),
+        where("userName", "==", selectedRequest.raw?.userName),
+        where("dateRequired", "==", selectedRequest.raw?.dateRequired),
+        where("room", "==", selectedRequest.raw?.room),
+        where("timeFrom", "==", selectedRequest.raw?.timeFrom),
+        where("timeTo", "==", selectedRequest.raw?.timeTo)
+      );
+
+      const querySnapshot = await getDocs(borrowQuery);
+
+      if (!querySnapshot.empty) {
+        const docToUpdate = querySnapshot.docs[0];
+        const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
+        
+        await setDoc(borrowDocRef, fullReturnData, { merge: true });
+        console.log("Successfully updated the borrowcatalog document.");
+      } else {
+        console.error("⚠️ No matching document found in borrowcatalog.");
+      }
+
       // 🗑️ Delete from userrequestlog
       const userRequestLogRef = doc(
         db,
