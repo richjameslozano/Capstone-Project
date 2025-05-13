@@ -222,6 +222,31 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             console.warn("Missing requestorUserId or log data.");
           }
 
+          try {
+            const userRequestQuery = query(
+              collection(db, `accounts/${requestorUserId}/userrequestlog`),
+              where("dateRequired", "==", getTodayDate())
+            );
+
+            const userRequestSnapshot = await getDocs(userRequestQuery);
+
+            userRequestSnapshot.forEach(async (docSnap) => {
+              const docData = docSnap.data();
+              const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+
+              if (hasMatchingItem) {
+                await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
+                  status: "Deployed"
+                });
+
+                console.log("✅ userrequestlog status updated to 'Deployed'");
+              }
+            });
+            
+          } catch (err) {
+            console.error("❌ Failed to update userrequestlog:", err);
+          }
+
         } else if (alreadyDeployed) {
           Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
 
