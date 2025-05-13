@@ -9,7 +9,8 @@ import {
   ActivityIndicator,
   ScrollView,
   Animated,
-  Easing
+  Easing,
+  TextInput
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import {
@@ -44,67 +45,96 @@ export default function RequestScreen() {
       setHeaderHeight(height);
     };
 
-  // const fetchRequests = async () => {
-  //   setLoading(true);
-  //   try {
-  //     if (!user?.uid) throw new Error('User is not logged in.');
-
-  //     const querySnapshot = await getDocs(collection(db, `accounts/${user.id}/userRequests`));
-  //     console.log('Fetched docs:', querySnapshot.docs.length);
-  //     const fetched = [];
-
-  //     for (const docSnap of querySnapshot.docs) {
-  //       const data = docSnap.data();
-  //       const enrichedItems = await Promise.all(
-  //         (data.filteredMergedData || data.requestList || []).map(async (item) => {
-  //           const inventoryId = item.selectedItemId || item.selectedItem?.value;
-  //           let itemId = 'N/A';
-  //           if (inventoryId) {
-  //             try {
-  //               const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
-  //               if (invDoc.exists()) {
-  //                 itemId = invDoc.data().itemId || 'N/A';
-  //               }
-  //             } catch (err) {
-  //               console.error(`Error fetching inventory item ${inventoryId}:`, err);
-  //             }
-  //           }
-
-  //           return {
-  //             ...item,
-  //             itemIdFromInventory: itemId,
-  //           };
-  //         })
-  //       );
-
-  //       const dateObj = data.timestamp?.toDate?.();
-  //       const dateRequested = dateObj ? dateObj : new Date();
-
-  //       fetched.push({
-  //         id: docSnap.id,
-  //         dateRequested,
-  //         dateRequired: data.dateRequired || 'N/A',
-  //         requester: data.userName || 'Unknown',
-  //         room: data.room || 'N/A',
-  //         timeNeeded: `${data.timeFrom || 'N/A'} - ${data.timeTo || 'N/A'}`,
-  //         courseCode: data.program || 'N/A',
-  //         courseDescription: data.reason || 'N/A',
-  //         items: enrichedItems,
-  //         status: 'PENDING',
-  //         message: data.reason || '',
-  //       });
-  //     }
-
-  //     const sortedByDate = fetched.sort((a, b) => b.dateRequested - a.dateRequested);
-
-  //     setRequests(sortedByDate);
-  //   } catch (err) {
-  //     console.error('Error fetching requests:', err);
-  //     Alert.alert('Error', 'Failed to fetch user requests.');
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+    const [activityData, setActivityData] = useState([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filteredData, setFilteredData] = useState([]);
+    const [selectedLog, setSelectedLog] = useState(null);
+    
+  
+    useEffect(() => {
+      const fetchActivityLogs = () => {
+        try {
+          if (!user) return;
+    
+          const activityRef = collection(db, `accounts/${user.id}/historylog`);
+    
+          // Use onSnapshot for real-time updates
+          const unsubscribe = onSnapshot(
+            activityRef,
+            (snapshot) => {
+              const logs = snapshot.docs.map((doc, index) => {
+                const data = doc.data();
+                const logDate =
+                  data.cancelledAt?.toDate?.() ||
+                  data.timestamp?.toDate?.() ||
+                  new Date();
+    
+                const isCancelled = data.status === 'CANCELLED';
+                const action = isCancelled
+                  ? 'Cancelled a request'
+                  : data.action || 'Modified a request';
+    
+                const by =
+                  action === "Request Approved"
+                  ? data.approvedBy
+                  : action === "Request Rejected"
+                  ? data.rejectedBy
+                  : data.userName || "Unknown User";
+    
+                return {
+                  key: doc.id || index.toString(),
+                  date: logDate.toLocaleString('en-US', {
+                    year: 'numeric',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                  }),
+                  rawDate: logDate,
+                  action,
+                  by,
+                  fullData: data,
+                };
+              });
+    
+              // Sort logs by date
+              const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
+    
+              setActivityData(sortedLogs);
+              setFilteredData(sortedLogs);
+            },
+            (err) => {
+              console.error('Real-time activity log listener failed:', err);
+            }
+          );
+    
+          // Cleanup the listener when the component unmounts
+          return () => unsubscribe();
+          
+        } catch (error) {
+          console.error('Failed to fetch activity logs:', error);
+        }
+      };
+    
+      fetchActivityLogs();
+    }, [user]);
+  
+    const handleSearch = (query) => {
+      setSearchQuery(query);
+      const filtered = activityData.filter(
+        (item) =>
+          item.date.includes(query) ||
+          item.action.toLowerCase().includes(query.toLowerCase()) ||
+          item.by.toLowerCase().includes(query.toLowerCase())
+      );
+      setFilteredData(filtered);
+    };
+  
+    const handleRowPress = (log) => {
+      setSelectedLog(log.fullData);
+      setModalVisible(true);
+    };
 
   const fetchRequests = () => {
     setLoading(true);
@@ -286,7 +316,103 @@ const pagerRef = useRef(null);
       >
       <View key="1" style={styles.page}>
        
+       <Text style={styles.pageTitle}>Request Log</Text>
+      
+            <TextInput
+              style={[styles.modalText, { borderBottomWidth: 1, marginBottom: 10 }]}
+              placeholder="Search"
+              value={searchQuery}
+              onChangeText={handleSearch}
+            />
+      
+            {/* Table Header */}
+            <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Date</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Action</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>By</Text>
+            </View>
+      
+            <ScrollView style={styles.content}>
+              {filteredData.map((log, index) => (
+                <TouchableOpacity
+                  key={log.key}
+                  onPress={() => handleRowPress(log)}
+                  style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}
+                >
+                  <View style={{ flexDirection: 'row' }}>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.date}</Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.action}</Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.by}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+      
+            <Modal visible={modalVisible} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>
+              {selectedLog?.status === 'CANCELLED'
+                ? 'Cancelled a Request'
+                : selectedLog?.action || 'Modified a Request'}
+            </Text>
+      
+            <ScrollView style={{ maxHeight: 400, width: '100%' }}>
+              <Text style={styles.modalText}>By: {selectedLog?.userName || 'Unknown User'}</Text>
+              <Text style={styles.modalText}>Program: {selectedLog?.program || 'N/A'}</Text>
+              <Text style={styles.modalText}>Reason: {selectedLog?.reason || 'N/A'}</Text>
+              <Text style={styles.modalText}>Room: {selectedLog?.room || 'N/A'}</Text>
+              <Text style={styles.modalText}>
+                Time:{' '}
+                {selectedLog?.timeFrom && selectedLog?.timeTo
+                  ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+                  : 'N/A'}
+              </Text>
+              <Text style={styles.modalText}>Date Required: {selectedLog?.dateRequired || 'N/A'}</Text>
+      
+              <Text style={[styles.modalText, { fontWeight: 'bold', marginTop: 10 }]}>Items:</Text>
+      
+              {(selectedLog?.filteredMergedData || selectedLog?.requestList)?.length > 0 ? (
+                <View style={{ marginTop: 10 }}>
+                  <View style={[styles.tableHeader, { flexDirection: 'row', borderTopLeftRadius: 5, borderTopRightRadius: 5 }]}>
+                    <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text>
+                  </View>
+      
+                  {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
+                    <View
+                      key={index}
+                      style={[
+                        index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
+                        { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 4 },
+                      ]}
+                    >
+                      <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemName}</Text>
+                      <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
+                      <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
+                      <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={styles.modalText}>None</Text>
+              )}
+            </ScrollView>
+      
+            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
       </View>
+
+
+
+
       <View key="2" style={styles.page}>
          {loading ? (
         <ActivityIndicator size="large" color="#1890ff" style={{ marginTop: 30 }} />

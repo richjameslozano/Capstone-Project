@@ -21,58 +21,6 @@ const RequestLogScreen = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchActivityLogs = async () => {
-  //     try {
-  //       if (!user) return;
-  //       const activityRef = collection(db, `accounts/${user.id}/historylog`);
-  //       const querySnapshot = await getDocs(activityRef);
-
-  //       const logs = querySnapshot.docs.map((doc, index) => {
-  //         const data = doc.data();
-  //         const logDate =
-  //           data.cancelledAt?.toDate?.() ||
-  //           data.timestamp?.toDate?.() ||
-  //           new Date();
-
-  //         const isCancelled = data.status === 'CANCELLED';
-  //         const action = isCancelled
-  //           ? 'Cancelled a request'
-  //           : data.action || 'Modified a request';
-
-  //         const by =
-  //           action === 'Request Approved'
-  //             ? data.approvedBy
-  //             : data.userName || 'Unknown User';
-
-  //         return {
-  //           key: doc.id || index.toString(),
-  //           date: logDate.toLocaleString('en-US', {
-  //             year: 'numeric',
-  //             month: 'short',
-  //             day: 'numeric',
-  //             hour: 'numeric',
-  //             minute: '2-digit',
-  //             hour12: true,
-  //           }),
-  //           rawDate: logDate,
-  //           action,
-  //           by,
-  //           fullData: data,
-  //         };
-  //       });
-
-  //       const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
-  //       setActivityData(sortedLogs);
-  //       setFilteredData(sortedLogs);
-  //     } catch (error) {
-  //       console.error('Failed to fetch activity logs:', error);
-  //     }
-  //   };
-
-  //   fetchActivityLogs();
-  // }, [user]);
-
   useEffect(() => {
     const fetchActivityLogs = () => {
       try {
