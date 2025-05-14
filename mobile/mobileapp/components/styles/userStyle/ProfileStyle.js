@@ -31,9 +31,12 @@ export default StyleSheet.create({
   },
 
   profileImageContainer: {
+    width: 'auto',
+    height: 'auto',
     alignItems: 'center',
     marginBottom: 10,
-    marginTop: 30
+    marginTop: 30,
+    borderRadius: 50,
   },
 
   profileImage: {

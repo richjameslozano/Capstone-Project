@@ -5,14 +5,13 @@ import styles from '../styles/userStyle/ProfileStyle';
 import { useAuth } from '../contexts/AuthContext';  
 import { Avatar } from 'react-native-paper'; 
 import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL,getStorage,uploadBytesResumable } from 'firebase/storage';
+import { ref, uploadBytes, getDownloadURL,getStorage,uploadBytesResumable, uploadString } from 'firebase/storage';
 import { db, storage } from '../../backend/firebase/FirebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-
-
+import uuid from 'react-native-uuid';
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();  
@@ -35,61 +34,62 @@ const handleHeaderLayout = (event) => {
     setHeaderHeight(height);
   };
 
-    const handleImagePick = async () => {
-  try {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        'Permission Required',
-        'Please grant permission to access your photos to update your profile picture.',
-        [{ text: 'OK' }]
-      );
-      return;
-    }
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-      allowsMultipleSelection: false,
-      base64: false,
-    });
 
-    console.log('ImagePicker result:', result);
 
-    if (result.canceled) {
-      console.log('User cancelled image picker');
-      return;
-    }
 
-    // Universal URI extraction
-    let imageUri = null;
-    if (result.assets && Array.isArray(result.assets) && result.assets.length > 0) {
-      imageUri = result.assets[0].uri;
-    } else if (result.uri) {
-      imageUri = result.uri;
-    }
-    console.log('Resolved imageUri:', imageUri);
 
-    if (imageUri) {
-      await uploadImage(imageUri);
-    } else {
-      Alert.alert(
-        'Error',
-        'No image was selected. Please try again.',
-        [{ text: 'OK' }]
-      );
-    }
-  } catch (error) {
-    console.error('Error in handleImagePick:', error);
-    Alert.alert(
-      'Error',
-      'Failed to pick image. Please try again.',
-      [{ text: 'OK' }]
-    );
+
+
+const handleImagePick = async () => {
+  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permission.granted) {
+    alert("Permission denied!");
+    return;
   }
-} 
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [1, 1],
+    quality: 1,
+  });
+
+  if (!result.canceled) {
+    const image = result.assets[0];
+    const url = await uploadImage(image.uri);
+    console.log("✅ Final Download URL:", url);
+  }
+};
+
+
+const uploadImage = async (imageUri) => {
+  try {
+    const filename = `profileImages/${Date.now().toString()}.jpg`;
+
+    const storageRef = ref(storage, filename);
+
+    // Fetch the image URI and convert it to Blob
+    const response = await fetch(imageUri);
+    const blob = await response.blob();
+
+    // Upload the Blob to Firebase Storage
+    await uploadBytes(storageRef, blob);
+
+    // Get the image URL after upload
+    const url = await getDownloadURL(storageRef);
+    return url;
+
+  } catch (error) {
+    console.error("❌ Upload failed:", error);
+    alert("Upload failed: " + (error.message || "Unknown error"));
+    return null;
+  }
+};
+
+
+
+
 
 
 const isFocused = useIsFocused();
@@ -102,63 +102,63 @@ useEffect(() => {
 }, [isFocused]);
 
    
- const uploadImage = async (uri) => {
-  if (!user?.id) {
-    Alert.alert('Error', 'User not authenticated');
-    return;
-  }
+//  const uploadImage = async (uri) => {
+//   if (!user?.id) {
+//     Alert.alert('Error', 'User not authenticated');
+//     return;
+//   }
 
-  setUploading(true);
-  try {
-    const filename = `profile_${user.id}_${Date.now()}.jpg`;
-    const storageRef = ref(storage, `profileImages/${filename}`);
+//   setUploading(true);
+//   try {
+//     const filename = `profile_${user.id}_${Date.now()}.jpg`;
+//     const storageRef = ref(storage, `profileImages/${filename}`);
 
-    // Read the file as a binary string
-    const fileData = await FileSystem.readAsStringAsync(uri, {
-      encoding: FileSystem.EncodingType.Base64,
-    });
+//     // Read the file as a binary string
+//     const fileData = await FileSystem.readAsStringAsync(uri, {
+//       encoding: FileSystem.EncodingType.Base64,
+//     });
 
-    // Convert base64 to a Uint8Array
-    const byteCharacters = atob(fileData);
-    const byteNumbers = new Array(byteCharacters.length);
-    for (let i = 0; i < byteCharacters.length; i++) {
-      byteNumbers[i] = byteCharacters.charCodeAt(i);
-    }
-    const byteArray = new Uint8Array(byteNumbers);
+//     // Convert base64 to a Uint8Array
+//     const byteCharacters = atob(fileData);
+//     const byteNumbers = new Array(byteCharacters.length);
+//     for (let i = 0; i < byteCharacters.length; i++) {
+//       byteNumbers[i] = byteCharacters.charCodeAt(i);
+//     }
+//     const byteArray = new Uint8Array(byteNumbers);
 
-    // Upload to Firebase Storage
-    const uploadTask = await uploadBytesResumable(storageRef, byteArray, {
-      contentType: 'image/jpeg'
-    });
+//     // Upload to Firebase Storage
+//     const uploadTask = await uploadBytesResumable(storageRef, byteArray, {
+//       contentType: 'image/jpeg'
+//     });
 
-    const downloadURL = await getDownloadURL(uploadTask.ref);
+//     const downloadURL = await getDownloadURL(uploadTask.ref);
 
-    const userRef = doc(db, 'accounts', user.id);
-    await updateDoc(userRef, {
-      photoURL: downloadURL,
-      lastUpdated: serverTimestamp()
-    });
+//     const userRef = doc(db, 'accounts', user.id);
+//     await updateDoc(userRef, {
+//       photoURL: downloadURL,
+//       lastUpdated: serverTimestamp()
+//     });
 
-    user.photoURL = downloadURL;
+//     user.photoURL = downloadURL;
 
-    await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
-      action: "Profile Picture Updated",
-      timestamp: serverTimestamp(),
-      details: "Profile picture updated successfully"
-    });
+//     await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
+//       action: "Profile Picture Updated",
+//       timestamp: serverTimestamp(),
+//       details: "Profile picture updated successfully"
+//     });
 
-    Alert.alert('Success', 'Profile picture updated successfully');
-  } catch (error) {
-    console.error('Error uploading image:', error);
-    Alert.alert(
-      'Upload Failed',
-      'Failed to upload image. Please try again.',
-      [{ text: 'OK' }]
-    );
-  } finally {
-    setUploading(false);
-  }
-};
+//     Alert.alert('Success', 'Profile picture updated successfully');
+//   } catch (error) {
+//     console.error('Error uploading image:', error);
+//     Alert.alert(
+//       'Upload Failed',
+//       'Failed to upload image. Please try again.',
+//       [{ text: 'OK' }]
+//     );
+//   } finally {
+//     setUploading(false);
+//   }
+// };
 
   const handleLogout = async () => {
     Alert.alert(
@@ -203,11 +203,13 @@ useEffect(() => {
         </TouchableOpacity>
       </View>
   
-      <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 20, paddingHorizontal: 10 }}>
+      <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 20, paddingHorizontal: 10, alignItems: 'center' }}>
         <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
           <Icon name='account-circle-outline' size={20} color='#6abce2'/>
           <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Profile</Text>
         </View>
+
+
         <TouchableOpacity 
           style={styles.profileImageContainer} 
           onPress={handleImagePick}
@@ -224,6 +226,8 @@ useEffect(() => {
             </View>
           )}
         </TouchableOpacity>
+
+
         <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 19}}>{capitalizeInitials(user?.name)}</Text>
         <Text style={{textAlign: 'center', color: 'gray'}}>{user?.jobTitle}</Text>
       </View>
