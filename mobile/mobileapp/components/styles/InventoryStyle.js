@@ -1,14 +1,29 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 import Header from '../Header';
 import { auth } from '../../backend/firebase/FirebaseConfig';
+
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#e9ecee',
     paddingBottom: 0,
     overflow: 'visible'
   },
+
+  profileHeader:{
+    position: 'absolute',
+    backgroundColor: '#fff',
+    flex: 1,
+    paddingTop: StatusBar.currentHeight+15,
+    left: 0,
+    right:0,
+    alignItems: 'center',
+    justifyContent:'space-between',
+    zIndex: 999,
+  },
+
+  inst:{backgroundColor: '#dfdfdf', fontSize: 11, fontWeight: 300, width: '100%', textAlign: 'center', padding: 1},
 
   /* Section Title */
   sectionTitle: {
@@ -57,7 +72,6 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8, 
-    backgroundColor: '#d5e1e9',
     borderRadius: 5
   },
 
@@ -67,8 +81,9 @@ export default StyleSheet.create({
     justifyContent: 'center',
     backgroundColor:'#6e9fc1',
     height: 'auto',
-    marginLeft: 30,
+    width: '60%',
     padding:0,
+    height: 40
   },
 
   pickerContainer: {
@@ -155,20 +170,18 @@ export default StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     height: 'auto',
-    backgroundColor: '#d5e1e9',
     padding: 8,
     borderRadius: 5
   },
 
   dateButton: {
     display: 'flex',
-    flex: 1,
+    width: '60%',
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#6e9fc1',
     padding: 10,
     borderRadius: 5,
-    marginLeft: 30,
     justifyContent: 'space-between'
   },
 
@@ -178,11 +191,7 @@ export default StyleSheet.create({
     fontSize: 15
   },
 
-  label: {
-    fontWeight: 'bold',
-    alignSelf: 'flex-start',
-    marginTop: 10,
-  },
+  label: {fontSize: 14, fontWeight: 500, color: '#000',  width:'40%'},
 
   textArea: {
     width: '100%',
@@ -216,7 +225,6 @@ timeSection:{
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'center',
-  backgroundColor: '#d5e1e9',
   borderRadius: 5,
   padding: 8
 },
@@ -227,8 +235,7 @@ timeBtn:{
 
   timeButtonContainer: {
     flexDirection: 'row',
-    flex:1,
-    marginLeft: 30,
+    width: '60%',
     gap: 5
   },
 
@@ -417,7 +424,6 @@ timeBtn:{
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8, 
-    backgroundColor: '#d5e1e9',
     borderRadius: 5
   },
 
@@ -427,8 +433,9 @@ timeBtn:{
     justifyContent: 'center',
     backgroundColor:'#6e9fc1',
     height: 'auto',
-    marginLeft: 30,
+    width: '60%',
     padding:0,
+    height: 40
   },
 
   programItem:{
@@ -449,17 +456,15 @@ timeBtn:{
     flexDirection: 'row',
     alignItems: 'center',
     padding: 8, 
-    backgroundColor: '#d5e1e9',
     borderRadius: 5
   },
 
   roomInput: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#e9ecee',
     borderRadius: 5,
     paddingHorizontal: 10,
     height: 'auto',
-    marginLeft: 30
   },
 
   timeModalContainer: {
@@ -563,14 +568,14 @@ timeBtn:{
   },
 
   wholeSection:{
-    padding: 10,
-    backgroundColor: '#fff',
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#cde4f4',
+    flex:1,
+    backgroundColor: '#e9ecee',
     height: 'auto',
     gap: 5,
-    overflow: 'visible'
+    overflow: 'visible',
+    paddingHorizontal: 7,
+    paddingVertical: 7,
+    paddingTop: 10,
   },
 
   wholeSection2:{
@@ -597,7 +602,9 @@ timeBtn:{
   },
 
   scrollContainer: {
-    padding: 16,
+    flexGrow: 1
+    // paddingHorizontal: 7,
+    // paddingVertical: 5,
   },
 
   

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView , Platform, Keyboard} from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView , Platform, Keyboard, StatusBar} from 'react-native';
 import { getDocs, collection, onSnapshot, doc, setDoc, addDoc, query, where, Timestamp } from 'firebase/firestore';
 import { db } from '../backend/firebase/FirebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -371,12 +371,30 @@ export default function InventoryScreen({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Header onLayout={handleHeaderLayout} />
+      
+      <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
+        }}>
+              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                <Icon name="keyboard-backspace" size={28} color="black" />
+              </TouchableOpacity>
+                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17}}>Requisition Slip</Text>
+              <TouchableOpacity style={{padding: 2}}>
+                <Icon name="dots-vertical" size={24} color="#000" />
+              </TouchableOpacity>
+          </View>
+          <Text style={styles.inst}>Please fill in the required information to proceed.</Text>
+            </View>
 
       <KeyboardAvoidingView
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
+      <StatusBar
+                      translucent
+                      backgroundColor="transparent"
+                      barStyle="dark-content" // or 'light-content' depending on your design
+                    />
       {!isComplete && (
      
   
@@ -388,95 +406,19 @@ export default function InventoryScreen({ navigation }) {
           extraScrollHeight={0} 
           enableAutomaticScroll={true} >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss} style={{flex: 1, overflow: 'visible' }}>
-      <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
-      <View style={{flexDirection:'row', alignItems: 'center', marginBottom: 10}}>
-        <Icon2 name='clipboard-outline' size={30}/>
-        <View style={{flex: 1, marginLeft: 8}}>
-        <Text style={{fontSize:18, fontWeight: 'bold'}}>Requisition Slip</Text>
-        <Text style={{fontWeight: 300, fontSize: 13}}>Please fill in the required information to proceed.</Text>
-        </View>
-      </View>
-    <View style={[styles.dateSection]}>
-      <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f', width: 100}}>Date Needed:</Text>
 
-      <TouchableOpacity style={[
-    styles.dateButton,
-    errors.date && { borderColor: 'red', borderWidth: 1 }
-    ]} 
-    onPress={() => setCalendarVisible(true)}>
       
-        <Text style={styles.dateButtonText}>
-          {selectedDate || 'Select Date'}
-        </Text>
-        <Icon2 name="chevron-down" type="ionicon" size={20} color='#fff'/>1
-      </TouchableOpacity>
 
-      {/* Modal with Calendar */}
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={calendarVisible}
-        onRequestClose={() => setCalendarVisible(false)}
-      >
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Calendar
-              onDayPress={(day) => {
-                setSelectedDate(day.dateString);
-                setCalendarVisible(false);
-                setMetadata((prev) => ({ ...prev, dateRequired: day.dateString }));
-              }}
-              markedDates={{
-                [selectedDate]: { selected: true, selectedColor: '#00796B' }
-              }}
-              minDate={today}
-            />
-            <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.closeButton}>
-              <Text style={{ color: 'white' }}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </View>
+      <View style={[styles.wholeSection,{ marginTop: headerHeight}]}> 
 
-          <View style={styles.timeSection}>
-              <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f', width:100}}>Time Needed:</Text>
-              <View style={styles.timeButtonContainer}>
-                <View style={styles.timeBtn}>
-                <Text style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>start:</Text>
-                <TouchableOpacity
-                    style={[
-                      styles.timeButton,
-                      errors.startTime && { borderColor: 'red', borderWidth: 1 }
-                    ]}
-                    onPress={() => openTimePicker('start')}
->
-                      <Text style={styles.timeButtonText}>
-                        {formatTime(selectedStartTime)}
-                      </Text>
-                    </TouchableOpacity>
-                </View>
-                  
-                <View  style={styles.timeBtn}>
-                <Text  style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>end:</Text>
-                <TouchableOpacity
-                      style={[
-                        styles.timeButton,
-                        errors.endTime && { borderColor: 'red', borderWidth: 1 }
-                      ]}
-                      onPress={() => openTimePicker('end')}
-                    >
-                      <Text style={styles.timeButtonText}>
-                      {formatTime(selectedEndTime)}
-                      </Text>
-                    </TouchableOpacity>
-                </View>  
-                  </View>
-          </View>
+        <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8,paddingBottom: 5, paddingHorizontal: 10, gap: 5 }}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 5}}>
+              <Icon name='book-outline' size={20} color='#6abce2'/>
+              <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Subject Details</Text>
+              </View>
 
-
-          <View style={styles.programSection}>
-            <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width:100}}>Select Program:</Text>
+                        <View style={styles.programSection}>
+            <Text style={styles.label}>Select Program:</Text>
             <View
                 style={[
                   styles.programPicker,
@@ -509,8 +451,146 @@ export default function InventoryScreen({ navigation }) {
                 </View>
           </View>
 
-          <View style={styles.roomSection}>
-            <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width: 100}}>Room No.</Text>
+          <View style={styles.programSection}>
+            <Text style={styles.label}>Course Code:</Text>
+            <View
+                style={[
+                  styles.programPicker,
+                  errors.program && { borderColor: 'red', borderWidth: 1 }
+                ]}
+              >
+                  <Picker
+                    // selectedValue={program}
+                    // onValueChange={(itemValue) => {
+                    //   setProgram(itemValue);
+                    //   setMetadata((prevMetadata) => ({ ...prevMetadata, program: itemValue }));
+                    // }}
+                    style={styles.programItem}
+                    dropdownIconColor= "#6e9fc1"
+                    dropdownIconRippleColor='white'
+                  >
+                    <Picker.Item label="Program" value=""  style={{fontSize: 15}}/>
+                    <Picker.Item label="SAM - BSMT" value="SAM - BSMT" style={{fontSize: 15}} />
+                    <Picker.Item label="SAH - BSN" value="SAH - BSN"  style={{fontSize: 15}}/>
+                    <Picker.Item label="SHS" value="SHS"  style={{fontSize: 15}}/>
+                  </Picker>
+
+                  <Icon2
+                    name="chevron-down"
+                    size={20}
+                    color="white"
+                    style={styles.arrowIcon}
+                    pointerEvents="none"
+                  />
+                </View>
+          </View>
+
+          <View style={styles.programSection}>
+              <Text style={styles.label}>Course Code:</Text>
+              <TextInput style={{width: '60%', backgroundColor: 'gray', backgroundColor: '#e9ecee', borderRadius: 5, paddingHorizontal: 10}} placeholder='<autofill>'></TextInput>
+          </View>
+        </View>
+
+
+
+        <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 5, paddingHorizontal: 10, gap: 5 }}>
+        <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 5}}>
+              <Icon name='calendar-outline' size={20} color='#6abce2'/>
+              <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Date & Time</Text>
+              </View>
+
+              <View style={[styles.dateSection]}>
+      <Text style={styles.label}>Date Needed:</Text>
+
+      <TouchableOpacity style={[
+    styles.dateButton,
+    errors.date && { borderColor: 'red', borderWidth: 1 }
+    ]} 
+    onPress={() => setCalendarVisible(true)}>
+      
+        <Text style={styles.dateButtonText}>
+          {selectedDate || 'Select Date'}
+        </Text>
+        <Icon2 name="chevron-down" type="ionicon" size={20} color='#fff'/>
+      </TouchableOpacity>
+
+      {/* Modal with Calendar */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={calendarVisible}
+        onRequestClose={() => setCalendarVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Calendar
+              onDayPress={(day) => {
+                setSelectedDate(day.dateString);
+                setCalendarVisible(false);
+                setMetadata((prev) => ({ ...prev, dateRequired: day.dateString }));
+              }}
+              markedDates={{
+                [selectedDate]: { selected: true, selectedColor: '#00796B' }
+              }}
+              minDate={today}
+            />
+            <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.closeButton}>
+              <Text style={{ color: 'white' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </View>
+
+
+    <View style={styles.timeSection}>
+              <Text style={styles.label}>Time Needed:</Text>
+              <View style={styles.timeButtonContainer}>
+                <View style={styles.timeBtn}>
+                <Text style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>start:</Text>
+                <TouchableOpacity
+                    style={[
+                      styles.timeButton,
+                      errors.startTime && { borderColor: 'red', borderWidth: 1 }
+                    ]}
+                    onPress={() => openTimePicker('start')}
+>
+                      <Text style={styles.timeButtonText}>
+                        {formatTime(selectedStartTime)}
+                      </Text>
+                    </TouchableOpacity>
+                </View>
+                  
+                <View  style={styles.timeBtn}>
+                <Text  style={{fontSize: 12, fontWeight: 400, color: '#395a7f'}}>end:</Text>
+                <TouchableOpacity
+                      style={[
+                        styles.timeButton,
+                        errors.endTime && { borderColor: 'red', borderWidth: 1 }
+                      ]}
+                      onPress={() => openTimePicker('end')}
+                    >
+                      <Text style={styles.timeButtonText}>
+                      {formatTime(selectedEndTime)}
+                      </Text>
+                    </TouchableOpacity>
+                </View>  
+                  </View>
+          </View>      
+      </View>
+
+                      
+      
+
+
+      <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 5, paddingHorizontal: 10, gap: 5 }}>
+            <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 5}}>
+              <Icon name='format-list-bulleted' size={20} color='#6abce2'/>
+              <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Other Info</Text>
+              </View>
+
+              <View style={styles.roomSection}>
+            <Text style={styles.label}>Room No.</Text>
             <TextInput
                   style={[
                     styles.roomInput,
@@ -528,7 +608,7 @@ export default function InventoryScreen({ navigation }) {
           </View>
 
           <View style={styles.usageSection}>
-                <Text style={{fontSize: 16, fontWeight: 500, color: '#395a7f',  width: 100}}>Usage Type</Text>
+                <Text style={styles.label}>Usage Type</Text>
                 <View
                 style={[
                   styles.usagePicker,
@@ -563,6 +643,17 @@ export default function InventoryScreen({ navigation }) {
                   />
         </View>
           </View>
+      </View>
+    
+
+          
+
+
+
+
+          
+
+          
 
         <View style={styles.noteSection}>
           <Text style={{fontWeight: 'bold'}}>Note: (Optional)</Text>
@@ -578,7 +669,10 @@ export default function InventoryScreen({ navigation }) {
               />
         </View>
 
-        <View style={{alignItems: 'flex-end', padding: 5}}>
+        <View style={{alignItems: 'flex-end', padding: 5, flexDirection: 'row'}}>
+          <TouchableOpacity>
+            <Text>Add to Drafts</Text>
+            </TouchableOpacity>
           <TouchableOpacity style={styles.proceedBtn} onPress={() => handleNext()}>
             <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Next</Text>
             <Icon2 name='chevron-forward' color='#fff' size={15}/>
