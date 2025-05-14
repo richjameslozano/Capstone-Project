@@ -375,8 +375,8 @@ export default function InventoryScreen({ navigation }) {
     if (!hasErrors) {
       setMetadata({
         dateRequired: selectedDate,
-        timeFrom: selectedStartTime,
-        timeTo: selectedEndTime,
+        timeFrom: formatTime(selectedStartTime),
+        timeTo: formatTime(selectedEndTime),
         program,
         room,
         usageType: selectedUsageTypeInput,
@@ -385,7 +385,7 @@ export default function InventoryScreen({ navigation }) {
       
       setIsComplete(true);
     }
-    };
+  };
 
   return (
     <View style={styles.container}>
