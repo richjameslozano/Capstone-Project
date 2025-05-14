@@ -123,12 +123,14 @@ const HistoryLog = () => {
           const action = isCancelled
             ? "Cancelled a request"
             : data.action || "Modified a request";
-  
-          const by =
+            
+          const by = 
             action === "Request Approved"
               ? data.approvedBy
               : action === "Request Rejected"
               ? data.rejectedBy
+              : action === "Deployed"
+              ? data.approvedBy
               : data.userName || "Unknown User";
   
           return {
