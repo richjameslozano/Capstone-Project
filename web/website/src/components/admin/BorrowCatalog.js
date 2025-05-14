@@ -129,16 +129,36 @@ const BorrowCatalog = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <Text
-          style={{
-            color: status === "Approved" ? "green" : "red",
-            fontWeight: "bold",
-          }}
-        >
-          {status}
-        </Text>
-      ),
+      render: (status) => {
+        let color;
+
+        switch (status) {
+          case "Borrowed":
+            color = "blue";
+            break;
+
+          case "Returned":
+            color = "orange";
+            break;
+
+          case "Return Approved":
+            color = "green";
+            break;
+
+          case "Deployed":
+            color = "red";
+            break;
+
+          default:
+            color = "purple";
+        }
+
+        return (
+          <Text style={{ color, fontWeight: "bold" }}>
+            {status}
+          </Text>
+        );
+      },
     },
     {
       title: "",
@@ -219,15 +239,19 @@ const BorrowCatalog = () => {
               <Button type={statusFilter === "All" ? "primary" : "default"} onClick={() => handleStatusFilter("All")}>
                 All
               </Button>
+
               <Button type={statusFilter === "Borrowed" ? "primary" : "default"} onClick={() => handleStatusFilter("Borrowed")}>
                 Borrowed
               </Button>
+
               <Button type={statusFilter === "Returned" ? "primary" : "default"} onClick={() => handleStatusFilter("Returned")}>
                 Returned
               </Button>
-              <Button type={statusFilter === "Approved" ? "primary" : "default"} onClick={() => handleStatusFilter("Approved")}>
-                Approved
+
+              <Button type={statusFilter === "Return Approved" ? "primary" : "default"} onClick={() => handleStatusFilter("Return Approved")}>
+                Return Approved
               </Button>
+
               <Button type={statusFilter === "Deployed" ? "primary" : "default"} onClick={() => handleStatusFilter("Deployed")}>
                 Deployed
               </Button>
