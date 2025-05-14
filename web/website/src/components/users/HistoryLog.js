@@ -6,6 +6,7 @@ import {
   Typography,
   Modal,
   Descriptions,
+  Select,
 } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
@@ -123,12 +124,14 @@ const HistoryLog = () => {
           const action = isCancelled
             ? "Cancelled a request"
             : data.action || "Modified a request";
-  
-          const by =
+            
+          const by = 
             action === "Request Approved"
               ? data.approvedBy
               : action === "Request Rejected"
               ? data.rejectedBy
+              : action === "Deployed"
+              ? data.approvedBy
               : data.userName || "Unknown User";
   
           return {
@@ -200,16 +203,19 @@ const HistoryLog = () => {
               style={{ width: "60%" }}
             />
 
-            <select
+            <Select
               value={actionFilter}
-              onChange={(e) => setActionFilter(e.target.value)}
-              style={{ width: 200, padding: "5px" }}
+              onChange={(value) => setActionFilter(value)}
+              style={{ width: 200 }}
+              allowClear
+              placeholder="Filter by Action"
             >
-              <option value="ALL">All</option>
-              <option value="Request Approved">Request Approved</option>
-              <option value="Request Rejected">Request Rejected</option>
-              <option value="Cancelled a request">Request Cancelled</option>
-            </select>
+              <Select.Option value="ALL">All</Select.Option>
+              <Select.Option value="Request Approved">Request Approved</Select.Option>
+              <Select.Option value="Request Rejected">Request Rejected</Select.Option>
+              <Select.Option value="Cancelled a request">Request Cancelled</Select.Option>
+              <Select.Option value="Deployed">Deployed</Select.Option>
+            </Select>
           </div>
 
           <Table
