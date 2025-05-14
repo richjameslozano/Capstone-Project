@@ -44,11 +44,13 @@ const RequestLogScreen = () => {
                 ? 'Cancelled a request'
                 : data.action || 'Modified a request';
   
-              const by =
-                action === "Request Approved"
+              const by = 
+              action === "Request Approved"
                 ? data.approvedBy
                 : action === "Request Rejected"
                 ? data.rejectedBy
+                : action === "Deployed"
+                ? data.approvedBy
                 : data.userName || "Unknown User";
   
               return {
