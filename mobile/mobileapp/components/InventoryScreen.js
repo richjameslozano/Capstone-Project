@@ -13,6 +13,7 @@ import Header from './Header';
 import Icon2 from 'react-native-vector-icons/Ionicons'; 
 import { useFocusEffect } from '@react-navigation/native';
 
+
 export default function InventoryScreen({ navigation }) {
   const { user } = useAuth();
   const [tempRequestCount, setTempRequestCount] = useState(0);
@@ -239,13 +240,25 @@ export default function InventoryScreen({ navigation }) {
     const isAlreadyInList = requestList.some(reqItem => reqItem.id === item.id);
     const isActive = activeInputItemId === item.id;
   
+    const handleIcon =()=>{
+      if(item.category === 'Equipment') return 'cube-outline';
+      if(item.category === 'Chemical') return 'flask-outline';
+      if(item.category === 'Materials') return 'layers-outline';
+      if(item.category === 'Reagent') return 'test-tube';
+    }
+
+    const handleBgColor =() =>{
+      if(item.category === 'Equipment') return '#ffffa0';
+      if(item.category === 'Materials') return '#dac4ff';
+    }
     return (
       <TouchableOpacity onPress={() => openModal(item)} activeOpacity={0.9}>
         <View style={styles.card}>
           <View style={styles.cardContent}>
-            <View style={styles.imageContainer}>
-              <Image style={styles.itemImage} source={require('../assets/favicon.png')} />
+            <View style={[styles.imageContainer]}>
+              <Icon name={handleIcon()} size={30} color={'black'}/>
             </View>
+            
   
             <View style={styles.itemDetails}>
               <Text style={styles.itemName}>{item.itemName}</Text>
@@ -261,7 +274,10 @@ export default function InventoryScreen({ navigation }) {
               }}
               disabled={isAlreadyInList}
             >
-              <Icon name="plus-circle" size={24} color={isAlreadyInList ? '#ccc' : 'green'} />
+              <View style={{flex: 1,borderLeftWidth: 1, borderColor: '#e9ecee', paddingLeft: 10, alignItems: 'center', justifyContent: 'center', marginVertical: 10}}>
+                <Icon2 name={isActive ? "remove-circle-outline":"add-circle-outline"} size={28} color={isAlreadyInList ? '#ccc' : '#395a7f'} />
+              </View>
+              
             </TouchableOpacity>
           </View>
   
@@ -387,7 +403,7 @@ export default function InventoryScreen({ navigation }) {
                 <Icon name="dots-vertical" size={24} color="#fff" />
               </TouchableOpacity>
           </View>
-          <Text style={styles.inst}>Please fill in the required information to proceed.</Text>
+          {!isComplete && (<Text style={styles.inst}>Please fill in the required information to proceed.</Text>)}
             </View>
 
     <StatusBar
@@ -403,7 +419,7 @@ export default function InventoryScreen({ navigation }) {
       
       {!isComplete && (
      
-  
+        <View style={{flex:1}}>
         <ScrollView 
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.scrollContainer}
@@ -417,7 +433,7 @@ export default function InventoryScreen({ navigation }) {
 
       <View style={[styles.wholeSection,{ marginTop: headerHeight}]}> 
 
-        <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8,paddingBottom: 5, paddingHorizontal: 10, gap: 5 }}>
+        <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8,paddingBottom: 5, paddingHorizontal: 10 }}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 5}}>
               <Icon name='book-outline' size={20} color='#6abce2'/>
               <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Subject Details</Text>
@@ -442,7 +458,7 @@ export default function InventoryScreen({ navigation }) {
                     dropdownIconRippleColor='white'
                   >
                     <Picker.Item label="Program" value=""  style={{fontSize: 15}}/>
-                    <Picker.Item label="SAM - BSMT" value="SAM - BSMT" style={{fontSize: 15}} />
+                    <Picker.Item label="SAH - BSMT" value="SAH - BSMT" style={{fontSize: 15}} />
                     <Picker.Item label="SAH - BSN" value="SAH - BSN"  style={{fontSize: 15}}/>
                     <Picker.Item label="SHS" value="SHS"  style={{fontSize: 15}}/>
                   </Picker>
@@ -475,8 +491,8 @@ export default function InventoryScreen({ navigation }) {
                     dropdownIconColor= "#6e9fc1"
                     dropdownIconRippleColor='white'
                   >
-                    <Picker.Item label="Program" value=""  style={{fontSize: 15}}/>
-                    <Picker.Item label="SAM - BSMT" value="SAM - BSMT" style={{fontSize: 15}} />
+                    <Picker.Item label="Course Code" value=""  style={{fontSize: 15}}/>
+                    <Picker.Item label="SAH - BSMT" value="SAH - BSMT" style={{fontSize: 15}} />
                     <Picker.Item label="SAH - BSN" value="SAH - BSN"  style={{fontSize: 15}}/>
                     <Picker.Item label="SHS" value="SHS"  style={{fontSize: 15}}/>
                   </Picker>
@@ -499,7 +515,7 @@ export default function InventoryScreen({ navigation }) {
 
 
 
-        <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 5, paddingHorizontal: 10, gap: 5 }}>
+        <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 5, paddingHorizontal: 10 }}>
         <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 5}}>
               <Icon name='calendar-outline' size={20} color='#6abce2'/>
               <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Date & Time</Text>
@@ -589,7 +605,7 @@ export default function InventoryScreen({ navigation }) {
       
 
 
-      <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 5, paddingHorizontal: 10, gap: 5 }}>
+      <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 5, paddingHorizontal: 10}}>
             <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 5}}>
               <Icon name='format-list-bulleted' size={20} color='#6abce2'/>
               <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Other Info</Text>
@@ -650,19 +666,10 @@ export default function InventoryScreen({ navigation }) {
         </View>
           </View>
       </View>
-    
-
-          
-
-
-
-
-          
-
           
 
         <View style={styles.noteSection}>
-          <Text style={{fontWeight: 'bold'}}>Note: (Optional)</Text>
+          <Text style={{fontWeight: 300, fontSize: 13, paddingLeft: 5}}>Note: (Optional)</Text>
         <TextInput
                 style={styles.noteInput}
                 placeholder="Leave a note..."
@@ -675,9 +682,16 @@ export default function InventoryScreen({ navigation }) {
               />
         </View>
 
-        <View style={{alignItems: 'flex-end', padding: 5, flexDirection: 'row'}}>
-          <TouchableOpacity>
-            <Text>Add to Drafts</Text>
+
+        </View>
+        
+        </TouchableWithoutFeedback>
+        </ScrollView>
+
+        <View style={{left: 7, flexDirection: 'row', gap: 5, position: 'absolute', bottom: 5, right: 7, flex: 1}}>
+          <TouchableOpacity style={styles.addDraft}>
+            <Icon name='file-document-edit-outline' size={15} color='#395a7f'/>
+            <Text style={{color: '#395a7f', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Add to Drafts</Text>
             </TouchableOpacity>
           <TouchableOpacity style={styles.proceedBtn} onPress={() => handleNext()}>
             <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Next</Text>
@@ -685,25 +699,57 @@ export default function InventoryScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         </View>
-        </TouchableWithoutFeedback>
-        </ScrollView>
         
     )}
     
   {isComplete && (
-    <View style={{flex: 1, backgroundColor: '#cde4f4'}}>
-    <View style={[styles.wholeSection2,{ marginTop: headerHeight }]}>
+    <View style={{flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7}}>
 
-      <View style={styles.searchFilter}>
-      <TextInput 
-                style={[styles.searchBar]}
-                placeholder="Search by item name"
-                value={searchQuery}
-                onChangeText={setSearchQuery}
-              />
+
+      <View style={[styles.searchFilter, {top: headerHeight}]}>
+        <View style={{flex: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 7}}>
+          <View style={styles.searchContainer}>
+            <Icon name="magnify" size={20} color="#888" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search by item name"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+          </View>
+
+          <TouchableOpacity style={{backgroundColor:'#efefef', flex:1, borderRadius: 5, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5}}>
+            <Icon name='filter-variant' size={20} color='#515151'/>
+            <Text style={{fontWeight: 'bold', color: '#515151'}}>All</Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5, paddingHorizontal:10}}>
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Icon name='cube-outline' size={16} color={'gray'}/>
+          <Text style={{fontWeight: 300, fontSize: 11}}>- Equipment</Text>
+          </View>
+
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Icon name='flask-outline' size={16} color={'gray'}/>
+          <Text style={{fontWeight: 300, fontSize: 11}}>- Chemical</Text>
+          </View>
+
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Icon name='layers-outline' size={16} color={'gray'}/>
+          <Text style={{fontWeight: 300, fontSize: 11}}>- Material</Text>
+          </View>
+
+          <View style={{flexDirection: 'row', alignItems: 'center'}}>
+          <Icon name='test-tube' size={16} color={'gray'}/>
+          <Text style={{fontWeight: 300, fontSize: 11}} >- Reagent</Text>
+          </View>
+
+        </View>
       </View>
-        
-            
+
+
+    <View style={[styles.wholeSection2,{ marginTop: headerHeight+85 }]}>
             <ScrollView
             showsVerticalScrollIndicator={false}
             enableOnAndroid={true}
@@ -712,7 +758,7 @@ export default function InventoryScreen({ navigation }) {
             enableAutomaticScroll={true}
             >
             <FlatList
-                 style={{flexGrow: 1, paddingBottom: 80, paddingHorizontal: 5, paddingTop:60}}
+                 style={{flexGrow: 1, paddingBottom: 80, paddingHorizontal: 5, paddingTop: 5}}
                 data={filteredItems}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
@@ -726,13 +772,9 @@ export default function InventoryScreen({ navigation }) {
 
         <View style={styles.bottomContainer}>
 
-        <TouchableOpacity onPress={()=> setIsComplete(false)}>
-          <Text>Back</Text>
-        </TouchableOpacity>
-
         <View style={styles.requestAddContainer}>
         <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
-          <Text style={styles.requestButtonText}>Request List</Text>
+          <Text style={styles.requestButtonText}>Item List</Text>
           {tempRequestCount > 0 && (
             <View style={styles.notificationBadge}>
               <Text style={styles.notificationText}>{tempRequestCount}</Text>
@@ -740,6 +782,8 @@ export default function InventoryScreen({ navigation }) {
           )}
         </TouchableOpacity>
         </View>
+
+
       </View> 
       </View>
       </View>

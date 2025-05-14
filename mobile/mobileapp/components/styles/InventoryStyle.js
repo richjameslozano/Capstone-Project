@@ -8,7 +8,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#e9ecee',
     paddingBottom: 0,
-    overflow: 'visible'
+    overflow: 'visible',
   },
 
   profileHeader:{
@@ -22,7 +22,19 @@ export default StyleSheet.create({
     justifyContent:'space-between',
     zIndex: 999,
   },
-  
+
+  addDraft:{
+    flex:1,
+    backgroundColor: 'white',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 5,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: 'gray',
+    flexDirection: 'row',
+    gap: 10
+  },
 
   inst:{backgroundColor: '#fff', fontSize: 11, fontWeight: 300, width: '100%', textAlign: 'center', padding: 1},
 
@@ -40,32 +52,25 @@ export default StyleSheet.create({
     width: '100%',
     height: 'auto',
     padding: 5,
-    paddingBottom: 20,
-    top: 5,
-  
+    paddingBottom: 5,
+    backgroundColor: 'white',
+    paddingTop: 10,
   },
 
-  /* Search Bar */
-  searchBar: {
-    height: 50,
-    flex: 1,
-    backgroundColor: '#EDEDED',
-    fontSize: 14,
-    padding: 10,
-    borderRadius: 10,
-    margin: 0,
+  searchContainer: {
+    width: '70%',
+    flexDirection: 'row',
+    alignItems: 'center',
     borderWidth: 1,
-    borderColor: 'gray',
-    // Android shadow
-    elevation: 50,
-  
-    // iOS shadow
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
   },
-  
+  searchInput: {
+    flex: 1,
+    height: 40,
+  },
 
   /* Picker Styles */
   usageSection:{
@@ -138,10 +143,12 @@ export default StyleSheet.create({
   },
 
   inputRow: {
+    flex: 1,
+
     flexDirection: 'row',
-    alignItems: 'center',
+    marginVertical: 10,
     marginHorizontal: 10,
-    marginBottom: 10,
+    marginBottom: 10
   },
   
   input: {
@@ -155,7 +162,7 @@ export default StyleSheet.create({
   },
 
   confirmButton: {
-    backgroundColor: '#4CAF50',
+    backgroundColor: '#395a7f',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 6,
@@ -256,25 +263,25 @@ timeBtn:{
 
   /* Bottom Section */
   bottomContainer: {
-    width: '100%',
     display: 'flex',
     position: 'absolute',
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    justifyContent: 'flex-end',
     alignItems: 'center',
     backgroundColor: '#395a7f',
-    padding: 10,
-    borderRadius:20,
+    padding: 5,
+    borderRadius:50,
     elevation: 4,
     bottom: 20,
+    right: 20,
     alignSelf: 'center'
   },
 
   requestButton: {
     backgroundColor: '#6e9fc1',
     paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 10,
+    paddingHorizontal: 15,
+    borderRadius: 50,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -314,21 +321,23 @@ timeBtn:{
   card: {
     backgroundColor: '#FFF',
     borderRadius: 10,
-    padding: 10,
     flexDirection: 'column',
     marginBottom: 10,
-    elevation: 3,
+    elevation: 2,
   },
 
   cardContent: {
+    flex:1,
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
+    justifyContent:'center',
+    paddingRight: 10
   },
 
   imageContainer: {
-    width: 60,
-    height: 60,
-    backgroundColor: '#E0E0E0',
+    height: '100%',
+    width: '22%',
+    backgroundColor: '#e9ecee',
     borderRadius: 10,
     justifyContent: 'center',
     alignItems: 'center',
@@ -343,11 +352,13 @@ timeBtn:{
 
   itemDetails: {
     flex: 1,
+    paddingVertical: 10,
   },
 
   itemName: {
     fontWeight: 'bold',
     fontSize: 16,
+    marginBottom:5,
   },
 
   department: {
@@ -389,10 +400,9 @@ timeBtn:{
   },
 
   itemType: {
-    fontSize: 14,
-    fontWeight: 'bold',
+    fontSize: 12,
+    fontWeight: 300,
     color: '#333',
-    marginBottom: 5,
   },
 
   tag: {
@@ -576,19 +586,18 @@ timeBtn:{
     overflow: 'visible',
     paddingHorizontal: 7,
     paddingVertical: 7,
-    paddingTop: 10,
+    paddingTop: 7,
   },
 
   wholeSection2:{
     flex: 1, 
     padding: 8,
     backgroundColor: '#fff',
-    borderWidth: 8,
-    borderRadius: 20,
-    borderColor: '#cde4f4',
     height: 'auto',
     gap: 5,
-    paddingBottom: 0
+    paddingBottom: 0,
+    borderRadius: 8,
+    marginHorizontal: 7,
   },
 
   proceedBtn:{
@@ -599,13 +608,14 @@ timeBtn:{
     borderRadius: 5,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center'
+    justifyContent: 'center',
+    width: '30%'
   },
 
   scrollContainer: {
-    flexGrow: 1
-    // paddingHorizontal: 7,
-    // paddingVertical: 5,
+    flexGrow: 1,
+    paddingBottom: 50,
+
   },
 
   
