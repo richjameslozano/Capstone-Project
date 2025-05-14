@@ -12,7 +12,7 @@ import { useRequestMetadata } from './contexts/RequestMetadataContext';
 import Header from './Header';
 
 import Icon2 from 'react-native-vector-icons/Ionicons'; 
-import { useFocusEffect } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 
 export default function InventoryScreen({ navigation }) {
@@ -62,8 +62,19 @@ export default function InventoryScreen({ navigation }) {
       setRoom('')
       setReason('')
       setSelectedUsageTypeInput(null)
+
+          StatusBar.setBarStyle('light-content');
+          StatusBar.setBackgroundColor('transparent');
     }, [])
   );
+
+  // const isFocused = useIsFocused();
+  // useEffect(() => {
+  //     if (isFocused) {
+  //       StatusBar.setBarStyle('light-content');
+  //       StatusBar.setBackgroundColor('transparent');
+  //     }
+  //   }, [isFocused]);
    
   useEffect(() => {
     const inventoryCollection = collection(db, 'inventory');  
@@ -494,11 +505,11 @@ export default function InventoryScreen({ navigation }) {
         <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
         }}>
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Icon name="keyboard-backspace" size={28} color="black" />
+                <Icon name="keyboard-backspace" size={28} color="white" />
               </TouchableOpacity>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17}}>Requisition Slip</Text>
+                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white'}}>Requisition Slip</Text>
               <TouchableOpacity style={{padding: 2}}>
-                <Icon name="dots-vertical" size={24} color="#000" />
+                <Icon name="dots-vertical" size={24} color="#fff" />
               </TouchableOpacity>
           </View>
           {!isComplete && (<Text style={styles.inst}>Please fill in the required information to proceed.</Text>)}
@@ -511,7 +522,7 @@ export default function InventoryScreen({ navigation }) {
       <StatusBar
                       translucent
                       backgroundColor="transparent"
-                      barStyle="dark-content" // or 'light-content' depending on your design
+                      barStyle="light-content" // or 'light-content' depending on your design
                     />
       {!isComplete && (
      
