@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
@@ -29,30 +30,11 @@ const RequestedItemsScreen = ({ route, navigation }) => {
 
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
-
-      // if (data.userName === userName && data.requestList) {
-      //   const isDeployed = data.status === "Deployed";
-
-      //   data.requestList.forEach((item, index) => {
-      //     itemsData.push({
-      //       ...item,
-      //       isDeployed,
-      //       requestId: docSnap.id,
-      //       requestIndex: index, // optional, helpful for debug
-      //       requestMeta: {
-      //         timeFrom: data.timeFrom,
-      //         timeTo: data.timeTo,
-      //         borrower: data.userName,
-      //         dateRequired: data.dateRequired,
-      //         status: data.status
-      //       }
-      //     });
-      //   });
-      // }
+      
       if (
         data.userName === userName &&
         data.requestList &&
-        (data.status === "Deployed" || data.status === "Returned")
+        (data.status === "Deployed" || data.status === "Returned" || data.status === "Borrowed")
       ) {
         data.requestList.forEach((item, index) => {
           itemsData.push({
