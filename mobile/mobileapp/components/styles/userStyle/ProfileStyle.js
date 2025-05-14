@@ -77,12 +77,11 @@ export default StyleSheet.create({
 
   logoutButton: {
     flexDirection: 'row',
-    backgroundColor: '#D32F2F',
+    backgroundColor: '#fff',
     padding: 15,
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 30,
   },
 
   logoutText: {
