@@ -13,7 +13,7 @@ export default StyleSheet.create({
 
   profileHeader:{
     position: 'absolute',
-    backgroundColor: '#fff',
+    backgroundColor: '#395a7f',
     flex: 1,
     paddingTop: StatusBar.currentHeight+15,
     left: 0,
@@ -22,8 +22,9 @@ export default StyleSheet.create({
     justifyContent:'space-between',
     zIndex: 999,
   },
+  
 
-  inst:{backgroundColor: '#dfdfdf', fontSize: 11, fontWeight: 300, width: '100%', textAlign: 'center', padding: 1},
+  inst:{backgroundColor: '#fff', fontSize: 11, fontWeight: 300, width: '100%', textAlign: 'center', padding: 1},
 
   /* Section Title */
   sectionTitle: {

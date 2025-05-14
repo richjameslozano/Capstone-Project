@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, useIsFocused } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { AuthProvider } from './components/contexts/AuthContext';
@@ -40,8 +40,12 @@ import ReturnItems from './components/user/ReturnItems';
 import LoginScreen2 from './components/LoginScreen2';
 import RequestedItemsScreen from './components/admin/RequestedItemsScreen';
 import RequestorListScreen from './components/admin/RequestorListScreen';
+
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
+
+
+
 
 LogBox.ignoreLogs([
   'Support for defaultProps will be removed from function components'
@@ -61,14 +65,17 @@ const getInitials = (name) => {
 
 const CustomDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    if (isFocused) {
+      StatusBar.setBarStyle('light-content');
+      StatusBar.setBackgroundColor('transparent');
+    }
+  }, [isFocused]);
 
   return (
     <View style={styles.drawerContent}>
-        <StatusBar
-          translucent
-          backgroundColor="transparent"
-          barStyle="light-content" // or 'light-content' depending on your design
-        />
 
         <View style={styles.upperSection}>
           <View style={styles.headProfile}>
@@ -280,6 +287,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
 function UserDrawer() {
   return (
     <Drawer.Navigator
+    
       initialRouteName="InventoryScreen"
       screenOptions={{ headerShown: false }}
       drawerContent={(props) => <CustomDrawerContent {...props} />}

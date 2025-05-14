@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, Alert, StatusBar, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/ProfileStyle';
@@ -8,6 +8,7 @@ import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/fi
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '@firebase/firestore';
 import * as ImagePicker from 'expo-image-picker';
+import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 
 
 export default function ProfileScreen({ navigation }) {
@@ -88,7 +89,14 @@ const handleHeaderLayout = (event) => {
   };
 
 
+const isFocused = useIsFocused();
 
+useEffect(() => {
+  if (isFocused) {
+    StatusBar.setBarStyle('dark-content');
+    StatusBar.setBackgroundColor('transparent');
+  }
+}, [isFocused]);
 
   const uploadImage = async (uri) => {
     if (!user?.id) {
@@ -151,11 +159,6 @@ const handleHeaderLayout = (event) => {
 
   return (
     <View style={[styles.container, {paddingTop: headerHeight+5}]}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-        barStyle="dark-content"
-      />
 
       <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
@@ -219,7 +222,7 @@ const handleHeaderLayout = (event) => {
         <Icon name='badge-account-outline' size={20} color='#6e9fc1'/>
         <View>
         <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.employeeId}</Text>
-        <Text style={styles.label}>Employee IDd</Text>
+        <Text style={styles.label}>Employee ID</Text>
         </View>
       </View>
       </View>
