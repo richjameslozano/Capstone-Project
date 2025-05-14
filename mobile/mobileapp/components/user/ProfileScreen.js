@@ -90,7 +90,7 @@ export default function ProfileScreen({ navigation }) {
         <Icon name='badge-account-outline' size={20} color='#6e9fc1'/>
         <View>
         <Text style={{fontSize: 15, fontWeight: 'light'  }}>{user?.employeeId}</Text>
-        <Text style={styles.label}>Employee ID</Text>
+        <Text style={styles.label}>Employee IDd</Text>
         </View>
       </View>
       </View>
