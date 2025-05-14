@@ -10,6 +10,7 @@ import { useRequestList } from '../components/contexts/RequestListContext';
 import { Calendar } from 'react-native-calendars';
 import { useRequestMetadata } from './contexts/RequestMetadataContext';
 import Header from './Header';
+
 import Icon2 from 'react-native-vector-icons/Ionicons'; 
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -44,6 +45,7 @@ export default function InventoryScreen({ navigation }) {
   const { metadata, setMetadata } = useRequestMetadata();
   const [isComplete, setIsComplete] = useState(false); 
   const [headerHeight, setHeaderHeight] = useState(0);
+
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
     setHeaderHeight(height);
@@ -59,9 +61,6 @@ export default function InventoryScreen({ navigation }) {
       setRoom('')
       setReason('')
       setSelectedUsageTypeInput(null)
-
-      StatusBar.setBarStyle('light-content');
-      StatusBar.setBackgroundColor('transparent'); // or any other color
     }, [])
   );
    
@@ -120,9 +119,6 @@ export default function InventoryScreen({ navigation }) {
       handleEndTimeSelect(selectedEndTime);
     }
   }, [selectedEndTime]);  
-
-
-
 
   const filteredItems = inventoryItems.filter((item) => {
     const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.type === selectedCategory;
@@ -287,7 +283,25 @@ export default function InventoryScreen({ navigation }) {
     );
   };  
 
-  const formatTime = ({ hour, minute, period }) => `${hour}:${minute} ${period}`;
+  const formatTime = (timeObj) => {
+    if (!timeObj || typeof timeObj !== 'object') return '';
+
+    let { hour, minute, period } = timeObj;
+    hour = parseInt(hour);
+    minute = parseInt(minute);
+
+    if (period === 'PM' && hour !== 12) {
+      hour += 12;
+      
+    } else if (period === 'AM' && hour === 12) {
+      hour = 0;
+    }
+
+    const paddedHour = hour.toString().padStart(2, '0');
+    const paddedMinute = minute.toString().padStart(2, '0');
+
+    return `${paddedHour}:${paddedMinute}`;
+  };
 
   // const convertTo24Hour = ({ hour, minute, period }) => {
   //   let hours = parseInt(hour);
@@ -380,27 +394,25 @@ export default function InventoryScreen({ navigation }) {
         <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
         }}>
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Icon name="keyboard-backspace" size={28} color="white" />
+                <Icon name="keyboard-backspace" size={28} color="black" />
               </TouchableOpacity>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white'}}>Requisition Slip</Text>
+                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17}}>Requisition Slip</Text>
               <TouchableOpacity style={{padding: 2}}>
-                <Icon name="dots-vertical" size={24} color="#fff" />
+                <Icon name="dots-vertical" size={24} color="#000" />
               </TouchableOpacity>
           </View>
           <Text style={styles.inst}>Please fill in the required information to proceed.</Text>
             </View>
 
-    <StatusBar
-              translucent
-              backgroundColor="transparent"
-              barStyle="light-content" // or 'light-content' depending on your design
-            />
-
       <KeyboardAvoidingView
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
-      
+      <StatusBar
+                      translucent
+                      backgroundColor="transparent"
+                      barStyle="dark-content" // or 'light-content' depending on your design
+                    />
       {!isComplete && (
      
   
