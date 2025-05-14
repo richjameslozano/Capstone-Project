@@ -93,7 +93,7 @@ export default function ProfileScreen({ navigation }) {
 
     setUploading(true);
     try {
-      const storageRef = ref(storage, `profile_images/${user.id}`);
+      const storageRef = ref(storage, `profileImages/${user.id}`);
       const response = await fetch(uri);
       const blob = await response.blob();
       await uploadBytes(storageRef, blob);
