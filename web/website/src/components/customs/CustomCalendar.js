@@ -134,7 +134,7 @@ const CustomCalendar = ({ onSelectDate }) => {
         if (status === "borrowed") type = "warning";
         else if (status === "deployed") type = "processing";
         else if (status === "returned") type = "error";
-        else if (status === "approved") type = "success";
+        else if (status === "return approved") type = "success";
 
         return {
           type,
@@ -175,7 +175,7 @@ const CustomCalendar = ({ onSelectDate }) => {
             style={{ width: 160 }}
           >
             <Option value="all">All</Option>
-            <Option value="approved">Approved</Option>
+            <Option value="return approved">Return Approved</Option>
             <Option value="borrowed">Borrowed</Option>
             <Option value="deployed">Deployed</Option>
             <Option value="returned">Returned</Option>

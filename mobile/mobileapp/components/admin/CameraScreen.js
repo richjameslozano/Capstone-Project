@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react
 import { useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { useAuth } from '../contexts/AuthContext';
 import styles from "../styles/adminStyle/CameraStyle";
@@ -89,7 +89,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
     }
   };
 
-    const handleBarCodeScanned = async ({ data }) => {
+  const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
 
     setScanned(true);
@@ -114,8 +114,8 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
       let requestorUserId = null;
       let requestorLogData = null;
-      let allDeployed = false; // ✅ Moved outside the loop
-      let updatedRequestList = null; // Declare in outer scope
+      let allDeployed = false;
+      let updatedRequestList = null;
 
       if (!querySnapshot.empty) {
         for (const docSnap of querySnapshot.docs) {
@@ -134,7 +134,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             const currentStatus = data.status?.toLowerCase();
 
             if (currentStatus === "borrowed") {
-                updatedRequestList = data.requestList.map((item) => {
+              updatedRequestList = data.requestList.map((item) => {
                 if (item.itemName === itemName) {
                   const currentCount = item.scannedCount || 0;
                   const maxCount = item.quantity || 1;
@@ -168,7 +168,6 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 timeTo: data.timeTo || "00:00"
               });
 
-              // Store user ID and log data for later historylog write
               requestorUserId = data.accountId;
               requestorLogData = {
                 ...data,
@@ -181,6 +180,65 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
             } else if (currentStatus === "deployed") {
               alreadyDeployed = true;
+
+            } else if (currentStatus === "returned") {
+              // ✅ Handle return approval
+              const requestorId = data.accountId;
+              const borrowDocRef = doc(db, "borrowcatalog", docSnap.id);
+
+              const inventoryId = borrowedItem.selectedItemId;
+              const returnQty = borrowedItem.returnedQuantity || 1; // ✅ SAFER
+
+              if (inventoryId && !isNaN(returnQty)) {
+                const inventoryRef = doc(db, "inventory", inventoryId);
+                const inventorySnap = await getDoc(inventoryRef);
+
+                if (inventorySnap.exists()) {
+                  const currentQty = inventorySnap.data().quantity || 0;
+                  await updateDoc(inventoryRef, {
+                    quantity: currentQty + returnQty,
+                  });
+
+                  console.log(`✅ Inventory updated. Returned ${returnQty} of ${itemName}.`);
+
+                } else {
+                  console.warn(`❌ Inventory item not found for ID: ${inventoryId}`);
+                }
+              }
+              
+              await updateDoc(borrowDocRef, { status: "Return Approved" });
+
+              const userRequestQuery = query(
+                collection(db, `accounts/${requestorId}/userrequestlog`),
+                where("dateRequired", "==", data.dateRequired)
+              );
+
+              const userRequestSnapshot = await getDocs(userRequestQuery);
+
+              for (const userDoc of userRequestSnapshot.docs) {
+                const userData = userDoc.data();
+                const hasMatchingItem = userData.requestList?.some(item => item.itemName === itemName);
+
+                if (hasMatchingItem) {
+                  await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
+                    status: "Return Approved"
+                  });
+
+                  await addDoc(collection(db, `accounts/${requestorId}/historylog`), {
+                    ...userData,
+                    action: "Return Approved",
+                    approvedBy: user.name || "Unknown",
+                    approvedById: user.id,
+                    approvedAt: getTodayDate(),
+                    timestamp: serverTimestamp()
+                  });
+
+                  Alert.alert("Return Approved", `Return of "${itemName}" approved.`);
+                  break;
+                }
+              }
+
+              return; 
 
             } else {
               invalidStatus = true;
@@ -203,11 +261,6 @@ const CameraScreen = ({ onClose, selectedItem }) => {
           Alert.alert("Item Deployed", detailsMessage);
 
           const firstDetail = borrowedItemsDetails[0];
-          // await logRequestOrReturn(
-          //   user.id,
-          //   user.name || "Unknown",
-          //   `Deployed "${itemName}" to ${firstDetail.borrower} in ${selectedItem.labRoom}`
-          // );
 
           const updatedScannedItem = updatedRequestList.find(
             (item) => item.itemName === itemName && item.selectedItemId === selectedItem.selectedItemId
@@ -236,7 +289,6 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             console.warn("Missing requestorUserId or log data.");
           }
 
-          // 🔄 Update userrequestlog status to 'Deployed'
           try {
             const userRequestQuery = query(
               collection(db, `accounts/${requestorUserId}/userrequestlog`),
@@ -260,7 +312,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             
           } catch (err) {
             console.error("❌ Failed to update userrequestlog:", err);
-          }
+          }          
 
         } else if (alreadyDeployed) {
           Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
@@ -278,7 +330,6 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
     } catch (error) {
       console.error("QR Scan Error:", error);
-      // Alert.alert("Error", "Invalid or unauthorized QR Code.");
     }
 
     setTimeout(() => setScanned(false), 1500);
