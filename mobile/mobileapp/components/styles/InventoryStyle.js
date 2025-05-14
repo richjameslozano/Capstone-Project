@@ -595,7 +595,7 @@ timeBtn:{
     backgroundColor: '#fff',
     height: 'auto',
     gap: 5,
-    paddingBottom: 0,
+    paddingBottom: 5,
     borderRadius: 8,
     marginHorizontal: 7,
   },
