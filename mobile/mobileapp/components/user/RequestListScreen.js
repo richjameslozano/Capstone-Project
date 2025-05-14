@@ -73,6 +73,26 @@ const RequestListScreen = ({navigation}) => {
     return () => unsubscribe(); // cleanup listener on unmount
   }, [user]);  
 
+  const formatTime = (timeObj) => {
+    if (!timeObj || typeof timeObj !== 'object') return '';
+
+    let { hour, minute, period } = timeObj;
+    hour = parseInt(hour);
+    minute = parseInt(minute);
+
+    if (period === 'PM' && hour !== 12) {
+      hour += 12;
+      
+    } else if (period === 'AM' && hour === 12) {
+      hour = 0;
+    }
+
+    const paddedHour = hour.toString().padStart(2, '0');
+    const paddedMinute = minute.toString().padStart(2, '0');
+
+    return `${paddedHour}:${paddedMinute}`;
+  };
+
   const handleRequestNow = async () => {
     console.log('Current metadata:', metadata);
   
@@ -412,8 +432,8 @@ const RequestListScreen = ({navigation}) => {
                   <Text style={styles.modalText}>Date Required: {confirmationData?.dateRequired}</Text>
 
                   {/* Use the formatted time strings directly */}
-                  <Text>Start Time: {metadata.timeFrom}</Text>
-                  <Text>End Time: {metadata.timeTo}</Text>
+                  <Text>Time From: {formatTime(metadata.timeFrom)}</Text>
+                  <Text>Time To: {formatTime(metadata.timeTo)}</Text>
 
                   <Text style={styles.modalText}>Program: {confirmationData?.program}</Text>
                   <Text style={styles.modalText}>Room: {confirmationData?.room}</Text>

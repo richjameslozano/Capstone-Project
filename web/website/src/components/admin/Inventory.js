@@ -116,6 +116,20 @@ const Inventory = () => {
     );
   });  
 
+  const handleCategoryChange = (value) => {
+    let type = "";
+
+    if (["Chemical", "Reagent", "Materials"].includes(value)) {
+      type = "Consumable";
+
+    } else if (value === "Equipment") {
+      type = "Fixed";
+    }
+
+    setItemType(type);
+    form.setFieldsValue({ type }); 
+  };
+
   const exportToExcel = () => {
     // Prepare the data for Excel
     const worksheet = XLSX.utils.json_to_sheet(dataSource); // your current data
@@ -413,36 +427,20 @@ const Inventory = () => {
                       <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }}/>
                   </Form.Item>
                 </Col>
-
-                {/* <Col span={8}>
-                  <Form.Item
-                    name="usageType"
-                    label="Usage Type"
-                    rules={[{ required: true, message: "Please select usage type!" }]}
-                  >
-                    <Select placeholder="Select Usage Type">
-                      <Option value="Laboratory Experiment">Laboratory Experiment</Option>
-                      <Option value="Research">Research</Option>
-                      <Option value="Community Extension">Community Extension</Option>
-                      <Option value="Others">Others</Option>
-                    </Select>
-                  </Form.Item>
-                </Col> */}
               </Row>
 
               <Row gutter={16}>
                 <Col span={8}>
                   <Form.Item
-                    name="type"
-                    label="Item Type"
-                    rules={[{ required: true, message: "Please select Item Type!" }]}
+                    name="category"
+                    label="Category"
+                    rules={[{ required: true, message: "Please select a category!" }]}
                   >
-                    <Select
-                      onChange={(value) => setItemType(value)}
-                      placeholder="Select Item Type"
-                    >
-                      <Option value="Fixed">Fixed</Option>
-                      <Option value="Consumable">Consumable</Option>
+                    <Select placeholder="Select Category" onChange={handleCategoryChange}>
+                      <Option value="Chemical">Chemical</Option>
+                      <Option value="Reagent">Reagent</Option>
+                      <Option value="Materials">Materials</Option>
+                      <Option value="Equipment">Equipment</Option>
                     </Select>
                   </Form.Item>
                 </Col>
@@ -482,15 +480,18 @@ const Inventory = () => {
               <Row gutter={16}>
                 <Col span={8}>
                   <Form.Item
-                    name="category"
-                    label="Category"
-                    rules={[{ required: true, message: "Please select a category!" }]}
+                    name="type"
+                    label="Item Type"
+                    rules={[{ required: true, message: "Please select Item Type!" }]}
                   >
-                    <Select placeholder="Select Category">
-                      <Option value="Chemical">Chemical</Option>
-                      <Option value="Reagent">Reagent</Option>
-                      <Option value="Materials">Materials</Option>
-                      <Option value="Equipment">Equipment</Option>
+                    <Select
+                      value={itemType}
+                      onChange={(value) => setItemType(value)}
+                      disabled 
+                      placeholder="Select Item Type"
+                    >
+                      <Option value="Fixed">Fixed</Option>
+                      <Option value="Consumable">Consumable</Option>
                     </Select>
                   </Form.Item>
                 </Col>

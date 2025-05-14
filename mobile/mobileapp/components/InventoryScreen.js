@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView , Platform, Keyboard, StatusBar} from 'react-native';
-import { getDocs, collection, onSnapshot, doc, setDoc, addDoc, query, where, Timestamp } from 'firebase/firestore';
+import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView , Platform, Keyboard, StatusBar, Alert} from 'react-native';
+import { getDocs, collection, onSnapshot, doc, setDoc, addDoc, query, where, Timestamp, collectionGroup } from 'firebase/firestore';
 import { db } from '../backend/firebase/FirebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { Picker } from '@react-native-picker/picker';
@@ -10,6 +10,7 @@ import { useRequestList } from '../components/contexts/RequestListContext';
 import { Calendar } from 'react-native-calendars';
 import { useRequestMetadata } from './contexts/RequestMetadataContext';
 import Header from './Header';
+
 import Icon2 from 'react-native-vector-icons/Ionicons'; 
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -45,6 +46,7 @@ export default function InventoryScreen({ navigation }) {
   const { metadata, setMetadata } = useRequestMetadata();
   const [isComplete, setIsComplete] = useState(false); 
   const [headerHeight, setHeaderHeight] = useState(0);
+
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
     setHeaderHeight(height);
@@ -60,9 +62,6 @@ export default function InventoryScreen({ navigation }) {
       setRoom('')
       setReason('')
       setSelectedUsageTypeInput(null)
-
-      StatusBar.setBarStyle('light-content');
-      StatusBar.setBackgroundColor('transparent'); // or any other color
     }, [])
   );
    
@@ -121,9 +120,6 @@ export default function InventoryScreen({ navigation }) {
       handleEndTimeSelect(selectedEndTime);
     }
   }, [selectedEndTime]);  
-
-
-
 
   const filteredItems = inventoryItems.filter((item) => {
     const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.type === selectedCategory;
@@ -303,7 +299,25 @@ export default function InventoryScreen({ navigation }) {
     );
   };  
 
-  const formatTime = ({ hour, minute, period }) => `${hour}:${minute} ${period}`;
+  const formatTime = (timeObj) => {
+    if (!timeObj || typeof timeObj !== 'object') return '';
+
+    let { hour, minute, period } = timeObj;
+    hour = parseInt(hour);
+    minute = parseInt(minute);
+
+    if (period === 'PM' && hour !== 12) {
+      hour += 12;
+      
+    } else if (period === 'AM' && hour === 12) {
+      hour = 0;
+    }
+
+    const paddedHour = hour.toString().padStart(2, '0');
+    const paddedMinute = minute.toString().padStart(2, '0');
+
+    return `${paddedHour}:${paddedMinute}`;
+  };
 
   // const convertTo24Hour = ({ hour, minute, period }) => {
   //   let hours = parseInt(hour);
@@ -361,7 +375,78 @@ export default function InventoryScreen({ navigation }) {
     usageType: false,
   });
   
-  const handleNext = () => {
+  // const handleNext = () => {
+  //   const newErrors = {
+  //     date: !selectedDate,
+  //     startTime: !selectedStartTime,
+  //     endTime: !selectedEndTime,
+  //     program: !program,
+  //     room: !room,
+  //     usageType: !selectedUsageTypeInput,
+  //   };
+
+  //   setErrors(newErrors);
+
+  //   const hasErrors = Object.values(newErrors).some(Boolean);
+  //   if (!hasErrors) {
+  //     setMetadata({
+  //       dateRequired: selectedDate,
+  //       timeFrom: formatTime(selectedStartTime),
+  //       timeTo: formatTime(selectedEndTime),
+  //       program,
+  //       room,
+  //       usageType: selectedUsageTypeInput,
+  //       reason
+  //     });
+      
+  //     setIsComplete(true);
+  //   }
+  // };
+
+  const isRoomTimeConflict = async (room, timeFrom, timeTo, dateRequired) => {
+    const roomLower = room.toLowerCase();
+
+    const checkConflict = (docs) => {
+      return docs.some((doc) => {
+        const data = doc.data();
+        const docRoom = data.room?.toLowerCase();
+        const docDate = data.dateRequired;
+        const docTimeFrom = data.timeFrom;
+        const docTimeTo = data.timeTo;
+
+        console.log('Checking conflict with:', {
+          docRoom, docDate, docTimeFrom, docTimeTo
+        });
+
+        return (
+          docRoom === roomLower &&
+          docDate === dateRequired &&
+          timeFrom === docTimeFrom &&
+          timeTo === docTimeTo
+        );
+      });
+    };
+
+    const userRequestsSnap = await getDocs(collectionGroup(db, 'userrequests'));
+    const borrowCatalogSnap = await getDocs(collection(db, 'borrowCatalog'));
+
+    const conflictInRequests = checkConflict(userRequestsSnap.docs);
+    const conflictInCatalog = checkConflict(borrowCatalogSnap.docs);
+
+    return conflictInRequests || conflictInCatalog;
+};
+
+  const handleNext = async () => {
+    const formattedStartTime = formatTime(selectedStartTime);
+    const formattedEndTime = formatTime(selectedEndTime);
+
+    console.log({
+      dateRequired: selectedDate,
+      timeFrom: formatTime(selectedStartTime),
+      timeTo: formatTime(selectedEndTime),
+      room
+    });
+
     const newErrors = {
       date: !selectedDate,
       startTime: !selectedStartTime,
@@ -374,20 +459,33 @@ export default function InventoryScreen({ navigation }) {
     setErrors(newErrors);
 
     const hasErrors = Object.values(newErrors).some(Boolean);
-    if (!hasErrors) {
-      setMetadata({
-        dateRequired: selectedDate,
-        timeFrom: selectedStartTime,
-        timeTo: selectedEndTime,
-        program,
-        room,
-        usageType: selectedUsageTypeInput,
-        reason
-      });
-      
-      setIsComplete(true);
+    if (hasErrors) return;
+
+    // 🔍 Conflict validation
+    const hasConflict = await isRoomTimeConflict(
+      room,
+      formattedStartTime,
+      formattedEndTime,
+      selectedDate
+    );
+
+    if (hasConflict) {
+      Alert.alert("Conflict Detected", "The selected room and time slot is already booked.");
+      return; 
     }
-    };
+
+    setMetadata({
+      dateRequired: selectedDate,
+      timeFrom: formattedStartTime,
+      timeTo: formattedEndTime,
+      program,
+      room,
+      usageType: selectedUsageTypeInput,
+      reason
+    });
+
+    setIsComplete(true);
+  };
 
   return (
     <View style={styles.container}>
@@ -396,27 +494,25 @@ export default function InventoryScreen({ navigation }) {
         <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
         }}>
               <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                <Icon name="keyboard-backspace" size={28} color="white" />
+                <Icon name="keyboard-backspace" size={28} color="black" />
               </TouchableOpacity>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white'}}>Requisition Slip</Text>
+                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17}}>Requisition Slip</Text>
               <TouchableOpacity style={{padding: 2}}>
-                <Icon name="dots-vertical" size={24} color="#fff" />
+                <Icon name="dots-vertical" size={24} color="#000" />
               </TouchableOpacity>
           </View>
           {!isComplete && (<Text style={styles.inst}>Please fill in the required information to proceed.</Text>)}
             </View>
 
-    <StatusBar
-              translucent
-              backgroundColor="transparent"
-              barStyle="light-content" // or 'light-content' depending on your design
-            />
-
       <KeyboardAvoidingView
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
-      
+      <StatusBar
+                      translucent
+                      backgroundColor="transparent"
+                      barStyle="dark-content" // or 'light-content' depending on your design
+                    />
       {!isComplete && (
      
         <View style={{flex:1}}>
