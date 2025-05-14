@@ -5,10 +5,13 @@ import styles from '../styles/userStyle/ProfileStyle';
 import { useAuth } from '../contexts/AuthContext';  
 import { Avatar } from 'react-native-paper'; 
 import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { db, storage } from '@firebase/firestore';
+import { ref, uploadBytes, getDownloadURL,getStorage,uploadBytesResumable } from 'firebase/storage';
+import { db, storage } from '../../backend/firebase/FirebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
+import * as FileSystem from 'expo-file-system';
+
+
 
 
 export default function ProfileScreen({ navigation }) {
@@ -33,60 +36,60 @@ const handleHeaderLayout = (event) => {
   };
 
     const handleImagePick = async () => {
-    try {
-      // First, request permission to access the media library
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
-      // If permission is not granted, show alert and return
-      if (status !== 'granted') {
-        Alert.alert(
-          'Permission Required',
-          'Please grant permission to access your photos to update your profile picture.',
-          [{ text: 'OK' }]
-        );
-        return;
-      }
+  try {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission Required',
+        'Please grant permission to access your photos to update your profile picture.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
 
-      // Launch the image picker with specific options
-      const result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images, // Only allow images
-        allowsEditing: true, // Allow image editing/cropping
-        aspect: [1, 1], // Force square aspect ratio
-        quality: 0.8, // Image quality (0-1)
-        allowsMultipleSelection: false, // Only allow single image selection
-        base64: false, // Don't include base64 data
-      });
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.8,
+      allowsMultipleSelection: false,
+      base64: false,
+    });
 
-      // If user cancels the picker
-      if (result.canceled) {
-        console.log('User cancelled image picker');
-        return;
-      }
+    console.log('ImagePicker result:', result);
 
-      // Check if we have a valid image result
-      if (result.assets && result.assets[0]) {
-        const imageUri = result.assets[0].uri;
-        console.log('Selected image URI:', imageUri);
-        
-        // Start the upload process
-        await uploadImage(imageUri);
-      } else {
-        Alert.alert(
-          'Error',
-          'No image was selected. Please try again.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      // Handle any errors that occur during the process
-      console.error('Error in handleImagePick:', error);
+    if (result.canceled) {
+      console.log('User cancelled image picker');
+      return;
+    }
+
+    // Universal URI extraction
+    let imageUri = null;
+    if (result.assets && Array.isArray(result.assets) && result.assets.length > 0) {
+      imageUri = result.assets[0].uri;
+    } else if (result.uri) {
+      imageUri = result.uri;
+    }
+    console.log('Resolved imageUri:', imageUri);
+
+    if (imageUri) {
+      await uploadImage(imageUri);
+    } else {
       Alert.alert(
         'Error',
-        'Failed to pick image. Please try again.',
+        'No image was selected. Please try again.',
         [{ text: 'OK' }]
       );
     }
-  };
+  } catch (error) {
+    console.error('Error in handleImagePick:', error);
+    Alert.alert(
+      'Error',
+      'Failed to pick image. Please try again.',
+      [{ text: 'OK' }]
+    );
+  }
+} 
 
 
 const isFocused = useIsFocused();
@@ -98,34 +101,64 @@ useEffect(() => {
   }
 }, [isFocused]);
 
-  const uploadImage = async (uri) => {
-    if (!user?.id) {
-      Alert.alert('Error', 'User not authenticated');
-      return;
+   
+ const uploadImage = async (uri) => {
+  if (!user?.id) {
+    Alert.alert('Error', 'User not authenticated');
+    return;
+  }
+
+  setUploading(true);
+  try {
+    const filename = `profile_${user.id}_${Date.now()}.jpg`;
+    const storageRef = ref(storage, `profileImages/${filename}`);
+
+    // Read the file as a binary string
+    const fileData = await FileSystem.readAsStringAsync(uri, {
+      encoding: FileSystem.EncodingType.Base64,
+    });
+
+    // Convert base64 to a Uint8Array
+    const byteCharacters = atob(fileData);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
     }
+    const byteArray = new Uint8Array(byteNumbers);
 
-    setUploading(true);
-    try {
-      const storageRef = ref(storage, `profileImages/${user.id}`);
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(storageRef);
+    // Upload to Firebase Storage
+    const uploadTask = await uploadBytesResumable(storageRef, byteArray, {
+      contentType: 'image/jpeg'
+    });
 
-      const userRef = doc(db, 'accounts', user.id);
-      await updateDoc(userRef, {
-        photoURL: downloadURL
-      });
+    const downloadURL = await getDownloadURL(uploadTask.ref);
 
-      user.photoURL = downloadURL;
-      Alert.alert('Success', 'Profile picture updated successfully');
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      Alert.alert('Error', 'Failed to upload image');
-    } finally {
-      setUploading(false);
-    }
-  };
+    const userRef = doc(db, 'accounts', user.id);
+    await updateDoc(userRef, {
+      photoURL: downloadURL,
+      lastUpdated: serverTimestamp()
+    });
+
+    user.photoURL = downloadURL;
+
+    await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
+      action: "Profile Picture Updated",
+      timestamp: serverTimestamp(),
+      details: "Profile picture updated successfully"
+    });
+
+    Alert.alert('Success', 'Profile picture updated successfully');
+  } catch (error) {
+    console.error('Error uploading image:', error);
+    Alert.alert(
+      'Upload Failed',
+      'Failed to upload image. Please try again.',
+      [{ text: 'OK' }]
+    );
+  } finally {
+    setUploading(false);
+  }
+};
 
   const handleLogout = async () => {
     Alert.alert(

@@ -1,26 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Layout,
-  Card,
-  Row,
-  Col,
-  Upload,
-  Avatar,
-  Button,
-  Typography,
-  message,
-} from "antd";
-import {
-  UserOutlined,
-  UploadOutlined,
-} from "@ant-design/icons";
-import {
-  collection,
-  query,
-  where,
-  getDocs,
-  updateDoc,
-} from "firebase/firestore";
+import {Layout,Card,Row,Col,Upload,Avatar,Button,Typography,message,} from "antd";
+import {UserOutlined,UploadOutlined} from "@ant-design/icons";
+import {collection,query,where,getDocs,updateDoc} from "firebase/firestore";
 import { db, storage } from "../backend/firebase/FirebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import "./styles/Profile.css";
