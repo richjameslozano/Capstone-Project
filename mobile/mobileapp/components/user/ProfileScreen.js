@@ -4,19 +4,35 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/ProfileStyle';
 import { useAuth } from '../contexts/AuthContext';  
 import { Avatar } from 'react-native-paper'; 
-import { addDoc, collection, serverTimestamp, doc, updateDoc } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, updateDoc, getDocs } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL,getStorage,uploadBytesResumable, uploadString } from 'firebase/storage';
 import { db, storage } from '../../backend/firebase/FirebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
 
-import uuid from 'react-native-uuid';
-
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();  
   const [uploading, setUploading] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [profileImage, setProfileImage] = useState(null);
+
+  useEffect(() => {
+  const fetchProfileImage = async () => {
+    try {
+      if (!user?.id) return;
+      const userDoc = await getDocs(collection(db, "accounts"));
+      const userData = userDoc.docs.find(doc => doc.id === user.id)?.data();
+      if (userData?.profileImage) {
+        setProfileImage(userData.profileImage);
+      }
+    } catch (error) {
+      console.error("Error fetching profile image:", error);
+    }
+  };
+
+  fetchProfileImage();
+}, [isFocused]);
 
   const capitalizeInitials = (name) =>
     name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());  
@@ -33,13 +49,6 @@ const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
     setHeaderHeight(height);
   };
-
-
-
-
-
-
-
 
 const handleImagePick = async () => {
   const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -58,9 +67,16 @@ const handleImagePick = async () => {
   if (!result.canceled) {
     const image = result.assets[0];
     const url = await uploadImage(image.uri);
-    console.log("✅ Final Download URL:", url);
+
+    if (url && user?.id) {
+      const userDocRef = doc(db, "accounts", user.id);
+      await updateDoc(userDocRef, { profileImage: url });
+    }
+
+    setProfileImage(url); // Update local state
   }
 };
+
 
 
 const uploadImage = async (imageUri) => {
@@ -88,10 +104,6 @@ const uploadImage = async (imageUri) => {
 };
 
 
-
-
-
-
 const isFocused = useIsFocused();
 
 useEffect(() => {
@@ -102,64 +114,6 @@ useEffect(() => {
 }, [isFocused]);
 
    
-//  const uploadImage = async (uri) => {
-//   if (!user?.id) {
-//     Alert.alert('Error', 'User not authenticated');
-//     return;
-//   }
-
-//   setUploading(true);
-//   try {
-//     const filename = `profile_${user.id}_${Date.now()}.jpg`;
-//     const storageRef = ref(storage, `profileImages/${filename}`);
-
-//     // Read the file as a binary string
-//     const fileData = await FileSystem.readAsStringAsync(uri, {
-//       encoding: FileSystem.EncodingType.Base64,
-//     });
-
-//     // Convert base64 to a Uint8Array
-//     const byteCharacters = atob(fileData);
-//     const byteNumbers = new Array(byteCharacters.length);
-//     for (let i = 0; i < byteCharacters.length; i++) {
-//       byteNumbers[i] = byteCharacters.charCodeAt(i);
-//     }
-//     const byteArray = new Uint8Array(byteNumbers);
-
-//     // Upload to Firebase Storage
-//     const uploadTask = await uploadBytesResumable(storageRef, byteArray, {
-//       contentType: 'image/jpeg'
-//     });
-
-//     const downloadURL = await getDownloadURL(uploadTask.ref);
-
-//     const userRef = doc(db, 'accounts', user.id);
-//     await updateDoc(userRef, {
-//       photoURL: downloadURL,
-//       lastUpdated: serverTimestamp()
-//     });
-
-//     user.photoURL = downloadURL;
-
-//     await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
-//       action: "Profile Picture Updated",
-//       timestamp: serverTimestamp(),
-//       details: "Profile picture updated successfully"
-//     });
-
-//     Alert.alert('Success', 'Profile picture updated successfully');
-//   } catch (error) {
-//     console.error('Error uploading image:', error);
-//     Alert.alert(
-//       'Upload Failed',
-//       'Failed to upload image. Please try again.',
-//       [{ text: 'OK' }]
-//     );
-//   } finally {
-//     setUploading(false);
-//   }
-// };
-
   const handleLogout = async () => {
     Alert.alert(
       "Logout Confirmation",
@@ -215,11 +169,12 @@ useEffect(() => {
           onPress={handleImagePick}
           disabled={uploading}
         >
-          {user?.photoURL ? (
-            <Avatar.Image size={80} source={{ uri: user.photoURL }} />
+          {profileImage ? (
+            <Avatar.Image size={80} source={{ uri: profileImage }} />
           ) : (
             <Avatar.Text size={80} label={getInitials(user?.name)} backgroundColor='#6e9fc1'/>
           )}
+
           {uploading && (
             <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.3)' }}>
               <ActivityIndicator size="large" color="#fff" />
