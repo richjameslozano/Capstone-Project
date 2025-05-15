@@ -18,21 +18,22 @@ export default function ProfileScreen({ navigation }) {
   const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
-  const fetchProfileImage = async () => {
-    try {
-      if (!user?.id) return;
-      const userDoc = await getDocs(collection(db, "accounts"));
-      const userData = userDoc.docs.find(doc => doc.id === user.id)?.data();
-      if (userData?.profileImage) {
-        setProfileImage(userData.profileImage);
-      }
-    } catch (error) {
-      console.error("Error fetching profile image:", error);
-    }
-  };
+    const fetchProfileImage = async () => {
+      try {
+        if (!user?.id) return;
+        const userDoc = await getDocs(collection(db, "accounts"));
+        const userData = userDoc.docs.find(doc => doc.id === user.id)?.data();
+        if (userData?.profileImage) {
+          setProfileImage(userData.profileImage);
+        }
 
-  fetchProfileImage();
-}, [isFocused]);
+      } catch (error) {
+        console.error("Error fetching profile image:", error);
+      }
+    };
+
+    fetchProfileImage();
+  }, [isFocused]);
 
   const capitalizeInitials = (name) =>
     name?.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());  
@@ -45,16 +46,16 @@ export default function ProfileScreen({ navigation }) {
       : (words[0][0] + words[1][0]).toUpperCase();
   };  
 
-const handleHeaderLayout = (event) => {
+  const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
     setHeaderHeight(height);
   };
 
-const handleImagePick = async () => {
-  const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-  if (!permission.granted) {
-    alert("Permission denied!");
-    return;
+  const handleImagePick = async () => {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      alert("Permission denied!");
+      return;
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
@@ -64,56 +65,52 @@ const handleImagePick = async () => {
     quality: 1,
   });
 
-  if (!result.canceled) {
-    const image = result.assets[0];
-    const url = await uploadImage(image.uri);
+    if (!result.canceled) {
+      const image = result.assets[0];
+      const url = await uploadImage(image.uri);
 
-    if (url && user?.id) {
-      const userDocRef = doc(db, "accounts", user.id);
-      await updateDoc(userDocRef, { profileImage: url });
+      if (url && user?.id) {
+        const userDocRef = doc(db, "accounts", user.id);
+        await updateDoc(userDocRef, { profileImage: url });
+      }
+
+      setProfileImage(url); // Update local state
     }
+  };
 
-    setProfileImage(url); // Update local state
-  }
-};
+  const uploadImage = async (imageUri) => {
+    try {
+      const filename = `profileImages/${Date.now().toString()}.jpg`;
 
+      const storageRef = ref(storage, filename);
 
+      // Fetch the image URI and convert it to Blob
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
 
-const uploadImage = async (imageUri) => {
-  try {
-    const filename = `profileImages/${Date.now().toString()}.jpg`;
+      // Upload the Blob to Firebase Storage
+      await uploadBytes(storageRef, blob);
 
-    const storageRef = ref(storage, filename);
+      // Get the image URL after upload
+      const url = await getDownloadURL(storageRef);
+      return url;
 
-    // Fetch the image URI and convert it to Blob
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    } catch (error) {
+      console.error("❌ Upload failed:", error);
+      alert("Upload failed: " + (error.message || "Unknown error"));
+      return null;
+    }
+  };
 
-    // Upload the Blob to Firebase Storage
-    await uploadBytes(storageRef, blob);
+  const isFocused = useIsFocused();
 
-    // Get the image URL after upload
-    const url = await getDownloadURL(storageRef);
-    return url;
+  useEffect(() => {
+    if (isFocused) {
+      StatusBar.setBarStyle('dark-content');
+      StatusBar.setBackgroundColor('transparent');
+    }
+  }, [isFocused]);
 
-  } catch (error) {
-    console.error("❌ Upload failed:", error);
-    alert("Upload failed: " + (error.message || "Unknown error"));
-    return null;
-  }
-};
-
-
-const isFocused = useIsFocused();
-
-useEffect(() => {
-  if (isFocused) {
-    StatusBar.setBarStyle('dark-content');
-    StatusBar.setBackgroundColor('transparent');
-  }
-}, [isFocused]);
-
-   
   const handleLogout = async () => {
     Alert.alert(
       "Logout Confirmation",
@@ -164,7 +161,7 @@ useEffect(() => {
         </View>
 
 
-        <TouchableOpacity 
+        {/* <TouchableOpacity 
           style={styles.profileImageContainer} 
           onPress={handleImagePick}
           disabled={uploading}
@@ -180,8 +177,19 @@ useEffect(() => {
               <ActivityIndicator size="large" color="#fff" />
             </View>
           )}
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
+        <View style={styles.profileImageContainer}>
+          {profileImage ? (
+            <Avatar.Image size={80} source={{ uri: profileImage }} />
+          ) : (
+            <Avatar.Text
+              size={80}
+              label={getInitials(user?.name)}
+              backgroundColor="#6e9fc1"
+            />
+          )}
+        </View>
 
         <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 19}}>{capitalizeInitials(user?.name)}</Text>
         <Text style={{textAlign: 'center', color: 'gray'}}>{user?.jobTitle}</Text>

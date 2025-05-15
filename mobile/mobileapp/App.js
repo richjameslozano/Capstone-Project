@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
@@ -9,10 +9,9 @@ import { AuthProvider } from './components/contexts/AuthContext';
 import { RequestListProvider } from './components/contexts/RequestListContext';
 import { useAuth } from './components/contexts/AuthContext';  
 import { db } from './backend/firebase/FirebaseConfig';
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, getDocs } from "firebase/firestore";
 import Icon from 'react-native-vector-icons/Ionicons'; 
-import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons'; // or FontAwesome, Ionicons, etc.
-
+import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons'
 import { LogBox } from 'react-native';
 
 import ActivityLogScreen from './components/admin/ActivityLogScreen';
@@ -45,8 +44,6 @@ const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 
-
-
 LogBox.ignoreLogs([
   'Support for defaultProps will be removed from function components'
 ]);
@@ -65,7 +62,26 @@ const getInitials = (name) => {
 
 const CustomDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
+  const [profileImage, setProfileImage] = useState(null);
   const isFocused = useIsFocused();
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        if (!user?.id) return;
+        const userDoc = await getDocs(collection(db, "accounts"));
+        const userData = userDoc.docs.find(doc => doc.id === user.id)?.data();
+        if (userData?.profileImage) {
+          setProfileImage(userData.profileImage);
+        }
+
+      } catch (error) {
+        console.error("Error fetching profile image:", error);
+      }
+    };
+
+    fetchProfileImage();
+  }, [isFocused]);
 
   useEffect(() => {
     if (isFocused) {
@@ -80,9 +96,9 @@ const CustomDrawerContent = ({ navigation }) => {
         <View style={styles.upperSection}>
           <View style={styles.headProfile}>
           <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
-          {user?.photoURL ? (
-              <Avatar.Image size={65} source={{ uri: user.photoURL }} />
-            ) : (
+          {profileImage ? (
+            <Avatar.Image size={50} source={{ uri: profileImage }} />
+          ) : (
               <Avatar.Text size={65} backgroundColor='#a3cae9' label={getInitials(user?.name)} />
             )}
           </TouchableOpacity>
@@ -187,6 +203,26 @@ const CustomDrawerContent = ({ navigation }) => {
 
 const CustomAdminDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
+  const [profileImage, setProfileImage] = useState(null);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        if (!user?.id) return;
+        const userDoc = await getDocs(collection(db, "accounts"));
+        const userData = userDoc.docs.find(doc => doc.id === user.id)?.data();
+        if (userData?.profileImage) {
+          setProfileImage(userData.profileImage);
+        }
+
+      } catch (error) {
+        console.error("Error fetching profile image:", error);
+      }
+    };
+
+    fetchProfileImage();
+  }, [isFocused]);
 
   return (
     
@@ -194,13 +230,13 @@ const CustomAdminDrawerContent = ({ navigation }) => {
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content" // or 'light-content' depending on your design
+        barStyle="light-content" 
       />
       <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
         <View style={styles.profileSection}>
-            {user?.photoURL ? (
-              <Avatar.Image size={50} source={{ uri: user.photoURL }} />
-            ) : (
+          {profileImage ? (
+            <Avatar.Image size={50} source={{ uri: profileImage }} />
+          ) : (
               <Avatar.Text size={50} label={getInitials(user?.name)} />
             )}
 
