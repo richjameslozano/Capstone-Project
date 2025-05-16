@@ -207,6 +207,7 @@ const SearchItems = () => {
                 <Option value="Reagent">Reagent</Option>
                 <Option value="Materials">Materials</Option>
                 <Option value="Equipment">Equipment</Option>
+                <Option value="Glasswares">Glasswares</Option>
               </Select>
             </Space>
           </div>
