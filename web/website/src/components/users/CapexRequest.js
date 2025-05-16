@@ -8,6 +8,7 @@ import {
   Modal,
   message,
   Popconfirm,
+  Select,
 } from "antd";
 import { PlusOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import Sidebar from "../Sidebar";
@@ -34,13 +35,16 @@ const CapexRequest = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
-  const [capexHistory, setCapexHistory] = useState([]);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedRowDetails, setSelectedRowDetails] = useState(null);
+  const [subjectFilter, setSubjectFilter] = useState("");
+  const [capexHistory, setCapexHistory] = useState([]);
+  const [subjectOptions, setSubjectOptions] = useState([]);
 
   const currentYear = new Date().getFullYear();
   const nextYear = currentYear + 1;
   const yearRange = `${currentYear}-${nextYear}`;
+  const { Option } = Select;
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -79,7 +83,7 @@ const CapexRequest = () => {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
-  
+
     const capexHistoryRef = collection(db, `accounts/${userId}/capexrequests`);
     
     const unsubscribeHistory = onSnapshot(capexHistoryRef, (snapshot) => {
@@ -87,12 +91,31 @@ const CapexRequest = () => {
         ...doc.data(),
         id: doc.id,
       }));
-  
-      setCapexHistory(historyData);
+
+      // ✅ Extract all subjects from nested items arrays
+      const allSubjects = historyData.flatMap(doc =>
+        (doc.items || []).map(item => item.subject).filter(Boolean)
+      );
+
+      // ✅ Get unique subjects
+      const uniqueSubjects = [...new Set(allSubjects)];
+      setSubjectOptions(uniqueSubjects);
+
+      const currentFilter = subjectFilter || ""; 
+
+      // ✅ Filter based on selected subject
+      const filteredData = historyData.filter(doc =>
+        currentFilter === "" ||
+        (doc.items || []).some(item =>
+          (item.subject || "").toLowerCase() === currentFilter.toLowerCase()
+        )
+      );
+
+      setCapexHistory(filteredData);
     });
-  
+
     return () => unsubscribeHistory(); // Cleanup
-  }, []);  
+  }, [subjectFilter]); 
 
   const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
     await addDoc(collection(db, `accounts/${userId}/activitylog`), {
@@ -187,7 +210,8 @@ const CapexRequest = () => {
       item.itemDescription || "-",
       item.qty || "-",
       item.estimatedCost || "-",
-      item.justification || "-"
+      item.justification || "-",
+      item.subject || "-"
     ]);
   
     autoTable(doc, {
@@ -347,7 +371,6 @@ const CapexRequest = () => {
       // Step 5: Success actions
       setNotificationMessage("CAPEX Request submitted successfully!");
       setNotificationVisible(true);
-  
       setDataSource([]);
       setTotalPrice(0);
       setIsFinalizeModalVisible(false);
@@ -374,9 +397,14 @@ const CapexRequest = () => {
       align: "center",
     },
     {
-      title: "Item Description",
+      title: "Item Name",
       dataIndex: "itemDescription",
       key: "itemDescription",
+    },
+    {
+      title: "Subject",
+      dataIndex: "subject",
+      key: "subject",
     },
     {
       title: "Qty",
@@ -470,6 +498,11 @@ const CapexRequest = () => {
       title: "Item Name",
       dataIndex: "itemDescription",
       key: "itemDescription",
+    },
+    {
+      title: "Subject",
+      dataIndex: "subject",
+      key: "subject",
     },
     {
       title: "Justification",
@@ -583,6 +616,14 @@ const CapexRequest = () => {
               </Form.Item>
 
               <Form.Item
+                name="subject"
+                label="Subject"
+                rules={[{ required: true, message: "Please enter the subject!" }]}
+              >
+                <Input placeholder="Enter  Subject" />
+              </Form.Item>
+
+              <Form.Item
                 name="qty"
                 label="Quantity"
                 rules={[{ required: true, message: "Please enter quantity!" }]}
@@ -610,6 +651,21 @@ const CapexRequest = () => {
 
           <div style={{ marginTop: "50px" }}>
             <h2>Submitted CAPEX History</h2>
+            <Select
+              value={subjectFilter}
+              onChange={(value) => setSubjectFilter(value)}
+              style={{ width: 200 }}
+              placeholder="Select Subject"
+              allowClear
+            >
+              <Option value="">All Subjects</Option>
+              {subjectOptions.map((subject, index) => (
+                <Option key={index} value={subject}>
+                  {subject}
+                </Option>
+              ))}
+            </Select>
+
             <Table
               dataSource={capexHistory}
               columns={historyColumns}

@@ -12,9 +12,14 @@ const FinalizeCapexModal = ({ visible, onConfirm, onCancel, totalPrice, dataSour
       align: "center",
     },
     {
-      title: "Item Description",
+      title: "Item Name",
       dataIndex: "itemDescription",
       key: "itemDescription",
+    },
+    {
+      title: "Subject",
+      dataIndex: "subject",
+      key: "subject",
     },
     {
       title: "Qty",

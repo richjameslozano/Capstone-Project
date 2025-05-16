@@ -1,23 +1,29 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Row, Col, Typography, Table, Modal, Button } from "antd";
+import { Layout, Row, Col, Typography, Table, Modal, Button, Select } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { collection, onSnapshot } from "firebase/firestore";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "../styles/adminStyle/CapexList.css";
 
 const { Content } = Layout;
 const { Title } = Typography;
+const { Option } = Select;
 
 const CapexList = () => {
   const [requests, setRequests] = useState([]);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedRowDetails, setSelectedRowDetails] = useState(null);
+  const [subjectFilter, setSubjectFilter] = useState("");
+  const [subjectOptions, setSubjectOptions] = useState([]);
+
 
   useEffect(() => {
     const userRequestRef = collection(db, "capexrequestlist");
-  
+
     const unsubscribe = onSnapshot(userRequestRef, (querySnapshot) => {
       const fetched = [];
-  
+
       querySnapshot.docs.forEach((docSnap) => {
         const data = docSnap.data();
         fetched.push({
@@ -25,14 +31,77 @@ const CapexList = () => {
           ...data,
         });
       });
-  
-      setRequests(fetched);
+
+      // Get unique subjects from nested `items`
+      const subjects = new Set();
+      fetched.forEach(req => {
+        (req.items || []).forEach(item => {
+          if (item.subject) {
+            subjects.add(item.subject);
+          }
+        });
+      });
+
+      setSubjectOptions(Array.from(subjects));
+
+      // Filter based on selected subject
+      const filtered = subjectFilter
+        ? fetched.filter(req =>
+            (req.items || []).some(item =>
+              (item.subject || "").toLowerCase() === subjectFilter.toLowerCase()
+            )
+          )
+        : fetched;
+
+      setRequests(filtered);
     }, (error) => {
       console.error("Error fetching requests in real-time: ", error);
     });
-  
-    return () => unsubscribe(); // Clean up listener on component unmount
-  }, []);  
+
+    return () => unsubscribe(); // Cleanup
+  }, [subjectFilter]);
+
+  const handleDownloadExcel = () => {
+    const workbook = XLSX.utils.book_new();
+
+    // Sheet 1: CAPEX Summary
+    const summaryData = requests.map((req, index) => ({
+      "No.": index + 1,
+      "Requestor": req.userName,
+      "Submission Date": req.createdAt?.toDate().toLocaleString() || "N/A",
+      "Total Price": req.totalPrice ? `₱${req.totalPrice.toLocaleString()}` : "N/A",
+    }));
+    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
+    XLSX.utils.book_append_sheet(workbook, summarySheet, "CAPEX Summary");
+
+    // Sheet 2: All Requested Items
+    const allItems = requests.flatMap((req) =>
+      (req.items || []).map((item, index) => ({
+        "Requestor": req.userName,
+        "Submission Date": req.createdAt?.toDate().toLocaleString() || "N/A",
+        "Item No.": item.no ?? index + 1,
+        "Item Description": item.itemDescription || "",
+        "Subject": item.subject || "",
+        "Justification": item.justification || "",
+        "Quantity": item.qty || 0,
+        "Estimated Cost": item.estimatedCost
+          ? `₱${item.estimatedCost.toLocaleString()}`
+          : "",
+        "Total Item Price": item.totalPrice
+          ? `₱${item.totalPrice.toLocaleString()}`
+          : "",
+        "Item ID": item.id || "",
+      }))
+    );
+
+    const itemsSheet = XLSX.utils.json_to_sheet(allItems);
+    XLSX.utils.book_append_sheet(workbook, itemsSheet, "CAPEX Items");
+
+    // Trigger download
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const file = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(file, "Capex_Requests.xlsx");
+  };
 
   const formatDate = (timestamp) => {
     if (!timestamp || !timestamp.toDate) return "N/A";
@@ -118,6 +187,25 @@ const CapexList = () => {
         <Row gutter={24}>
           <Col span={24}>
             <Title level={4}>List of Requests</Title>
+
+            <Select
+              allowClear
+              style={{ width: 200, marginBottom: 16 }}
+              placeholder="Filter by Subject"
+              value={subjectFilter}
+              onChange={(value) => setSubjectFilter(value || "")}
+            >
+              {subjectOptions.map((subject, index) => (
+                <Option key={index} value={subject}>
+                  {subject}
+                </Option>
+              ))}
+            </Select>
+
+            <Button type="primary" onClick={handleDownloadExcel} style={{ marginBottom: 16 }}>
+              Download Excel
+            </Button>
+
             <Table
               dataSource={requests}
               rowKey="id"
