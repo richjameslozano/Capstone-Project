@@ -76,86 +76,68 @@ const PendingAccounts = () => {
 
   const handleApprove = async () => {
     const auth = getAuth();
-    
+
     try {
       await Promise.all(
         selectedRequests.map(async (requestId) => {
           const requestRef = doc(db, "pendingaccounts", requestId);
           const requestSnapshot = await getDoc(requestRef);
           const requestData = requestSnapshot.data();
-          
+
           if (!requestData) {
             console.warn(`No data found for request ID: ${requestId}`);
             return;
           }
 
-          // Step 1: Check if the user already exists in 'accounts' collection by UID
-          // const existingUserRef = doc(db, "accounts", requestData.uid);  // Use 'uid' as unique identifier
-          // const existingUserSnapshot = await getDoc(existingUserRef);
-  
-          // // If the document already exists in 'accounts', skip this request
-          // if (existingUserSnapshot.exists()) {
-          //   console.log("User already exists in accounts. Skipping...");
-          //   return; // Skip this iteration
-          // }
-
-        // Step 1: Check if the user already exists in 'accounts' collection by UID
-        if (requestData.uid) {
-          const existingUserRef = doc(db, "accounts", requestData.uid);
-          const existingUserSnapshot = await getDoc(existingUserRef);
-
-          if (existingUserSnapshot.exists()) {
-            console.log("User already exists in accounts. Skipping...");
-            return;
+          // Check if user already exists in 'accounts' collection by UID
+          if (requestData.uid) {
+            const existingUserRef = doc(db, "accounts", requestData.uid);
+            const existingUserSnapshot = await getDoc(existingUserRef);
+            if (existingUserSnapshot.exists()) {
+              console.log("User already exists in accounts. Skipping...");
+              return;
+            }
           }
-        }
-  
-          // Step 2: Copy the approved request to the 'accounts' collection
-          // const newAccountRef = collection(db, "accounts");
-          // await addDoc(newAccountRef, {
-          //   ...requestData,
-          //   status: "approved",  // Set status to 'approved'
-          //   approvedAt: new Date(),  // Add timestamp for approval
-          // });
 
-          // Step 2: Create the Firebase Auth user
-          const auth = getAuth();
+          // Create the Firebase Auth user with plain text password
           const userCredential = await createUserWithEmailAndPassword(auth, requestData.email, requestData.password);
 
-          // Step 3: Store the user in the 'accounts' collection
+          // Extract password from requestData before saving to 'accounts'
+          const { password, ...restData } = requestData;
+
+          // Store the user in the 'accounts' collection without password
           const userUID = userCredential.user.uid; // Firebase Auth UID
           const newAccountRef = doc(db, "accounts", userUID);
           await setDoc(newAccountRef, {
-            ...requestData,
-            uid: userUID, // Store Firebase Auth UID in Firestore
+            ...restData,
+            uid: userUID,
             status: "approved",
             approvedAt: new Date(),
           });
 
-          // ✅ Send email notification
+          // Send email notification
           await sendEmailNotification({
             to: requestData.email,
             name: requestData.name,
             status: "approved",
           });
-  
-          // Step 4: Remove the document from the 'pendingaccounts' collection
-          await deleteDoc(requestRef); // Delete after copying
+
+          // Remove the document from the 'pendingaccounts' collection
+          await deleteDoc(requestRef);
         })
       );
-  
+
       notification.success({
         message: "Requests Approved",
         description: "The selected account requests have been approved and moved to the accounts collection.",
       });
-  
-      // Remove the approved requests from the UI
+
+      // Remove approved requests from UI
       setRequests((prevRequests) =>
         prevRequests.filter((request) => !selectedRequests.includes(request.id))
       );
-  
       setSelectedRequests([]); // Clear selected rows
-      
+
     } catch (error) {
       console.error("Error approving request: ", error);
       notification.error({

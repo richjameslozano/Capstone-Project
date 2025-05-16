@@ -94,7 +94,7 @@ const Inventory = () => {
       } catch (error) {
         console.error("Error processing inventory snapshot: ", error);
       }
-      
+
     }, (error) => {
       console.error("Error fetching inventory with onSnapshot: ", error);
     });
@@ -196,18 +196,10 @@ const Inventory = () => {
       rawTimestamp: new Date(),
     };
   
-    // const encryptedData = CryptoJS.AES.encrypt(
-    //   JSON.stringify(inventoryItem),
-    //   SECRET_KEY
-    // ).toString();
-
-    let encryptedData;
-    if (values.type !== "Consumable") {
-      encryptedData = CryptoJS.AES.encrypt(
-        JSON.stringify(inventoryItem),
-        SECRET_KEY
-      ).toString();
-    }
+    const encryptedData = CryptoJS.AES.encrypt(
+      JSON.stringify(inventoryItem),
+      SECRET_KEY
+    ).toString();
   
     const newItem = {
       id: count + 1,
@@ -217,13 +209,13 @@ const Inventory = () => {
       expiryDate: expiryDate, 
       qrCode: encryptedData,
       ...inventoryItem,
-      ...(values.type !== "Consumable" && { qrCode: encryptedData }),
+      // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
     };
   
     try {
       await addDoc(collection(db, "inventory"), {
         ...inventoryItem,
-        ...(values.type !== "Consumable" && { qrCode: encryptedData }),qrCode: encryptedData,
+        qrCode: encryptedData,
       });
   
       setDataSource([...dataSource, newItem]);
