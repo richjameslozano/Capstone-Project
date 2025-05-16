@@ -351,7 +351,17 @@ const AccountManagement = () => {
       title: "Job Title",
       dataIndex: "jobTitle",
       render: (jobTitle) => (
-        <Tag color={jobTitle === "Dean" ? "volcano" : jobTitle === "Laboratory Custodian" ? "geekblue" : "green"}>
+        <Tag
+          color={
+            jobTitle === "Dean"
+              ? "volcano"
+              : jobTitle === "Laboratory Custodian"
+              ? "geekblue"
+              : jobTitle === "Program Chair"
+              ? "purple"
+              : "green"
+          }
+        >
           {jobTitle.toLowerCase()}
         </Tag>
       ),
@@ -565,18 +575,21 @@ const AccountManagement = () => {
                   placeholder="Select Role"
                   onChange={(value) => {
                     form.setFieldsValue({
-                      role:
-                        value === "Dean"
-                          ? "admin"
-                          : value === "Laboratory Custodian"
-                          ? "super-user"
-                          : value === "Faculty"
-                          ? "User"
-                          : "",
+                    role:
+                      value === "Dean"
+                        ? "admin"
+                        : value === "Laboratory Custodian"
+                        ? "super-user"
+                        : value === "Program Chair"
+                        ? "admin"
+                        : value === "Faculty"
+                        ? "User"
+                        : "",
                     });
                   }}
                 >
                   <Option value="Dean">Dean</Option>
+                  <Option value="Program Chair">Program Chair</Option>
                   <Option value="Laboratory Custodian">Laboratory Custodian</Option>
                   <Option value="Faculty">Faculty</Option>
                 </Select>

@@ -55,8 +55,6 @@ const Login = () => {
 
   const [animateInputs, setAnimateInputs] = useState(false);
 
-  
-
      useEffect(() => {
     const handleBackButton = (event) => {
       event.preventDefault();
@@ -90,7 +88,6 @@ const Login = () => {
     }
     else if(signUpMode ===false){
       setSignUpMode(true)
-
       setAnimateInputs(true);
       setTimeout(() => setAnimateInputs(false), 1000);
     }
@@ -281,6 +278,8 @@ const Login = () => {
       setError("Passwords do not match.");
       return;
     }
+
+    setIsLoading(true)
   
     try {
       const { email, password } = formData;
@@ -348,6 +347,9 @@ const Login = () => {
       } else {
         setError("Failed to set password. Try again.");
       }
+
+    } finally {
+      setIsLoading(false); 
     }
   };
 
@@ -431,15 +433,18 @@ const Login = () => {
       // const firebaseUser = userCredential.user;
   
       // Step 5: Determine the role based on the job title
-      let role = "user";  // Default role is 'user'
+      let role = "user"; 
       if (jobTitle.toLowerCase() === "dean") {
         role = "admin";
-        
+
+      } else if (jobTitle.toLowerCase() === "program chair") {
+        role = "admin";
+
       } else if (jobTitle.toLowerCase().includes("custodian")) {
-        role = "super-user"; 
+        role = "super-user";
 
       } else if (jobTitle.toLowerCase() === "faculty") {
-        role = "user"; 
+        role = "user";
       }
   
       // Step 6: Create a new document in the 'pendingaccounts' collection
@@ -636,9 +641,10 @@ const Login = () => {
                       required
                     >
                       <option value="">Select Job Title</option>
-                      <option value="Faculty">Faculty</option>
                       <option value="Dean">Dean</option>
+                      <option value="Program Chair">Program Chair</option>
                       <option value="Laboratory Custodian">Laboratory Custodian</option>
+                      <option value="Faculty">Faculty</option>
                     </select>
                   </div>
   
