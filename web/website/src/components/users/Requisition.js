@@ -734,12 +734,14 @@ const Requisition = () => {
                 const updated = tableData.map((row) =>
                   row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
                 );
+                
                 setTableData(updated);
 
                 // Update requestList too
                 const updatedRequestList = requestList.map((row) =>
                   row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
                 );
+
                 setRequestList(updatedRequestList);
                 localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
 
