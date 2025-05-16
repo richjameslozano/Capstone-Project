@@ -413,6 +413,7 @@ const Requisition = () => {
             timeFrom,
             timeTo,
             program,
+            course,
             usageType: finalUsageType,
             room,
             reason,
