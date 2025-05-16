@@ -20,7 +20,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -147,42 +147,42 @@ const Inventory = () => {
     saveAs(data, "Inventory.xlsx");
   };  
 
-  const handleAdd = async (values) => {
+   const handleAdd = async (values) => {
     if (!itemName || !values.department) {
       alert("Please enter both Item Name and Department!");
       return;
     }
-  
+
     const isDuplicate = dataSource.some(
       (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
     );
-  
+
     if (isDuplicate) {
       setNotificationMessage("An item with the same description already exists in the inventory.");
       setIsNotificationVisible(true);
       return;
     }
-  
+
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
     const deptItems = dataSource.filter(item => item.department === values.department);
     const departmentCount = deptItems.length + 1;
     const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
     setItemId(generatedItemId); 
-  
+
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
     const expiryDate = values.type === "Fixed" 
       ? null 
       : values.expiryDate 
       ? values.expiryDate.format("YYYY-MM-DD")
       : null;
-    
-  
+
+    const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
     const timestamp = new Date();
-  
+
     const inventoryItem = {
       itemId: generatedItemId,
       itemName,
-      entryDate,
+      entryCurrentDate,
       expiryDate,
       timestamp,
       category: values.category,
@@ -195,39 +195,83 @@ const Inventory = () => {
       // usageType: values.usageType,
       rawTimestamp: new Date(),
     };
-  
+
     const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(inventoryItem),
       SECRET_KEY
     ).toString();
-  
+    
     const newItem = {
       id: count + 1,
       itemId: generatedItemId,
       item: itemName,
-      entryDate: entryDate, 
+      entryDate: entryCurrentDate, 
       expiryDate: expiryDate, 
       qrCode: encryptedData,
       ...inventoryItem,
-      // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
     };
-  
+
     try {
       await addDoc(collection(db, "inventory"), {
         ...inventoryItem,
         qrCode: encryptedData,
       });
-  
+
+      // 🔽 NEW: Ensure labRoom document exists
+      const labRoomRef = doc(db, "labRoom", values.labRoom);
+      const labRoomSnap = await getDoc(labRoomRef);
+
+      // 🔽 Create labRoom doc if it doesn't exist
+      if (!labRoomSnap.exists()) {
+        await setDoc(labRoomRef, {
+          createdAt: new Date(),
+        });
+      }
+
+      // 🔽 Add full item details to subcollection under labRoom
+      await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
+        ...inventoryItem,
+        qrCode: encryptedData,
+      });
+
+       // 🔽 Generate Lab Room QR Code containing all items
+      const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+      const allLabRoomItems = [];
+      labRoomItemsSnap.forEach((docItem) => {
+        const itemData = docItem.data();
+        allLabRoomItems.push({
+          itemId: itemData.itemId,
+          itemName: itemData.itemName,
+          quantity: itemData.quantity,
+          condition: itemData.condition,
+          status: itemData.status,
+        });
+      });
+
+      const labRoomQRData = CryptoJS.AES.encrypt(
+        JSON.stringify({
+          labRoom: values.labRoom,
+          items: allLabRoomItems,
+        }),
+        SECRET_KEY
+      ).toString();
+
+      // 🔽 Store labRoom QR code on the labRoom document
+      await updateDoc(labRoomRef, {
+        qrCode: labRoomQRData,
+        updatedAt: new Date(),
+      });
+
       setDataSource([...dataSource, newItem]);
       setCount(count + 1);
       form.resetFields();
       setItemName("");
       setItemId("");
-  
+
     } catch (error) {
       console.error("Error adding document to Firestore:", error);
     }
-  };  
+  };
 
   const editItem = (record) => {
     editForm.resetFields();
