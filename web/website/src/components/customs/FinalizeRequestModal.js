@@ -10,6 +10,7 @@ const FinalizeRequestModal = ({
   timeFrom,
   timeTo,
   program,
+  course,
   usageType,
   room,
   reason,
@@ -40,6 +41,8 @@ const FinalizeRequestModal = ({
             <div><p><strong>Time Needed:</strong></p><p>{timeFrom || "N/A"} - {timeTo || "N/A"}</p></div> 
 
             <div><p><strong>Program:</strong></p><p>{program || "N/A"}</p></div>
+
+            <div><p><strong>Course:</strong></p><p>{course || "N/A"}</p></div>
 
             <div><p><strong>Usage Type:</strong></p><p>{usageType || "N/A"}</p></div>
 

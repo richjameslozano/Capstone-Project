@@ -54,13 +54,16 @@ const Requisition = () => {
   const [isFinalizeVisible, setIsFinalizeVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [programError, setProgramError] = useState(false);
+  const [courseError, setCourseError] = useState(false);
   const [usageError, setUsageError] = useState(false);
   const [roomError, setRoomError] = useState(false);
   const [program, setProgram] = useState("");
+  const [course, setCourse] = useState("");
   const [usageType, setUsageType] = useState("");
   const [room, setRoom] = useState("");
   const [reason, setReason] = useState("");
   const [searchUsageType, setSearchUsageType] = useState("");
+  const [customUsageType, setCustomUsageType] = useState("");
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
@@ -94,10 +97,10 @@ const Requisition = () => {
     const timeValid = timeFrom && timeTo &&
       new Date(`1970-01-01T${timeFrom}`) < new Date(`1970-01-01T${timeTo}`);
   
-    const formComplete = dateRequired && program && usageType && room && timeValid;
+    const formComplete = dateRequired && program && course && usageType && room && timeValid;
   
     setIsFormValid(formComplete && allItemFieldsValid);
-  }, [dateRequired, program, usageType, room, timeFrom, timeTo, mergedData]);  
+  }, [dateRequired, program, course, usageType, room, timeFrom, timeTo, mergedData]);  
 
   useEffect(() => {
     const storedRequestList = JSON.parse(localStorage.getItem('requestList'));
@@ -322,6 +325,14 @@ const Requisition = () => {
       setProgramError(false);
     }
 
+    if (!course) {
+      setCourseError(true);
+      isValid = false;
+
+    } else {
+      setCourseError(false);
+    }
+
     if (!usageType) {
       setUsageError(true);
       isValid = false;
@@ -338,11 +349,18 @@ const Requisition = () => {
       setRoomError(false);
     }
 
+    if (usageType === "Others" && !customUsageType.trim()) {
+      setNotificationMessage("Please specify the usage type.");
+      setIsNotificationVisible(true);
+      isValid = false;
+    }
+
     if (!timeFrom || !timeTo) {
       setNotificationMessage("Please select both 'Time From' and 'Time To'!");
       setIsNotificationVisible(true);
 
       isValid = false;
+
     } else if (new Date(`1970-01-01T${timeFrom}`) >= new Date(`1970-01-01T${timeTo}`)) {
       setNotificationMessage("'Time From' must be earlier than 'Time To'!");
       setIsNotificationVisible(true);
@@ -385,6 +403,8 @@ const Requisition = () => {
           }
   
           const userName = userDocSnapshot.data().name;
+
+          const finalUsageType = usageType === "Others" ? customUsageType : usageType;
   
           // Add data to the user's requests collection
           const userRequestRef = collection(db, "accounts", userId, "userRequests");
@@ -393,7 +413,7 @@ const Requisition = () => {
             timeFrom,
             timeTo,
             program,
-            usageType,
+            usageType: finalUsageType,
             room,
             reason,
             filteredMergedData,
@@ -459,6 +479,7 @@ const Requisition = () => {
           setTimeFrom(null);
           setTimeTo(null);
           setProgram("");
+          setCourse("");
           setUsageType("");
           setRoom("");
           setReason("");
@@ -737,10 +758,12 @@ const Requisition = () => {
                     });
                   }
                 }
+
               } else {
                 // Use the custom notification modal
                 handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
               }
+
             } else {
               console.error("Inventory item not found.");
             }
@@ -918,6 +941,32 @@ const Requisition = () => {
                     )}
                   </div>
 
+                  <div className="program-container">
+                    <strong>Course Code:</strong>
+                    <select
+                      value={course}
+                      onChange={(e) => setCourse(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid #ccc",
+                        marginTop: "8px",
+                      }}
+                    >
+                      <option value="">Select a Program</option>
+                      <option value="SAM - BSMT">SAM - BSMT</option>
+                      <option value="SAH - BSN">SAH - BSN</option>
+                      <option value="SHS">SHS</option>
+                    </select>
+
+                    {courseError && (
+                      <p style={{ color: "red", marginTop: "5px" }}>
+                        Please select a course code before finalizing.
+                      </p>
+                    )}
+                  </div>
+
                   <div className="room-container">
                     <strong>Room:</strong>
                     <Input
@@ -941,7 +990,7 @@ const Requisition = () => {
                   </div>
                 </div>
 
-                <div className="usage-container">
+                  <div className="usage-container">
                     <strong>Usage Type:</strong>
                     <select
                       value={usageType}
@@ -954,37 +1003,52 @@ const Requisition = () => {
                         marginTop: "8px",
                       }}
                     >
-                          <option value="">Select a Usage Type</option>
-                          <option value="Laboratory Experiment">Laboratory Experiment</option>
-                          <option value="Research">Research</option>
-                          <option value="Community Extension">Community Extension</option>
-                          <option value="Others">Others</option>
+                      <option value="">Select a Usage Type</option>
+                      <option value="Laboratory Experiment">Laboratory Experiment</option>
+                      <option value="Research">Research</option>
+                      <option value="Community Extension">Community Extension</option>
+                      <option value="Others">Others</option>
                     </select>
 
+                    {/* Show error if usageType not selected */}
                     {usageError && (
                       <p style={{ color: "red", marginTop: "5px" }}>
                         Please select a usage type before finalizing.
                       </p>
                     )}
+
+                    {/* Show additional input if 'Others' is selected */}
+                    {usageType === "Others" && (
+                      <input
+                        type="text"
+                        placeholder="Please specify"
+                        value={customUsageType}
+                        onChange={(e) => setCustomUsageType(e.target.value)}
+                        style={{
+                          width: "100%",
+                          marginTop: "8px",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                        }}
+                      />
+                    )}
                   </div>
             </div>
             
-            <div className="reason-container">
-              <strong style={{marginBottom: '5px'}}>Note (Optional):</strong>
-              <Input.TextArea
-                rows={3}
-                showCount
-                style={{maxHeight: '150px', minHeight: '50px'}}
-                
-                maxLength={100}
-                value={reason}
-                onChange={(e) => setReason(e.target.value)}
-                placeholder="Leave a note for the custodian"
-              />
-            </div>
-    
-  
-           
+              <div className="reason-container">
+                <strong style={{marginBottom: '5px'}}>Note (Optional):</strong>
+                <Input.TextArea
+                  rows={3}
+                  showCount
+                  style={{maxHeight: '150px', minHeight: '50px'}}
+                  
+                  maxLength={100}
+                  value={reason}
+                  onChange={(e) => setReason(e.target.value)}
+                  placeholder="Leave a note for the custodian"
+                />
+              </div>
             </div>
 
             <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>              
@@ -1013,6 +1077,7 @@ const Requisition = () => {
                 <option value="Reagent">Reagent</option>
                 <option value="Materials">Materials</option>
                 <option value="Equipment">Equipment</option>
+                <option value="Glasswares">Glasswares</option>
               </select>
             </div>
           </div>
@@ -1038,6 +1103,7 @@ const Requisition = () => {
                     ...tableData,
                     { key: Date.now(), selectedItemId: null }
                   ]);
+
                 } else {
                   setNotificationMessage("Please select an item in the last row first.");
                   setIsNotificationVisible(true);
@@ -1082,6 +1148,7 @@ const Requisition = () => {
           timeFrom={timeFrom}
           timeTo={timeTo}
           program={program}
+          course={course}
           usageType={usageType}
           room={room}
           reason={reason}
