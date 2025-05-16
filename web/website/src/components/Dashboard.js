@@ -122,7 +122,7 @@ import "./styles/Dashboard.css";
         // Query to fetch the most recent products
         const q = query(
           productsRef, 
-          orderBy("entryDate", "desc"),  // Order by the entry date in descending order
+          orderBy("entryCurrentDate", "desc"),  // Order by the entry date in descending order
           limit(5)  // Limit the number of recent products (e.g., 5)
         );
 
@@ -184,7 +184,7 @@ import "./styles/Dashboard.css";
      { title: "Sales", count: 15, color: "#faad14", icon: "💵" },
    ];
 
-   const lightenColor = (hex, percent) => {
+  const lightenColor = (hex, percent) => {
     const num = parseInt(hex.replace("#", ""), 16);
     const amt = Math.round(2.55 * percent * 100);
     const R = (num >> 16) + amt;
@@ -203,7 +203,6 @@ import "./styles/Dashboard.css";
     );
   };
   
- 
    const salesColumns = [
      {
        title: "#",
@@ -257,13 +256,11 @@ import "./styles/Dashboard.css";
               <div className="card-title"><p style={{margin: 0}}>{card.title}</p></div>
             </div>
           </div>
-          )
-            
- })}
+          )        
+        })}
         </div>
 
         <Content className="content">
-
           <h1 style={{fontWeight: "bold", marginTop: '20px'}}>Analytics Center</h1>
             {/* AI Analytics Section */}
             <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
@@ -330,7 +327,7 @@ import "./styles/Dashboard.css";
                             <div>{item.itemName}</div>
                             <small style={{ color: "#999" }}>{item.category}</small>
                           </div>
-                          <div>{item.entryDate}</div>
+                          <div>{item.entryCurrentDate}</div>
                         </div>
                       </List.Item>
                     )}
