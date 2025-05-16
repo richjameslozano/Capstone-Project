@@ -132,20 +132,19 @@ const Inventory = () => {
   };
 
   const exportToExcel = () => {
-    // Prepare the data for Excel
-    const worksheet = XLSX.utils.json_to_sheet(dataSource); // your current data
+    const worksheet = XLSX.utils.json_to_sheet(filteredData);
     const workbook = XLSX.utils.book_new();
-  
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Inventory");
-  
+
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
+
     const excelBuffer = XLSX.write(workbook, {
       bookType: "xlsx",
       type: "array",
     });
-  
+
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "Inventory.xlsx");
-  };  
+    saveAs(data, "Filtered_Inventory.xlsx");
+  };
 
    const handleAdd = async (values) => {
     if (!itemName || !values.department) {
