@@ -94,6 +94,7 @@ const Inventory = () => {
       } catch (error) {
         console.error("Error processing inventory snapshot: ", error);
       }
+      
     }, (error) => {
       console.error("Error fetching inventory with onSnapshot: ", error);
     });
@@ -119,7 +120,7 @@ const Inventory = () => {
   const handleCategoryChange = (value) => {
     let type = "";
 
-    if (["Chemical", "Reagent", "Materials"].includes(value)) {
+    if (["Chemical", "Reagent", "Materials", "Glasswares"].includes(value)) {
       type = "Consumable";
 
     } else if (value === "Equipment") {
@@ -441,6 +442,7 @@ const Inventory = () => {
                       <Option value="Reagent">Reagent</Option>
                       <Option value="Materials">Materials</Option>
                       <Option value="Equipment">Equipment</Option>
+                      <Option value="Glasswares">Glasswares</Option>
                     </Select>
                   </Form.Item>
                 </Col>
@@ -541,6 +543,7 @@ const Inventory = () => {
                 <Option value="Reagent">Reagent</Option>
                 <Option value="Materials">Materials</Option>
                 <Option value="Equipment">Equipment</Option>
+                <Option value="Glasswares">Glasswares</Option>
               </Select>
 
               <Select
@@ -655,6 +658,7 @@ const Inventory = () => {
                       <Option value="Reagent">Reagent</Option>
                       <Option value="Materials">Materials</Option>
                       <Option value="Equipment">Equipment</Option>
+                      <Option value="Glasswares">Glasswares</Option>
                     </Select>
                   </Form.Item>
                 </Col>
