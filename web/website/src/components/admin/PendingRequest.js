@@ -186,7 +186,7 @@ const PendingRequest = () => {
         accountId: selectedRequest.accountId || "N/A",
         userName: selectedRequest.userName || "N/A",
         room: selectedRequest.room || "N/A",
-        courseCode: selectedRequest.courseCode || "N/A",
+        course: selectedRequest.course || "N/A",
         courseDescription: selectedRequest.courseDescription || "N/A",
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",
@@ -204,7 +204,7 @@ const PendingRequest = () => {
         accountId: selectedRequest.accountId || "N/A",
         userName: selectedRequest.userName || "N/A",
         room: selectedRequest.room || "N/A",
-        courseCode: selectedRequest.courseCode || "N/A",
+        course: selectedRequest.course || "N/A",
         courseDescription: selectedRequest.courseDescription || "N/A",
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",
@@ -242,7 +242,7 @@ const PendingRequest = () => {
         enrichedItems,
         {
           approvedBy: userName,
-          courseCode: selectedRequest.courseCode || "N/A",
+          course: selectedRequest.course || "N/A",
           courseDescription: selectedRequest.courseDescription || "N/A",
           dateRequired: selectedRequest.dateRequired,
           reason: selectedRequest.reason,
@@ -264,7 +264,7 @@ const PendingRequest = () => {
           rejectedItems,
           {
             rejectedBy: userName,
-            courseCode: selectedRequest.courseCode || "N/A",
+            course: selectedRequest.course || "N/A",
             courseDescription: selectedRequest.courseDescription || "N/A",
             dateRequired: selectedRequest.dateRequired,
             reason: rejectionReason || "No reason provided",
@@ -337,6 +337,7 @@ const PendingRequest = () => {
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",
           program: item.program || "N/A",
+          course: item.course || "N/A",
           reason: item.reason || "No reason provided",
           labRoom: item.labRoom || "N/A",
           timeFrom: item.timeFrom || "N/A",
@@ -349,7 +350,7 @@ const PendingRequest = () => {
           accountId: selectedRequest.accountId || "N/A",
           userName: selectedRequest.userName || "N/A",
           room: selectedRequest.room || "N/A",
-          courseCode: selectedRequest.courseCode || "N/A",
+          course: selectedRequest.course || "N/A",
           courseDescription: selectedRequest.courseDescription || "N/A",
           dateRequired: selectedRequest.dateRequired || "N/A",
           timeFrom: selectedRequest.timeFrom || "N/A",
@@ -506,7 +507,7 @@ const PendingRequest = () => {
         accountId: selectedRequest.accountId || "N/A",
         userName: selectedRequest.userName || "N/A",
         room: selectedRequest.room || "N/A",
-        courseCode: selectedRequest.courseCode || "N/A",
+        course: selectedRequest.course || "N/A",
         courseDescription: selectedRequest.courseDescription || "N/A",
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",
@@ -524,7 +525,7 @@ const PendingRequest = () => {
         accountId: selectedRequest.accountId || "N/A",
         userName: selectedRequest.userName || "N/A",
         room: selectedRequest.room || "N/A",
-        courseCode: selectedRequest.courseCode || "N/A",
+        course: selectedRequest.course || "N/A",
         courseDescription: selectedRequest.courseDescription || "N/A",
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",
@@ -561,7 +562,7 @@ const PendingRequest = () => {
         enrichedItems,
         {
           approvedBy: userName,
-          courseCode: selectedRequest.courseCode || "N/A",
+          course: selectedRequest.course || "N/A",
           courseDescription: selectedRequest.courseDescription || "N/A",
           dateRequired: selectedRequest.dateRequired,
           reason: selectedRequest.reason,
@@ -583,7 +584,7 @@ const PendingRequest = () => {
           rejectedItems,
           {
             rejectedBy: userName,
-            courseCode: selectedRequest.courseCode || "N/A",
+            course: selectedRequest.course || "N/A",
             courseDescription: selectedRequest.courseDescription || "N/A",
             dateRequired: selectedRequest.dateRequired,
             reason: rejectionReason || "No reason provided",
@@ -656,6 +657,7 @@ const PendingRequest = () => {
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",
           program: item.program || "N/A",
+          course: item.course || "N/A",
           reason: item.reason || "No reason provided",
           labRoom: item.labRoom || "N/A",
           timeFrom: item.timeFrom || "N/A",
@@ -668,7 +670,7 @@ const PendingRequest = () => {
           accountId: selectedRequest.accountId || "N/A",
           userName: selectedRequest.userName || "N/A",
           room: selectedRequest.room || "N/A",
-          courseCode: selectedRequest.courseCode || "N/A",
+          course: selectedRequest.course || "N/A",
           courseDescription: selectedRequest.courseDescription || "N/A",
           dateRequired: selectedRequest.dateRequired || "N/A",
           timeFrom: selectedRequest.timeFrom || "N/A",
@@ -894,7 +896,7 @@ const PendingRequest = () => {
       accountId: selectedRequest.accountId || "N/A",
       userName: selectedRequest.userName || "N/A",
       room: selectedRequest.room || "N/A",
-      courseCode: selectedRequest.courseCode || "N/A",
+      course: selectedRequest.course || "N/A",
       courseDescription: selectedRequest.courseDescription || "N/A",
       dateRequired: selectedRequest.dateRequired || "N/A",
       timeFrom: selectedRequest.timeFrom || "N/A",  
@@ -912,7 +914,7 @@ const PendingRequest = () => {
       accountId: selectedRequest.accountId || "N/A",
       userName: selectedRequest.userName || "N/A",
       room: selectedRequest.room || "N/A",
-      courseCode: selectedRequest.courseCode || "N/A",
+      course: selectedRequest.couse || "N/A",
       courseDescription: selectedRequest.courseDescription || "N/A",
       dateRequired: selectedRequest.dateRequired || "N/A",
       timeFrom: selectedRequest.timeFrom || "N/A",  
@@ -951,7 +953,7 @@ const PendingRequest = () => {
       enrichedItems,                 // request list
       {
         approvedBy: userName, // whoever approved
-        courseCode: selectedRequest.courseCode || "N/A",
+        course: selectedRequest.course || "N/A",
         courseDescription: selectedRequest.courseDescription || "N/A",
         dateRequired: selectedRequest.dateRequired,
         reason: selectedRequest.reason,
@@ -973,7 +975,7 @@ const PendingRequest = () => {
         rejectedItems,                 // request list
         {
           rejectedBy: userName, // whoever rejected
-          courseCode: selectedRequest.courseCode || "N/A",
+          course: selectedRequest.course || "N/A",
           courseDescription: selectedRequest.courseDescription || "N/A",
           dateRequired: selectedRequest.dateRequired,
           reason: rejectionReason || "No reason provided",  // Reason for rejection
@@ -1053,6 +1055,7 @@ const PendingRequest = () => {
           selectedItemId: item.selectedItemId || "N/A",  // Item ID from Firestore
           status: item.status || "Available",  // Status (e.g., Available)
           program: item.program || "N/A",  // Program associated with the request
+          course: item.course || "N/A",
           reason: item.reason || "No reason provided",  // Reason for the request
           labRoom: item.labRoom || "N/A",  // Lab room (e.g., 1224)
           timeFrom: item.timeFrom || "N/A",  // Time From
@@ -1066,7 +1069,7 @@ const PendingRequest = () => {
           accountId: selectedRequest.accountId || "N/A",
           userName: selectedRequest.userName || "N/A",
           room: selectedRequest.room || "N/A",
-          courseCode: selectedRequest.courseCode || "N/A",
+          course: selectedRequest.course || "N/A",
           courseDescription: selectedRequest.courseDescription || "N/A",
           dateRequired: selectedRequest.dateRequired || "N/A",
           timeFrom: selectedRequest.timeFrom || "N/A",  // Add timeFrom
@@ -1209,7 +1212,7 @@ const PendingRequest = () => {
         accountId: selectedRequest.accountId || "N/A",
         userName: selectedRequest.userName || "N/A",
         room: selectedRequest.room || "N/A",
-        courseCode: selectedRequest.courseCode || "N/A",
+        course: selectedRequest.course || "N/A",
         courseDescription: selectedRequest.courseDescription || "N/A",
         dateRequired: selectedRequest.dateRequired || "N/A",
         timeFrom: selectedRequest.timeFrom || "N/A",  
@@ -1340,7 +1343,7 @@ const PendingRequest = () => {
       render: (text) => text || "N/A",  
     },   
     {
-      title: "Item Description",
+      title: "Item Name",
       dataIndex: "itemName",
     },
     {
@@ -1398,7 +1401,7 @@ const PendingRequest = () => {
                   },
                   {
                     title: "Course Code",
-                    dataIndex: "courseCode",
+                    dataIndex: "course",
                   },
                   {
                     title: "Course Description",
@@ -1445,7 +1448,7 @@ const PendingRequest = () => {
                     <Row style={{ marginTop: 8 }}>
                       <Col span={18} style={{ textAlign: "left" }}>
                         <Text type="secondary">
-                          Room: {request.room} | Course Code: {request.courseCode}
+                          Room: {request.room} | Course Code: {request.course}
                         </Text>
                         <br />
                         <Text type="secondary">

@@ -50,7 +50,7 @@ const RequisitionReqestModal = ({
 
               <div className="right-slip">
               <div><strong>Room:</strong> <p>{selectedRequest.room}</p></div>
-              <div><strong>Course Code:</strong> <p>{selectedRequest.courseCode}</p></div>
+              <div><strong>Course Code:</strong> <p>{selectedRequest.course}</p></div>
               <div><strong>Course Description:</strong> <p>{selectedRequest.courseDescription}</p></div>
               <div><strong>Program:</strong> <p>{selectedRequest.program}</p></div>
               <div><strong>Usage Type:</strong> <p>{selectedRequest.usageType}</p></div>
