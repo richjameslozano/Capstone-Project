@@ -732,7 +732,7 @@ const Requisition = () => {
               if (newQuantity <= availableQuantity) {
                 // Update local tableData if valid
                 const updated = tableData.map((row) =>
-                  row.key === record.key ? { ...row, quantity: newQuantity } : row
+                  row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
                 );
                 setTableData(updated);
 
