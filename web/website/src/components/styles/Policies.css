@@ -10,22 +10,24 @@
   align-items: center;
   z-index: 1000;
   transition: opacity 0.3s ease;
+  padding: 16px;
 }
 
-/* Modal Container */
 .modal-container {
-  background-color: white;
-  border-radius: 12px; /* Rounded corners for a modern look */
-  width: 90%;
+  background-color: #fff;
+  border-radius: 12px;
+  width: 100%;
   max-width: 600px;
+  max-height: 90vh;
   padding: 25px;
   overflow-y: auto;
   position: relative;
-  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2); /* Slightly stronger shadow */
+  box-shadow: 0px 6px 12px rgba(0, 0, 0, 0.2);
   animation: modal-enter 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Modal Animation */
 @keyframes modal-enter {
   0% {
     opacity: 0;
@@ -37,7 +39,6 @@
   }
 }
 
-/* Header Section */
 .modal-header {
   display: flex;
   justify-content: space-between;
@@ -48,11 +49,10 @@
 
 .modal-header h2 {
   margin: 0;
-  font-size: 20px;
-  color: #333;
+  font-size: 22px;
+  color: #222;
 }
 
-/* Close Button */
 .close-btn {
   background: none;
   border: none;
@@ -64,32 +64,28 @@
 }
 
 .close-btn:hover {
-  color: #d9534f; /* Red shade for better hover visibility */
+  color: #d9534f;
 }
 
-/* Modal Body */
 .modal-body {
   margin-top: 20px;
-}
-
-.modal-body h3 {
-  margin-top: 0;
-  font-size: 18px;
-  color: #444;
+  flex-grow: 1;
 }
 
 .modal-body p {
   font-size: 15px;
-  color: #666;
+  color: #444;
   line-height: 1.6;
-  margin-bottom: 20px;
   text-align: justify;
+  white-space: pre-wrap;
 }
 
-/* Footer Section */
 .modal-footer {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: 20px;
 }
 
@@ -109,19 +105,18 @@
 }
 
 .modal-footer .close-btn:active {
-  transform: translateY(0); /* Slight effect on click */
+  transform: translateY(0);
 }
 
-/* Checkbox Section */
 .checkbox-container {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-right: auto;
   font-size: 15px;
   color: #333;
+  gap: 10px;
 }
 
 .checkbox-container input {
   transform: scale(1.2);
+  cursor: pointer;
 }

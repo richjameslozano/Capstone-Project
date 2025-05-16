@@ -141,12 +141,12 @@ import "./styles/Dashboard.css";
  
    const closeModal = () => {
     setShowModal(false);        
-    setShowPolicies(true);      
+    // setShowPolicies(true);      
    };
   
-   const closePolicies = () => {
-    setShowPolicies(false);    
-   };
+  //  const closePolicies = () => {
+  //   setShowPolicies(false);    
+  //  };
 
   const handleDateSelect = async (date) => {
     setSelectedDate(date);
@@ -343,7 +343,6 @@ import "./styles/Dashboard.css";
               <Col span={24}>
                 <div className="calendar-wrapper">
                 <CustomCalendar onSelectDate={handleDateSelect} />
-                {/* <CustomCalendar onSelectDate={(date) => setSelectedDate(date)} /> */}
                 </div>
               </Col>
             </Row>
@@ -351,7 +350,7 @@ import "./styles/Dashboard.css";
 
          <SuccessModal isVisible={showModal} onClose={closeModal} />
 
-         <PoliciesModal isOpen={showPolicies} onClose={closePolicies} />
+         {/* <PoliciesModal isOpen={showPolicies} onClose={closePolicies} /> */}
 
        </Layout>
      </Layout>
