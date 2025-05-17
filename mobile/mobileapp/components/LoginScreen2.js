@@ -42,10 +42,10 @@ export default function LoginScreen({navigation}) {
 
   const [isLoginSignup, setIsLoginSignup] = useState(false)
   const nameBorderAnim = useRef(new Animated.Value(0)).current;
-const emailBorderAnim = useRef(new Animated.Value(0)).current;
-const employeeIDBorderAnim = useRef(new Animated.Value(0)).current;
-const passwordBorderAnim = useRef(new Animated.Value(0)).current;
-const confirmPasswordBorderAnim = useRef(new Animated.Value(0)).current;
+  const emailBorderAnim = useRef(new Animated.Value(0)).current;
+  const employeeIDBorderAnim = useRef(new Animated.Value(0)).current;
+  const passwordBorderAnim = useRef(new Animated.Value(0)).current;
+  const confirmPasswordBorderAnim = useRef(new Animated.Value(0)).current;
 
   const [focusStates, setFocusStates] = useState({
   name: false,
@@ -112,13 +112,8 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
   outputRange: ['#ccc', '#395a7f']
 });
 
-
-
-  const jobOptions = ['Dean', 'Laboratory Custodian', 'Faculty'];
+  const jobOptions = ['Dean', 'Program Chair', 'Laboratory Custodian', 'Faculty'];
   const deptOptions = ['Medical Technology', 'Nursing', 'Dentistry', 'Optometry'];
-
-
-
 
   const handleLogin = async () => {
     
@@ -347,11 +342,11 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         }
       
         // Step 2: Password match check
-        if (password !== confirmPassword) {
-          setError("Passwords do not match.");
-          setLoading(false);
-          return;
-        }
+        // if (password !== confirmPassword) {
+        //   setError("Passwords do not match.");
+        //   setLoading(false);
+        //   return;
+        // }
 
         if (!agreedToTerms) {
           setError("You must agree to the Terms and Conditions.");
@@ -388,12 +383,22 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             return;
           }
       
-          const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          const firebaseUser = userCredential.user;
+          // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+          // const firebaseUser = userCredential.user;
       
           let role = "user";
-          if (jobTitle.toLowerCase() === "dean") role = "admin";
-          else if (jobTitle.toLowerCase().includes("custodian")) role = "super-user";
+          if (jobTitle.toLowerCase() === "dean") {
+            role = "admin";
+
+          } else if (jobTitle.toLowerCase() === "program chair") {
+            role = "admin";
+
+          } else if (jobTitle.toLowerCase().includes("custodian")) {
+            role = "super-user";
+
+          } else if (jobTitle.toLowerCase() === "faculty") {
+            role = "user";
+          }
       
           const sanitizedData = {
             name: name.trim(),
@@ -476,9 +481,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
            
         </View>
       )}
-    
-    
-
 
           {isLoginSignup && (
             <>
@@ -631,7 +633,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 
 
                 {/* Password Inputs */}
-                <Text style={styles.label}>Password:<Text style={{color:'red'}}>*</Text></Text>
+                {/* <Text style={styles.label}>Password:<Text style={{color:'red'}}>*</Text></Text>
                   <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%' }]}>
                 <Input
                   placeholder="Password"
@@ -677,7 +679,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   inputContainerStyle={[styles.inputContainer]} // removes underline
                 inputStyle={styles.inputText}
                 />
-                </Animated.View>
+                </Animated.View> */}
 
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                   <Checkbox
