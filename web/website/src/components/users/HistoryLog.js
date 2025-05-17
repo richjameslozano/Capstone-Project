@@ -274,8 +274,8 @@ const HistoryLog = () => {
                             {item.usageType && <li>Usage Type: {item.usageType}</li>}
                             {item.itemType && <li>Item Type: {item.itemType}</li>}
                             {item.department && <li>Department: {item.department}</li>}
-                            {selectedLog.action === "Request Rejected" && item.rejectionReason && (
-                              <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>
+                            {selectedLog.action === "Request Rejected" && item.reason && (
+                              <li><strong>Rejection Reason:</strong> {item.reason}</li>
                             )}
                           </ul>
                         </li>

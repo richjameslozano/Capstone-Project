@@ -32,6 +32,7 @@ const PendingRequest = () => {
   const [pendingApprovalData, setPendingApprovalData] = useState(null); 
   const [isMultiRejectModalVisible, setIsMultiRejectModalVisible] = useState(false);
   const [rejectionReasons, setRejectionReasons] = useState({});
+  const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
 
   useEffect(() => {
     const userRequestRef = collection(db, "userrequests");
@@ -97,6 +98,10 @@ const PendingRequest = () => {
     setSelectedRequest(null);
   };
 
+  const handleOpenFinalizeModal = () => {
+    setIsMultiRejectModalVisible(false);
+    setIsFinalizeModalVisible(true);
+  };
 
   const handleMultiRejectConfirm = async () => {
     // if (!rejectionReason.trim()) {
@@ -403,6 +408,7 @@ const PendingRequest = () => {
       setCheckedItems({});
       setIsModalVisible(false);
       setSelectedRequest(null);
+      setIsFinalizeModalVisible(false)
   
       notification.success({
         message: "Request Processed",
@@ -723,6 +729,7 @@ const PendingRequest = () => {
       setCheckedItems({});
       setIsModalVisible(false);
       setSelectedRequest(null);
+      setIsFinalizeModalVisible(false)
   
       notification.success({
         message: "Request Processed",
@@ -1125,6 +1132,7 @@ const PendingRequest = () => {
         setCheckedItems({});
         setIsModalVisible(false);
         setSelectedRequest(null);
+        setIsFinalizeModalVisible(false)
 
         notification.success({
           message: "Request Approved",
@@ -1489,22 +1497,7 @@ const PendingRequest = () => {
           />
         </Modal>
 
-        {/* <Modal
-          title="Enter Rejection Reason"
-          open={isRejectModalVisible}
-          onOk={handleRejectConfirm}
-          onCancel={() => setIsRejectModalVisible(false)}
-          okText="Submit"
-        >
-          <Input.TextArea
-            placeholder="Enter reason for rejection"
-            value={rejectionReason}
-            onChange={(e) => setRejectionReason(e.target.value)}
-            rows={4}
-        />
-        </Modal> */}
-
-        {isMultiRejectModalVisible && (
+        {/* {isMultiRejectModalVisible && (
           <Modal
             title="Provide Reasons for Unchecked Items"
             open={isMultiRejectModalVisible}
@@ -1523,6 +1516,80 @@ const PendingRequest = () => {
             <Table
               dataSource={pendingApprovalData?.uncheckedItems || []}
               columns={columnsRejection}
+              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
+              pagination={false}
+            />
+          </Modal>
+        )} */}
+
+        {isMultiRejectModalVisible && (
+          <Modal
+            title="Provide Reasons for Unchecked Items"
+            open={isMultiRejectModalVisible}
+            zIndex={1023}
+            width={'40%'}
+            onCancel={() => setIsMultiRejectModalVisible(false)}
+            footer={[
+              <Button key="cancel" onClick={() => setIsMultiRejectModalVisible(false)}>
+                Cancel
+              </Button>,
+
+              <Button key="confirm" type="primary" onClick={handleOpenFinalizeModal}>
+                Confirm
+              </Button>,
+            ]}
+          >
+            <Table
+              dataSource={pendingApprovalData?.uncheckedItems || []}
+              columns={columnsRejection}
+              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
+              pagination={false}
+            />
+          </Modal>
+        )}
+
+        {isFinalizeModalVisible && (
+          <Modal
+            title="Finalize Order"
+            open={isFinalizeModalVisible}
+            zIndex={1024}
+            width={'50%'}
+            onCancel={() => setIsFinalizeModalVisible(false)}
+            footer={[
+              <Button key="back" onClick={() => setIsFinalizeModalVisible(false)}>
+                Cancel
+              </Button>,
+              <Button key="submit" type="primary" onClick={handleRejectConfirm}>
+                Finalize
+              </Button>,
+            ]}
+          >
+            <p>Please review your selections below before finalizing your order:</p>
+
+            <h3>✅ Approved Items</h3>
+            <Table
+              dataSource={pendingApprovalData?.enrichedItems || []}
+              columns={[
+                {
+                  title: 'Item Name',
+                  dataIndex: 'itemName',
+                  key: 'itemName',
+                },
+                {
+                  title: 'Quantity',
+                  dataIndex: 'quantity',
+                  key: 'quantity',
+                },
+                
+              ]}
+              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
+              pagination={false}
+            />
+
+            <h3 style={{ marginTop: 24 }}>❌ Rejected Items</h3>
+            <Table
+              dataSource={pendingApprovalData?.uncheckedItems || []}
+              columns={columnsRejection} 
               rowKey={(record, index) => `${record.selectedItemId}-${index}`}
               pagination={false}
             />
