@@ -41,6 +41,7 @@ import RequestLog from './admin/RequestLog';
 import AdminActivityLog from './admin/AdminActivityLog';
 import NotAuthorized from './NotAuthorized';
 import CapexList from './admin/CapexList';
+import LabRoomQR from './admin/LabRoomQR';
 
 const { Header, Sider, Content } = Layout;
 
@@ -181,6 +182,11 @@ const LayoutMain = () => {
         setPageTitle("Capex Request List");
         break;
 
+    case "/main/lab-room":
+        setSelectedKey("19");
+        setPageTitle("Lab Room Details");
+        break;
+
       default:
         setSelectedKey("1");
         setPageTitle("Dashboard");
@@ -289,6 +295,11 @@ const LayoutMain = () => {
       key: "/main/capex-request-list",
       icon: <HistoryOutlined />,
       label: "Capex Request List",
+    },
+    {
+      key: "/main/lab-room",
+      icon: <HistoryOutlined />,
+      label: "Lab Room Details",
     },
     {
       key: "logout",
@@ -493,6 +504,7 @@ const LayoutMain = () => {
 
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />
+              <Route path="/lab-room" element={<LabRoomQR/>} />
             </Route>
 
             {/* User-only routes */}
