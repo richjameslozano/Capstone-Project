@@ -275,7 +275,7 @@ const SearchItems = () => {
                 </Descriptions.Item> */}
 
                 <Descriptions.Item label="Date Acquired">
-                  {selectedItem.entryDate || "N/A"}
+                  {selectedItem.entryCurrentDate || "N/A"}
                 </Descriptions.Item>
 
               </Descriptions>
