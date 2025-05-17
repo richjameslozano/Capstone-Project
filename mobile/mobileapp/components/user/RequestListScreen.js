@@ -102,6 +102,7 @@ const RequestListScreen = ({navigation}) => {
       !metadata?.timeFrom ||
       !metadata?.timeTo ||
       !metadata?.program ||
+      !metadata?.course ||
       !metadata?.room ||
       !metadata?.usageType
       
@@ -159,6 +160,7 @@ const RequestListScreen = ({navigation}) => {
         timeFrom: metadata.timeFrom,
         timeTo: metadata.timeTo,
         program: metadata.program,
+        course: metadata.course,
         room: metadata.room,
         reason: metadata.reason,
         filteredMergedData: requestList.map((item) => ({
@@ -432,10 +434,11 @@ const RequestListScreen = ({navigation}) => {
                   <Text style={styles.modalText}>Date Required: {confirmationData?.dateRequired}</Text>
 
                   {/* Use the formatted time strings directly */}
-                  <Text>Time From: {formatTime(metadata.timeFrom)}</Text>
-                  <Text>Time To: {formatTime(metadata.timeTo)}</Text>
+                  <Text>Time From: {metadata.timeFrom}</Text>
+                  <Text>Time To: {metadata.timeTo}</Text>
 
                   <Text style={styles.modalText}>Program: {confirmationData?.program}</Text>
+                  <Text style={styles.modalText}>Course: {confirmationData?.course}</Text>
                   <Text style={styles.modalText}>Room: {confirmationData?.room}</Text>
                   <Text style={styles.modalText}>Reason: {confirmationData?.reason}</Text>
 

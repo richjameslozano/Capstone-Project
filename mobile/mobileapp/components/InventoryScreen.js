@@ -40,6 +40,7 @@ export default function InventoryScreen({ navigation }) {
   const [selectedStartTime, setSelectedStartTime] = useState({ hour: '10', minute: '00', period: 'AM' });
   const [selectedEndTime, setSelectedEndTime] = useState({ hour: '3', minute: '00', period: 'PM' });
   const [program, setProgram] = useState('');
+  const [course, setCourse] = useState('');
   const [room, setRoom] = useState('');
   const [selectedUsageTypeInput, setSelectedUsageTypeInput] = useState(''); 
   const today = new Date().toISOString().split('T')[0];
@@ -59,6 +60,7 @@ export default function InventoryScreen({ navigation }) {
       setSelectedStartTime({ hour: '10', minute: '00', period: 'AM' })
       setSelectedEndTime({ hour: '3', minute: '00', period: 'PM' })
       setProgram('')
+      setCourse('')
       setRoom('')
       setReason('')
       setSelectedUsageTypeInput(null)
@@ -194,6 +196,7 @@ export default function InventoryScreen({ navigation }) {
       !metadata?.timeFrom || 
       !metadata?.timeTo || 
       !metadata?.program || 
+      !metadata?.course || 
       !metadata?.room || 
       !metadata?.usageType
     ) {
@@ -258,6 +261,7 @@ export default function InventoryScreen({ navigation }) {
       if(item.category === 'Equipment') return '#ffffa0';
       if(item.category === 'Materials') return '#dac4ff';
     }
+    
     return (
       <TouchableOpacity onPress={() => openModal(item)} activeOpacity={0.9}>
         <View style={styles.card}>
@@ -382,6 +386,7 @@ export default function InventoryScreen({ navigation }) {
     startTime: false,
     endTime: false,
     program: false,
+    course: false,
     room: false,
     usageType: false,
   });
@@ -455,7 +460,8 @@ export default function InventoryScreen({ navigation }) {
       dateRequired: selectedDate,
       timeFrom: formatTime(selectedStartTime),
       timeTo: formatTime(selectedEndTime),
-      room
+      room,
+      course
     });
 
     const newErrors = {
@@ -463,6 +469,7 @@ export default function InventoryScreen({ navigation }) {
       startTime: !selectedStartTime,
       endTime: !selectedEndTime,
       program: !program,
+      course: !course,
       room: !room,
       usageType: !selectedUsageTypeInput,
     };
@@ -490,6 +497,7 @@ export default function InventoryScreen({ navigation }) {
       timeFrom: formattedStartTime,
       timeTo: formattedEndTime,
       program,
+      course,
       room,
       usageType: selectedUsageTypeInput,
       reason
@@ -546,7 +554,7 @@ export default function InventoryScreen({ navigation }) {
               <Text style={{color: '#6abce2', fontSize: 12, fontWeight: 'bold'}}>Subject Details</Text>
               </View>
 
-                        <View style={styles.programSection}>
+          <View style={styles.programSection}>
             <Text style={styles.label}>Select Program:</Text>
             <View
                 style={[
@@ -585,15 +593,15 @@ export default function InventoryScreen({ navigation }) {
             <View
                 style={[
                   styles.programPicker,
-                  errors.program && { borderColor: 'red', borderWidth: 1 }
+                  errors.course && { borderColor: 'red', borderWidth: 1 }
                 ]}
               >
                   <Picker
-                    // selectedValue={program}
-                    // onValueChange={(itemValue) => {
-                    //   setProgram(itemValue);
-                    //   setMetadata((prevMetadata) => ({ ...prevMetadata, program: itemValue }));
-                    // }}
+                    selectedValue={course}
+                    onValueChange={(itemValue) => {
+                      setCourse(itemValue);
+                      setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
+                    }}
                     style={styles.programItem}
                     dropdownIconColor= "#6e9fc1"
                     dropdownIconRippleColor='white'

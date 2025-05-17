@@ -183,7 +183,8 @@ export default function RequestScreen() {
             requester: data.userName || 'Unknown',
             room: data.room || 'N/A',
             timeNeeded: `${data.timeFrom || 'N/A'} - ${data.timeTo || 'N/A'}`,
-            courseCode: data.program || 'N/A',
+            program: data.program || 'N/A',
+            course: data.course || 'N/A',
             courseDescription: data.reason || 'N/A',
             items: enrichedItems,
             status: 'PENDING',
@@ -360,6 +361,7 @@ const pagerRef = useRef(null);
             <ScrollView style={{ maxHeight: 400, width: '100%' }}>
               <Text style={styles.modalText}>By: {selectedLog?.userName || 'Unknown User'}</Text>
               <Text style={styles.modalText}>Program: {selectedLog?.program || 'N/A'}</Text>
+              <Text style={styles.modalText}>Course: {selectedLog?.course || 'N/A'}</Text>
               <Text style={styles.modalText}>Reason: {selectedLog?.reason || 'N/A'}</Text>
               <Text style={styles.modalText}>Room: {selectedLog?.room || 'N/A'}</Text>
               <Text style={styles.modalText}>
