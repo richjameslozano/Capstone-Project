@@ -65,7 +65,7 @@ const RequestLog = () => {
               reason: data.reason ?? "No reason provided",
               department: data.requestList?.[0]?.department ?? "N/A",
               rejectionReason:
-                data.requestList?.[0]?.rejectionReason || data.rejectionReason || "N/A",
+                data.requestList?.[0]?.reason || data.reason || "N/A",
               approvedBy: data.approvedBy,
               rejectedBy: data.rejectedBy,
               rawTimestamp: rawTimestamp ?? null,
@@ -418,8 +418,8 @@ const printPdf = () => {
                     itemDescription: item.itemName,
                     quantity: item.quantity,
                     rejectionReason:
-                      item.rejectionReason ||
-                      selectedRequest.raw?.rejectionReason ||
+                      item.reason ||
+                      selectedRequest.raw?.reason ||
                       "N/A",
                   })
                 )}

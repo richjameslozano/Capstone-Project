@@ -138,8 +138,9 @@ const PendingRequest = () => {
   
     try {
       const rejectedItems = await Promise.all(
-        uncheckedItems.map(async (item) => {
+        uncheckedItems.map(async (item, index) => {
           const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+          const itemKey = `${selectedItemId}-${index}`;
           let itemType = "Unknown";
   
           if (selectedItemId) {
@@ -158,6 +159,7 @@ const PendingRequest = () => {
             ...item,
             selectedItemId,
             itemType,
+            reason: rejectionReasons[itemKey] || "No reason provided",
           };
         })
       );
@@ -267,7 +269,7 @@ const PendingRequest = () => {
             course: selectedRequest.course || "N/A",
             courseDescription: selectedRequest.courseDescription || "N/A",
             dateRequired: selectedRequest.dateRequired,
-            reason: rejectionReason || "No reason provided",
+            reason: rejectedItems.map(item => item.reason).join(", ") || "No reason provided",
             room: selectedRequest.room,
             program: selectedRequest.program,
             timeFrom: selectedRequest.timeFrom || "N/A",
