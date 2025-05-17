@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Row, Col, Button, Typography, Space, Table, notification } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, getDoc, setDoc } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, getDoc, setDoc, query, where } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const { Content } = Layout;
@@ -74,7 +74,7 @@ const PendingAccounts = () => {
     setSelectedRequests(selectedRowKeys); // Update selected rows
   };
 
-  const handleApprove = async () => {
+    const handleApprove = async () => {
     const auth = getAuth();
 
     try {
@@ -89,28 +89,23 @@ const PendingAccounts = () => {
             return;
           }
 
-          // Check if user already exists in 'accounts' collection by UID
-          if (requestData.uid) {
-            const existingUserRef = doc(db, "accounts", requestData.uid);
-            const existingUserSnapshot = await getDoc(existingUserRef);
-            if (existingUserSnapshot.exists()) {
-              console.log("User already exists in accounts. Skipping...");
-              return;
-            }
+          // Check if user already exists in 'accounts' collection by email
+          const accountsRef = collection(db, "accounts");
+          const q = query(accountsRef, where("email", "==", requestData.email));
+          const querySnapshot = await getDocs(q);
+          if (!querySnapshot.empty) {
+            console.log("User already exists in accounts. Skipping...");
+            return;
           }
 
-          // Create the Firebase Auth user with plain text password
-          const userCredential = await createUserWithEmailAndPassword(auth, requestData.email, requestData.password);
-
-          // Extract password from requestData before saving to 'accounts'
+          // Extract password before saving to 'accounts'
           const { password, ...restData } = requestData;
 
-          // Store the user in the 'accounts' collection without password
-          const userUID = userCredential.user.uid; // Firebase Auth UID
-          const newAccountRef = doc(db, "accounts", userUID);
+          // Create a Firestore doc in 'accounts' without password and UID for now
+          const newAccountRef = doc(accountsRef); 
           await setDoc(newAccountRef, {
             ...restData,
-            uid: userUID,
+            uid: "", // UID will be set after user registers password
             status: "approved",
             approvedAt: new Date(),
           });

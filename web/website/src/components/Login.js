@@ -428,10 +428,6 @@ const Login = () => {
         return;
       }
   
-      // Step 4: Create the Firebase user with email and password
-      // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      // const firebaseUser = userCredential.user;
-  
       // Step 5: Determine the role based on the job title
       let role = "user"; 
       if (jobTitle.toLowerCase() === "dean") {
@@ -446,22 +442,6 @@ const Login = () => {
       } else if (jobTitle.toLowerCase() === "faculty") {
         role = "user";
       }
-  
-      // Step 6: Create a new document in the 'pendingaccounts' collection
-      // const sanitizedData = {
-      //   name: name.trim().toLowerCase(),
-      //   email: email.trim().toLowerCase(),
-      //   employeeId: employeeId.trim().replace(/[^\d-]/g, ''),
-      //   jobTitle,
-      //   department,
-      //   role,  // Assign role based on job title
-      //   createdAt: serverTimestamp(),
-      //   status: "pending", // Mark as pending
-      //   // uid: firebaseUser.uid,
-      // };
-  
-      // // Add user data to 'pendingaccounts' collection
-      // await addDoc(collection(db, "pendingaccounts"), sanitizedData);
 
         // Save data to 'pendingaccounts' collection without creating the Firebase Auth user
       const sanitizedData = {
@@ -473,7 +453,7 @@ const Login = () => {
         role, // Function to determine role based on job title
         createdAt: serverTimestamp(),
         status: "pending",
-        password, // Include password here temporarily for approval process
+        // password, // Include password here temporarily for approval process
       };
 
       await addDoc(collection(db, "pendingaccounts"), sanitizedData);
@@ -667,7 +647,7 @@ const Login = () => {
   
                 </div>
                   
-                  <div className="form-group password-group">
+                  {/* <div className="form-group password-group">
                     <label>Password</label>
                     <div className="password-wrapper">
                       <input
@@ -705,7 +685,7 @@ const Login = () => {
                         {showConfirmPassword ? "🔒" : "👁️"}
                       </span>
                     </div>
-                  </div>
+                  </div> */}
   
                   <div className="terms-checkbox">
                     <input
