@@ -15,7 +15,7 @@ export default function AdminDashboard({ navigation }) {
     { title: 'Activity Log', subtitle: 'History', icon: 'file-document-outline', screen: 'ActivityLogScreen', color: '#1A4572' }, 
     { title: 'Request Log', subtitle: 'Records', icon: 'file-document-outline', screen: 'RequestLogScreen', color: '#1A4572' }, 
     { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', color: '#673AB7', screen: 'CalendarScreen' },
-    { title: 'QR Scanner', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'RequestorListScreen' },
+    { title: 'QR Scanner', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'QRScanScreen' },
     { title: 'Borrow Catalog', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'BorrowCatalogScreen' },
     { title: 'Capex Request List', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'CapexRequestListScreen' },
   ];

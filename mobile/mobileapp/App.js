@@ -39,6 +39,9 @@ import ReturnItems from './components/user/ReturnItems';
 import LoginScreen2 from './components/LoginScreen2';
 import RequestedItemsScreen from './components/admin/RequestedItemsScreen';
 import RequestorListScreen from './components/admin/RequestorListScreen';
+import ItemListScreen from './components/admin/ItemListScreen';
+import CameraShowItems from './components/admin/CameraShowItems';
+import QRScanScreen from './components/admin/QRScanScreen';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -364,6 +367,9 @@ const AdminDrawer = () => {
       <Drawer.Screen name="ProfileScreen" component={ProfileScreen} />
       <Drawer.Screen name="RequestorListScreen" component={RequestorListScreen} />
       <Drawer.Screen name="RequestedItemsScreen" component={RequestedItemsScreen} />
+      <Drawer.Screen name="ItemListScreen" component={ItemListScreen} />
+      <Drawer.Screen name="CameraShowItems" component={CameraShowItems} />
+      <Drawer.Screen name="QRScanScreen" component={QRScanScreen} />
     </Drawer.Navigator>
   );
 };
