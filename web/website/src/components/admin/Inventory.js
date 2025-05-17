@@ -28,6 +28,7 @@ import DeleteModal from "../customs/DeleteModal";
 import NotificationModal from "../customs/NotificationModal";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import 'jspdf-autotable';
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -145,6 +146,103 @@ const Inventory = () => {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Filtered_Inventory.xlsx");
   };
+
+  const generatePdfFromFilteredData = () => {
+  const doc = new jsPDF("p", "pt", "a4");
+  const margin = 40;
+  let y = margin;
+
+  // Header
+  doc.setFontSize(18);
+  doc.text("Inventory List", margin, y);
+  y += 30;
+
+  // Filter Information
+  doc.setFontSize(12);
+  doc.setFont(undefined, "bold");
+  doc.text("Filters:", margin, y);
+  doc.setFont(undefined, "normal");
+  y += 20;
+
+  // Add filter information
+  if (filterCategory) {
+    doc.text(`Category: ${filterCategory}`, margin + 20, y);
+    y += 20;
+  }
+  if (filterItemType) {
+    doc.text(`Item Type: ${filterItemType}`, margin + 20, y);
+    y += 20;
+  }
+  if (searchText) {
+    doc.text(`Search: ${searchText}`, margin + 20, y);
+    y += 20;
+  }
+
+  // Summary Information
+  doc.setFont(undefined, "bold");
+  doc.text("Total Items:", margin, y);
+  doc.setFont(undefined, "normal");
+  doc.text(filteredData.length.toString(), margin + 80, y);
+  y += 30;
+
+  // Main Table
+  const headers = [["Item ID", "Item Name", "Category", "Department", "Quantity", "Status", "Condition"]];
+  const data = filteredData.map(item => [
+    item.itemId || "",
+    item.itemName || "",
+    item.category || "",
+    item.department || "",
+    item.quantity?.toString() || "0",
+    item.status || "",
+    item.condition || ""
+  ]);
+
+  doc.autoTable({
+    head: headers,
+    body: data,
+    startY: y,
+    margin: { left: margin, right: margin },
+    theme: "grid",
+    headStyles: {
+      fillColor: [44, 62, 146],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      halign: "center",
+      fontSize: 12,
+      cellPadding: 6,
+    },
+    bodyStyles: {
+      fontSize: 11,
+      cellPadding: 5,
+    },
+    styles: {
+      lineWidth: 0.1,
+      lineColor: [200, 200, 200],
+      cellPadding: 5,
+    },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+  });
+
+  return doc;
+};
+
+// Save PDF
+const saveAsPdf = () => {
+  const doc = generatePdfFromFilteredData();
+  if (doc) {
+    const fileName = `Inventory_List_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+  }
+};
+
+// Print PDF
+const printPdf = () => {
+  const doc = generatePdfFromFilteredData();
+  if (doc) {
+    doc.autoPrint();
+    window.open(doc.output("bloburl"), "_blank");
+  }
+};
 
    const handleAdd = async (values) => {
     if (!itemName || !values.department) {
@@ -616,6 +714,13 @@ const Inventory = () => {
 
               <Button type="primary" onClick={exportToExcel}>
                 Export to Excel
+              </Button>
+
+              <Button type="primary" onClick={saveAsPdf} style={{ marginRight: 8 }}>
+                Save as PDF
+              </Button>
+              <Button onClick={printPdf}>
+                Print
               </Button>
             </Space>
           </div>

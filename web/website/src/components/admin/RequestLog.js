@@ -359,7 +359,7 @@ const printPdf = () => {
               Save as PDF
             </Button>,
               <Button key="print" onClick={() => printPdf(selectedRequest)}>
-              Print as PDF
+              Print
             </Button>,
 
             <Button key="close" onClick={closeModal}>
