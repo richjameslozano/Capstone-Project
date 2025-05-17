@@ -10,7 +10,6 @@ export default StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000',
-    marginTop: 100,
   },
 
   camera: {
@@ -126,5 +125,6 @@ export default StyleSheet.create({
   text: {
     color: 'white',
     textAlign: 'center',
+    marginTop: 100,
   },
 });
