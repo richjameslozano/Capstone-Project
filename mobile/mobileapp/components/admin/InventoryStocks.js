@@ -108,6 +108,7 @@ export default function InventoryStocks({ navigation }) {
             <Picker.Item label="Reagent" value="Reagent" />
             <Picker.Item label="Materials" value="Materials" />
             <Picker.Item label="Equipment" value="Equipment" />
+            <Picker.Item label="Glasswares" value="Glasswares" />
           </Picker>
         </View>
       </View>
@@ -151,7 +152,7 @@ export default function InventoryStocks({ navigation }) {
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>ID:</Text> {selectedItem.itemId || selectedItem.id}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Item Name:</Text> {selectedItem.itemName}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Department:</Text> {selectedItem.department}</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>Entry Date:</Text> {selectedItem.entryDate}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Entry Date:</Text> {selectedItem.entryCurrentDate}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Expire Date:</Text> {selectedItem.expireDate || 'N/A'}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Type:</Text> {selectedItem.type}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}</Text>

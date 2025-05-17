@@ -220,7 +220,7 @@ export default function InventoryScreen({ navigation }) {
         category: item.category || '',
         condition: item.condition || '',
         department: item.department || '',
-        entryDate: item.entryDate || '',
+        entryDate: item.entryCurrentDate || '',
         expiryDate: item.expiryDate || '',
         id: item.id, 
         itemId: item.itemId || '',
