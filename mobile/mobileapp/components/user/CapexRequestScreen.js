@@ -34,6 +34,7 @@ const CapexRequestScreen = () => {
   const [qty, setQty] = useState("");
   const [estimatedCost, setEstimatedCost] = useState("");
   const [justification, setJustification] = useState("");
+  const [subject, setSubject] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
   const { user } = useAuth();
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -124,6 +125,7 @@ const CapexRequestScreen = () => {
         estimatedCost: parsedCost.toString(),
         totalPrice: parsedQty * parsedCost,
         justification,
+        subject,
       };
   
       // Duplicate check only when adding new
@@ -179,6 +181,7 @@ const CapexRequestScreen = () => {
     setQty("");
     setEstimatedCost("");
     setJustification("");
+    setSubject("");
     setEditingItem(null);
     setModalVisible(false);
   };
@@ -189,6 +192,7 @@ const CapexRequestScreen = () => {
     setQty(String(item.qty));
     setEstimatedCost(String(item.estimatedCost));
     setJustification(item.justification || "");
+    setSubject(item.subject || "");
     setModalVisible(true);
   };
 
@@ -338,9 +342,16 @@ const handleHeaderLayout = (event) => {
             </Text>
 
             <TextInput
-              placeholder="Item Description"
+              placeholder="Item Name"
               value={itemDescription}
               onChangeText={setItemDescription}
+              style={styles.input}
+            />
+
+            <TextInput
+              placeholder="Subject"
+              value={subject}
+              onChangeText={setSubject}
               style={styles.input}
             />
             
