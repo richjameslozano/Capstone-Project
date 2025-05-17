@@ -171,8 +171,7 @@ export default function SearchItemsScreen({ navigation }) {
                 <Text>Location: {hoveredItem.labRoom}</Text>
                 <Text>Condition: {hoveredItem.condition || 'N/A'}</Text>
                 <Text>Item Type: {hoveredItem.type || 'N/A'}</Text>
-                <Text>Usage Type: {hoveredItem.usageType || 'N/A'}</Text>
-                <Text>Date Acquired: {hoveredItem.entryDate || 'N/A'}</Text>
+                <Text>Date Acquired: {hoveredItem.entryCurrentDate || 'N/A'}</Text>
               </View>
             )}
             <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
