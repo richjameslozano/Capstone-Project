@@ -181,7 +181,7 @@ export default function ProfileScreen({ navigation }) {
 
         <View style={styles.profileImageContainer}>
           {profileImage ? (
-            <Avatar.Image size={80} source={{ uri: profileImage }} />
+            <Avatar.Image size={85} source={{ uri: profileImage }} />
           ) : (
             <Avatar.Text
               size={80}

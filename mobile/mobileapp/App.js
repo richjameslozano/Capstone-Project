@@ -100,11 +100,15 @@ const CustomDrawerContent = ({ navigation }) => {
         <View style={styles.upperSection}>
           <View style={styles.headProfile}>
           <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
+            <View style={styles.avatarBorder}>
           {profileImage ? (
-            <Avatar.Image size={50} source={{ uri: profileImage }} />
+            
+            <Avatar.Image size={70} source={{ uri: profileImage }} />
+            
           ) : (
-              <Avatar.Text size={65} backgroundColor='#a3cae9' label={getInitials(user?.name)} />
+              <Avatar.Text size={70} backgroundColor='#a3cae9' label={getInitials(user?.name)} />
             )}
+            </View>
           </TouchableOpacity>
           </View>
         
@@ -435,13 +439,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     height: 'auto',
     maxWidth: 70,
+    borderColor: 'white',
+
   },
 
   headProfile: {
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 15
+    gap: 15, 
   },
 
   profileName: {
@@ -489,5 +495,13 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#c0392b',
   },
+
+  avatarBorder: {
+  borderWidth: 3,
+  borderColor: '#fff',
+  borderRadius: 100, // make sure it's fully rounded
+  padding: 2,         // optional spacing between border and avatar
+},
+
 });
 
