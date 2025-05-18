@@ -7,6 +7,7 @@ const TermsModal = ({ isVisible, onClose }) => {
 
   const handleOpenPrivacyPolicy = () => {
   window.open('/privacy-policy', '_blank');
+  console.log('Opening Privacy Policy')
 };
 
   if (!isVisible) return null;
