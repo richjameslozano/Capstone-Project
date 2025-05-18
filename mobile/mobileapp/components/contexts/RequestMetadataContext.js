@@ -10,7 +10,9 @@ export const RequestMetadataProvider = ({ children }) => {
     program: '',
     course: '',
     room: '',
-    reason: ''
+    reason: '',
+    usageType:'',
+    usageTypeOther: '',
   });
 
   return (

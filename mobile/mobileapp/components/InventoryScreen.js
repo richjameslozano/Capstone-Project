@@ -43,6 +43,7 @@ export default function InventoryScreen({ navigation }) {
   const [course, setCourse] = useState('');
   const [room, setRoom] = useState('');
   const [selectedUsageTypeInput, setSelectedUsageTypeInput] = useState(''); 
+  const [usageTypeOtherInput, setUsageTypeOtherInput] = useState('')
   const today = new Date().toISOString().split('T')[0];
   const { metadata, setMetadata } = useRequestMetadata();
   const [isComplete, setIsComplete] = useState(false); 
@@ -134,6 +135,10 @@ export default function InventoryScreen({ navigation }) {
     }
   }, [selectedEndTime]);  
 
+  useEffect(() => {
+    setMetadata(prev => ({ ...prev, usageTypeOther: usageTypeOtherInput }));
+  }, [usageTypeOtherInput]);
+
   const filteredItems = inventoryItems.filter((item) => {
     const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.type === selectedCategory;
     const isUsageTypeMatch = selectedUsageType === 'All' || selectedUsageType === '' || item.usageType === selectedUsageType;
@@ -183,6 +188,15 @@ export default function InventoryScreen({ navigation }) {
       return;
     }
 
+    console.log('metadata.usageTypeOther:', metadata.usageTypeOther);
+    console.log('selectedUsageTypeInput:', selectedUsageTypeInput);
+
+
+    const finalUsageType =
+      selectedUsageTypeInput === 'Others'
+        ? metadata?.usageTypeOther || ''
+        : selectedUsageTypeInput;
+
     const requestedQty = parseInt(quantity);
     const availableQty = parseInt(item.quantity);
   
@@ -191,6 +205,24 @@ export default function InventoryScreen({ navigation }) {
       return;
     }
 
+    console.log({
+      dateRequired: metadata?.dateRequired,
+      timeFrom: metadata?.timeFrom,
+      timeTo: metadata?.timeTo,
+      program: metadata?.program,
+      course: metadata?.course,
+      room: metadata?.room,
+      usageType: metadata?.usageType,
+      usageTypeOther: metadata?.usageTypeOther,
+      finalUsageType
+    });
+
+    if (selectedUsageTypeInput === 'Others' && !finalUsageType) {
+      alert('Please specify the usage type in the text field.');
+      return;
+    }
+
+
     if (
       !metadata?.dateRequired || 
       !metadata?.timeFrom || 
@@ -198,7 +230,7 @@ export default function InventoryScreen({ navigation }) {
       !metadata?.program || 
       !metadata?.course || 
       !metadata?.room || 
-      !metadata?.usageType
+      !finalUsageType 
     ) {
       alert('Please fill out all the borrowing details before adding an item.');
       return;
@@ -233,7 +265,7 @@ export default function InventoryScreen({ navigation }) {
         status: item.status || 'Available',
         timestamp: Timestamp.fromDate(new Date()),
         type: item.type || '',
-        usageType: item.usageType || '',
+        usageType: finalUsageType || '',
       });
   
       alert('Item successfully added to temporaryRequests.');
@@ -450,7 +482,7 @@ export default function InventoryScreen({ navigation }) {
     const conflictInCatalog = checkConflict(borrowCatalogSnap.docs);
 
     return conflictInRequests || conflictInCatalog;
-};
+  };
 
   const handleNext = async () => {
     const formattedStartTime = formatTime(selectedStartTime);
@@ -492,16 +524,45 @@ export default function InventoryScreen({ navigation }) {
       return; 
     }
 
-    setMetadata({
+    // setMetadata({
+    //   dateRequired: selectedDate,
+    //   timeFrom: formattedStartTime,
+    //   timeTo: formattedEndTime,
+    //   program,
+    //   course,
+    //   room,
+    //   usageType: selectedUsageTypeInput,
+    //   reason
+    // });
+
+    // setMetadata((prev) => ({
+    //   ...prev,
+    //   dateRequired: selectedDate,
+    //   timeFrom: formattedStartTime,
+    //   timeTo: formattedEndTime,
+    //   program,
+    //   course,
+    //   room,
+    //   usageType: selectedUsageTypeInput,
+    //   reason,
+    // }));
+
+    const finalUsageType =
+      selectedUsageTypeInput === 'Others'
+        ? metadata?.usageTypeOther || ''
+        : selectedUsageTypeInput;
+
+    setMetadata((prev) => ({
+      ...prev,
       dateRequired: selectedDate,
       timeFrom: formattedStartTime,
       timeTo: formattedEndTime,
       program,
       course,
       room,
-      usageType: selectedUsageTypeInput,
-      reason
-    });
+      usageType: finalUsageType,
+      reason,
+    }));
 
     setIsComplete(true);
   };
@@ -679,7 +740,6 @@ export default function InventoryScreen({ navigation }) {
       </Modal>
     </View>
 
-
     <View style={styles.timeSection}>
               <Text style={styles.label}>Time Needed:</Text>
               <View style={styles.timeButtonContainer}>
@@ -716,10 +776,6 @@ export default function InventoryScreen({ navigation }) {
           </View>      
       </View>
 
-                      
-      
-
-
       <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 5, paddingHorizontal: 10}}>
             <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 5}}>
               <Icon name='format-list-bulleted' size={20} color='#6abce2'/>
@@ -752,25 +808,42 @@ export default function InventoryScreen({ navigation }) {
                   errors.usageType && { borderColor: 'red', borderWidth: 1 }
                 ]}
               >
-          <Picker
-            selectedValue={selectedUsageTypeInput}
-            onValueChange={(itemValue) => {
-              setSelectedUsageTypeInput(itemValue);
-              setMetadata((prevMetadata) => ({
-                ...prevMetadata,
-                usageType: itemValue,
-              }));
-            }}
-            dropdownIconColor='#6e9fc1'
-            dropdownIconRippleColor='white'
-            style={styles.programItem}
-          >
-            <Picker.Item label="Select" value="" style={{fontSize: 15}}/>
-            <Picker.Item label="Laboratory Experiment" value="Laboratory Experiment" style={{fontSize: 15}}/>
-            <Picker.Item label="Research" value="Research" />
-            <Picker.Item label="Community Extension" value="Community Extension" style={{fontSize: 15}}/>
-            <Picker.Item label="Others" value="Others" style={{fontSize: 15}}/>
-          </Picker>
+              <Picker
+                selectedValue={selectedUsageTypeInput}
+                onValueChange={(itemValue) => {
+                  setSelectedUsageTypeInput(itemValue);
+                  setMetadata((prevMetadata) => ({
+                    ...prevMetadata,
+                    usageType: itemValue === 'Others' ? '' : itemValue, // only save if not Others
+                    usageTypeOther: '',
+                  }));
+                }}
+                dropdownIconColor="#6e9fc1"
+                dropdownIconRippleColor="white"
+                style={styles.programItem}
+              >
+                <Picker.Item label="Select" value="" style={{ fontSize: 15 }} />
+                <Picker.Item label="Laboratory Experiment" value="Laboratory Experiment" style={{ fontSize: 15 }} />
+                <Picker.Item label="Research" value="Research" />
+                <Picker.Item label="Community Extension" value="Community Extension" style={{ fontSize: 15 }} />
+                <Picker.Item label="Others" value="Others" style={{ fontSize: 15 }} />
+              </Picker>
+
+              {selectedUsageTypeInput === 'Others' && (
+                <TextInput
+                  placeholder="Please specify"
+                  style={[styles.otherInput, errors.usageType && { borderColor: 'red', borderWidth: 1 }]}
+                  value={metadata?.usageTypeOther || ''}
+                  onChangeText={(text) => {
+                    console.log('Updating usageTypeOther:', text);
+                    setMetadata((prevMetadata) => ({
+                      ...prevMetadata,
+                      usageTypeOther: text, // 🧠 Make sure this field is not misspelled!
+                    }));
+                  }}
+                />
+              )}
+
           <Icon2
                     name="chevron-down"
                     size={20}
@@ -781,7 +854,6 @@ export default function InventoryScreen({ navigation }) {
         </View>
           </View>
       </View>
-          
 
         <View style={styles.noteSection}>
           <Text style={{fontWeight: 300, fontSize: 13, paddingLeft: 5}}>Note: (Optional)</Text>
