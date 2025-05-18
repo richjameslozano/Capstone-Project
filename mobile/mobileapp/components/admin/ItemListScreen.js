@@ -32,7 +32,7 @@ const ItemListScreen = () => {
   }, []);
 
   const handleItemPress = (item) => {
-    navigation.navigate("CameraShowItems");
+    navigation.navigate("CameraUpdateItems");
   };
 
   const renderItem = ({ item }) => (

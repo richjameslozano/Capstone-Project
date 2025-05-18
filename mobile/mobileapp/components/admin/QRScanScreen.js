@@ -32,13 +32,15 @@ const QRScanScreen = () => {
   }, []);
 
   const handleTrackItems = () => {
-    // This will navigate to the CameraShowItems screen for scanning
     navigation.navigate("CameraShowItems");
   };
 
   const handleUpdateStock = () => {
-    // Navigate to a new screen for updating the stock of items (you can implement this)
     navigation.navigate("ItemListScreen");
+  };
+
+  const handleDeployReturnStock = () => {
+    navigation.navigate("RequestorListScreen");
   };
 
   if (loading) {
@@ -50,7 +52,6 @@ const QRScanScreen = () => {
       <Header />
       <Text style={styles.title}>Manage Inventory</Text>
 
-      {/* Track Items Button */}
       <TouchableOpacity
         style={styles.button}
         onPress={handleTrackItems}
@@ -58,12 +59,18 @@ const QRScanScreen = () => {
         <Text style={styles.buttonText}>Track Items</Text>
       </TouchableOpacity>
 
-      {/* Update Stock Button */}
       <TouchableOpacity
         style={styles.button}
         onPress={handleUpdateStock}
       >
         <Text style={styles.buttonText}>Update Stock Item</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleDeployReturnStock}
+      >
+        <Text style={styles.buttonText}>Deploy / Return Items</Text>
       </TouchableOpacity>
 
       {/* List of Inventory Items */}
