@@ -121,10 +121,10 @@ const Inventory = () => {
   const handleCategoryChange = (value) => {
     let type = "";
 
-    if (["Chemical", "Reagent", "Materials", "Glasswares"].includes(value)) {
+    if (["Chemical", "Reagent"].includes(value)) {
       type = "Consumable";
 
-    } else if (value === "Equipment") {
+    } else if (value === "Equipment" || value === "Glasswares" || value ===  "Materials") {
       type = "Fixed";
     }
 

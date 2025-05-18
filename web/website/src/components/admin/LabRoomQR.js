@@ -128,7 +128,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/LabRoomQR.css";
 
@@ -136,47 +136,101 @@ const LabRoomQR = () => {
   const [labRooms, setLabRooms] = useState([]);
   const qrRefs = useRef({});
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   const fetchLabRoomsWithItems = async () => {
+  //     try {
+  //       const labRoomSnapshot = await getDocs(collection(db, "labRoom"));
+  //       const roomsWithItems = [];
+
+  //       for (const roomDoc of labRoomSnapshot.docs) {
+  //         const roomData = roomDoc.data();
+  //         const roomId = roomDoc.id;
+
+  //         // Fetch items subcollection for this room
+  //         const itemsSnapshot = await getDocs(collection(db, `labRoom/${roomId}/items`));
+  //         const items = itemsSnapshot.docs.map(itemDoc => {
+  //           const itemData = itemDoc.data();
+  //           return {
+  //             id: itemDoc.id,
+  //             category: itemData.category || "N/A",
+  //             condition: itemData.condition || "N/A",
+  //             department: itemData.department || "N/A",
+  //             entryCurrentDate: itemData.entryCurrentDate || "N/A",
+  //             expiryDate: itemData.expiryDate || null,
+  //             itemId: itemData.itemId || "N/A",
+  //             itemName: itemData.itemName || "N/A",
+  //             labRoom: itemData.labRoom || "N/A",
+  //             quantity: itemData.quantity || 0,
+  //             status: itemData.status || "N/A",
+  //             type: itemData.type || "N/A",
+  //             rawTimestamp: itemData.rawTimestamp || "N/A",
+  //             timestamp: itemData.timestamp || "N/A",
+  //           };
+  //         });
+
+  //         roomsWithItems.push({
+  //           id: roomId,
+  //           name: roomData.name || "N/A",
+  //           qrCode: roomData.qrCode || "",   // <-- Add lab room QR here
+  //           items,
+  //         });
+  //       }
+
+  //       setLabRooms(roomsWithItems);
+
+  //     } catch (error) {
+  //       console.error("Error fetching lab rooms and items:", error);
+  //     }
+  //   };
+
+  //   fetchLabRoomsWithItems();
+  // }, []);
+
+    useEffect(() => {
     const fetchLabRoomsWithItems = async () => {
       try {
-        const labRoomSnapshot = await getDocs(collection(db, "labRoom"));
-        const roomsWithItems = [];
+        const unsubscribe = onSnapshot(collection(db, "labRoom"), async (labRoomSnapshot) => {
+          const roomsWithItems = [];
 
-        for (const roomDoc of labRoomSnapshot.docs) {
-          const roomData = roomDoc.data();
-          const roomId = roomDoc.id;
+          for (const roomDoc of labRoomSnapshot.docs) {
+            const roomData = roomDoc.data();
+            const roomId = roomDoc.id;
 
-          // Fetch items subcollection for this room
-          const itemsSnapshot = await getDocs(collection(db, `labRoom/${roomId}/items`));
-          const items = itemsSnapshot.docs.map(itemDoc => {
-            const itemData = itemDoc.data();
-            return {
-              id: itemDoc.id,
-              category: itemData.category || "N/A",
-              condition: itemData.condition || "N/A",
-              department: itemData.department || "N/A",
-              entryCurrentDate: itemData.entryCurrentDate || "N/A",
-              expiryDate: itemData.expiryDate || null,
-              itemId: itemData.itemId || "N/A",
-              itemName: itemData.itemName || "N/A",
-              labRoom: itemData.labRoom || "N/A",
-              quantity: itemData.quantity || 0,
-              status: itemData.status || "N/A",
-              type: itemData.type || "N/A",
-              rawTimestamp: itemData.rawTimestamp || "N/A",
-              timestamp: itemData.timestamp || "N/A",
-            };
-          });
+            // Fetch items subcollection using onSnapshot
+            const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
+            const itemsSnapshot = await getDocs(itemsCollectionRef); // You can keep getDocs or convert to onSnapshot too if needed
+            const items = itemsSnapshot.docs.map(itemDoc => {
+              const itemData = itemDoc.data();
+              return {
+                id: itemDoc.id,
+                category: itemData.category || "N/A",
+                condition: itemData.condition || "N/A",
+                department: itemData.department || "N/A",
+                entryCurrentDate: itemData.entryCurrentDate || "N/A",
+                expiryDate: itemData.expiryDate || null,
+                itemId: itemData.itemId || "N/A",
+                itemName: itemData.itemName || "N/A",
+                labRoom: itemData.labRoom || "N/A",
+                quantity: itemData.quantity || 0,
+                status: itemData.status || "N/A",
+                type: itemData.type || "N/A",
+                rawTimestamp: itemData.rawTimestamp || "N/A",
+                timestamp: itemData.timestamp || "N/A",
+              };
+            });
 
-          roomsWithItems.push({
-            id: roomId,
-            name: roomData.name || "N/A",
-            qrCode: roomData.qrCode || "",   // <-- Add lab room QR here
-            items,
-          });
-        }
+            roomsWithItems.push({
+              id: roomId,
+              name: roomData.name || "N/A",
+              qrCode: roomData.qrCode || "",
+              items,
+            });
+          }
 
-        setLabRooms(roomsWithItems);
+          setLabRooms(roomsWithItems);
+        });
+
+        return () => unsubscribe(); // cleanup listener on unmount
 
       } catch (error) {
         console.error("Error fetching lab rooms and items:", error);
