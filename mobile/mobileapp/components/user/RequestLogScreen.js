@@ -20,6 +20,7 @@ const RequestLogScreen = () => {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [statusFilter, setStatusFilter] = useState('All');
 
   useEffect(() => {
     const fetchActivityLogs = () => {
@@ -95,12 +96,19 @@ const RequestLogScreen = () => {
   //Function for Search
   const handleSearch = (query) => {
     setSearchQuery(query);
-    const filtered = activityData.filter(
-      (item) =>
+    
+    const filtered = activityData.filter((item) => {
+      const matchesQuery =
         item.date.includes(query) ||
         item.action.toLowerCase().includes(query.toLowerCase()) ||
-        item.by.toLowerCase().includes(query.toLowerCase())
-    );
+        item.by.toLowerCase().includes(query.toLowerCase());
+
+      const matchesStatus =
+        statusFilter === 'All' || item.action === statusFilter;
+
+      return matchesQuery && matchesStatus;
+    });
+
     setFilteredData(filtered);
   };
 
@@ -121,6 +129,26 @@ const RequestLogScreen = () => {
         value={searchQuery}
         onChangeText={handleSearch}
       />
+
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 }}>
+        {['All', 'Request Approved', 'Request Rejected', 'Request Cancelled', 'Deployed'].map((status) => (
+          <TouchableOpacity
+            key={status}
+            style={{
+              padding: 8,
+              backgroundColor: statusFilter === status ? '#007BFF' : '#f0f0f0',
+              borderRadius: 5,
+              marginRight: 5,
+            }}
+            onPress={() => {
+              setStatusFilter(status);
+              handleSearch(searchQuery); // reapply search with new filter
+            }}
+          >
+            <Text style={{ color: statusFilter === status ? '#fff' : '#000' }}>{status}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
 
       {/* Table Header */}
       <View style={[styles.tableHeader, { flexDirection: 'row' }]}>

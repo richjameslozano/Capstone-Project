@@ -30,12 +30,17 @@ import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/RequestStyle';
 import Header from '../Header';
 import PagerView from 'react-native-pager-view';
+
 export default function RequestScreen() {
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [activityData, setActivityData] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredData, setFilteredData] = useState([]);
+  const [selectedLog, setSelectedLog] = useState(null);
+  const [statusFilter, setStatusFilter] = useState('All');
   const { user } = useAuth();
 
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -45,11 +50,11 @@ export default function RequestScreen() {
       setHeaderHeight(height);
     };
 
-    const [activityData, setActivityData] = useState([]);
-    const [searchQuery, setSearchQuery] = useState('');
-    const [filteredData, setFilteredData] = useState([]);
-    const [selectedLog, setSelectedLog] = useState(null);
-    
+    // const [activityData, setActivityData] = useState([]);
+    // const [searchQuery, setSearchQuery] = useState('');
+    // const [filteredData, setFilteredData] = useState([]);
+    // const [selectedLog, setSelectedLog] = useState(null);
+    // const [statusFilter, setStatusFilter] = useState('All');
   
     useEffect(() => {
       const fetchActivityLogs = () => {
@@ -119,17 +124,39 @@ export default function RequestScreen() {
     
       fetchActivityLogs();
     }, [user]);
-  
-    const handleSearch = (query) => {
-      setSearchQuery(query);
-      const filtered = activityData.filter(
-        (item) =>
-          item.date.includes(query) ||
-          item.action.toLowerCase().includes(query.toLowerCase()) ||
-          item.by.toLowerCase().includes(query.toLowerCase())
-      );
-      setFilteredData(filtered);
-    };
+
+    useEffect(() => {
+      handleSearch(searchQuery);
+    }, [statusFilter]);
+
+    // const handleSearch = (query) => {
+    //   setSearchQuery(query);
+    //   const filtered = activityData.filter(
+    //     (item) =>
+    //       item.date.includes(query) ||
+    //       item.action.toLowerCase().includes(query.toLowerCase()) ||
+    //       item.by.toLowerCase().includes(query.toLowerCase())
+    //   );
+    //   setFilteredData(filtered);
+    // };
+
+const handleSearch = (query) => {
+  setSearchQuery(query);
+
+  const filtered = activityData.filter((item) => {
+    const matchesQuery =
+      item.date.includes(query) ||
+      item.action.toLowerCase().includes(query.toLowerCase()) ||
+      item.by.toLowerCase().includes(query.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === 'All' || item.action === statusFilter;
+
+    return matchesQuery && matchesStatus;
+  });
+
+  setFilteredData(filtered);
+};
   
     const handleRowPress = (log) => {
       setSelectedLog(log.fullData);
@@ -325,6 +352,28 @@ const pagerRef = useRef(null);
               value={searchQuery}
               onChangeText={handleSearch}
             />
+
+            <View style={{ marginBottom: 10 }}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {['All', 'Request Approved', 'Request Rejected', 'Request Cancelled', 'Deployed'].map((status) => (
+                  <TouchableOpacity
+                    key={status}
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 14,
+                      backgroundColor: statusFilter === status ? '#007BFF' : '#e0e0e0',
+                      borderRadius: 20,
+                      marginRight: 8,
+                    }}
+                    onPress={() => setStatusFilter(status)}
+                  >
+                    <Text style={{ color: statusFilter === status ? '#fff' : '#333', fontWeight: '500' }}>
+                      {status}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
       
             {/* Table Header */}
             <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
