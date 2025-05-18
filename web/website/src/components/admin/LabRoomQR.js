@@ -1,131 +1,3 @@
-// import React, { useEffect, useState, useRef } from "react";
-// import { QRCodeCanvas } from "qrcode.react";
-// import { collection, getDocs } from "firebase/firestore";
-// import { db } from "../../backend/firebase/FirebaseConfig";
-// import "../styles/adminStyle/LabRoomQR.css";
-
-// const LabRoomQR = () => {
-//   const [labRooms, setLabRooms] = useState([]);
-//   const qrRefs = useRef({});
-
-//   useEffect(() => {
-//     const fetchLabRoomsWithItems = async () => {
-//       try {
-//         const labRoomSnapshot = await getDocs(collection(db, "labRoom"));
-//         const roomsWithItems = [];
-
-//         for (const roomDoc of labRoomSnapshot.docs) {
-//           const roomData = roomDoc.data();
-//           const roomId = roomDoc.id;
-
-//           // Fetch items subcollection for this room
-//           const itemsSnapshot = await getDocs(collection(db, `labRoom/${roomId}/items`));
-//           const items = itemsSnapshot.docs.map(itemDoc => {
-//             const itemData = itemDoc.data();
-//             return {
-//               id: itemDoc.id,
-//               category: itemData.category || "N/A",
-//               condition: itemData.condition || "N/A",
-//               department: itemData.department || "N/A",
-//               entryCurrentDate: itemData.entryCurrentDate || "N/A",
-//               expiryDate: itemData.expiryDate || null,
-//               itemId: itemData.itemId || "N/A",
-//               itemName: itemData.itemName || "N/A",
-//               labRoom: itemData.labRoom || "N/A",
-//               qrCode: itemData.qrCode || "",
-//               quantity: itemData.quantity || 0,
-//               status: itemData.status || "N/A",
-//               type: itemData.type || "N/A",
-//               rawTimestamp: itemData.rawTimestamp || "N/A",
-//               timestamp: itemData.timestamp || "N/A",
-//             };
-//           });
-
-//           roomsWithItems.push({
-//             id: roomId,
-//             name: roomData.name || "N/A",
-//             items,
-//           });
-//         }
-
-//         setLabRooms(roomsWithItems);
-//       } catch (error) {
-//         console.error("Error fetching lab rooms and items:", error);
-//       }
-//     };
-
-//     fetchLabRoomsWithItems();
-//   }, []);
-
-//   const downloadQRCode = (id) => {
-//     const canvas = qrRefs.current[id].querySelector("canvas");
-//     if (!canvas) return;
-//     const pngUrl = canvas
-//       .toDataURL("image/png")
-//       .replace("image/png", "image/octet-stream");
-
-//     const downloadLink = document.createElement("a");
-//     downloadLink.href = pngUrl;
-//     downloadLink.download = `${id}-QR.png`;
-//     document.body.appendChild(downloadLink);
-//     downloadLink.click();
-//     document.body.removeChild(downloadLink);
-//   };
-
-//   return (
-//     <div className="labroom-container">
-//       <h2 className="labroom-header">Lab Room and Items QR Codes</h2>
-
-//       {labRooms.length === 0 ? (
-//         <p>Loading lab rooms and items...</p>
-//       ) : (
-//         labRooms.map(room => (
-//           <div key={room.id} className="labroom-card">
-//             <h3 className="labroom-title">
-//               Room: {room.name} ({room.id})
-//             </h3>
-
-//             {(!room.items || room.items.length === 0) ? (
-//             <p>No items found in this room.</p>
-//             ) : (
-//             room.items.map(item => {
-//                 const qrValue = item.qrCode || "No QR code available";
-//                 return (
-//                   <div key={item.id} className="labroom-item-card">
-//                     <h4>{item.itemName} ({item.itemId})</h4>
-//                     <p><strong>Category:</strong> {item.category}</p>
-//                     <p><strong>Condition:</strong> {item.condition}</p>
-//                     <p><strong>Department:</strong> {item.department}</p>
-//                     <p><strong>Quantity:</strong> {item.quantity}</p>
-//                     <p><strong>Status:</strong> {item.status}</p>
-//                     <p><strong>Type:</strong> {item.type}</p>
-
-//                     <div
-//                       ref={el => (qrRefs.current[item.id] = el)}
-//                       className="labroom-qr"
-//                     >
-//                       <QRCodeCanvas value={qrValue} size={150} />
-//                     </div>
-
-//                     <button
-//                       onClick={() => downloadQRCode(item.id)}
-//                       className="labroom-download-button"
-//                     >
-//                       Download QR Code
-//                     </button>
-//                   </div>
-//                 );
-//               })
-//             )}
-//           </div>
-//         ))
-//       )}
-//     </div>
-//   );
-// };
-
-// export default LabRoomQR;
-
 import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
@@ -186,58 +58,69 @@ const LabRoomQR = () => {
   //   fetchLabRoomsWithItems();
   // }, []);
 
-    useEffect(() => {
+  useEffect(() => {
+    const unsubscribeFunctions = [];
+
     const fetchLabRoomsWithItems = async () => {
       try {
-        const unsubscribe = onSnapshot(collection(db, "labRoom"), async (labRoomSnapshot) => {
-          const roomsWithItems = [];
+        const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
+          const initialRooms = labRoomSnapshot.docs.map(doc => ({
+            id: doc.id,
+            name: doc.data().name || "N/A",
+            qrCode: doc.data().qrCode || "",
+            items: [], // initially empty, will be filled via onSnapshot
+          }));
 
-          for (const roomDoc of labRoomSnapshot.docs) {
-            const roomData = roomDoc.data();
+          // Set rooms with no items yet
+          setLabRooms(initialRooms);
+
+          labRoomSnapshot.docs.forEach((roomDoc) => {
             const roomId = roomDoc.id;
-
-            // Fetch items subcollection using onSnapshot
             const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
-            const itemsSnapshot = await getDocs(itemsCollectionRef); // You can keep getDocs or convert to onSnapshot too if needed
-            const items = itemsSnapshot.docs.map(itemDoc => {
-              const itemData = itemDoc.data();
-              return {
-                id: itemDoc.id,
-                category: itemData.category || "N/A",
-                condition: itemData.condition || "N/A",
-                department: itemData.department || "N/A",
-                entryCurrentDate: itemData.entryCurrentDate || "N/A",
-                expiryDate: itemData.expiryDate || null,
-                itemId: itemData.itemId || "N/A",
-                itemName: itemData.itemName || "N/A",
-                labRoom: itemData.labRoom || "N/A",
-                quantity: itemData.quantity || 0,
-                status: itemData.status || "N/A",
-                type: itemData.type || "N/A",
-                rawTimestamp: itemData.rawTimestamp || "N/A",
-                timestamp: itemData.timestamp || "N/A",
-              };
+
+            const unsub = onSnapshot(itemsCollectionRef, (itemsSnapshot) => {
+              const updatedItems = itemsSnapshot.docs.map(itemDoc => {
+                const itemData = itemDoc.data();
+                return {
+                  id: itemDoc.id,
+                  category: itemData.category || "N/A",
+                  condition: itemData.condition || "N/A",
+                  department: itemData.department || "N/A",
+                  entryCurrentDate: itemData.entryCurrentDate || "N/A",
+                  expiryDate: itemData.expiryDate || null,
+                  itemId: itemData.itemId || "N/A",
+                  itemName: itemData.itemName || "N/A",
+                  labRoom: itemData.labRoom || "N/A",
+                  quantity: itemData.quantity || 0,
+                  status: itemData.status || "N/A",
+                  type: itemData.type || "N/A",
+                  rawTimestamp: itemData.rawTimestamp || "N/A",
+                  timestamp: itemData.timestamp || "N/A",
+                };
+              });
+
+              // Update only that room's items in state
+              setLabRooms(prevRooms => prevRooms.map(room =>
+                room.id === roomId ? { ...room, items: updatedItems } : room
+              ));
             });
 
-            roomsWithItems.push({
-              id: roomId,
-              name: roomData.name || "N/A",
-              qrCode: roomData.qrCode || "",
-              items,
-            });
-          }
-
-          setLabRooms(roomsWithItems);
+            unsubscribeFunctions.push(unsub);
+          });
         });
 
-        return () => unsubscribe(); // cleanup listener on unmount
+        unsubscribeFunctions.push(labRoomUnsub);
 
       } catch (error) {
-        console.error("Error fetching lab rooms and items:", error);
+        console.error("Error setting up real-time listeners:", error);
       }
     };
 
     fetchLabRoomsWithItems();
+
+    return () => {
+      unsubscribeFunctions.forEach(unsub => unsub());
+    };
   }, []);
 
   const downloadQRCode = (id) => {
