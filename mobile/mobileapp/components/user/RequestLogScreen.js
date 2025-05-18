@@ -92,6 +92,7 @@ const RequestLogScreen = () => {
     fetchActivityLogs();
   }, [user]);
 
+  //Function for Search
   const handleSearch = (query) => {
     setSearchQuery(query);
     const filtered = activityData.filter(
@@ -103,6 +104,7 @@ const RequestLogScreen = () => {
     setFilteredData(filtered);
   };
 
+  //Function for HandleRowPress
   const handleRowPress = (log) => {
     setSelectedLog(log.fullData);
     setModalVisible(true);
