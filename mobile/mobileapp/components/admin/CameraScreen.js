@@ -201,6 +201,31 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
                   console.log(`✅ Inventory updated. Returned ${returnQty} of ${itemName}.`);
 
+                  const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
+                  const itemId = inventorySnap.data().itemId;
+
+                  if (labRoomId && itemId) {
+                    const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+                    const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+                    if (labRoomItemSnap.exists()) {
+                      const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+                      const newLabQty = currentLabQty + returnQty;
+
+                      await updateDoc(labRoomItemRef, {
+                        quantity: newLabQty,
+                      });
+
+                      console.log(`🏫 LabRoom item updated: ${currentLabQty} → ${newLabQty} for itemId ${itemId} in labRoom ${labRoomId}`);
+
+                    } else {
+                      console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+                    }
+
+                  } else {
+                    console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+                  }
+
                 } else {
                   console.warn(`❌ Inventory item not found for ID: ${inventoryId}`);
                 }
