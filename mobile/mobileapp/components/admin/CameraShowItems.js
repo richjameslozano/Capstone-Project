@@ -10,6 +10,7 @@ import styles from "../styles/adminStyle/CameraStyle";
 import CONFIG from "../config";
 import Header from "../Header";
 import ItemDetailsModal from "../customs/ItemDetailsModal";
+import LabRoomDetailsModal from "../customs/LabRoomDetailsModal";
 
 const { width, height } = Dimensions.get("window");
 const frameSize = width * 0.7;
@@ -25,6 +26,9 @@ const CameraShowItems = ({ onClose }) => {
   const navigation = useNavigation();
   const [detailsVisible, setDetailsVisible] = useState(false);
   const [itemDetails, setItemDetails] = useState(null);
+  const [labRoomItems, setLabRoomItems] = useState([]);
+  const [labRoomId, setLabRoomId] = useState("");
+  const [labModalVisible, setLabModalVisible] = useState(false);
 
   useEffect(() => {
     if (!permission) {
@@ -88,6 +92,12 @@ const CameraShowItems = ({ onClose }) => {
 
       setItemDetails(itemData);
       setDetailsVisible(true);
+    };
+
+    const showLabRoomDetails = (roomId, items) => {
+      setLabRoomId(roomId);
+      setLabRoomItems(items);
+      setLabModalVisible(true);
     };
 
     const logRequestOrReturn = async (userId, userName, action) => {
@@ -594,6 +604,7 @@ const CameraShowItems = ({ onClose }) => {
 
         if (labRoomItemsSnapshot.empty) {
           Alert.alert("Room Details", `No items found in lab room ${roomId}.`);
+          //  showLabRoomDetails(roomId, items);
 
         } else {
           const itemsDetailArray = [];
@@ -601,14 +612,16 @@ const CameraShowItems = ({ onClose }) => {
           labRoomItemsSnapshot.forEach(doc => {
             const item = doc.data();
             if (item.status !== "archived") { 
-              itemsDetailArray.push(
-                `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"}, Status: ${item.status || "N/A"})`
-              );
+              // itemsDetailArray.push(
+              //   `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"}, Status: ${item.status || "N/A"})`
+              // );
+              itemsDetailArray.push(item);
             }
           });
 
           const itemsDetail = itemsDetailArray.join("\n");
-          Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
+          // Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
+           showLabRoomDetails(roomId, itemsDetailArray);
         }
 
       } else if (typeof parsedData === "string") {
@@ -627,15 +640,17 @@ const CameraShowItems = ({ onClose }) => {
           labRoomItemsSnapshot.forEach(doc => {
             const item = doc.data();
             if (item.status !== "archived") {
-              itemsDetailArray.push(
-                `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
-              );
+              // itemsDetailArray.push(
+              //   `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
+              // );
+              itemsDetailArray.push(item);
             }
           });
 
           const itemsDetail = itemsDetailArray.join("\n");
 
-          Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
+          // Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
+           showLabRoomDetails(roomId, itemsDetailArray);
         }
 
       } else if (parsedData.roomNumber) {
@@ -654,15 +669,17 @@ const CameraShowItems = ({ onClose }) => {
           labRoomItemsSnapshot.forEach(doc => {
             const item = doc.data();
             if (item.status !== "archived") {
-              itemsDetailArray.push(
-                `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
-              );
+              // itemsDetailArray.push(
+              //   `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
+              // );
+              itemsDetailArray.push(item);
             }
           });
           
           const itemsDetail = itemsDetailArray.join("\n");
 
-          Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
+          // Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
+           showLabRoomDetails(roomId, itemsDetailArray);
         }
 
       } else {
@@ -821,6 +838,13 @@ const CameraShowItems = ({ onClose }) => {
           visible={detailsVisible}
           itemData={itemDetails}
           onClose={() => setDetailsVisible(false)}
+        />
+
+        <LabRoomDetailsModal
+          visible={labModalVisible}
+          roomId={labRoomId}
+          items={labRoomItems}
+          onClose={() => setLabModalVisible(false)}
         />
       </CameraView>
     </View>
