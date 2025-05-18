@@ -873,6 +873,7 @@ const Requisition = () => {
                     <strong>Time Needed:</strong>
                     <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
                       <TimePicker
+                      minuteStep={10}
                       value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
                         placeholder="From"
                         onChange={(time, timeString) => {
@@ -885,6 +886,7 @@ const Requisition = () => {
                       />
 
                       <TimePicker
+                      minuteStep={10}
                         value={timeTo ? dayjs(timeTo, "HH:mm") : null}
                         placeholder="To"
                         onChange={(time, timeString) => setTimeTo(timeString)}
@@ -910,10 +912,10 @@ const Requisition = () => {
                     </div>
 
                     {timeFrom && timeTo && (
-                      <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
-                        Time Needed: From {timeFrom} To {timeTo}
-                      </p>
-                    )}
+  <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
+    Time Needed: {dayjs(timeFrom, "HH:mm").format("h:mm A")} - {dayjs(timeTo, "HH:mm").format("h:mm A")}
+  </p>
+)}
                   </div>
                 </div>
 
