@@ -20,7 +20,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -244,7 +244,7 @@ const printPdf = () => {
   }
 };
 
-   const handleAdd = async (values) => {
+  const handleAdd = async (values) => {
     if (!itemName || !values.department) {
       alert("Please enter both Item Name and Department!");
       return;
@@ -261,9 +261,18 @@ const printPdf = () => {
     }
 
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
-    const deptItems = dataSource.filter(item => item.department === values.department);
-    const departmentCount = deptItems.length + 1;
+    const inventoryRef = collection(db, "inventory");
+    const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
+    const departmentCount = deptQuerySnapshot.size + 1;
     const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+
+    const idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+    if (!idQuerySnapshot.empty) {
+      setNotificationMessage("Item ID already exists. Please try again.");
+      setIsNotificationVisible(true);
+      return;
+    }
+
     setItemId(generatedItemId); 
 
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
@@ -306,6 +315,7 @@ const printPdf = () => {
       expiryDate: expiryDate, 
       qrCode: encryptedData,
       ...inventoryItem,
+      // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
     };
 
     try {
