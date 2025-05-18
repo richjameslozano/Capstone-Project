@@ -20,7 +20,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -28,6 +28,7 @@ import DeleteModal from "../customs/DeleteModal";
 import NotificationModal from "../customs/NotificationModal";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import 'jspdf-autotable';
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -120,10 +121,10 @@ const Inventory = () => {
   const handleCategoryChange = (value) => {
     let type = "";
 
-    if (["Chemical", "Reagent", "Materials", "Glasswares"].includes(value)) {
+    if (["Chemical", "Reagent"].includes(value)) {
       type = "Consumable";
 
-    } else if (value === "Equipment") {
+    } else if (value === "Equipment" || value === "Glasswares" || value ===  "Materials") {
       type = "Fixed";
     }
 
@@ -146,7 +147,104 @@ const Inventory = () => {
     saveAs(data, "Filtered_Inventory.xlsx");
   };
 
-   const handleAdd = async (values) => {
+  const generatePdfFromFilteredData = () => {
+  const doc = new jsPDF("p", "pt", "a4");
+  const margin = 40;
+  let y = margin;
+
+  // Header
+  doc.setFontSize(18);
+  doc.text("Inventory List", margin, y);
+  y += 30;
+
+  // Filter Information
+  doc.setFontSize(12);
+  doc.setFont(undefined, "bold");
+  doc.text("Filters:", margin, y);
+  doc.setFont(undefined, "normal");
+  y += 20;
+
+  // Add filter information
+  if (filterCategory) {
+    doc.text(`Category: ${filterCategory}`, margin + 20, y);
+    y += 20;
+  }
+  if (filterItemType) {
+    doc.text(`Item Type: ${filterItemType}`, margin + 20, y);
+    y += 20;
+  }
+  if (searchText) {
+    doc.text(`Search: ${searchText}`, margin + 20, y);
+    y += 20;
+  }
+
+  // Summary Information
+  doc.setFont(undefined, "bold");
+  doc.text("Total Items:", margin, y);
+  doc.setFont(undefined, "normal");
+  doc.text(filteredData.length.toString(), margin + 80, y);
+  y += 30;
+
+  // Main Table
+  const headers = [["Item ID", "Item Name", "Category", "Department", "Quantity", "Status", "Condition"]];
+  const data = filteredData.map(item => [
+    item.itemId || "",
+    item.itemName || "",
+    item.category || "",
+    item.department || "",
+    item.quantity?.toString() || "0",
+    item.status || "",
+    item.condition || ""
+  ]);
+
+  doc.autoTable({
+    head: headers,
+    body: data,
+    startY: y,
+    margin: { left: margin, right: margin },
+    theme: "grid",
+    headStyles: {
+      fillColor: [44, 62, 146],
+      textColor: [255, 255, 255],
+      fontStyle: "bold",
+      halign: "center",
+      fontSize: 12,
+      cellPadding: 6,
+    },
+    bodyStyles: {
+      fontSize: 11,
+      cellPadding: 5,
+    },
+    styles: {
+      lineWidth: 0.1,
+      lineColor: [200, 200, 200],
+      cellPadding: 5,
+    },
+    alternateRowStyles: { fillColor: [245, 245, 245] },
+  });
+
+  return doc;
+};
+
+// Save PDF
+const saveAsPdf = () => {
+  const doc = generatePdfFromFilteredData();
+  if (doc) {
+    const fileName = `Inventory_List_${new Date().toISOString().split('T')[0]}.pdf`;
+    doc.save(fileName);
+  }
+};
+
+// Print PDF
+const printPdf = () => {
+  const doc = generatePdfFromFilteredData();
+  if (doc) {
+    doc.autoPrint();
+    window.open(doc.output("bloburl"), "_blank");
+  }
+};
+
+  const handleAdd = async (values) => {
     if (!itemName || !values.department) {
       alert("Please enter both Item Name and Department!");
       return;
@@ -163,9 +261,18 @@ const Inventory = () => {
     }
 
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
-    const deptItems = dataSource.filter(item => item.department === values.department);
-    const departmentCount = deptItems.length + 1;
+    const inventoryRef = collection(db, "inventory");
+    const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
+    const departmentCount = deptQuerySnapshot.size + 1;
     const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+
+    const idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+    if (!idQuerySnapshot.empty) {
+      setNotificationMessage("Item ID already exists. Please try again.");
+      setIsNotificationVisible(true);
+      return;
+    }
+
     setItemId(generatedItemId); 
 
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
@@ -208,6 +315,7 @@ const Inventory = () => {
       expiryDate: expiryDate, 
       qrCode: encryptedData,
       ...inventoryItem,
+      // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
     };
 
     try {
@@ -287,7 +395,6 @@ const Inventory = () => {
     setIsEditModalVisible(true);
   };
   
-
   const updateItem = async (values) => {
     const safeValues = {
       category: values.category ?? "",
@@ -297,39 +404,59 @@ const Inventory = () => {
       condition: values.condition ?? "Good",
       // usageType: values.usageType ?? "",
     };
-  
+
     try {
       const snapshot = await getDocs(collection(db, "inventory"));
-  
+
       snapshot.forEach(async (docItem) => {
         const data = docItem.data();
+
         if (data.itemId === editingItem.itemId) {
-          const itemRef = doc(db, "inventory", docItem.id);
+          const inventoryId = docItem.id;
+          const itemRef = doc(db, "inventory", inventoryId);
+
           await updateDoc(itemRef, safeValues);
-  
+
           setIsNotificationVisible(true);
           setNotificationMessage("Item updated successfully!");
-  
+
           const updatedItem = {
             ...editingItem,
             ...safeValues,
           };
-  
+
           setDataSource((prevData) =>
             prevData.map((item) =>
               item.id === editingItem.id ? updatedItem : item
             )
           );
-  
+
+          const labRoomId = safeValues.labRoom;
+          const itemId = data.itemId;
+
+          if (labRoomId && itemId) {
+            const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+            const labRoomSnap = await getDoc(labRoomItemRef);
+
+            if (labRoomSnap.exists()) {
+              await updateDoc(labRoomItemRef, safeValues);
+              console.log(`🏫 labRoom/${labRoomId}/items/${itemId} updated successfully`);
+
+            } else {
+              console.warn(`⚠️ labRoom item not found for itemId: ${itemId} in labRoom: ${labRoomId}`);
+            }
+          }
+
           setIsEditModalVisible(false);
           setEditingItem(null);
           form.resetFields();
         }
       });
+      
     } catch (error) {
       console.error("Error updating document in Firestore:", error);
     }
-  };  
+  };
 
   const printQRCode = (record) => {
     html2canvas(qrRefs.current[record.id]).then((canvas) => {
@@ -552,7 +679,7 @@ const Inventory = () => {
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" className="add-btn">
-                  Add to Inventory with QR Code
+                  Add to Inventory
                 </Button>
               </Form.Item>
             </Form>
@@ -616,6 +743,13 @@ const Inventory = () => {
 
               <Button type="primary" onClick={exportToExcel}>
                 Export to Excel
+              </Button>
+
+              <Button type="primary" onClick={saveAsPdf} style={{ marginRight: 8 }}>
+                Save as PDF
+              </Button>
+              <Button onClick={printPdf}>
+                Print
               </Button>
             </Space>
           </div>
@@ -788,3 +922,6 @@ const Inventory = () => {
 };
 
 export default Inventory;
+
+
+//done PRINT SAVE AND EXCEL

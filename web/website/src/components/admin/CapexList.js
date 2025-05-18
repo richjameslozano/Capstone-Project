@@ -1,123 +1,244 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Layout, Row, Col, Typography, Table, Modal, Button, Select } from "antd";
-import { db } from "../../backend/firebase/FirebaseConfig"; 
+import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
+import jsPDF from "jspdf";
+import 'jspdf-autotable';
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "../styles/adminStyle/CapexList.css";
 
 const { Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 const CapexList = () => {
+  // State Management
   const [requests, setRequests] = useState([]);
-  const [viewModalVisible, setViewModalVisible] = useState(false);
-  const [selectedRowDetails, setSelectedRowDetails] = useState(null);
+  const [filteredRequests, setFilteredRequests] = useState([]);
   const [subjectFilter, setSubjectFilter] = useState("");
   const [subjectOptions, setSubjectOptions] = useState([]);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [modalVisible, setModalVisible] = useState(false);
+  const modalRef = useRef(null);
 
+  // Calculate total cost of filtered requests
+  const totalCost = filteredRequests.reduce((sum, request) => sum + (request.totalPrice || 0), 0);
 
+  // Fetch data from Firestore
   useEffect(() => {
-    const userRequestRef = collection(db, "capexrequestlist");
+    const fetchRequests = () => {
+      try {
+        const requestRef = collection(db, "capexrequestlist");
+        const unsubscribe = onSnapshot(requestRef, (querySnapshot) => {
+          const fetched = [];
+          const subjects = new Set();
 
-    const unsubscribe = onSnapshot(userRequestRef, (querySnapshot) => {
-      const fetched = [];
+          querySnapshot.docs.forEach((docSnap) => {
+            const data = docSnap.data();
+            fetched.push({
+              id: docSnap.id,
+              ...data,
+            });
 
-      querySnapshot.docs.forEach((docSnap) => {
-        const data = docSnap.data();
-        fetched.push({
-          id: docSnap.id,
-          ...data,
+            // Collect unique subjects
+            (data.items || []).forEach(item => {
+              if (item.subject) {
+                subjects.add(item.subject);
+              }
+            });
+          });
+
+          setSubjectOptions(Array.from(subjects));
+          setRequests(fetched);
+          setFilteredRequests(fetched);
         });
-      });
 
-      // Get unique subjects from nested `items`
-      const subjects = new Set();
-      fetched.forEach(req => {
-        (req.items || []).forEach(item => {
-          if (item.subject) {
-            subjects.add(item.subject);
-          }
-        });
-      });
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Error fetching CAPEX requests:", error);
+      }
+    };
 
-      setSubjectOptions(Array.from(subjects));
+    fetchRequests();
+  }, []);
 
-      // Filter based on selected subject
-      const filtered = subjectFilter
-        ? fetched.filter(req =>
-            (req.items || []).some(item =>
-              (item.subject || "").toLowerCase() === subjectFilter.toLowerCase()
-            )
-          )
-        : fetched;
-
-      setRequests(filtered);
-    }, (error) => {
-      console.error("Error fetching requests in real-time: ", error);
-    });
-
-    return () => unsubscribe(); // Cleanup
-  }, [subjectFilter]);
-
-  const handleDownloadExcel = () => {
-    const workbook = XLSX.utils.book_new();
-
-    // Sheet 1: CAPEX Summary
-    const summaryData = requests.map((req, index) => ({
-      "No.": index + 1,
-      "Requestor": req.userName,
-      "Submission Date": req.createdAt?.toDate().toLocaleString() || "N/A",
-      "Total Price": req.totalPrice ? `₱${req.totalPrice.toLocaleString()}` : "N/A",
-    }));
-    const summarySheet = XLSX.utils.json_to_sheet(summaryData);
-    XLSX.utils.book_append_sheet(workbook, summarySheet, "CAPEX Summary");
-
-    // Sheet 2: All Requested Items
-    const allItems = requests.flatMap((req) =>
-      (req.items || []).map((item, index) => ({
-        "Requestor": req.userName,
-        "Submission Date": req.createdAt?.toDate().toLocaleString() || "N/A",
-        "Item No.": item.no ?? index + 1,
-        "Item Description": item.itemDescription || "",
-        "Subject": item.subject || "",
-        "Justification": item.justification || "",
-        "Quantity": item.qty || 0,
-        "Estimated Cost": item.estimatedCost
-          ? `₱${item.estimatedCost.toLocaleString()}`
-          : "",
-        "Total Item Price": item.totalPrice
-          ? `₱${item.totalPrice.toLocaleString()}`
-          : "",
-        "Item ID": item.id || "",
-      }))
-    );
-
-    const itemsSheet = XLSX.utils.json_to_sheet(allItems);
-    XLSX.utils.book_append_sheet(workbook, itemsSheet, "CAPEX Items");
-
-    // Trigger download
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const file = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(file, "Capex_Requests.xlsx");
-  };
-
+  // Format date to Philippine timezone
   const formatDate = (timestamp) => {
     if (!timestamp || !timestamp.toDate) return "N/A";
     const date = timestamp.toDate();
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
+    return date.toLocaleString("en-PH", {
+      timeZone: "Asia/Manila",
     });
   };
 
-  const handleViewDetails = (record) => {
-    setSelectedRowDetails(record);
-    setViewModalVisible(true);
+  // Handle subject filtering
+  const handleFilter = (value) => {
+    setSubjectFilter(value);
+    if (!value) {
+      setFilteredRequests(requests);
+    } else {
+      const filtered = requests.filter(request =>
+        request.items.some(item => item.subject === value)
+      );
+      setFilteredRequests(filtered);
+    }
   };
 
+  // Handle view details
+  const handleViewDetails = (record) => {
+    setSelectedRequest(record);
+    setModalVisible(true);
+  };
+
+  // Generate PDF from filtered data
+  const generatePdfFromFilteredData = () => {
+    const doc = new jsPDF("p", "pt", "a4");
+    const margin = 40;
+    let y = margin;
+
+    // Header
+    doc.setFontSize(18);
+    doc.text("CAPEX Request List", margin, y);
+    y += 30;
+
+    // Filter Information
+    doc.setFontSize(12);
+    doc.setFont(undefined, "bold");
+    doc.text("Filter:", margin, y);
+    doc.setFont(undefined, "normal");
+    doc.text(subjectFilter || "All Requests", margin + 40, y);
+    y += 20;
+
+    // Summary Information
+    doc.setFont(undefined, "bold");
+    doc.text("Total Requests:", margin, y);
+    doc.setFont(undefined, "normal");
+    doc.text(filteredRequests.length.toString(), margin + 90, y);
+
+    doc.setFont(undefined, "bold");
+    doc.text("Total Cost:", 350, y);
+    doc.setFont(undefined, "normal");
+    doc.text(`₱${totalCost.toLocaleString()}`, 430, y);
+    y += 30;
+
+    // Main Table
+   
+
+    // Add Items Details for each request
+    filteredRequests.forEach((request, index) => {
+      if (y > 700) { // Check if we need a new page
+        doc.addPage();
+        y = margin;
+      }
+
+
+
+      const itemHeaders = [["Item Description", "Subject", "Justification", "Quantity", "Estimated Cost", "Total Price"]];
+      const itemData = (request.items || []).map(item => [
+        item.itemDescription || "",
+        item.subject || "",
+        item.justification || "",
+        String(item.qty || ""),
+        `₱${item.estimatedCost?.toLocaleString() || "0"}`,
+        `₱${item.totalPrice?.toLocaleString() || "0"}`
+      ]);
+
+      doc.autoTable({
+        head: itemHeaders,
+        body: itemData,
+        startY: y,
+        margin: { left: margin, right: margin },
+        theme: "grid",
+        headStyles: {
+          fillColor: [44, 62, 146],
+          textColor: [255, 255, 255],
+          fontStyle: "bold",
+          halign: "center",
+          fontSize: 11,
+          cellPadding: 5,
+        },
+        bodyStyles: {
+          fontSize: 10,
+          cellPadding: 4,
+        },
+        styles: {
+          lineWidth: 0.1,
+          lineColor: [200, 200, 200],
+          cellPadding: 4,
+        },
+        alternateRowStyles: { fillColor: [245, 245, 245] },
+      });
+
+      y = doc.lastAutoTable.finalY + 20;
+    });
+
+    return doc;
+  };
+
+  // Save PDF
+  const saveAsPdf = () => {
+    const doc = generatePdfFromFilteredData();
+    if (doc) {
+      const fileName = subjectFilter 
+        ? `CAPEX_Requests_${subjectFilter.replace(/\s+/g, '_')}.pdf`
+        : 'CAPEX_Requests_All.pdf';
+      doc.save(fileName);
+    }
+  };
+
+  // Print PDF
+  const printPdf = () => {
+    const doc = generatePdfFromFilteredData();
+    if (doc) {
+      doc.autoPrint();
+      window.open(doc.output("bloburl"), "_blank");
+    }
+  };
+
+  // Export to Excel
+  const exportToExcel = () => {
+    // Prepare data for Excel
+    const excelData = filteredRequests.map((request, index) => {
+      const baseData = {
+        'No.': index + 1,
+        'Requestor': request.userName || '',
+        'Submission Date': formatDate(request.createdAt) || '',
+        'Total Price': `₱${request.totalPrice?.toLocaleString() || '0'}`,
+      };
+
+      // Add items data
+      (request.items || []).forEach((item, itemIndex) => {
+        baseData[`Item ${itemIndex + 1} Description`] = item.itemDescription || '';
+        baseData[`Item ${itemIndex + 1} Subject`] = item.subject || '';
+        baseData[`Item ${itemIndex + 1} Justification`] = item.justification || '';
+        baseData[`Item ${itemIndex + 1} Quantity`] = item.qty || '';
+        baseData[`Item ${itemIndex + 1} Estimated Cost`] = `₱${item.estimatedCost?.toLocaleString() || '0'}`;
+        baseData[`Item ${itemIndex + 1} Total Price`] = `₱${item.totalPrice?.toLocaleString() || '0'}`;
+      });
+
+      return baseData;
+    });
+
+    // Create worksheet
+    const ws = XLSX.utils.json_to_sheet(excelData);
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'CAPEX Requests');
+
+    // Generate Excel file
+    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+    // Save file
+    const fileName = subjectFilter 
+      ? `CAPEX_Requests_${subjectFilter.replace(/\s+/g, '_')}.xlsx`
+      : 'CAPEX_Requests_All.xlsx';
+    saveAs(data, fileName);
+  };
+
+  // Table columns configuration
   const columns = [
     {
       title: "Requestor",
@@ -132,7 +253,7 @@ const CapexList = () => {
       title: "Submission Date",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (createdAt) => createdAt?.toDate().toLocaleString(),
+      render: (createdAt) => formatDate(createdAt),
     },
     {
       title: "Total Price",
@@ -151,36 +272,6 @@ const CapexList = () => {
     },
   ];
 
-  const itemsColumns = [
-    {
-      title: "Item Description",
-      dataIndex: "itemDescription",
-      key: "itemDescription",
-    },
-    {
-      title: "Justification",
-      dataIndex: "justification",
-      key: "justification",
-    },
-    {
-      title: "Quantity",
-      dataIndex: "qty",
-      key: "qty",
-    },
-    {
-      title: "Estimated Cost",
-      dataIndex: "estimatedCost",
-      key: "estimatedCost",
-      render: (cost) => `₱${cost?.toLocaleString()}`,
-    },
-    {
-      title: "Total Price",
-      dataIndex: "totalPrice",
-      key: "totalPrice",
-      render: (price) => `₱${price?.toLocaleString()}`,
-    },
-  ];
-
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Content style={{ margin: "20px" }}>
@@ -188,26 +279,42 @@ const CapexList = () => {
           <Col span={24}>
             <Title level={4}>List of Requests</Title>
 
-            <Select
-              allowClear
-              style={{ width: 200, marginBottom: 16 }}
-              placeholder="Filter by Subject"
-              value={subjectFilter}
-              onChange={(value) => setSubjectFilter(value || "")}
-            >
-              {subjectOptions.map((subject, index) => (
-                <Option key={index} value={subject}>
-                  {subject}
-                </Option>
-              ))}
-            </Select>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
+              <Select
+                allowClear
+                style={{ width: 200 }}
+                placeholder="Filter by Subject"
+                value={subjectFilter}
+                onChange={handleFilter}
+              >
+                {subjectOptions.map((subject, index) => (
+                  <Option key={index} value={subject}>
+                    {subject}
+                  </Option>
+                ))}
+              </Select>
 
-            <Button type="primary" onClick={handleDownloadExcel} style={{ marginBottom: 16 }}>
-              Download Excel
-            </Button>
+              <div>
+                <Button type="primary" onClick={saveAsPdf} style={{ marginRight: 8 }}>
+                  Save as PDF
+                </Button>
+                <Button onClick={printPdf} style={{ marginRight: 8 }}>
+                  Print
+                </Button>
+                <Button onClick={exportToExcel}>
+                  Export to Excel
+                </Button>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'right', marginBottom: 16 }}>
+              <Text strong>
+                Total Cost: ₱{totalCost.toLocaleString()}
+              </Text>
+            </div>
 
             <Table
-              dataSource={requests}
+              dataSource={filteredRequests}
               rowKey="id"
               pagination={{ pageSize: 5 }}
               columns={columns}
@@ -218,24 +325,76 @@ const CapexList = () => {
 
       <Modal
         title="CAPEX Request Details"
-        visible={viewModalVisible}
-        onCancel={() => setViewModalVisible(false)}
-        footer={null}
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        footer={[
+          <Button key="close" onClick={() => setModalVisible(false)}>
+            Close
+          </Button>,
+        ]}
         width={800}
         zIndex={1026}
+        bodyStyle={{ maxHeight: "65vh", overflowY: "auto" }}
       >
-        {selectedRowDetails && (
-          <div>
-            <p><strong>User Name:</strong> {selectedRowDetails.userName}</p>
-            <p><strong>Total Price:</strong> ₱{selectedRowDetails.totalPrice?.toLocaleString()}</p>
-            <p><strong>Submission Date:</strong> {selectedRowDetails.createdAt?.toDate().toLocaleString()}</p>
+        {selectedRequest && (
+          <div ref={modalRef} style={{ padding: "10px" }}>
+            <Row gutter={[16, 16]}>
+              <Col span={12}>
+                <Text strong>Requestor:</Text> {selectedRequest.userName}
+              </Col>
+              <Col span={12} style={{ textAlign: "right" }}>
+                <Text italic>Request ID: {selectedRequest.id}</Text>
+              </Col>
+            </Row>
 
-            <h3>Items:</h3>
+            <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
+              <Col span={12}>
+                <Text strong>Submission Date:</Text> {formatDate(selectedRequest.createdAt)}
+              </Col>
+              <Col span={12}>
+                <Text strong>Total Price:</Text> ₱{selectedRequest.totalPrice?.toLocaleString()}
+              </Col>
+            </Row>
+
             <Table
-              dataSource={selectedRowDetails.items}
-              columns={itemsColumns}
+              dataSource={selectedRequest.items}
+              columns={[
+                {
+                  title: "Item Description",
+                  dataIndex: "itemDescription",
+                  key: "itemDescription",
+                },
+                {
+                  title: "Subject",
+                  dataIndex: "subject",
+                  key: "subject",
+                },
+                {
+                  title: "Justification",
+                  dataIndex: "justification",
+                  key: "justification",
+                },
+                {
+                  title: "Quantity",
+                  dataIndex: "qty",
+                  key: "qty",
+                },
+                {
+                  title: "Estimated Cost",
+                  dataIndex: "estimatedCost",
+                  key: "estimatedCost",
+                  render: (cost) => `₱${cost?.toLocaleString()}`,
+                },
+                {
+                  title: "Total Price",
+                  dataIndex: "totalPrice",
+                  key: "totalPrice",
+                  render: (price) => `₱${price?.toLocaleString()}`,
+                },
+              ]}
               pagination={false}
-              rowKey="itemDescription" 
+              size="small"
+              style={{ marginTop: 20 }}
             />
           </div>
         )}
@@ -245,3 +404,5 @@ const CapexList = () => {
 };
 
 export default CapexList;
+
+//DONE PRINT 

@@ -286,44 +286,56 @@ const PendingRequest = () => {
       }
 
       console.log("Starting inventory update loop...");
-      for (const item of enrichedItems) {
-        console.log("Processing item:", item);
-      
-        const inventoryId = item.selectedItemId;
-        const requestedQty = Number(item.quantity);
-      
-        if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-          console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
-          continue;
-        }
-      
-        const inventoryRef = doc(db, "inventory", inventoryId);
-        console.log("📄 Inventory Ref created for ID:", inventoryId);
-      
-        try {
-          const inventorySnap = await getDoc(inventoryRef);
-          console.log("📥 Fetched inventory snapshot for:", inventoryId);
-      
-          if (inventorySnap.exists()) {
-            const currentQty = Number(inventorySnap.data().quantity || 0);
-            const newQty = Math.max(currentQty - requestedQty, 0);
-      
-            console.log(`🔁 Updating inventory for ${inventoryId}: ${currentQty} - ${requestedQty} = ${newQty}`);
-      
-            await updateDoc(inventoryRef, {
-              quantity: newQty,
-            });
-      
-            console.log(`✅ Successfully updated inventory for ${inventoryId}`);
+      try {
+        for (const item of enrichedItems) {
+          const inventoryId = item.selectedItemId;
+          const requestedQty = Number(item.quantity);
+          const labRoomId = item.labRoom;  // <-- get labRoom from the item here
 
-          } else {
-            console.error(`❌ Inventory item not found: ${inventoryId}`);
+          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+            continue;
           }
 
-        } catch (err) {
-          console.error(`🔥 Failed to update inventory for ${inventoryId}:`, err.message);
+          if (!labRoomId) {
+            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+            continue;
+          }
+
+          // Update inventory quantity (your existing logic)
+          const inventoryRef = doc(db, "inventory", inventoryId);
+          const inventorySnap = await getDoc(inventoryRef);
+          if (!inventorySnap.exists()) {
+            console.warn(`Inventory not found for ID: ${inventoryId}`);
+            continue;
+          }
+
+          const currentQty = Number(inventorySnap.data().quantity || 0);
+          const newQty = Math.max(currentQty - requestedQty, 0);
+          await updateDoc(inventoryRef, { quantity: newQty });
+          console.log(`✅ Inventory updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+
+          // Now update the labRoom item quantity
+          // Important: the doc id in labRoom items collection is itemId (not inventoryId)
+          const itemId = inventorySnap.data().itemId;
+
+          const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+          const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+          if (labRoomItemSnap.exists()) {
+            const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+            const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+            await updateDoc(labRoomItemRef, { quantity: newLabQty });
+            console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+
+          } else {
+            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          }
         }
-      }      
+
+      } catch (err) {
+        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+      }   
   
       await addDoc(collection(db, "requestlog"), requestLogEntry);
   
@@ -607,44 +619,56 @@ const PendingRequest = () => {
       }
 
       console.log("Starting inventory update loop...");
-      for (const item of enrichedItems) {
-        console.log("Processing item:", item);
-      
-        const inventoryId = item.selectedItemId;
-        const requestedQty = Number(item.quantity);
-      
-        if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-          console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
-          continue;
-        }
-      
-        const inventoryRef = doc(db, "inventory", inventoryId);
-        console.log("📄 Inventory Ref created for ID:", inventoryId);
-      
-        try {
-          const inventorySnap = await getDoc(inventoryRef);
-          console.log("📥 Fetched inventory snapshot for:", inventoryId);
-      
-          if (inventorySnap.exists()) {
-            const currentQty = Number(inventorySnap.data().quantity || 0);
-            const newQty = Math.max(currentQty - requestedQty, 0);
-      
-            console.log(`🔁 Updating inventory for ${inventoryId}: ${currentQty} - ${requestedQty} = ${newQty}`);
-      
-            await updateDoc(inventoryRef, {
-              quantity: newQty,
-            });
-      
-            console.log(`✅ Successfully updated inventory for ${inventoryId}`);
+      try {
+        for (const item of enrichedItems) {
+          const inventoryId = item.selectedItemId;
+          const requestedQty = Number(item.quantity);
+          const labRoomId = item.labRoom;  // <-- get labRoom from the item here
 
-          } else {
-            console.error(`❌ Inventory item not found: ${inventoryId}`);
+          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+            continue;
           }
 
-        } catch (err) {
-          console.error(`🔥 Failed to update inventory for ${inventoryId}:`, err.message);
+          if (!labRoomId) {
+            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+            continue;
+          }
+
+          // Update inventory quantity (your existing logic)
+          const inventoryRef = doc(db, "inventory", inventoryId);
+          const inventorySnap = await getDoc(inventoryRef);
+          if (!inventorySnap.exists()) {
+            console.warn(`Inventory not found for ID: ${inventoryId}`);
+            continue;
+          }
+
+          const currentQty = Number(inventorySnap.data().quantity || 0);
+          const newQty = Math.max(currentQty - requestedQty, 0);
+          await updateDoc(inventoryRef, { quantity: newQty });
+          console.log(`✅ Inventory updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+
+          // Now update the labRoom item quantity
+          // Important: the doc id in labRoom items collection is itemId (not inventoryId)
+          const itemId = inventorySnap.data().itemId;
+
+          const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+          const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+          if (labRoomItemSnap.exists()) {
+            const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+            const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+            await updateDoc(labRoomItemRef, { quantity: newLabQty });
+            console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+
+          } else {
+            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          }
         }
-      }      
+
+      } catch (err) {
+        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+      }     
   
       await addDoc(collection(db, "requestlog"), requestLogEntry);
   
@@ -998,45 +1022,96 @@ const PendingRequest = () => {
       );
     }
 
-    console.log("Starting inventory update loop...");
-    for (const item of enrichedItems) {
-      console.log("Processing item:", item);
+    // console.log("Starting inventory update loop...");
+    // for (const item of enrichedItems) {
+    //   console.log("Processing item:", item);
     
-      const inventoryId = item.selectedItemId;
-      const requestedQty = Number(item.quantity);
+    //   const inventoryId = item.selectedItemId;
+    //   const requestedQty = Number(item.quantity);
     
-      if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-        console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
-        continue;
-      }
+    //   if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+    //     console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+    //     continue;
+    //   }
     
-      const inventoryRef = doc(db, "inventory", inventoryId);
-      console.log("📄 Inventory Ref created for ID:", inventoryId);
+    //   const inventoryRef = doc(db, "inventory", inventoryId);
+    //   console.log("📄 Inventory Ref created for ID:", inventoryId);
     
+    //   try {
+    //     const inventorySnap = await getDoc(inventoryRef);
+    //     console.log("📥 Fetched inventory snapshot for:", inventoryId);
+    
+    //     if (inventorySnap.exists()) {
+    //       const currentQty = Number(inventorySnap.data().quantity || 0);
+    //       const newQty = Math.max(currentQty - requestedQty, 0);
+    
+    //       console.log(`🔁 Updating inventory for ${inventoryId}: ${currentQty} - ${requestedQty} = ${newQty}`);
+    
+    //       await updateDoc(inventoryRef, {
+    //         quantity: newQty,
+    //       });
+    
+    //       console.log(`✅ Successfully updated inventory for ${inventoryId}`);
+
+    //     } else {
+    //       console.error(`❌ Inventory item not found: ${inventoryId}`);
+    //     }
+
+    //   } catch (err) {
+    //     console.error(`🔥 Failed to update inventory for ${inventoryId}:`, err.message);
+    //   }
+    // }
+
       try {
-        const inventorySnap = await getDoc(inventoryRef);
-        console.log("📥 Fetched inventory snapshot for:", inventoryId);
-    
-        if (inventorySnap.exists()) {
+        for (const item of enrichedItems) {
+          const inventoryId = item.selectedItemId;
+          const requestedQty = Number(item.quantity);
+          const labRoomId = item.labRoom;  // <-- get labRoom from the item here
+
+          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+            continue;
+          }
+
+          if (!labRoomId) {
+            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+            continue;
+          }
+
+          // Update inventory quantity (your existing logic)
+          const inventoryRef = doc(db, "inventory", inventoryId);
+          const inventorySnap = await getDoc(inventoryRef);
+          if (!inventorySnap.exists()) {
+            console.warn(`Inventory not found for ID: ${inventoryId}`);
+            continue;
+          }
+
           const currentQty = Number(inventorySnap.data().quantity || 0);
           const newQty = Math.max(currentQty - requestedQty, 0);
-    
-          console.log(`🔁 Updating inventory for ${inventoryId}: ${currentQty} - ${requestedQty} = ${newQty}`);
-    
-          await updateDoc(inventoryRef, {
-            quantity: newQty,
-          });
-    
-          console.log(`✅ Successfully updated inventory for ${inventoryId}`);
+          await updateDoc(inventoryRef, { quantity: newQty });
+          console.log(`✅ Inventory updated for ${inventoryId}: ${currentQty} → ${newQty}`);
 
-        } else {
-          console.error(`❌ Inventory item not found: ${inventoryId}`);
+          // Now update the labRoom item quantity
+          // Important: the doc id in labRoom items collection is itemId (not inventoryId)
+          const itemId = inventorySnap.data().itemId;
+
+          const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+          const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+          if (labRoomItemSnap.exists()) {
+            const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+            const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+            await updateDoc(labRoomItemRef, { quantity: newLabQty });
+            console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+
+          } else {
+            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          }
         }
 
       } catch (err) {
-        console.error(`🔥 Failed to update inventory for ${inventoryId}:`, err.message);
-      }
-    }
+        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+      } 
 
     try {
       // Add to requestlog for approval
