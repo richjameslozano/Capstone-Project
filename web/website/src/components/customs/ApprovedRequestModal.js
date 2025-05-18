@@ -103,7 +103,7 @@ const ApprovedRequestModal = ({
         timeTo: selectedApprovedRequest.timeTo || "N/A",
         reason: selectedApprovedRequest.reason || "N/A",
         room: selectedApprovedRequest.room || "N/A",
-        courseCode: selectedApprovedRequest.courseCode || "N/A",
+        course: selectedApprovedRequest.course || "N/A",
         courseDescription: selectedApprovedRequest.courseDescription || "N/A",
         program: selectedApprovedRequest.program || "N/A",
         status: "Returned",
@@ -162,7 +162,7 @@ const ApprovedRequestModal = ({
               <Text strong>Reason of Request:</Text>
               <p style={{ fontSize: "12px", marginTop: 5 }}>{selectedApprovedRequest.reason || "N/A"}</p>
               <Text strong>Room:</Text> {selectedApprovedRequest.room || "N/A"}<br />
-              <Text strong>Course Code:</Text> {selectedApprovedRequest.courseCode || "N/A"}<br />
+              <Text strong>Course Code:</Text> {selectedApprovedRequest.course || "N/A"}<br />
               <Text strong>Course Description:</Text> {selectedApprovedRequest.courseDescription || "N/A"}<br />
               <Text strong>Program:</Text> {selectedApprovedRequest.program || "N/A"}
             </Col>

@@ -56,7 +56,7 @@ const BorrowCatalog = () => {
               timeFrom: data.timeFrom || "N/A",
               timeTo: data.timeTo || "N/A",
               courseDescription: data.courseDescription || "N/A",
-              courseCode: data.courseCode || "N/A",
+              course: data.course || "N/A",
               program: data.program || "N/A",
               room: data.room || "N/A",
               requestList: Array.isArray(data.requestList) ? data.requestList : [],
