@@ -48,6 +48,9 @@ export default function InventoryScreen({ navigation }) {
   const { metadata, setMetadata } = useRequestMetadata();
   const [isComplete, setIsComplete] = useState(false); 
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
+  const categoryOptions = ['All', 'Equipment', 'Chemical', 'Materials', 'Reagent', 'Glasswares'];
+
 
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
@@ -140,7 +143,7 @@ export default function InventoryScreen({ navigation }) {
   }, [usageTypeOtherInput]);
 
   const filteredItems = inventoryItems.filter((item) => {
-    const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.type === selectedCategory;
+    const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
     const isUsageTypeMatch = selectedUsageType === 'All' || selectedUsageType === '' || item.usageType === selectedUsageType;
     const isSearchMatch = !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
   
@@ -905,9 +908,25 @@ export default function InventoryScreen({ navigation }) {
             />
           </View>
 
-          <TouchableOpacity style={{backgroundColor:'#efefef', flex:1, borderRadius: 5, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5}}>
+          {/* <TouchableOpacity style={{backgroundColor:'#efefef', flex:1, borderRadius: 5, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5}}>
             <Icon name='filter-variant' size={20} color='#515151'/>
             <Text style={{fontWeight: 'bold', color: '#515151'}}>All</Text>
+          </TouchableOpacity> */}
+          <TouchableOpacity
+            style={{
+              backgroundColor: '#efefef',
+              flex: 1,
+              borderRadius: 5,
+              justifyContent: 'center',
+              alignItems: 'center',
+              flexDirection: 'row',
+              gap: 5,
+              padding: 10,
+            }}
+            onPress={() => setIsCategoryModalVisible(true)}
+          >
+            <Icon name='filter-variant' size={20} color='#515151' />
+            <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
           </TouchableOpacity>
         </View>
 
@@ -977,12 +996,7 @@ export default function InventoryScreen({ navigation }) {
   )}
 
 </KeyboardAvoidingView>
-      
 
-    
-    
-    
-      
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={closeModal}>
           <View style={styles.modalBackground}>
@@ -1005,7 +1019,31 @@ export default function InventoryScreen({ navigation }) {
         </TouchableWithoutFeedback>
       </Modal>
 
-      
+      <Modal
+        visible={isCategoryModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+          <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+            {categoryOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={{ paddingVertical: 10 }}
+                onPress={() => {
+                  setSelectedCategory(option);
+                  setIsCategoryModalVisible(false);
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity onPress={() => setIsCategoryModalVisible(false)} style={{ marginTop: 10 }}>
+              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
 
       <Modal
         visible={timeModalVisible}
