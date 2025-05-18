@@ -104,6 +104,7 @@ const CameraUpdateItems = ({ onClose }) => {
       let parsedData;
       try {
         parsedData = JSON.parse(decryptedData);
+
       } catch {
         parsedData = decryptedData;
       }
@@ -111,10 +112,12 @@ const CameraUpdateItems = ({ onClose }) => {
       if (parsedData.itemName && parsedData.itemId && parsedData.labRoom) {
         setCurrentItem(parsedData);
         setModalVisible(true);
+
       } else {
         Alert.alert("Invalid QR", "QR does not contain valid item data.");
         setScanned(false);
       }
+      
     } catch (err) {
       console.error("QR Scan Error:", err);
       Alert.alert("Scan Failed", "Failed to read QR code.");

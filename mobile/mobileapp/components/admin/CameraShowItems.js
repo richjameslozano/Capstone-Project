@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import styles from "../styles/adminStyle/CameraStyle";
 import CONFIG from "../config";
 import Header from "../Header";
+import ItemDetailsModal from "../customs/ItemDetailsModal";
 
 const { width, height } = Dimensions.get("window");
 const frameSize = width * 0.7;
@@ -22,6 +23,8 @@ const CameraShowItems = ({ onClose }) => {
   const cameraRef = useRef(null);
   const scanLinePosition = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
+  const [detailsVisible, setDetailsVisible] = useState(false);
+  const [itemDetails, setItemDetails] = useState(null);
 
   useEffect(() => {
     if (!permission) {
@@ -75,6 +78,16 @@ const CameraShowItems = ({ onClose }) => {
 
     const handleBackButton = () => {
         navigation.goBack();
+    };
+
+    const showItemDetails = (foundItem, borrowedCount) => {
+      const itemData = {
+        ...foundItem,
+        borrowedCount,
+      };
+
+      setItemDetails(itemData);
+      setDetailsVisible(true);
     };
 
     const logRequestOrReturn = async (userId, userName, action) => {
@@ -557,16 +570,17 @@ const CameraShowItems = ({ onClose }) => {
             }
           });
 
-          const detailMsg = `
-                  Item Name: ${foundItem.itemName}
-                  Item ID: ${foundItem.itemId}
-                  Category: ${foundItem.category}
-                  Department: ${foundItem.department}
-                  Quantity Available: ${foundItem.quantity}
-                  Location: ${foundItem.labRoom}
-                  Borrowed Today: ${borrowedCount} times
-                  `;
-          Alert.alert("Item Details", detailMsg);
+          // const detailMsg = `
+          //         Item Name: ${foundItem.itemName}
+          //         Item ID: ${foundItem.itemId}
+          //         Category: ${foundItem.category}
+          //         Department: ${foundItem.department}
+          //         Quantity Available: ${foundItem.quantity}
+          //         Location: ${foundItem.labRoom}
+          //         Borrowed Today: ${borrowedCount} times
+          //         `;
+          // Alert.alert("Item Details", detailMsg);
+          showItemDetails(foundItem, borrowedCount);
 
         } else {
           Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
@@ -802,6 +816,12 @@ const CameraShowItems = ({ onClose }) => {
             <Text style={styles.text}>Flip</Text>
           </TouchableOpacity>
         </View>
+
+        <ItemDetailsModal
+          visible={detailsVisible}
+          itemData={itemDetails}
+          onClose={() => setDetailsVisible(false)}
+        />
       </CameraView>
     </View>
   );
