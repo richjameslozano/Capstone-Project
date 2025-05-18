@@ -355,150 +355,313 @@ const CameraShowItems = ({ onClose }) => {
 //   setTimeout(() => setScanned(false), 1500);
 // };
 
-    const handleBarCodeScanned = async ({ data }) => {
+  // const handleBarCodeScanned = async ({ data }) => {
+  //   if (scanned) return;
+  //   setScanned(true);
+
+  //   try {
+  //           // Decrypt the QR code data
+  //           const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+  //           const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+  //           console.log("Decrypted QR data raw:", decryptedData);
+  //           if (!decryptedData) throw new Error("Invalid QR Code");
+
+  //           let parsedData;
+  //           try {
+  //           parsedData = JSON.parse(decryptedData);
+
+  //           } catch {
+  //           // If JSON.parse fails, treat decryptedData as a raw string (labRoom id)
+  //           parsedData = decryptedData;
+  //           }
+
+  //           const todayDate = getTodayDate();
+
+  //           console.log("Parsed QR data:", parsedData);
+
+  //           if (parsedData.itemName) {
+  //           // It's an item QR code
+  //           const { itemName } = parsedData;
+
+  //           const inventoryQuery = query(collection(db, "inventory"), where("itemName", "==", itemName));
+  //           const querySnapshot = await getDocs(inventoryQuery);
+
+  //           let foundItem = null;
+  //           querySnapshot.forEach(docSnap => {
+  //               const itemData = docSnap.data();
+
+  //               if (itemData.itemName === itemName) {
+  //               foundItem = itemData;
+  //               }
+  //           });
+
+  //           if (foundItem) {
+  //               const borrowQuery = query(collection(db, "borrowcatalog"));
+  //               const borrowSnapshot = await getDocs(borrowQuery);
+
+  //               let borrowedCount = 0;
+  //               borrowSnapshot.forEach(doc => {
+  //               const borrowData = doc.data();
+  //               if ((borrowData.status || "").trim() === "Borrowed" && (borrowData.dateRequired || "").trim() === todayDate) {
+  //                   borrowData.requestList?.forEach(requestItem => {
+
+  //                   if ((requestItem.itemName || "").trim() === itemName) {
+  //                       borrowedCount += requestItem.quantity || 0;
+  //                   }
+  //                   });
+  //               }
+  //               });
+
+  //               const detailMsg = `
+  //               Item Name: ${foundItem.itemName}
+  //               Item ID: ${foundItem.itemId}
+  //               Category: ${foundItem.category}
+  //               Department: ${foundItem.department}
+  //               Quantity Available: ${foundItem.quantity}
+  //               Location: ${foundItem.labRoom}
+  //               Borrowed Today: ${borrowedCount} times
+  //               `;
+  //               Alert.alert("Item Details", detailMsg);
+
+  //           } else {
+  //               Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
+  //           }
+
+  //           } else if (parsedData.items && Array.isArray(parsedData.items) && parsedData.labRoom) {
+  //           // New case for labRoom QR with multiple items inside "items" array
+  //           const room = parsedData.labRoom;
+  //           const itemsDetailArray = parsedData.items.map(item => 
+  //               `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"}, Status: ${item.status || "N/A"})`
+  //           );
+
+  //           const itemsDetail = itemsDetailArray.join("\n");
+
+  //           Alert.alert("Lab Room Inventory", `Room: ${room}\nItems:\n${itemsDetail}`);
+
+  //           } else if (typeof parsedData === "string") {
+  //               // It's a labRoom id string (e.g. "0430")
+  //               const roomId = parsedData;
+
+  //               const labRoomItemsRef = collection(db, `labRoom/${roomId}/items`);
+  //               const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
+
+  //               if (labRoomItemsSnapshot.empty) {
+  //                   Alert.alert("Room Details", `No items found in lab room ${roomId}.`);
+                    
+  //               } else {
+  //                   const itemsDetailArray = [];
+
+  //                   labRoomItemsSnapshot.forEach(doc => {
+  //                   const item = doc.data();
+  //                   itemsDetailArray.push(
+  //                       `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"})`
+  //                   );
+  //                   });
+
+  //                   const itemsDetail = itemsDetailArray.join("\n");
+
+  //                   Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
+  //               }
+
+  //           } else if (parsedData.roomNumber) {
+  //               // Your existing roomNumber object check (if needed)
+  //               const { roomNumber } = parsedData;
+
+  //               const labRoomItemsRef = collection(db, `labRoom/${roomNumber}/items`);
+  //               const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
+
+  //               if (labRoomItemsSnapshot.empty) {
+  //                   Alert.alert("Room Details", `No items found in lab room ${roomNumber}.`);
+
+  //               } else {
+  //                   const itemsDetailArray = [];
+
+  //               labRoomItemsSnapshot.forEach(doc => {
+  //                 const item = doc.data();
+  //                 if (item.status !== "archived") {
+  //                   itemsDetailArray.push(
+  //                     `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"})`
+  //                   );
+  //                 }
+  //               });
+  //                   const itemsDetail = itemsDetailArray.join("\n");
+
+  //                   Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
+  //               }
+                    
+  //           } else {
+  //               Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
+  //           }
+
+  //       } catch (error) {
+  //           console.error("QR Scan Error:", error);
+  //           Alert.alert("Scan Failed", "Failed to read QR code. Make sure it's valid.");
+  //       }
+
+  //       setTimeout(() => setScanned(false), 1500);
+  //   };
+
+  const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
     setScanned(true);
 
     try {
-            // Decrypt the QR code data
-            const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
-            const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+      // Decrypt the QR code data
+      const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+      const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+      console.log("Decrypted QR data raw:", decryptedData);
+      if (!decryptedData) throw new Error("Invalid QR Code");
 
-            if (!decryptedData) throw new Error("Invalid QR Code");
+      let parsedData;
+      try {
+        parsedData = JSON.parse(decryptedData);
 
-            let parsedData;
-            try {
-            parsedData = JSON.parse(decryptedData);
+      } catch {
+        parsedData = decryptedData;
+      }
 
-            } catch {
-            // If JSON.parse fails, treat decryptedData as a raw string (labRoom id)
-            parsedData = decryptedData;
+      const todayDate = getTodayDate();
+
+      console.log("Parsed QR data:", parsedData);
+
+      if (parsedData.itemName) {
+        // It's an item QR code
+        const { itemName } = parsedData;
+
+        const inventoryQuery = query(collection(db, "inventory"), where("itemName", "==", itemName));
+        const querySnapshot = await getDocs(inventoryQuery);
+
+        let foundItem = null;
+        querySnapshot.forEach(docSnap => {
+          const itemData = docSnap.data();
+
+          if (itemData.itemName === itemName) {
+            foundItem = itemData;
+          }
+        });
+
+        if (foundItem) {
+          const borrowQuery = query(collection(db, "borrowcatalog"));
+          const borrowSnapshot = await getDocs(borrowQuery);
+
+          let borrowedCount = 0;
+          borrowSnapshot.forEach(doc => {
+            const borrowData = doc.data();
+            if ((borrowData.status || "").trim() === "Borrowed" && (borrowData.dateRequired || "").trim() === todayDate) {
+              borrowData.requestList?.forEach(requestItem => {
+
+                if ((requestItem.itemName || "").trim() === itemName) {
+                  borrowedCount += requestItem.quantity || 0;
+                }
+              });
             }
+          });
 
-            const todayDate = getTodayDate();
+          const detailMsg = `
+                  Item Name: ${foundItem.itemName}
+                  Item ID: ${foundItem.itemId}
+                  Category: ${foundItem.category}
+                  Department: ${foundItem.department}
+                  Quantity Available: ${foundItem.quantity}
+                  Location: ${foundItem.labRoom}
+                  Borrowed Today: ${borrowedCount} times
+                  `;
+          Alert.alert("Item Details", detailMsg);
 
-            console.log("Parsed QR data:", parsedData);
-
-            if (parsedData.itemName) {
-            // It's an item QR code
-            const { itemName } = parsedData;
-
-            const inventoryQuery = query(collection(db, "inventory"), where("itemName", "==", itemName));
-            const querySnapshot = await getDocs(inventoryQuery);
-
-            let foundItem = null;
-            querySnapshot.forEach(docSnap => {
-                const itemData = docSnap.data();
-
-                if (itemData.itemName === itemName) {
-                foundItem = itemData;
-                }
-            });
-
-            if (foundItem) {
-                const borrowQuery = query(collection(db, "borrowcatalog"));
-                const borrowSnapshot = await getDocs(borrowQuery);
-
-                let borrowedCount = 0;
-                borrowSnapshot.forEach(doc => {
-                const borrowData = doc.data();
-                if ((borrowData.status || "").trim() === "Borrowed" && (borrowData.dateRequired || "").trim() === todayDate) {
-                    borrowData.requestList?.forEach(requestItem => {
-
-                    if ((requestItem.itemName || "").trim() === itemName) {
-                        borrowedCount += requestItem.quantity || 0;
-                    }
-                    });
-                }
-                });
-
-                const detailMsg = `
-                Item Name: ${foundItem.itemName}
-                Item ID: ${foundItem.itemId}
-                Category: ${foundItem.category}
-                Department: ${foundItem.department}
-                Quantity Available: ${foundItem.quantity}
-                Location: ${foundItem.labRoom}
-                Borrowed Today: ${borrowedCount} times
-                `;
-                Alert.alert("Item Details", detailMsg);
-
-            } else {
-                Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
-            }
-
-            } else if (parsedData.items && Array.isArray(parsedData.items) && parsedData.labRoom) {
-            // New case for labRoom QR with multiple items inside "items" array
-            const room = parsedData.labRoom;
-            const itemsDetailArray = parsedData.items.map(item => 
-                `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"}, Status: ${item.status || "N/A"})`
-            );
-
-            const itemsDetail = itemsDetailArray.join("\n");
-
-            Alert.alert("Lab Room Inventory", `Room: ${room}\nItems:\n${itemsDetail}`);
-
-            } else if (typeof parsedData === "string") {
-                // It's a labRoom id string (e.g. "0430")
-                const roomId = parsedData;
-
-                const labRoomItemsRef = collection(db, `labRoom/${roomId}/items`);
-                const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
-
-                if (labRoomItemsSnapshot.empty) {
-                    Alert.alert("Room Details", `No items found in lab room ${roomId}.`);
-                    
-                } else {
-                    const itemsDetailArray = [];
-
-                    labRoomItemsSnapshot.forEach(doc => {
-                    const item = doc.data();
-                    itemsDetailArray.push(
-                        `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"})`
-                    );
-                    });
-
-                    const itemsDetail = itemsDetailArray.join("\n");
-
-                    Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
-                }
-
-            } else if (parsedData.roomNumber) {
-                // Your existing roomNumber object check (if needed)
-                const { roomNumber } = parsedData;
-
-                const labRoomItemsRef = collection(db, `labRoom/${roomNumber}/items`);
-                const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
-
-                if (labRoomItemsSnapshot.empty) {
-                    Alert.alert("Room Details", `No items found in lab room ${roomNumber}.`);
-
-                } else {
-                    const itemsDetailArray = [];
-
-                    labRoomItemsSnapshot.forEach(doc => {
-                    const item = doc.data();
-                    itemsDetailArray.push(
-                        `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"})`
-                    );
-                    });
-
-                    const itemsDetail = itemsDetailArray.join("\n");
-
-                    Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
-                }
-                    
-            } else {
-                Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
-            }
-
-        } catch (error) {
-            console.error("QR Scan Error:", error);
-            Alert.alert("Scan Failed", "Failed to read QR code. Make sure it's valid.");
+        } else {
+          Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
         }
 
-        setTimeout(() => setScanned(false), 1500);
-    };
+      } else if (parsedData.items && Array.isArray(parsedData.items) && parsedData.labRoom) {
+        // Instead of showing embedded QR code items, fetch live Firestore data for labRoom and filter archived
+        const roomId = parsedData.labRoom;
+        const labRoomItemsRef = collection(db, `labRoom/${roomId}/items`);
+        const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
+
+        if (labRoomItemsSnapshot.empty) {
+          Alert.alert("Room Details", `No items found in lab room ${roomId}.`);
+
+        } else {
+          const itemsDetailArray = [];
+
+          labRoomItemsSnapshot.forEach(doc => {
+            const item = doc.data();
+            if (item.status !== "archived") { 
+              itemsDetailArray.push(
+                `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"}, Status: ${item.status || "N/A"})`
+              );
+            }
+          });
+
+          const itemsDetail = itemsDetailArray.join("\n");
+          Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
+        }
+
+      } else if (typeof parsedData === "string") {
+        // It's a labRoom id string (e.g. "0430")
+        const roomId = parsedData;
+
+        const labRoomItemsRef = collection(db, `labRoom/${roomId}/items`);
+        const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
+
+        if (labRoomItemsSnapshot.empty) {
+          Alert.alert("Room Details", `No items found in lab room ${roomId}.`);
+
+        } else {
+          const itemsDetailArray = [];
+
+          labRoomItemsSnapshot.forEach(doc => {
+            const item = doc.data();
+            if (item.status !== "archived") {
+              itemsDetailArray.push(
+                `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
+              );
+            }
+          });
+
+          const itemsDetail = itemsDetailArray.join("\n");
+
+          Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
+        }
+
+      } else if (parsedData.roomNumber) {
+        // Your existing roomNumber object check (if needed)
+        const { roomNumber } = parsedData;
+
+        const labRoomItemsRef = collection(db, `labRoom/${roomNumber}/items`);
+        const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
+
+        if (labRoomItemsSnapshot.empty) {
+          Alert.alert("Room Details", `No items found in lab room ${roomNumber}.`);
+
+        } else {
+          const itemsDetailArray = [];
+
+          labRoomItemsSnapshot.forEach(doc => {
+            const item = doc.data();
+            if (item.status !== "archived") {
+              itemsDetailArray.push(
+                `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
+              );
+            }
+          });
+          
+          const itemsDetail = itemsDetailArray.join("\n");
+
+          Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
+        }
+
+      } else {
+        Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
+      }
+
+    } catch (error) {
+      console.error("QR Scan Error:", error);
+      Alert.alert("Scan Failed", "Failed to read QR code. Make sure it's valid.");
+    }
+
+    setTimeout(() => setScanned(false), 1500);
+  };
 
     const handleLabRoomScan = async (roomNumber) => {
         try {
