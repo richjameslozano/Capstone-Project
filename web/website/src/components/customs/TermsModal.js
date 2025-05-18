@@ -6,57 +6,89 @@ const TermsModal = ({ isVisible, onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>Terms and Conditions</h2>
+   <div className="modal-content animate-fade-in" onClick={(e) => e.stopPropagation()}>
+    <h2>Terms and Conditions</h2>
+    <hr></hr>
+    <br></br>
+    <div className="terms-content">
+      <p>Please read these Terms and Conditions carefully before using this application.</p>
 
-        <div className="terms-content">
-          <p>Please read these Terms and Conditions ("Terms") carefully before using our application.</p>
+      <p>Welcome to the NU MOA Laboratory System. These Terms and Conditions govern your access to and use of the service, provided through our web and mobile applications. By using the Platform, you agree to be bound by these Terms.</p>
 
-          <h3>1. Data Privacy</h3>
-          <p>We value your privacy and are committed to protecting your personal data. By using our application, you consent to the collection, use, and disclosure of your personal information as described in this Privacy Policy.</p>
+      <br></br>
+      <h3>1. Acceptance of Terms</h3>
+      <p>By accessing or using the Service, you confirm that you have read, understood, and agreed to be bound by these Terms, including any future modifications.</p>
 
-          <p><strong>1.1 Information We Collect</strong>: We collect personal data, including but not limited to your name, email address, employee ID, job title, department, and other details you provide during sign-up or use of the application.</p>
+      <h3>2. Use of the Platform</h3>
+      <ul>
+        <li>The Platform is intended for authorized users only (Deans, Program Chairs, Laboratory Custodians, and Faculty Staff). Unauthorized access or use is strictly prohibited.</li>
+        <li>Users must provide accurate information and maintain the confidentiality of their login credentials.</li>
+        <li>You agree not to misuse the system, attempt to gain unauthorized access, or interfere with other users' access.</li>
+      </ul>
 
-          <p><strong>1.2 How We Use Your Information</strong>:</p>
-          <ul>
-            <li>Provide, maintain, and improve our services</li>
-            <li>Verify your identity</li>
-            <li>Send you relevant notifications and updates</li>
-            <li>Process your requests and inquiries</li>
-          </ul>
+      <h3>3. User Roles and Responsibilities</h3>
+      <ul>
+        <li><strong>Deans and Program Chairs</strong> have an overview of the inventory and requisition process. They can add or remove inventory items, approve requisitions (in the absence of the Laboratory Custodians), track equipment, access analytics, generate inventory reports, and request items to accommodate their class needs.</li>
+        <li><strong>Laboratory Custodians</strong> are responsible for managing and maintaining the inventory. They oversee restocking, adding/removing items, approving requisitions, tracking expiry dates, and ensuring borrowed items are returned.</li>
+        <li><strong>Faculty Staff</strong> can request items based on their classroom needs. They can track the status of their requisitions (approved, pending, or canceled).</li>
+      </ul>
 
-          <p><strong>1.3 Data Sharing and Disclosure</strong>:</p>
-          <ul>
-            <li>With your consent</li>
-            <li>As required by law or regulation</li>
-            <li>To protect our rights or prevent fraud</li>
-          </ul>
 
-          <p><strong>1.4 Data Security</strong>: We implement reasonable security measures to protect your personal data from unauthorized access, use, or disclosure.</p>
+      <h3>4. Inventory Data</h3>
+      <ul>
+        <li>All inventory data must be entered accurately and in good faith.</li>
+        <li>The Platform is not liable for any loss resulting from incorrect entries or misuse of the system.</li>
+      </ul>
 
-          <p><strong>1.5 Your Rights</strong>: You have the right to access, correct, or delete your personal data. If you wish to exercise these rights, please contact us at [your contact email].</p>
+      <h3>5. Requisition Requests</h3>
+      <ul>
+        <li>Requests are subject to approval by designated administrators (Deans, Program Chairs, Laboratory Custodians).</li>
+        <li>Users must not submit fraudulent or duplicate requisitions.</li>
+        <li>Requisitions may be rejected due to budget constraints, stock availability, or policy-related reasons.</li>
+      </ul>
 
-          <p><strong>1.6 Changes to Privacy Policy</strong>: We may update our Privacy Policy from time to time. Any changes will be posted on this page, and the updated policy will be effective as of the posted date.</p>
+      <h3>6. Data Privacy</h3>
+      <ul>
+        <li>We collect and store user and inventory-related data to provide our services.</li>
+        <li>We will not share your information with third parties without your consent, except as required by law.</li>
+        <li>For more details, please see our <span style={{ textDecoration: 'underline', color: 'blue' }}>Privacy Policy</span>.</li>
+      </ul>
 
-          <h3>2. User Responsibilities</h3>
-          <p><strong>2.1 Accuracy of Information</strong>: You are responsible for ensuring that the information you provide is accurate and up-to-date.</p>
-          <p><strong>2.2 Account Security</strong>: You are responsible for keeping your account credentials confidential and for all activities that occur under your account.</p>
+      <h3>7. Intellectual Property</h3>
+      <ul>
+        <li>The Platform and its content (excluding user data) are the intellectual property of <strong>OnePixel</strong>.</li>
+        <li>You may not copy, modify, or distribute any part of the Platform without written permission.</li>
+      </ul>
 
-          <h3>3. Limitation of Liability</h3>
-          <p><strong>3.1 No Warranty</strong>: We provide the application "as is" and make no warranties regarding its accuracy, reliability, or availability.</p>
-          <p><strong>3.2 Limitation of Liability</strong>: We are not liable for any indirect, incidental, or consequential damages arising from your use of the application.</p>
+      <h3>8. Termination</h3>
+      <ul>
+        <li>We reserve the right to suspend or terminate access to the Platform at our discretion in the event of a violation of these Terms.</li>
+        <li>Users may request account deactivation by contacting support.</li>
+      </ul>
 
-          <h3>4. Governing Law</h3>
-          <p><strong>4.1 Jurisdiction</strong>: These terms shall be governed by and construed in accordance with the laws of [your jurisdiction].</p>
-        </div>
+      <h3>9. Limitation of Liability</h3>
+      <ul>
+        <li>The Platform is provided "as is." We are not liable for any damages arising from your use of the Service.</li>
+        <li>We do not guarantee 100% uptime or error-free functionality.</li>
+      </ul>
 
-        <div className="modal-actions">
-          <button onClick={onClose} className="modal-close-btn">
-            Close
-          </button>
-        </div>
-      </div>
+      <h3>10. Changes to Terms</h3>
+      <ul>
+        <li>We reserve the right to update these Terms at any time. Continued use of the Platform after changes have been made indicates acceptance of the revised Terms.</li>
+      </ul>
+
+      <h3>11. Contact</h3>
+      <p>If you have any questions about these Terms, please contact us at [support@email.com].</p>
     </div>
+
+    <div className="modal-actions">
+      <button onClick={onClose} className="modal-close-btn">
+        Close
+      </button>
+    </div>
+  </div>
+</div>
+
   );
 };
 
