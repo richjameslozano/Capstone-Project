@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Modal, Button, Row, Col, Typography, Table } from "antd";
 import "../styles/adminStyle/PendingRequest.css";
 
@@ -12,7 +12,17 @@ const RequisitionReqestModal = ({
   selectedRequest,
   columns,
   formatDate,
+  allItemsChecked,
 }) => {
+
+  const [checkedItemIds, setCheckedItemIds] = useState([]);
+
+  useEffect(() => {
+    if (selectedRequest) {
+      setCheckedItemIds([]); // reset when modal opens
+    }
+  }, [selectedRequest]);
+
   return (
     <Modal
       // title={
@@ -28,7 +38,9 @@ const RequisitionReqestModal = ({
       footer={[
         <Button key="cancel" onClick={handleCancel}>Cancel</Button>,
         <Button key="reject" type="default" onClick={handleReturn}>Reject</Button>,
-        <Button key="approve" type="primary" onClick={handleApprove}>Approve</Button>,
+        <Button key="approve" type="primary" onClick={handleApprove}>
+          {allItemsChecked ? "Approve" : "Next"}
+        </Button>
       ]}
     >
       {selectedRequest && (

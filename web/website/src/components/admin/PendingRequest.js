@@ -1366,6 +1366,11 @@ const PendingRequest = () => {
     }
   };
 
+  const allItemsChecked = selectedRequest?.requestList?.length > 0 &&
+  selectedRequest.requestList.every((_, index) => 
+    checkedItems[`${selectedRequest.id}-${index}`]
+  );
+
   const columnsRejection = [
     {
       title: "Item Name",
@@ -1563,6 +1568,7 @@ const PendingRequest = () => {
           visible={isRejectModalVisible}
           onCancel={() => setIsRejectModalVisible(false)}
           onOk={handleRejectSubmit}
+          zIndex={1030}
         >
           <Input.TextArea
             rows={4}
@@ -1679,6 +1685,7 @@ const PendingRequest = () => {
           selectedRequest={selectedRequest}
           columns={columns}
           formatDate={formatDate}
+          allItemsChecked={allItemsChecked} 
         />
 
         <ApprovedRequestModal
