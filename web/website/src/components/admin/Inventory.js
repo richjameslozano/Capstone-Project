@@ -385,7 +385,6 @@ const printPdf = () => {
     setIsEditModalVisible(true);
   };
   
-
   const updateItem = async (values) => {
     const safeValues = {
       category: values.category ?? "",
@@ -395,39 +394,59 @@ const printPdf = () => {
       condition: values.condition ?? "Good",
       // usageType: values.usageType ?? "",
     };
-  
+
     try {
       const snapshot = await getDocs(collection(db, "inventory"));
-  
+
       snapshot.forEach(async (docItem) => {
         const data = docItem.data();
+
         if (data.itemId === editingItem.itemId) {
-          const itemRef = doc(db, "inventory", docItem.id);
+          const inventoryId = docItem.id;
+          const itemRef = doc(db, "inventory", inventoryId);
+
           await updateDoc(itemRef, safeValues);
-  
+
           setIsNotificationVisible(true);
           setNotificationMessage("Item updated successfully!");
-  
+
           const updatedItem = {
             ...editingItem,
             ...safeValues,
           };
-  
+
           setDataSource((prevData) =>
             prevData.map((item) =>
               item.id === editingItem.id ? updatedItem : item
             )
           );
-  
+
+          const labRoomId = safeValues.labRoom;
+          const itemId = data.itemId;
+
+          if (labRoomId && itemId) {
+            const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+            const labRoomSnap = await getDoc(labRoomItemRef);
+
+            if (labRoomSnap.exists()) {
+              await updateDoc(labRoomItemRef, safeValues);
+              console.log(`🏫 labRoom/${labRoomId}/items/${itemId} updated successfully`);
+
+            } else {
+              console.warn(`⚠️ labRoom item not found for itemId: ${itemId} in labRoom: ${labRoomId}`);
+            }
+          }
+
           setIsEditModalVisible(false);
           setEditingItem(null);
           form.resetFields();
         }
       });
+      
     } catch (error) {
       console.error("Error updating document in Firestore:", error);
     }
-  };  
+  };
 
   const printQRCode = (record) => {
     html2canvas(qrRefs.current[record.id]).then((canvas) => {
@@ -650,7 +669,7 @@ const printPdf = () => {
 
               <Form.Item>
                 <Button type="primary" htmlType="submit" className="add-btn">
-                  Add to Inventory with QR Code
+                  Add to Inventory
                 </Button>
               </Form.Item>
             </Form>
