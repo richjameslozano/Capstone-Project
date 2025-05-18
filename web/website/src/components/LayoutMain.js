@@ -42,7 +42,7 @@ import AdminActivityLog from './admin/AdminActivityLog';
 import NotAuthorized from './NotAuthorized';
 import CapexList from './admin/CapexList';
 import LabRoomQR from './admin/LabRoomQR';
-
+import PrivacyPolicy from './PrivacyPolicy'
 const { Header, Sider, Content } = Layout;
 
 const LayoutMain = () => {
@@ -477,6 +477,7 @@ const LayoutMain = () => {
         >
 
           <Routes>
+            <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/not-authorized" element={<NotAuthorized />} />
 
             {/* Routes accessible to all logged-in users */}

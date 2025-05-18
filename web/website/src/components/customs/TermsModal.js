@@ -1,9 +1,16 @@
 import React from 'react';
 import '../styles/customsStyle/TermsModal.css'; 
+import { href, Link, Navigate, useNavigate } from 'react-router-dom';
 
 const TermsModal = ({ isVisible, onClose }) => {
-  if (!isVisible) return null;
+  const navigate = useNavigate();
 
+  const handleOpenPrivacyPolicy = () => {
+  window.open('/privacy-policy', '_blank');
+};
+
+  if (!isVisible) return null;
+  
   return (
     <div className="modal-overlay" onClick={onClose}>
    <div className="modal-content animate-fade-in" onClick={(e) => e.stopPropagation()}>
@@ -51,7 +58,10 @@ const TermsModal = ({ isVisible, onClose }) => {
       <ul>
         <li>We collect and store user and inventory-related data to provide our services.</li>
         <li>We will not share your information with third parties without your consent, except as required by law.</li>
-        <li>For more details, please see our <span style={{ textDecoration: 'underline', color: 'blue' }}>Privacy Policy</span>.</li>
+        <li>For more details, please see our <span onClick={handleOpenPrivacyPolicy} style={{textDecoration: 'underline', color: 'blue' }}>
+  Privacy Policy
+</span>
+.</li>
       </ul>
 
       <h3>7. Intellectual Property</h3>
