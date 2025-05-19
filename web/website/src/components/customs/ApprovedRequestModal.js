@@ -299,7 +299,7 @@ const ApprovedRequestModal = ({
             pagination={false}
             bordered
           />
-              {selectedApprovedRequest?.status === "Borrowed" && (
+          {selectedApprovedRequest?.status === "Borrowed" && (
             <Button type="primary" danger onClick={handleDeploy}>
               Deploy
             </Button>
