@@ -556,7 +556,7 @@ const printPdf = () => {
               handleDelete(record);
             }}
           >
-            Delete
+            Archive
           </Button>
 
           <Button
