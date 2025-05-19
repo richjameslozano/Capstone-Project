@@ -631,15 +631,35 @@ const printPdf = () => {
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                <Col span={8} style={{display: 'flex', flexDirection: 'row', gap: 10}}>
                   <Form.Item
+                  style={{width: '80%'}}
                     name="quantity"
                     label="Quantity"
                     rules={[{ required: true, message: "Please enter Quantity!" }]}
                   >
                       <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }}/>
                   </Form.Item>
+
+                  {["Chemical", "Reagent"].includes(selectedCategory) && (
+                  
+                    <Form.Item
+                      style={{width: '20%'}}
+                      name="unit"
+                      label="Unit"
+                      rules={[{ required: true, message: "Please select a unit!" }]}
+                    >
+                      <Select placeholder="Select Unit">
+                        <Option value="ML">ML</Option>
+                        <Option value="L">L</Option>
+                        <Option value="GALLON">GALLON</Option>
+                      </Select>
+                    </Form.Item>
+                 
+                )}
                 </Col>
+
+                 
               </Row>
 
               <Row gutter={16}>
@@ -659,21 +679,7 @@ const printPdf = () => {
                   </Form.Item>
                 </Col>
 
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
-                  <Col span={8}>
-                    <Form.Item
-                      name="unit"
-                      label="Unit"
-                      rules={[{ required: true, message: "Please select a unit!" }]}
-                    >
-                      <Select placeholder="Select Unit">
-                        <Option value="ML">ML</Option>
-                        <Option value="L">L</Option>
-                        <Option value="GALLON">GALLON</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                )}
+               
 
                 <Col span={8}>
                   {/* <Form.Item
