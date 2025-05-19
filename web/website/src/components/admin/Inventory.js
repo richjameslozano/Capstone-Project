@@ -29,6 +29,7 @@ import NotificationModal from "../customs/NotificationModal";
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import 'jspdf-autotable';
+import dayjs from 'dayjs';
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -610,7 +611,7 @@ const printPdf = () => {
                 </Col>
 
                 <Col span={8}>
-                  <Form.Item
+                  {/* <Form.Item
                     name="entryDate"
                     label="Date of Entry"
                     rules={[{ required: true, message: "Please select a date of entry!" }]}
@@ -620,6 +621,22 @@ const printPdf = () => {
                       style={{ width: "100%" }}
                       placeholder="Select Date of Entry"
                       disabledDate={disabledDate}
+                    />
+                  </Form.Item> */}
+                                    <Form.Item
+                    name="entryDate"
+                    label="Date of Entry"
+                    // rules={[{ required: true, message: "Please select a date of entry!" }]}
+                    disabled
+                  >
+                    <DatePicker
+                      format="YYYY-MM-DD"
+                      style={{ width: "100%" }}
+                      placeholder="Select Date of Entry"
+                      disabledDate={disabledDate}
+                      defaultValue={dayjs()} // ✅ Correct format
+                      initialValue={dayjs()} 
+                      disabled
                     />
                   </Form.Item>
                 </Col>
@@ -780,7 +797,7 @@ const printPdf = () => {
                 <p><strong>Status:</strong> {selectedRow.status}</p>
                 <p><strong>Condition:</strong> {selectedRow.condition}</p>
                 <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
-                <p><strong>Date of Entry:</strong> {selectedRow.entryDate || 'N/A'}</p>
+                <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
                 <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
               </div>
             )}
