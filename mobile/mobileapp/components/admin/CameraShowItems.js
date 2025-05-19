@@ -84,10 +84,11 @@ const CameraShowItems = ({ onClose }) => {
         navigation.goBack();
     };
 
-    const showItemDetails = (foundItem, borrowedCount) => {
+    const showItemDetails = (foundItem, borrowedCount, deployedCount) => {
       const itemData = {
         ...foundItem,
         borrowedCount,
+        deployedCount,
       };
 
       setItemDetails(itemData);
@@ -169,6 +170,21 @@ const CameraShowItems = ({ onClose }) => {
             }
           });
 
+          let deployedCount = 0;
+          borrowSnapshot.forEach(doc => {
+            const borrowData = doc.data();
+            if (
+              (borrowData.status || "").trim() === "Deployed" &&
+              (borrowData.dateRequired || "").trim() === todayDate
+            ) {
+              borrowData.requestList?.forEach(requestItem => {
+                if ((requestItem.itemName || "").trim() === itemName) {
+                  deployedCount += requestItem.quantity || 0;
+                }
+              });
+            }
+          });
+
           // const detailMsg = `
           //         Item Name: ${foundItem.itemName}
           //         Item ID: ${foundItem.itemId}
@@ -179,7 +195,7 @@ const CameraShowItems = ({ onClose }) => {
           //         Borrowed Today: ${borrowedCount} times
           //         `;
           // Alert.alert("Item Details", detailMsg);
-          showItemDetails(foundItem, borrowedCount);
+          showItemDetails(foundItem, borrowedCount, deployedCount);
 
         } else {
           Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);

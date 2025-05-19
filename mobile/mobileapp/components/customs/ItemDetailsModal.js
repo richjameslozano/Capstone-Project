@@ -12,6 +12,7 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
     quantity,
     labRoom,
     borrowedCount,
+    deployedCount,
     condition,
   } = itemData;
 
@@ -35,24 +36,35 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
           <Text style={styles.label}>
             Item Name: <Text style={styles.value}>{itemName}</Text>
           </Text>
+          
           <Text style={styles.label}>
             Item ID: <Text style={styles.value}>{itemId}</Text>
           </Text>
+
           <Text style={styles.label}>
             Category: <Text style={styles.value}>{category}</Text>
           </Text>
+          
           <Text style={styles.label}>
             Department: <Text style={styles.value}>{department}</Text>
           </Text>
+
           <Text style={styles.label}>
             Quantity Available: <Text style={styles.value}>{quantity}</Text>
           </Text>
+
           <Text style={styles.label}>
             Location: <Text style={styles.value}>{labRoom}</Text>
           </Text>
+
           <Text style={styles.label}>
             Borrowed Today: <Text style={styles.value}>{borrowedCount} times</Text>
           </Text>
+
+          <Text style={styles.label}>
+            Deployed Today: <Text style={styles.value}>{deployedCount} times</Text>
+          </Text>
+
           <Text style={styles.label}>
             Condition: <Text style={styles.value}>{formatCondition(condition)}</Text>
           </Text>
