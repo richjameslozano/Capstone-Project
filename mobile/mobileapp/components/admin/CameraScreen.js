@@ -260,7 +260,15 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 const userData = userDoc.data();
                 const hasMatchingItem = userData.requestList?.some(item => item.itemName === itemName);
 
-                if (hasMatchingItem) {
+                // if (hasMatchingItem) {
+                //   await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
+                //     status: "Return Approved"
+                //   });
+
+                  if (hasMatchingItem) {
+                  // Inject usageType into userData
+                  userData.usageType = hasMatchingItem.usageType || "Unknown";
+
                   await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
                     status: "Return Approved"
                   });
@@ -271,7 +279,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     approvedBy: user.name || "Unknown",
                     approvedById: user.id,
                     approvedAt: getTodayDate(),
-                    timestamp: serverTimestamp()
+                    timestamp: serverTimestamp(),
                   });
 
                   Alert.alert("Return Approved", `Return of "${itemName}" approved.`);
