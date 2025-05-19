@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js";
 import { collection, query, getDocs, where, serverTimestamp, doc, getDoc, updateDoc } from "firebase/firestore";
@@ -25,6 +25,8 @@ const CameraUpdateItems = ({ onClose }) => {
   const cameraRef = useRef(null);
   const scanLinePosition = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
+  const route = useRoute();
+  const selectedItem = route.params?.selectedItem;
 
   useEffect(() => {
     if (!permission) {
@@ -109,15 +111,29 @@ const CameraUpdateItems = ({ onClose }) => {
         parsedData = decryptedData;
       }
 
+      // if (parsedData.itemName && parsedData.itemId && parsedData.labRoom) {
+      //   setCurrentItem(parsedData);
+      //   setModalVisible(true);
+
+      // } else {
+      //   Alert.alert("Invalid QR", "QR does not contain valid item data.");
+      //   setScanned(false);
+      // }
+
       if (parsedData.itemName && parsedData.itemId && parsedData.labRoom) {
+        if (parsedData.itemId !== selectedItem.itemId) {
+          Alert.alert("Invalid Item", "You can only scan the selected item.");
+          setScanned(false);
+          return;
+        }
+
         setCurrentItem(parsedData);
         setModalVisible(true);
-
       } else {
         Alert.alert("Invalid QR", "QR does not contain valid item data.");
         setScanned(false);
       }
-      
+          
     } catch (err) {
       console.error("QR Scan Error:", err);
       Alert.alert("Scan Failed", "Failed to read QR code.");
@@ -168,6 +184,8 @@ const CameraUpdateItems = ({ onClose }) => {
       <TouchableOpacity onPress={handleBackButton}>
         <Text style={styles.text}>Go Back</Text>
       </TouchableOpacity>
+
+      <Text style={styles.text}>Scanning for: {selectedItem?.itemName}</Text>
 
       <CameraView
         style={styles.camera}
