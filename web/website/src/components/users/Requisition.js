@@ -686,7 +686,7 @@ const Requisition = () => {
           >
             {/* Map through filtered items instead of the entire items list */}
             {filteredItems.map((item) => {
-              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.condition} | ${item.department}`;
+              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               const isDisabled = selectedIds.includes(item.id);
   
               return (
@@ -784,11 +784,11 @@ const Requisition = () => {
       dataIndex: "status",
       key: "status",
     },
-    {
-      title: "Condition",
-      dataIndex: "condition",
-      key: "condition",
-    },
+    // {
+    //   title: "Condition",
+    //   dataIndex: "condition",
+    //   key: "condition",
+    // },
     {
       title: "Department",
       dataIndex: "department",

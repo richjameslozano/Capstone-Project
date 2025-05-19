@@ -251,7 +251,9 @@ const SearchItems = () => {
                 </Descriptions.Item>
                 
                 <Descriptions.Item label="Condition">
-                  {selectedItem.condition || "N/A"}
+                  {selectedItem.condition
+                    ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
+                    : "N/A"}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Item Type">

@@ -299,6 +299,8 @@ const printPdf = () => {
     const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
     const timestamp = new Date();
 
+    const quantityNumber = Number(values.quantity);
+
     const inventoryItem = {
       itemId: generatedItemId,
       itemName,
@@ -311,7 +313,11 @@ const printPdf = () => {
       department: values.department,
       type: values.type,
       status: "Available",
-      condition: "Good",  
+      condition: {
+        Good: quantityNumber,
+        Defect: 0,
+        Damage: 0,
+      },
       unit: values.unit || null,
       // usageType: values.usageType,
       rawTimestamp: new Date(),
@@ -361,11 +367,16 @@ const printPdf = () => {
       const allLabRoomItems = [];
       labRoomItemsSnap.forEach((docItem) => {
         const itemData = docItem.data();
+        const quantityNumbers = Number(itemData.quantity); 
         allLabRoomItems.push({
           itemId: itemData.itemId,
           itemName: itemData.itemName,
           quantity: itemData.quantity,
-          condition: itemData.condition,
+          condition: {
+            Good: quantityNumbers,
+            Defect: 0,
+            Damage: 0,
+          },
           status: itemData.status,
         });
       });
@@ -512,7 +523,19 @@ const printPdf = () => {
     },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },
-    { title: "Condition", dataIndex: "condition", key: "condition" },
+    // { title: "Condition", dataIndex: "condition", key: "condition" },
+    {
+      title: "Condition",
+      dataIndex: "condition",
+      key: "condition",
+      render: (condition) => (
+        <div>
+          <div>Good: {condition?.Good ?? 0}</div>
+          <div>Defect: {condition?.Defect ?? 0}</div>
+          <div>Damage: {condition?.Damage ?? 0}</div>
+        </div>
+      ),
+    },
     {
       title: "QR Code",
       dataIndex: "qrCode",
