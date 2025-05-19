@@ -157,9 +157,9 @@ const LayoutMain = () => {
         setPageTitle("Return Items");
         break;
 
-      case "/main/history-log":
+      case "/main/orders":
         setSelectedKey("14");
-        setPageTitle("Status Board");
+        setPageTitle("Orders");
         break;
 
       case "/main/request-log":
@@ -370,9 +370,9 @@ const LayoutMain = () => {
       label: "Activity Log",
     },
     {
-      key: "/main/history-log",
+      key: "/main/orders",
       icon: <ClockCircleOutlined />,
-      label: "Orders",
+      label: "Orders",      
     },
     {
       key: "/main/capex-request",
@@ -484,7 +484,7 @@ const LayoutMain = () => {
             <Route element={<ProtectedRoute allowedRoles={["admin", "user", "super-admin", "super-user"]} />} >
               <Route path="/profile" element={<Profile />} />
               <Route path="/activity-log" element={<ActivityLog />} />
-              <Route path="/history-log" element={<HistoryLog />} />
+              <Route path="/orders" element={<HistoryLog />} />
             </Route>
 
             {/* Superadmin-only routes */}
