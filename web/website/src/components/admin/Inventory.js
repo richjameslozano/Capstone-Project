@@ -64,6 +64,7 @@ const Inventory = () => {
   const [filterItemType, setFilterItemType] = useState(null);
   const [filterUsageType, setFilterUsageType] = useState(null);
   const [searchText, setSearchText] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState("");
   const db = getFirestore();
 
   useEffect(() => {
@@ -119,18 +120,19 @@ const Inventory = () => {
     );
   });  
 
-  const handleCategoryChange = (value) => {
+ const handleCategoryChange = (value) => {
     let type = "";
 
     if (["Chemical", "Reagent"].includes(value)) {
       type = "Consumable";
-
-    } else if (value === "Equipment" || value === "Glasswares" || value ===  "Materials") {
+      
+    } else if (["Equipment", "Glasswares", "Materials"].includes(value)) {
       type = "Fixed";
     }
 
     setItemType(type);
-    form.setFieldsValue({ type }); 
+    setSelectedCategory(value);
+    form.setFieldsValue({ type });
   };
 
   const exportToExcel = () => {
@@ -264,14 +266,25 @@ const printPdf = () => {
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
     const inventoryRef = collection(db, "inventory");
     const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
-    const departmentCount = deptQuerySnapshot.size + 1;
-    const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+    // const departmentCount = deptQuerySnapshot.size + 1;
+    // const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
 
-    const idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-    if (!idQuerySnapshot.empty) {
-      setNotificationMessage("Item ID already exists. Please try again.");
-      setIsNotificationVisible(true);
-      return;
+    // const idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+    // if (!idQuerySnapshot.empty) {
+    //   setNotificationMessage("Item ID already exists. Please try again.");
+    //   setIsNotificationVisible(true);
+    //   return;
+    // }
+
+    let departmentCount = deptQuerySnapshot.size + 1;
+    let generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+    let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+
+    // 🔁 Keep trying until we find a unique ID
+    while (!idQuerySnapshot.empty) {
+      departmentCount++;
+      generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+      idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
     }
 
     setItemId(generatedItemId); 
@@ -299,6 +312,7 @@ const printPdf = () => {
       type: values.type,
       status: "Available",
       condition: "Good",  
+      unit: values.unit || null,
       // usageType: values.usageType,
       rawTimestamp: new Date(),
     };
@@ -483,7 +497,19 @@ const printPdf = () => {
     },
     { title: "Category", dataIndex: "category", key: "category" },
     { title: "Department", dataIndex: "department", key: "department" },
-    { title: "Inventory Balance", dataIndex: "quantity", key: "quantity" },
+    // { title: "Inventory Balance", dataIndex: "quantity", key: "quantity" },
+    {
+      title: "Inventory Balance",
+      dataIndex: "quantity",
+      key: "quantity",
+      render: (text, record) => {
+        const { category, unit } = record;
+        if (["Chemical", "Reagent"].includes(category)) {
+          return `${text} ${unit || ""}`;
+        }
+        return text;
+      },
+    },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },
     { title: "Condition", dataIndex: "condition", key: "condition" },
@@ -610,6 +636,22 @@ const printPdf = () => {
                   </Form.Item>
                 </Col>
 
+                {["Chemical", "Reagent"].includes(selectedCategory) && (
+                  <Col span={8}>
+                    <Form.Item
+                      name="unit"
+                      label="Unit"
+                      rules={[{ required: true, message: "Please select a unit!" }]}
+                    >
+                      <Select placeholder="Select Unit">
+                        <Option value="ML">ML</Option>
+                        <Option value="L">L</Option>
+                        <Option value="GALLON">GALLON</Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                )}
+
                 <Col span={8}>
                   {/* <Form.Item
                     name="entryDate"
@@ -623,7 +665,7 @@ const printPdf = () => {
                       disabledDate={disabledDate}
                     />
                   </Form.Item> */}
-                                    <Form.Item
+                  <Form.Item
                     name="entryDate"
                     label="Date of Entry"
                     // rules={[{ required: true, message: "Please select a date of entry!" }]}
