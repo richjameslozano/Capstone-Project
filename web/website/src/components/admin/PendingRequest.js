@@ -1224,9 +1224,28 @@ const PendingRequest = () => {
     }
   };
 
-  const handleReject = () => {
-    // Open the rejection reason modal
-    setIsRejectModalVisible(true);
+  const handleReject = () => { 
+    if (!selectedRequest) return;
+
+    const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
+      const key = `${selectedRequest.id}-${index}`;
+      return !checkedItems[key]; // Get items that are NOT checked
+    });
+
+    const enrichedItems = selectedRequest.requestList.filter((item, index) => {
+      const key = `${selectedRequest.id}-${index}`;
+      return checkedItems[key]; // Get items that ARE checked
+    });
+
+    // Set full data into pendingApprovalData
+    setPendingApprovalData({
+      uncheckedItems,
+      enrichedItems,
+      selectedRequest,
+    });
+
+    // Show the rejection reason modal
+    setIsMultiRejectModalVisible(true);
   };
 
   const handleRejectSubmit = async () => {

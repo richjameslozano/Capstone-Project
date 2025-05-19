@@ -265,13 +265,13 @@ import "./styles/Dashboard.css";
             {/* AI Analytics Section */}
             <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
               <Col xs={24} md={8}>
-                <Card title="Predicted Sales">
+                <Card title="Item Expiry">
                   <div>{predictedSales ? `$${predictedSales}` : 'Loading prediction...'}</div>
                 </Card>
               </Col>
 
               <Col xs={24} md={8}>
-                <Card title="Product Trends">
+                <Card title="Critical Stocks">
                   <List
                     dataSource={productTrends}
                     renderItem={(item) => (

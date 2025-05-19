@@ -18,90 +18,85 @@ const RequestLog = () => {
   const [historyData, setHistoryData] = useState([]);
   const modalRef = useRef(null); // Reference for modal content to print/save
 
-
-const generateAllRequestsPdf = () => {
-  if (!filteredData || filteredData.length === 0) {
-    message.warning("No requests to generate PDF");
-    return;
-  }
-
-  const doc = new jsPDF("p", "pt", "a4");
-  
-  // Add title
-  doc.setFontSize(16);
-  doc.text("Request Log Report", 40, 40);
-  doc.setFontSize(10);
-  doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 40, 60);
-
-  // Create table data
-  const headers = [["Process Date", "Status", "Requestor", "Processed By"]];
-  const data = filteredData.map(request => [
-    request.processDate || "N/A",
-    request.status || "N/A",
-    request.requestor || "N/A",
-    request.status === "Approved" || request.status === "Returned" 
-      ? request.approvedBy || "N/A"
-      : request.rejectedBy || "N/A"
-  ]);
-
-  // Generate table
-  doc.autoTable({
-    head: headers,
-    body: data,
-    startY: 80,
-    margin: { left: 40, right: 40 },
-    theme: "grid",
-    headStyles: {
-      fillColor: [44, 62, 146],
-      textColor: [255, 255, 255],
-      fontStyle: "bold",
-      halign: "center",
-      fontSize: 10,
-    },
-    bodyStyles: {
-      fontSize: 9,
-    },
-    styles: {
-      lineWidth: 0.1,
-      lineColor: [200, 200, 200],
-    },
-    didDrawCell: function(data) {
-      // Color the status cells
-      if (data.column.index === 1) { // Status column
-        if (data.cell.text[0] === "Approved") {
-          data.doc.setTextColor(0, 128, 0); // green
-        } else {
-          data.doc.setTextColor(255, 0, 0); // red
-        }
-      } else {
-        data.doc.setTextColor(0, 0, 0); // black
-      }
+  const generateAllRequestsPdf = () => {
+    if (!filteredData || filteredData.length === 0) {
+      message.warning("No requests to generate PDF");
+      return;
     }
-  });
 
-  return doc;
-};
+    const doc = new jsPDF("p", "pt", "a4");
+    
+    // Add title
+    doc.setFontSize(16);
+    doc.text("Request Log Report", 40, 40);
+    doc.setFontSize(10);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 40, 60);
 
-const saveAllAsPdf = () => {
-  const doc = generateAllRequestsPdf();
-  if (doc) {
-    doc.save(`Request_Log_${new Date().toISOString().split('T')[0]}.pdf`);
-    message.success("PDF saved successfully");
-  }
-};
+    // Create table data
+    const headers = [["Process Date", "Status", "Requestor", "Processed By"]];
+    const data = filteredData.map(request => [
+      request.processDate || "N/A",
+      request.status || "N/A",
+      request.requestor || "N/A",
+      request.status === "Approved" || request.status === "Returned" 
+        ? request.approvedBy || "N/A"
+        : request.rejectedBy || "N/A"
+    ]);
 
-const printAllPdf = () => {
-  const doc = generateAllRequestsPdf();
-  if (doc) {
-    doc.autoPrint();
-    window.open(doc.output("bloburl"), "_blank");
-    message.success("Print dialog opened");
-  }
-};
+    // Generate table
+    doc.autoTable({
+      head: headers,
+      body: data,
+      startY: 80,
+      margin: { left: 40, right: 40 },
+      theme: "grid",
+      headStyles: {
+        fillColor: [44, 62, 146],
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        halign: "center",
+        fontSize: 10,
+      },
+      bodyStyles: {
+        fontSize: 9,
+      },
+      styles: {
+        lineWidth: 0.1,
+        lineColor: [200, 200, 200],
+      },
+      didDrawCell: function(data) {
+        // Color the status cells
+        if (data.column.index === 1) { // Status column
+          if (data.cell.text[0] === "Approved") {
+            data.doc.setTextColor(0, 128, 0); // green
+          } else {
+            data.doc.setTextColor(255, 0, 0); // red
+          }
+        } else {
+          data.doc.setTextColor(0, 0, 0); // black
+        }
+      }
+    });
 
+    return doc;
+  };
 
+  const saveAllAsPdf = () => {
+    const doc = generateAllRequestsPdf();
+    if (doc) {
+      doc.save(`Request_Log_${new Date().toISOString().split('T')[0]}.pdf`);
+      message.success("PDF saved successfully");
+    }
+  };
 
-
+  const printAllPdf = () => {
+    const doc = generateAllRequestsPdf();
+    if (doc) {
+      doc.autoPrint();
+      window.open(doc.output("bloburl"), "_blank");
+      message.success("Print dialog opened");
+    }
+  };
 
   useEffect(() => {
     const fetchRequestLogs = () => {
@@ -516,8 +511,8 @@ const printPdf = () => {
                     itemDescription: item.itemName,
                     quantity: item.quantity,
                     rejectionReason:
-                      item.reason ||
-                      selectedRequest.raw?.reason ||
+                      item.reason ||  item.rejectionReason ||
+                      selectedRequest.raw?.reason || selectedRequest.raw?.rejectionReason ||
                       "N/A",
                   })
                 )}
