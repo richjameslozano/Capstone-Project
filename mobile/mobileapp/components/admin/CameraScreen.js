@@ -134,22 +134,34 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             const currentStatus = data.status?.toLowerCase();
 
             if (currentStatus === "borrowed") {
+              // updatedRequestList = data.requestList.map((item) => {
+              //   if (item.itemName === itemName) {
+              //     const currentCount = item.scannedCount || 0;
+              //     const maxCount = item.quantity || 1;
+
+              //     if (currentCount < maxCount) {
+              //       return {
+              //         ...item,
+              //         scannedCount: currentCount + 1,
+              //       };
+
+              //     } else {
+              //       console.warn("Scan limit reached for", item.itemName);
+              //       message.warning(`Maximum scans reached for "${item.itemName}".`);
+              //       return item;
+              //     }
+              //   }
+              //   return item;
+              // });
+
               updatedRequestList = data.requestList.map((item) => {
                 if (item.itemName === itemName) {
-                  const currentCount = item.scannedCount || 0;
-                  const maxCount = item.quantity || 1;
-
-                  if (currentCount < maxCount) {
-                    return {
-                      ...item,
-                      scannedCount: currentCount + 1,
-                    };
-
-                  } else {
-                    console.warn("Scan limit reached for", item.itemName);
-                    message.warning(`Maximum scans reached for "${item.itemName}".`);
-                    return item;
-                  }
+                  // Instead of incrementing by 1 each scan,
+                  // just set scannedCount = quantity directly:
+                  return {
+                    ...item,
+                    scannedCount: item.quantity,  // mark all as scanned/deployed at once
+                  };
                 }
                 return item;
               });
@@ -160,6 +172,10 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 requestList: updatedRequestList,
                 ...(allDeployed && { status: "Deployed" })
               });
+              
+              const deployedItem = data.requestList.find(item => item.itemName === itemName);
+
+              Alert.alert("Deployed", `Deployed ${deployedItem.quantity} ${itemName} item(s).`);
 
               borrowedItemsDetails.push({
                 borrower: data.userName || "Unknown",
