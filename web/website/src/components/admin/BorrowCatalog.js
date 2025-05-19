@@ -93,6 +93,8 @@ const BorrowCatalog = () => {
     setSearchQuery(value);
   };
 
+  
+
   const handleStatusFilter = (status) => {
     setStatusFilter(status);
   };
@@ -267,14 +269,14 @@ const BorrowCatalog = () => {
             pagination={{ pageSize: 10 }}
           />
 
-          <ApprovedRequestModal
-            isApprovedModalVisible={isModalVisible}
-            setIsApprovedModalVisible={setIsModalVisible}
-            selectedApprovedRequest={selectedRequest}
-            setSelectedApprovedRequest={setSelectedRequest}
-            columns={columns}
-            formatDate={formatDate}
-          />
+              <ApprovedRequestModal
+              isApprovedModalVisible={isModalVisible}
+              setIsApprovedModalVisible={setIsModalVisible}
+              selectedApprovedRequest={selectedRequest}
+              setSelectedApprovedRequest={setSelectedRequest}
+              columns={columns}
+              formatDate={formatDate}
+            />
         </Content>
       </Layout>
     </Layout>

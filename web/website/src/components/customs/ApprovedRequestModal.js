@@ -120,6 +120,23 @@ const ApprovedRequestModal = ({
   //   }
   // };  
 
+
+  const handleDeploy = async () => {
+  try {
+    const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+    await updateDoc(docRef, {
+      status: "Deployed",
+    });
+
+    // Optional: feedback or close modal
+    alert("Request successfully deployed!");
+    setIsApprovedModalVisible(false);
+  } catch (error) {
+    console.error("Error updating document:", error);
+    alert("Failed to deploy request.");
+  }
+};
+
   const handleApprove = async () => {
     try {
       const requisitionId = selectedApprovedRequest?.id;
@@ -282,6 +299,12 @@ const ApprovedRequestModal = ({
             pagination={false}
             bordered
           />
+              {selectedApprovedRequest?.status === "Borrowed" && (
+            <Button type="primary" danger onClick={handleDeploy}>
+              Deploy
+            </Button>
+          )}
+
         </div>
       )}
     </Modal>
