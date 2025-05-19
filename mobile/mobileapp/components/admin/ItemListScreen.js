@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import styles from "../styles/adminStyle/ItemListStyle";
 import Header from "../Header";
@@ -12,33 +12,54 @@ const ItemListScreen = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const snapshot = await getDocs(collection(db, "inventory"));
+  //       const fetchedItems = snapshot.docs.map(doc => ({
+  //         id: doc.id,
+  //         ...doc.data()
+  //       }));
+  //       setItems(fetchedItems);
+  //     } catch (error) {
+  //       console.error("Error fetching items:", error);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+
+  //   fetchItems();
+  // }, []);
+
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const snapshot = await getDocs(collection(db, "inventory"));
+    const unsubscribe = onSnapshot(
+      collection(db, "inventory"),
+      (snapshot) => {
         const fetchedItems = snapshot.docs.map(doc => ({
           id: doc.id,
           ...doc.data()
         }));
         setItems(fetchedItems);
-      } catch (error) {
+        setLoading(false);
+      },
+      (error) => {
         console.error("Error fetching items:", error);
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    fetchItems();
+    // Cleanup listener on unmount
+    return () => unsubscribe();
   }, []);
 
   const handleItemPress = (item) => {
-    navigation.navigate("CameraUpdateItems");
+    navigation.navigate("CameraUpdateItems", { selectedItem: item });
   };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity style={styles.itemCard} onPress={() => handleItemPress(item)}>
       <Text style={styles.itemName}>{item.itemName}</Text>
-      <Text style={styles.details}>Qty: {item.quantity} | Condition: {item.condition || "N/A"}</Text>
+      <Text style={styles.details}>Qty: {item.quantity} </Text>
     </TouchableOpacity>
   );
 

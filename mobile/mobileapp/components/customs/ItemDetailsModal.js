@@ -11,8 +11,21 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
     department,
     quantity,
     labRoom,
-    borrowedCount
+    borrowedCount,
+    deployedCount,
+    condition,
   } = itemData;
+
+  // Format condition object (if object) into a readable string
+  const formatCondition = (cond) => {
+    if (!cond) return "N/A";
+    if (typeof cond === "object") {
+      return Object.entries(cond)
+        .map(([key, val]) => `${key}: ${val}`)
+        .join(", ");
+    }
+    return cond.toString();
+  };
 
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -20,13 +33,41 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
         <View style={styles.container}>
           <Text style={styles.title}>Item Details</Text>
 
-          <Text style={styles.label}>Item Name: <Text style={styles.value}>{itemName}</Text></Text>
-          <Text style={styles.label}>Item ID: <Text style={styles.value}>{itemId}</Text></Text>
-          <Text style={styles.label}>Category: <Text style={styles.value}>{category}</Text></Text>
-          <Text style={styles.label}>Department: <Text style={styles.value}>{department}</Text></Text>
-          <Text style={styles.label}>Quantity Available: <Text style={styles.value}>{quantity}</Text></Text>
-          <Text style={styles.label}>Location: <Text style={styles.value}>{labRoom}</Text></Text>
-          <Text style={styles.label}>Borrowed Today: <Text style={styles.value}>{borrowedCount} times</Text></Text>
+          <Text style={styles.label}>
+            Item Name: <Text style={styles.value}>{itemName}</Text>
+          </Text>
+          
+          <Text style={styles.label}>
+            Item ID: <Text style={styles.value}>{itemId}</Text>
+          </Text>
+
+          <Text style={styles.label}>
+            Category: <Text style={styles.value}>{category}</Text>
+          </Text>
+          
+          <Text style={styles.label}>
+            Department: <Text style={styles.value}>{department}</Text>
+          </Text>
+
+          <Text style={styles.label}>
+            Quantity Available: <Text style={styles.value}>{quantity}</Text>
+          </Text>
+
+          <Text style={styles.label}>
+            Location: <Text style={styles.value}>{labRoom}</Text>
+          </Text>
+
+          <Text style={styles.label}>
+            Borrowed Today: <Text style={styles.value}>{borrowedCount} times</Text>
+          </Text>
+
+          <Text style={styles.label}>
+            Deployed Today: <Text style={styles.value}>{deployedCount} times</Text>
+          </Text>
+
+          <Text style={styles.label}>
+            Condition: <Text style={styles.value}>{formatCondition(condition)}</Text>
+          </Text>
 
           <TouchableOpacity onPress={onClose} style={styles.closeButton}>
             <Text style={styles.closeText}>Close</Text>
@@ -46,7 +87,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  
+
   container: {
     backgroundColor: 'white',
     width: '85%',
@@ -54,7 +95,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     elevation: 10,
   },
-  
+
   title: {
     fontSize: 20,
     marginBottom: 15,
