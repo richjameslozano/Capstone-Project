@@ -45,6 +45,7 @@ const LabRoomQR = () => {
                   type: itemData.type || "N/A",
                   rawTimestamp: itemData.rawTimestamp || "N/A",
                   timestamp: itemData.timestamp || "N/A",
+                  unit: itemData.unit || "N/A",
                 };
               });
 
@@ -144,7 +145,10 @@ const LabRoomQR = () => {
                       <td>{item.category}</td>
                       <td>{item.condition}</td>
                       <td>{item.department}</td>
-                      <td>{item.quantity}</td>
+                      <td>
+                        {item.quantity}
+                        {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}
+                      </td>
                       <td>{item.status}</td>
                       <td>{item.type}</td>
                     </tr>
