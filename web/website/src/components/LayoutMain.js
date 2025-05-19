@@ -372,7 +372,7 @@ const LayoutMain = () => {
     {
       key: "/main/history-log",
       icon: <ClockCircleOutlined />,
-      label: "Status Board",
+      label: "Orders",
     },
     {
       key: "/main/capex-request",

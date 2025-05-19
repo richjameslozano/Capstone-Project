@@ -137,7 +137,7 @@ const CustomDrawerContent = ({ navigation }) => {
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('RequestScreen')}>
         <Icon2 name="history" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Status Board</Title>
+        <Title style={styles.titleStyle}>Orders</Title>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserActivityLogScreen')}>
@@ -145,27 +145,27 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Activity Log</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CalendarScreen')}>
+      {/* <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CalendarScreen')}>
         <Icon2 name="calendar-month" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Calendar</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserHistoryLogScreen')}>
+      {/* <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserHistoryLogScreen')}>
         <Icon2 name="file-document-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Request List</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('PolicyScreen')}>
+      {/* <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('PolicyScreen')}>
         <Icon2 name="shield-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Policy</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CapexRequestScreen')}>
         <Icon2 name="cash-multiple" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Capex Request</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.logoutButton}
         onPress={() => {
           Alert.alert(
@@ -204,7 +204,7 @@ const CustomDrawerContent = ({ navigation }) => {
       >
         <Icon name="log-out-outline" size={24} color="black" />
         <Title style={styles.logoutText}>Logout</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
