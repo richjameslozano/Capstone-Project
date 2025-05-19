@@ -8,56 +8,6 @@ const LabRoomQR = () => {
   const [labRooms, setLabRooms] = useState([]);
   const qrRefs = useRef({});
 
-  // useEffect(() => {
-  //   const fetchLabRoomsWithItems = async () => {
-  //     try {
-  //       const labRoomSnapshot = await getDocs(collection(db, "labRoom"));
-  //       const roomsWithItems = [];
-
-  //       for (const roomDoc of labRoomSnapshot.docs) {
-  //         const roomData = roomDoc.data();
-  //         const roomId = roomDoc.id;
-
-  //         // Fetch items subcollection for this room
-  //         const itemsSnapshot = await getDocs(collection(db, `labRoom/${roomId}/items`));
-  //         const items = itemsSnapshot.docs.map(itemDoc => {
-  //           const itemData = itemDoc.data();
-  //           return {
-  //             id: itemDoc.id,
-  //             category: itemData.category || "N/A",
-  //             condition: itemData.condition || "N/A",
-  //             department: itemData.department || "N/A",
-  //             entryCurrentDate: itemData.entryCurrentDate || "N/A",
-  //             expiryDate: itemData.expiryDate || null,
-  //             itemId: itemData.itemId || "N/A",
-  //             itemName: itemData.itemName || "N/A",
-  //             labRoom: itemData.labRoom || "N/A",
-  //             quantity: itemData.quantity || 0,
-  //             status: itemData.status || "N/A",
-  //             type: itemData.type || "N/A",
-  //             rawTimestamp: itemData.rawTimestamp || "N/A",
-  //             timestamp: itemData.timestamp || "N/A",
-  //           };
-  //         });
-
-  //         roomsWithItems.push({
-  //           id: roomId,
-  //           name: roomData.name || "N/A",
-  //           qrCode: roomData.qrCode || "",   // <-- Add lab room QR here
-  //           items,
-  //         });
-  //       }
-
-  //       setLabRooms(roomsWithItems);
-
-  //     } catch (error) {
-  //       console.error("Error fetching lab rooms and items:", error);
-  //     }
-  //   };
-
-  //   fetchLabRoomsWithItems();
-  // }, []);
-
   useEffect(() => {
     const unsubscribeFunctions = [];
 
@@ -68,10 +18,9 @@ const LabRoomQR = () => {
             id: doc.id,
             name: doc.data().name || "N/A",
             qrCode: doc.data().qrCode || "",
-            items: [], // initially empty, will be filled via onSnapshot
+            items: [],
           }));
 
-          // Set rooms with no items yet
           setLabRooms(initialRooms);
 
           labRoomSnapshot.docs.forEach((roomDoc) => {
@@ -99,7 +48,6 @@ const LabRoomQR = () => {
                 };
               });
 
-              // Update only that room's items in state
               setLabRooms(prevRooms => prevRooms.map(room =>
                 room.id === roomId ? { ...room, items: updatedItems } : room
               ));
@@ -146,42 +94,68 @@ const LabRoomQR = () => {
         <p>Loading lab rooms and items...</p>
       ) : (
         labRooms.map(room => (
-          <div key={room.id} className="labroom-card">
+          <div key={room.id} className="labroom-table-wrapper">
             <h3 className="labroom-title">
               Room: {room.name} ({room.id})
             </h3>
+            <table className="labroom-table">
+              <thead>
+                <tr>
+                  <th>QR Code</th>
+                  <th>Item Name</th>
+                  <th>Item ID</th>
+                  <th>Category</th>
+                  <th>Condition</th>
+                  <th>Department</th>
+                  <th>Quantity</th>
+                  <th>Status</th>
+                  <th>Type</th>
+                </tr>
+              </thead>
 
-            {/* Lab Room QR Code */}
-            <div
-              ref={el => (qrRefs.current[room.id] = el)}
-              className="labroom-qr"
-              style={{ marginBottom: "10px" }}
-            >
-              <QRCodeCanvas value={room.qrCode || "No QR code available"} size={200} />
-            </div>
-
-            <button
-              onClick={() => downloadQRCode(room.id)}
-              className="labroom-download-button"
-            >
-              Download Room QR Code
-            </button>
-
-            {(!room.items || room.items.length === 0) ? (
-              <p>No items found in this room.</p>
-            ) : (
-              room.items.map(item => (
-                <div key={item.id} className="labroom-item-card">
-                  <h4>{item.itemName} ({item.itemId})</h4>
-                  <p><strong>Category:</strong> {item.category}</p>
-                  <p><strong>Condition:</strong> {item.condition}</p>
-                  <p><strong>Department:</strong> {item.department}</p>
-                  <p><strong>Quantity:</strong> {item.quantity}</p>
-                  <p><strong>Status:</strong> {item.status}</p>
-                  <p><strong>Type:</strong> {item.type}</p>
-                </div>
-              ))
-            )}
+              <tbody>
+                {room.items && room.items.length > 0 ? (
+                  room.items.map((item, index) => (
+                    <tr key={item.id}>
+                      {index === 0 ? (
+                        <td
+                          rowSpan={room.items.length}
+                          className="labroom-qr-cell"
+                        >
+                          <div
+                            ref={(el) => (qrRefs.current[room.id] = el)}
+                            className="labroom-qr"
+                          >
+                            <QRCodeCanvas
+                              value={room.qrCode || "No QR code available"}
+                              size={128}
+                            />
+                            <button
+                              onClick={() => downloadQRCode(room.id)}
+                              className="labroom-download-button"
+                            >
+                              Download QR
+                            </button>
+                          </div>
+                        </td>
+                      ) : null}
+                      <td>{item.itemName}</td>
+                      <td>{item.itemId}</td>
+                      <td>{item.category}</td>
+                      <td>{item.condition}</td>
+                      <td>{item.department}</td>
+                      <td>{item.quantity}</td>
+                      <td>{item.status}</td>
+                      <td>{item.type}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan="9">No items found in this room.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
         ))
       )}
