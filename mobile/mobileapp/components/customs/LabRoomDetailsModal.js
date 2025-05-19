@@ -29,7 +29,14 @@ const LabRoomDetailsModal = ({ visible, roomId, items, onClose }) => {
                   ID: {item.itemId || "N/A"}, Qty: {item.quantity ?? "?"}, Borrowed Today: {item.borrowedToday ?? 0}
                 </Text>
                 <Text style={styles.subText}>
-                  Condition: {item.condition || "N/A"}, Status: {item.status || "N/A"}
+                  Condition: {
+                    typeof item.condition === "object"
+                      ? Object.entries(item.condition)
+                          .map(([key, val]) => `${key}: ${val}`)
+                          .join(", ")
+                      : item.condition || "N/A"
+                  }
+                  , Status: {item.status || "N/A"}
                 </Text>
               </View>
             )}
