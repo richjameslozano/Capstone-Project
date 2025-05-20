@@ -253,7 +253,7 @@ export default function InventoryScreen({ navigation }) {
   
       await addDoc(collectionRef, {
         category: item.category || '',
-        condition: item.condition || '',
+        // condition: item.condition || '',
         department: item.department || '',
         entryDate: item.entryCurrentDate || '',
         expiryDate: item.expiryDate || '',
@@ -1010,7 +1010,14 @@ export default function InventoryScreen({ navigation }) {
                 <Text style={styles.itemType}>Type: {selectedItem?.type}</Text>
                 <Text style={styles.itemType}>Department: {selectedItem?.department}</Text>
                 <Text style={styles.itemType}>Category: {selectedItem?.category}</Text>
-                <Text style={styles.itemType}>Condition: {selectedItem?.condition}</Text>
+                {/* <Text style={styles.itemType}>Condition: {selectedItem?.condition}</Text> */}
+                <Text style={styles.itemType}>
+                  Condition: {
+                    selectedItem?.condition && typeof selectedItem.condition === 'object'
+                      ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
+                      : selectedItem?.condition || 'N/A'
+                  }
+                </Text>
                 <Text style={styles.itemType}>Status: {selectedItem?.status}</Text>
                 <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text>
               </View>
