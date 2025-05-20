@@ -218,7 +218,12 @@ const RequestLogScreen = () => {
                 <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemName}</Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
-                <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text>
+                {/* <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text> */}
+                <Text style={[styles.tableCell, { flex: 1 }]}>
+                  {typeof item.condition === 'object'
+                    ? `Good: ${item.condition.Good ?? 0}, Defect: ${item.condition.Defect ?? 0}, Damage: ${item.condition.Damage ?? 0}`
+                    : item.condition || '—'}
+                </Text>
               </View>
             ))}
           </View>

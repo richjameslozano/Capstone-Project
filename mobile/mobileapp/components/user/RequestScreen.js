@@ -429,7 +429,7 @@ const pagerRef = useRef(null);
                     <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
-                    <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text>
+                    {/* <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text> */}
                   </View>
       
                   {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
@@ -443,7 +443,12 @@ const pagerRef = useRef(null);
                       <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemName}</Text>
                       <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
                       <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
-                      <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text>
+                      {/* <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text> */}
+                      {/* <Text style={[styles.tableCell, { flex: 1 }]}>
+                        {typeof item.condition === 'object'
+                          ? `Good: ${item.condition.Good ?? 0}, Defect: ${item.condition.Defect ?? 0}, Damage: ${item.condition.Damage ?? 0}`
+                          : item.condition || '—'}
+                      </Text> */}
                     </View>
                   ))}
                 </View>
@@ -460,9 +465,6 @@ const pagerRef = useRef(null);
       </Modal>
 
       </View>
-
-
-
 
       <View key="2" style={styles.page}>
          {loading ? (

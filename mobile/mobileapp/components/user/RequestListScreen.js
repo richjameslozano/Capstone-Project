@@ -402,9 +402,9 @@ const RequestListScreen = ({navigation}) => {
                   <Text style={styles.bold}>Lab Room:</Text> {selectedItem.labRoom}
                 </Text>
 
-                <Text style={styles.modalDetail}>
+                {/* <Text style={styles.modalDetail}>
                   <Text style={styles.bold}>Condition:</Text> {selectedItem.condition}
-                </Text>
+                </Text> */}
 
                 <Text style={styles.modalDetail}>
                   <Text style={styles.bold}>Department:</Text> {selectedItem.department}
