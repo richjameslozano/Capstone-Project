@@ -114,7 +114,7 @@ const BorrowCatalogScreen = () => {
               timeFrom: d.timeFrom || "N/A",
               timeTo: d.timeTo || "N/A",
               courseDescription: d.courseDescription || "N/A",
-              courseCode: d.courseCode || "N/A",
+              course: d.course || "N/A",
               program: d.program || "N/A",
               room: d.room || "N/A",
               requestList: d.requestList || [],
