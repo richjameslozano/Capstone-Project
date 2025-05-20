@@ -25,9 +25,14 @@ const LabRoomDetailsModal = ({ visible, roomId, items, onClose }) => {
             renderItem={({ item }) => (
               <View style={styles.item}>
                 <Text style={styles.text}>• {item.itemName || "Unknown"}</Text>
-                <Text style={styles.subText}>
+                {/* <Text style={styles.subText}>
                   ID: {item.itemId || "N/A"}, Qty: {item.quantity ?? "?"}, Borrowed Today: {item.borrowedToday ?? 0}
+                </Text> */}
+                
+                <Text style={styles.subText}>
+                  ID: {item.itemId || "N/A"}, Qty: {item.quantity ?? "?"}, Borrowed Today: {item.borrowedToday ?? 0}, Deployed Today: {item.deployedToday ?? 0}
                 </Text>
+
                 <Text style={styles.subText}>
                   Condition: {
                     typeof item.condition === "object"
