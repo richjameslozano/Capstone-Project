@@ -71,6 +71,14 @@ export default function InventoryStocks({ navigation }) {
     setModalVisible(true);
   };
 
+  const formatCondition = (cond) => {
+    if (cond && typeof cond === 'object') {
+      return `Good: ${cond.Good ?? 0}, Defect: ${cond.Defect ?? 0}, Damage: ${cond.Damage ?? 0}`;
+    }
+    
+    return cond || 'N/A';
+  };
+
   return (
     <View style={styles.container}>
       <Header />
@@ -133,7 +141,7 @@ export default function InventoryStocks({ navigation }) {
 
             <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>Condition:</Text>
-              <Text style={styles.cardValueNum}>{item.condition}</Text>
+              <Text style={styles.cardValueNum}>{formatCondition(item.condition)}</Text>
             </View>
 
             <TouchableOpacity style={styles.viewDetailsButton} onPress={() => openDetailsModal(item)}>
@@ -157,10 +165,14 @@ export default function InventoryStocks({ navigation }) {
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Type:</Text> {selectedItem.type}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Category:</Text> {selectedItem.category || 'N/A'}</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>Condition:</Text> {selectedItem.condition || 'N/A'}</Text>
+                {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Condition:</Text> {selectedItem.condition || 'N/A'}</Text> */}
+                <Text style={styles.modalText}>
+                <Text style={styles.modalLabel}>Condition:</Text>{' '}
+                  {formatCondition(selectedItem.condition)}
+                </Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Lab Room:</Text> {selectedItem.labRoom || 'N/A'}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Status:</Text> {selectedItem.status || 'N/A'}</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>Usage Type:</Text> {selectedItem.usageType || 'N/A'}</Text>
+                {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Usage Type:</Text> {selectedItem.usageType || 'N/A'}</Text> */}
 
                 <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
                   <Text style={styles.closeButtonText}>Close</Text>
