@@ -497,9 +497,9 @@ const pagerRef = useRef(null);
             <Text><Text style={styles.label}>Requisition Date:</Text> {selectedRequest?.dateRequested?.toLocaleDateString()}</Text>
             <Text><Text style={styles.label}>Date Required:</Text> {selectedRequest?.dateRequired}</Text>
             <Text><Text style={styles.label}>Time Needed:</Text> {selectedRequest?.timeNeeded}</Text>
-            <Text><Text style={styles.label}>Course Code:</Text> {selectedRequest?.courseCode}</Text>
+            <Text><Text style={styles.label}>Course Code:</Text> {selectedRequest?.course}</Text>
             <Text><Text style={styles.label}>Course Description:</Text> {selectedRequest?.courseDescription}</Text>
-            <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.room}</Text>
+            <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.labRoom}</Text>
 
             <Text style={styles.subTitle}>Requested Items:</Text>
               <View style={styles.table}>
