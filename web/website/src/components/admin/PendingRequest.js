@@ -1463,10 +1463,10 @@ const PendingRequest = () => {
       title: "Category",
       dataIndex: "category",
     },
-    {
-      title: "Item Condition",
-      dataIndex: "condition",
-    },
+    // {
+    //   title: "Item Condition",
+    //   dataIndex: "condition",
+    // },
   ];
 
   const formatDate = (timestamp) => {
