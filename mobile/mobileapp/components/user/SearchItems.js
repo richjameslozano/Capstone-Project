@@ -114,7 +114,12 @@ export default function SearchItemsScreen({ navigation }) {
         <Text style={styles.cellText}>{item.category}</Text>
       </View>
       <View style={{ flex: 2 }}>
-        <Text style={styles.cellText}>{item.condition}</Text>
+       <Text style={styles.cellText}>
+          {item.condition && typeof item.condition === 'object'
+            ? `G:${item.condition.Good ?? 0}, Df:${item.condition.Defect ?? 0}, Dmg:${item.condition.Damage ?? 0}`
+            : item.condition || 'N/A'}
+        </Text>
+
       </View>
     </TouchableOpacity>
   );
@@ -169,7 +174,12 @@ export default function SearchItemsScreen({ navigation }) {
                 <Text>Status: {hoveredItem.status}</Text>
                 <Text>Category: {hoveredItem.category}</Text>
                 <Text>Location: {hoveredItem.labRoom}</Text>
-                <Text>Condition: {hoveredItem.condition || 'N/A'}</Text>
+                {/* <Text>Condition: {hoveredItem.condition || 'N/A'}</Text> */}
+                <Text>
+                  Condition: {hoveredItem.condition && typeof hoveredItem.condition === 'object'
+                    ? `Good: ${String(hoveredItem.condition.Good ?? 0)}, Defect: ${String(hoveredItem.condition.Defect ?? 0)}, Damage: ${String(hoveredItem.condition.Damage ?? 0)}`
+                    : "N/A"}
+                </Text>
                 <Text>Item Type: {hoveredItem.type || 'N/A'}</Text>
                 <Text>Date Acquired: {hoveredItem.entryCurrentDate || 'N/A'}</Text>
               </View>
