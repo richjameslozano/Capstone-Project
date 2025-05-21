@@ -205,13 +205,36 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               });
 
               requestorUserId = data.accountId;
+              // requestorLogData = {
+              //   ...data,
+              //   action: "Deployed",
+              //   deployedBy: user.name || "Unknown",
+              //   deployedById: user.id,
+              //   deployedAt: getTodayDate(),
+              //   timestamp: serverTimestamp()
+              // };
+
+              const scannedItem = updatedRequestList.find(item =>
+                item.itemName === itemName &&
+                item.selectedItemId === selectedItem.selectedItemId &&
+                item.labRoom === selectedItem.labRoom &&
+                item.quantity === selectedItem.quantity &&
+                item.program === selectedItem.program &&
+                item.timeFrom === selectedItem.timeFrom &&
+                item.timeTo === selectedItem.timeTo
+              );
+
               requestorLogData = {
-                ...data,
                 action: "Deployed",
                 deployedBy: user.name || "Unknown",
                 deployedById: user.id,
                 deployedAt: getTodayDate(),
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                item: scannedItem,
+                borrower: data.userName || "Unknown",
+                borrowedDate: data.dateRequired,
+                timeFrom: data.timeFrom || "00:00",
+                timeTo: data.timeTo || "00:00"
               };
 
               break;
@@ -370,7 +393,16 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
             userRequestSnapshot.forEach(async (docSnap) => {
               const docData = docSnap.data();
-              const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+              // const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+              const hasMatchingItem = docData.requestList?.some(item =>
+                item.itemName === itemName &&
+                item.selectedItemId === selectedItem.selectedItemId &&
+                item.labRoom === selectedItem.labRoom &&
+                item.quantity === selectedItem.quantity &&
+                item.program === selectedItem.program &&
+                item.timeFrom === selectedItem.timeFrom &&
+                item.timeTo === selectedItem.timeTo
+              );
 
               if (hasMatchingItem) {
                 await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
