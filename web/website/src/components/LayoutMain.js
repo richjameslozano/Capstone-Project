@@ -20,6 +20,11 @@ import {
   DollarCircleOutlined,
   RollbackOutlined,
   SwapLeftOutlined,
+  ShoppingOutlined,
+  DatabaseOutlined,
+  ApartmentOutlined,
+  BuildOutlined,
+  HomeOutlined,
 } from '@ant-design/icons';
 
 
@@ -280,34 +285,44 @@ const LayoutMain = () => {
       label: "Inventory",
     },
     {
+      key: "/main/requisition",
+      icon: <FileDoneOutlined />,
+      label: "Requisition",
+    },
+    {
+      key: "/main/orders",
+      icon: <ShoppingCartOutlined />,
+      label: "Orders",      
+    },
+    {
       key: "/main/pending-request",
       icon: <FileTextOutlined />,
       label: "Pending Requests",
     },
     {
       key: "/main/borrow-catalog",
-      icon: <AppstoreOutlined />,
+      icon: <ShoppingOutlined />,
       label: "Borrow Catalog",
+    },
+    {
+      key: "/main/request-log",
+      icon: <DatabaseOutlined />,
+      label: "Request Log",
+    },
+    {
+      key: "/main/capex-request-list",
+      icon: <DollarCircleOutlined />,
+      label: "Capex Request List",
+    },
+    {
+      key: "/main/lab-room",
+      icon: <HomeOutlined />,
+      label: "Lab Room Details",
     },
     {
       key: "/main/admin-activity-log",
       icon: <HistoryOutlined />,
       label: "Activity Log",
-    },
-    {
-      key: "/main/request-log",
-      icon: <HistoryOutlined />,
-      label: "Request Log",
-    },
-    {
-      key: "/main/capex-request-list",
-      icon: <HistoryOutlined />,
-      label: "Capex Request List",
-    },
-    {
-      key: "/main/lab-room",
-      icon: <HistoryOutlined />,
-      label: "Lab Room Details",
     },
     {
       key: "logout",
@@ -511,6 +526,7 @@ const LayoutMain = () => {
             <Route element={<ProtectedRoute allowedRoles={["admin", "super-user"]} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/inventory" element={<Inventory />} />
+              <Route path="/requisition" element={<Requisition />} />
               <Route path="/pending-request" element={<PendingRequest />} />
               <Route path="/borrow-catalog" element={<BorrowCatalog />} />
               <Route path="/request-log" element={<RequestLog />} />
