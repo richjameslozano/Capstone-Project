@@ -454,7 +454,18 @@ const LabRoomQR = () => {
                       <td>{item.itemName}</td>
                       <td>{item.itemId}</td>
                       <td>{item.category}</td>
-                      <td>{item.condition}</td>
+                      {/* <td>{item.condition}</td> */}
+                      <td>
+                        {item.category === "Chemical" || item.category === "Reagent" ? (
+                          <span style={{ fontStyle: "italic", color: "#999" }}>N/A</span>
+                        ) : (
+                          <>
+                            <div>Good: {item.condition?.Good ?? 0}</div>
+                            <div>Defect: {item.condition?.Defect ?? 0}</div>
+                            <div>Damage: {item.condition?.Damage ?? 0}</div>
+                          </>
+                        )}
+                      </td> 
                       <td>{item.department}</td>
                       <td>
                         {item.quantity}
