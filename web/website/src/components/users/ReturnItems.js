@@ -995,8 +995,8 @@ const ReturnItems = () => {
                           style={{ width: 120 }}
                         >
                           <Option value="Good">Good</Option>
-                          <Option value="Damaged">Damaged</Option>
-                          <Option value="Needs Repair">Needs Repair</Option>
+                          <Option value="Defect">Defect</Option>
+                          <Option value="Damage">Damage</Option>
                         </Select>
                       );
                     },
