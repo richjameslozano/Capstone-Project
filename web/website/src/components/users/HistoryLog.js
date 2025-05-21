@@ -15,7 +15,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc,
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
-
+  
 const { Content } = Layout;
 const { Title } = Typography;
 
