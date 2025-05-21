@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, FlatList, Image, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/adminStyle/AdminDashboardStyle';
 import DataAnalysisModal from './DataAnalysisModal';
 import Header from '../Header';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useIsFocused, useNavigation } from '@react-navigation/native';
+import { setStatusBarTranslucent } from 'expo-status-bar';
 
 export default function AdminDashboard({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
@@ -19,9 +20,14 @@ export default function AdminDashboard({ navigation }) {
   };
 
   
-  
+useFocusEffect(
+  useCallback(() => {
+    StatusBar.setBarStyle('dark-content');
+    StatusBar.setBackgroundColor('transparent'); // Android only
+    StatusBar.setTranslucent(true)
+  }, [])
+);
 
-  
 
   const menuItems = [
     // { title: 'Inventory', subtitle: 'Materials & Supplies', icon: 'clipboard-list', color: '#4CAF50', screen: 'InventoryStocks' },
@@ -47,15 +53,10 @@ export default function AdminDashboard({ navigation }) {
     </TouchableOpacity>
   );
 
-  useEffect(() => {
-      if (isFocused) {
-        StatusBar.setBarStyle('dark-content');
-        StatusBar.setBackgroundColor('transparent');
-      }
-    }, [isFocused]);
+
 
   return (
-      <View style={[styles.container3, {paddingTop: headerHeight+5}]}>
+      <View style={[styles.container3]}>
           
        <View style={styles.dashboardHeader} onLayout={handleHeaderLayout}>
                <TouchableOpacity onPress={() => {
@@ -78,13 +79,9 @@ export default function AdminDashboard({ navigation }) {
                  <Icon name="information-outline" size={24} color="#000" />
                </TouchableOpacity>
              </View>
-        <StatusBar
-                              translucent
-                              backgroundColor="transparent"
-                              barStyle="light-content" // or 'light-content' depending on your design
-                            />
 
-        <View style={styles.actionContainer}>
+
+        <View style={[styles.actionContainer, {marginTop: headerHeight+5}]}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 8}}>
                     <Icon name='gesture-tap-button' size={20} color='#395a7f'/>
                     <Text style={{color: '#395a7f', fontSize: 12, fontWeight: 'bold'}}>Quick Actions</Text>

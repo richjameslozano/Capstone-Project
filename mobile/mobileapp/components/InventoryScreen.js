@@ -71,16 +71,11 @@ export default function InventoryScreen({ navigation }) {
 
           StatusBar.setBarStyle('light-content');
           StatusBar.setBackgroundColor('transparent');
+          StatusBar.setTranslucent(true)
     }, [])
   );
 
-  // const isFocused = useIsFocused();
-  // useEffect(() => {
-  //     if (isFocused) {
-  //       StatusBar.setBarStyle('light-content');
-  //       StatusBar.setBackgroundColor('transparent');
-  //     }
-  //   }, [isFocused]);
+
    
   useEffect(() => {
     const inventoryCollection = collection(db, 'inventory');  
@@ -591,11 +586,11 @@ export default function InventoryScreen({ navigation }) {
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
-      <StatusBar
+      {/* <StatusBar
                       translucent
                       backgroundColor="transparent"
                       barStyle="light-content" // or 'light-content' depending on your design
-                    />
+                    /> */}
       {!isComplete && (
      
         <View style={{flex:1}}>
