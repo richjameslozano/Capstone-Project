@@ -747,27 +747,68 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
             const userRequestSnapshot = await getDocs(userRequestQuery);
 
-            userRequestSnapshot.forEach(async (docSnap) => {
+            // userRequestSnapshot.forEach(async (docSnap) => {
+            //   const docData = docSnap.data();
+            //   // const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+            //   const hasMatchingItem = docData.requestList?.some(item =>
+            //     item.itemName === itemName &&
+            //     item.selectedItemId === selectedItem.selectedItemId &&
+            //     item.labRoom === selectedItem.labRoom &&
+            //     item.quantity === selectedItem.quantity &&
+            //     item.program === selectedItem.program &&
+            //     item.timeFrom === selectedItem.timeFrom &&
+            //     item.timeTo === selectedItem.timeTo
+            //   );
+
+            //   if (hasMatchingItem) {
+            //     await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
+            //       status: "Deployed"
+            //     });
+
+            //     console.log("✅ userrequestlog status updated to 'Deployed'");
+            //   }
+            // });
+
+            for (const docSnap of userRequestSnapshot.docs) {
               const docData = docSnap.data();
-              // const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
-              const hasMatchingItem = docData.requestList?.some(item =>
-                item.itemName === itemName &&
-                item.selectedItemId === selectedItem.selectedItemId &&
-                item.labRoom === selectedItem.labRoom &&
-                item.quantity === selectedItem.quantity &&
-                item.program === selectedItem.program &&
-                item.timeFrom === selectedItem.timeFrom &&
-                item.timeTo === selectedItem.timeTo
-              );
+              const hasMatchingItem = docData.requestList?.some(item => {
+                const matches =
+                  item.itemName === itemName &&
+                  item.selectedItemId === selectedItem.selectedItemId &&
+                  item.labRoom === selectedItem.labRoom &&
+                  item.quantity === selectedItem.quantity &&
+                  docData.timeFrom === requestorLogData.timeFrom &&
+                  docData.timeTo === requestorLogData.timeTo;
+
+                console.log("Comparing item:");
+                console.log("  itemName:", item.itemName, "==", itemName);
+                console.log("  selectedItemId:", item.selectedItemId, "==", selectedItem.selectedItemId);
+                console.log("  labRoom:", item.labRoom, "==", selectedItem.labRoom);
+                console.log("  quantity:", item.quantity, "==", selectedItem.quantity);
+                console.log("  program:", docData.program, "==", requestorLogData.program);
+                console.log("  timeFrom:", docData.timeFrom, "==", requestorLogData.timeFrom);
+                console.log("  timeTo:", docData.timeTo, "==", requestorLogData.timeTo);
+                console.log("  ➤ Matches:", matches);
+
+                return matches;
+              });
+
+              console.log("Checking userrequestlog doc ID:", docSnap.id);
+              console.log("Matching requestList item:", hasMatchingItem);
+
 
               if (hasMatchingItem) {
-                await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
-                  status: "Deployed"
-                });
-
-                console.log("✅ userrequestlog status updated to 'Deployed'");
+                try {
+                  await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
+                    status: "Deployed"
+                  });
+                  console.log("✅ userrequestlog status updated to 'Deployed'");
+                  
+                } catch (err) {
+                  console.error("❌ Failed to update userrequestlog document:", err);
+                }
               }
-            });
+            }
             
           } catch (err) {
             console.error("❌ Failed to update userrequestlog:", err);
