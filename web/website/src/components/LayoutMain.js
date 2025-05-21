@@ -526,7 +526,6 @@ const LayoutMain = () => {
             <Route element={<ProtectedRoute allowedRoles={["admin", "super-user"]} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/inventory" element={<Inventory />} />
-              <Route path="/requisition" element={<Requisition />} />
               <Route path="/pending-request" element={<PendingRequest />} />
               <Route path="/borrow-catalog" element={<BorrowCatalog />} />
               <Route path="/request-log" element={<RequestLog />} />
@@ -539,7 +538,7 @@ const LayoutMain = () => {
             </Route>
 
             {/* User-only routes */}
-            <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
               <Route path="/requisition" element={<Requisition />} />
               <Route path="/request-list" element={<RequestList />} />
               <Route path="/search-items" element={<SearchItems />} />
