@@ -225,8 +225,8 @@ const CameraShowItems = ({ onClose }) => {
           });
 
           const itemsDetail = itemsDetailArray.join("\n");
-          await addBorrowedCountToItems(itemsDetailArray);
-
+          // await addBorrowedCountToItems(itemsDetailArray);
+          await addBorrowedAndDeployedCountToItems(itemsDetailArray)
           // Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
            showLabRoomDetails(roomId, itemsDetailArray);
         }
@@ -256,8 +256,8 @@ const CameraShowItems = ({ onClose }) => {
 
           const itemsDetail = itemsDetailArray.join("\n");
 
-          await addBorrowedCountToItems(itemsDetailArray);
-
+          // await addBorrowedCountToItems(itemsDetailArray);
+          await addBorrowedAndDeployedCountToItems(itemsDetailArray)
           // Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
            showLabRoomDetails(roomId, itemsDetailArray);
         }
@@ -287,7 +287,8 @@ const CameraShowItems = ({ onClose }) => {
           
           const itemsDetail = itemsDetailArray.join("\n");
 
-          await addBorrowedCountToItems(itemsDetailArray);
+          // await addBorrowedCountToItems(itemsDetailArray);
+          await addBorrowedAndDeployedCountToItems(itemsDetailArray)
 
           // Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
            showLabRoomDetails(roomId, itemsDetailArray);
@@ -350,6 +351,52 @@ const CameraShowItems = ({ onClose }) => {
       item.borrowedToday = borrowedCount;
     }
   };
+
+  const addBorrowedAndDeployedCountToItems = async (itemsDetailArray) => {
+  const todayDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+  const borrowSnapshot = await getDocs(collection(db, "borrowcatalog"));
+
+  console.log("Today's date:", todayDate);
+
+  for (const item of itemsDetailArray) {
+    let borrowedCount = 0;
+    let deployedCount = 0;
+
+    console.log("\n🔍 Checking item:", item.itemName);
+
+    borrowSnapshot.forEach(doc => {
+      const borrowData = doc.data();
+
+      const status = (borrowData.status || "").trim();
+      const dateRequired = (borrowData.dateRequired || "").trim();
+
+      if (!Array.isArray(borrowData.requestList)) {
+        console.log("⚠️ requestList is missing or not an array:", borrowData);
+        return;
+      }
+
+      borrowData.requestList.forEach(requestItem => {
+        const requestItemName = (requestItem.itemName || "").trim();
+        const requestQty = requestItem.quantity || 0;
+
+        if (requestItemName === item.itemName) {
+          if (status === "Borrowed" && dateRequired === todayDate) {
+            borrowedCount += requestQty;
+          }
+          if (status === "Deployed" && dateRequired === todayDate) {
+            deployedCount += requestQty;
+          }
+        }
+      });
+    });
+
+    console.log(`✅ Total borrowed for ${item.itemName}: ${borrowedCount}`);
+    console.log(`✅ Total deployed for ${item.itemName}: ${deployedCount}`);
+
+    item.borrowedToday = borrowedCount;
+    item.deployedToday = deployedCount;
+  }
+};
 
     const handleLabRoomScan = async (roomNumber) => {
         try {

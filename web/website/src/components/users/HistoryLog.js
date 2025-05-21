@@ -590,7 +590,7 @@ const HistoryLog = () => {
                           <ul style={{ marginLeft: 20 }}>
                             <li>Quantity: {item.quantity}</li>
                             {item.category && <li>Category: {item.category}</li>}
-                            {item.condition && <li>Condition: {item.condition}</li>}
+                            {/* {item.condition && <li>Condition: {item.condition}</li>} */}
                             {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
                             {item.usageType && <li>Usage Type: {item.usageType}</li>}
                             {item.itemType && <li>Item Type: {item.itemType}</li>}

@@ -134,37 +134,37 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             const currentStatus = data.status?.toLowerCase();
 
             if (currentStatus === "borrowed") {
-              // updatedRequestList = data.requestList.map((item) => {
-              //   if (item.itemName === itemName) {
-              //     const currentCount = item.scannedCount || 0;
-              //     const maxCount = item.quantity || 1;
-
-              //     if (currentCount < maxCount) {
-              //       return {
-              //         ...item,
-              //         scannedCount: currentCount + 1,
-              //       };
-
-              //     } else {
-              //       console.warn("Scan limit reached for", item.itemName);
-              //       message.warning(`Maximum scans reached for "${item.itemName}".`);
-              //       return item;
-              //     }
-              //   }
-              //   return item;
-              // });
-
               updatedRequestList = data.requestList.map((item) => {
                 if (item.itemName === itemName) {
-                  // Instead of incrementing by 1 each scan,
-                  // just set scannedCount = quantity directly:
-                  return {
-                    ...item,
-                    scannedCount: item.quantity,  // mark all as scanned/deployed at once
-                  };
+                  const currentCount = item.scannedCount || 0;
+                  const maxCount = item.quantity || 1;
+
+                  if (currentCount < maxCount) {
+                    return {
+                      ...item,
+                      scannedCount: currentCount + 1,
+                    };
+
+                  } else {
+                    console.warn("Scan limit reached for", item.itemName);
+                    message.warning(`Maximum scans reached for "${item.itemName}".`);
+                    return item;
+                  }
                 }
                 return item;
               });
+
+              // updatedRequestList = data.requestList.map((item) => {
+              //   if (item.itemName === itemName) {
+              //     // Instead of incrementing by 1 each scan,
+              //     // just set scannedCount = quantity directly:
+              //     return {
+              //       ...item,
+              //       scannedCount: item.quantity,  // mark all as scanned/deployed at once
+              //     };
+              //   }
+              //   return item;
+              // });
 
               allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity);
 
@@ -260,7 +260,15 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 const userData = userDoc.data();
                 const hasMatchingItem = userData.requestList?.some(item => item.itemName === itemName);
 
-                if (hasMatchingItem) {
+                // if (hasMatchingItem) {
+                //   await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
+                //     status: "Return Approved"
+                //   });
+
+                  if (hasMatchingItem) {
+                  // Inject usageType into userData
+                  userData.usageType = hasMatchingItem.usageType || "Unknown";
+
                   await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
                     status: "Return Approved"
                   });
@@ -271,7 +279,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     approvedBy: user.name || "Unknown",
                     approvedById: user.id,
                     approvedAt: getTodayDate(),
-                    timestamp: serverTimestamp()
+                    timestamp: serverTimestamp(),
                   });
 
                   Alert.alert("Return Approved", `Return of "${itemName}" approved.`);
