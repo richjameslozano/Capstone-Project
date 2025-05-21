@@ -311,6 +311,7 @@ const AdminDrawer = () => {
       <Drawer.Screen name="CameraScreen" component={CameraScreen} />
       <Drawer.Screen name="RequestLogScreen" component={LogScreen} />
       <Drawer.Screen name="InventoryStocks" component={InventoryStocks} />
+      <Drawer.Screen name="RequestListScreen" component={RequestListScreen} />
       <Drawer.Screen name="RequestScreen" component={RequestScreen} />
       <Drawer.Screen name="ActivityLogScreen" component={ActivityLogScreen} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
