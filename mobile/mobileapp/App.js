@@ -232,15 +232,44 @@ const CustomAdminDrawerContent = ({ navigation }) => {
     fetchProfileImage();
   }, [isFocused]);
 
+   useEffect(() => {
+    if (isFocused) {
+      StatusBar.setBarStyle('light-content');
+      StatusBar.setBackgroundColor('transparent');
+    }
+  }, [isFocused]);
+
   return (
     
     <View style={styles.drawerContent}>
       <StatusBar
         translucent
         backgroundColor="transparent"
-        barStyle="light-content" 
       />
-      <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
+
+      <View style={styles.upperSection}>
+          <View style={styles.headProfile}>
+          <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
+            <View style={styles.avatarBorder}>
+          {profileImage ? (
+            
+            <Avatar.Image size={70} source={{ uri: profileImage }} />
+            
+          ) : (
+              <Avatar.Text size={70} backgroundColor='#a3cae9' label={getInitials(user?.name)} />
+            )}
+            </View>
+          </TouchableOpacity>
+          </View>
+
+            <View>
+            <Text style={styles.profileName}>
+              {user ? capitalizeName(user.name) : 'Guest'}
+            </Text>
+            <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
+        </View>
+      </View>
+      {/* <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
         <View style={styles.profileSection}>
           {profileImage ? (
             <Avatar.Image size={50} source={{ uri: profileImage }} />
@@ -254,41 +283,49 @@ const CustomAdminDrawerContent = ({ navigation }) => {
 
             <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
         </View>
+      </TouchableOpacity> */}
+
+      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
+         <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Dashboard</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')}>
-        <Title style={styles.drawerItem}>Dashboard</Title>
+      <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
+        <Icon2 name="package-variant" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Inventory</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')}>
-        <Title style={styles.drawerItem}>Inventory</Title>
+      <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')} style={styles.drawerItem}>
+        <Icon2 name="progress-clock" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Pending Requests</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')}>
-        <Title style={styles.drawerItem}>Pending Requests</Title>
+      <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
+        <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Activity Log</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')}>
-        <Title style={styles.drawerItem}>Activity Log</Title>
+      <TouchableOpacity onPress={() => navigation.navigate('RequestLogScreen')} style={styles.drawerItem}>
+        <Icon2 name="book-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Request Log</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('RequestLogScreen')}>
-        <Title style={styles.drawerItem}>Request Log</Title>
+      <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
+        <Icon2 name="qrcode" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>QR Scanner</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')}>
-        <Title style={styles.drawerItem}>QR Scanner</Title>
+      <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
+        <Icon2 name="hand-extended-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Borrow Catalog</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')}>
-        <Title style={styles.drawerItem}>Borrow Catalog</Title>
+      <TouchableOpacity onPress={() => navigation.navigate('CapexRequestListScreen')} style={styles.drawerItem}>
+        <Icon2 name="cash-multiple" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Capex Request List</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('CapexRequestListScreen')}>
-        <Title style={styles.drawerItem}>Capex Request List</Title>
-      </TouchableOpacity>
-
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.logoutButton} 
         onPress={() => {
           Alert.alert(
@@ -322,7 +359,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
       >
         <Icon name="log-out-outline" size={24} color="black" />
         <Title style={styles.logoutText}>Logout</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
     </View>
   );
