@@ -553,17 +553,37 @@ const printPdf = () => {
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },
     // { title: "Condition", dataIndex: "condition", key: "condition" },
+    // {
+    //   title: "Condition",
+    //   dataIndex: "condition",
+    //   key: "condition",
+    //   render: (condition) => (
+    //     <div>
+    //       <div>Good: {condition?.Good ?? 0}</div>
+    //       <div>Defect: {condition?.Defect ?? 0}</div>
+    //       <div>Damage: {condition?.Damage ?? 0}</div>
+    //     </div>
+    //   ),
+    // },
     {
       title: "Condition",
       dataIndex: "condition",
       key: "condition",
-      render: (condition) => (
-        <div>
-          <div>Good: {condition?.Good ?? 0}</div>
-          <div>Defect: {condition?.Defect ?? 0}</div>
-          <div>Damage: {condition?.Damage ?? 0}</div>
-        </div>
-      ),
+      render: (_, record) => {
+        // Only render condition if category is not Chemical or Reagent
+        if (record.category === "Chemical" || record.category === "Reagent") {
+          return <div style={{ fontStyle: "italic", color: "#999" }}>N/A</div>;
+        }
+
+        const condition = record.condition || {};
+        return (
+          <div>
+            <div>Good: {condition.Good ?? 0}</div>
+            <div>Defect: {condition.Defect ?? 0}</div>
+            <div>Damage: {condition.Damage ?? 0}</div>
+          </div>
+        );
+      },
     },
     {
       title: "QR Code",
