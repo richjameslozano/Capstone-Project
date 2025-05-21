@@ -444,7 +444,12 @@ const printPdf = () => {
       labRoom: record.labRoom,
       quantity: record.quantity,
       status: record.status,
-      condition: record.condition, 
+      condition: {
+        Good: record.condition?.Good ?? 0,
+        Defect: record.condition?.Defect ?? 0,
+        Damage: record.condition?.Damage ?? 0,
+      },
+      // condition: record.condition, 
       // usageType: record.usageType,
     });
     setIsEditModalVisible(true);
@@ -456,7 +461,8 @@ const printPdf = () => {
       labRoom: values.labRoom ?? "",
       quantity: values.quantity ?? 0,
       status: values.status ?? "Available",
-      condition: values.condition ?? "Good",
+      condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
+      // condition: values.condition ?? "Good",
       // usageType: values.usageType ?? "",
     };
 
@@ -999,15 +1005,42 @@ const printPdf = () => {
               </Row>
 
               <Row gutter={16}>
-
-                <Col span={12}>
+                {/* <Col span={12}>
                   <Form.Item name="quantity" label="Quantity">
                     <Input placeholder="Enter quantity" />
+                  </Form.Item>
+                </Col> */}
+
+                <Col span={12}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    rules={[
+                      { required: true, message: "Please enter quantity" },
+                      () => ({
+                        validator(_, value) {
+                          const condition = editForm.getFieldValue("condition") || {};
+                          const totalCondition =
+                            (parseInt(condition.Good) || 0) +
+                            (parseInt(condition.Defect) || 0) +
+                            (parseInt(condition.Damage) || 0);
+
+                          if (value === totalCondition) {
+                            return Promise.resolve();
+                          }
+                          return Promise.reject(
+                            new Error("Sum of Good, Defect, and Damage must equal Quantity")
+                          );
+                        },
+                      }),
+                    ]}
+                  >
+                    <Input type="number" min={0} placeholder="Enter quantity" />
                   </Form.Item>
                 </Col>
               </Row>
 
-              <Row gutter={16}>
+              {/* <Row gutter={16}>
                 <Col span={12}>
                   <Form.Item name="status" label="Status">
                     <Select placeholder="Select Status">
@@ -1025,6 +1058,38 @@ const printPdf = () => {
                       <Option value="Fair">Fair</Option>
                       <Option value="Poor">Poor</Option>
                     </Select>
+                  </Form.Item>
+                </Col>
+              </Row> */}
+
+              <Row gutter={16}>
+                <Col span={8}>
+                  <Form.Item
+                    name={["condition", "Good"]}
+                    label="Good"
+                    rules={[{ required: true, message: "Enter Good qty" }]}
+                  >
+                    <Input type="number" min={0} />
+                  </Form.Item>
+                </Col>
+
+                <Col span={8}>
+                  <Form.Item
+                    name={["condition", "Defect"]}
+                    label="Defect"
+                    rules={[{ required: true, message: "Enter Defect qty" }]}
+                  >
+                    <Input type="number" min={0} />
+                  </Form.Item>
+                </Col>
+
+                <Col span={8}>
+                  <Form.Item
+                    name={["condition", "Damage"]}
+                    label="Damage"
+                    rules={[{ required: true, message: "Enter Damage qty" }]}
+                  >
+                    <Input type="number" min={0} />
                   </Form.Item>
                 </Col>
               </Row>
