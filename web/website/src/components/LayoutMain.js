@@ -340,6 +340,11 @@ const LayoutMain = () => {
       icon: <HistoryOutlined />,
       label: "Request Log",
     },
+  {
+      key: "/main/lab-room",
+      icon: <HistoryOutlined />,
+      label: "Lab Room Details",
+    },
     {
       key: "logout",
       icon: <LogoutOutlined />,
@@ -501,11 +506,11 @@ const LayoutMain = () => {
               <Route path="/borrow-catalog" element={<BorrowCatalog />} />
               <Route path="/request-log" element={<RequestLog />} />
               <Route path="/admin-activity-log" element={<AdminActivityLog />} />
+              <Route path="/lab-room" element={<LabRoomQR/>} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />
-              <Route path="/lab-room" element={<LabRoomQR/>} />
             </Route>
 
             {/* User-only routes */}

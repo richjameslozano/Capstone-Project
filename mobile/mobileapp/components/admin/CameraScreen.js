@@ -126,7 +126,9 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               item.selectedItemId === selectedItem.selectedItemId &&
               item.labRoom === selectedItem.labRoom &&
               item.quantity === selectedItem.quantity &&
-              item.program === selectedItem.program
+              item.program === selectedItem.program &&
+              item.timeFrom === selectedItem.timeFrom &&
+              item.timeTo === selectedItem.timeTo
           );
 
           if (borrowedItem) {
@@ -134,25 +136,25 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             const currentStatus = data.status?.toLowerCase();
 
             if (currentStatus === "borrowed") {
-              updatedRequestList = data.requestList.map((item) => {
-                if (item.itemName === itemName) {
-                  const currentCount = item.scannedCount || 0;
-                  const maxCount = item.quantity || 1;
+              // updatedRequestList = data.requestList.map((item) => {
+              //   if (item.itemName === itemName) {
+              //     const currentCount = item.scannedCount || 0;
+              //     const maxCount = item.quantity || 1;
 
-                  if (currentCount < maxCount) {
-                    return {
-                      ...item,
-                      scannedCount: currentCount + 1,
-                    };
+              //     if (currentCount < maxCount) {
+              //       return {
+              //         ...item,
+              //         scannedCount: currentCount + 1,
+              //       };
 
-                  } else {
-                    console.warn("Scan limit reached for", item.itemName);
-                    message.warning(`Maximum scans reached for "${item.itemName}".`);
-                    return item;
-                  }
-                }
-                return item;
-              });
+              //     } else {
+              //       console.warn("Scan limit reached for", item.itemName);
+              //       message.warning(`Maximum scans reached for "${item.itemName}".`);
+              //       return item;
+              //     }
+              //   }
+              //   return item;
+              // });
 
               // updatedRequestList = data.requestList.map((item) => {
               //   if (item.itemName === itemName) {
@@ -165,6 +167,24 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               //   }
               //   return item;
               // });
+
+              updatedRequestList = data.requestList.map((item) => {
+                if (
+                  item.itemName === itemName &&
+                  item.selectedItemId === selectedItem.selectedItemId &&
+                  item.labRoom === selectedItem.labRoom &&
+                  item.quantity === selectedItem.quantity &&
+                  item.program === selectedItem.program &&
+                  item.timeFrom === selectedItem.timeFrom &&
+                  item.timeTo === selectedItem.timeTo
+                ) {
+                  return {
+                    ...item,
+                    scannedCount: item.quantity,
+                  };
+                }
+                return item;
+              });
 
               allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity);
 
@@ -185,14 +205,39 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               });
 
               requestorUserId = data.accountId;
+              // requestorLogData = {
+              //   ...data,
+              //   action: "Deployed",
+              //   deployedBy: user.name || "Unknown",
+              //   deployedById: user.id,
+              //   deployedAt: getTodayDate(),
+              //   timestamp: serverTimestamp()
+              // };
+
+              const scannedItem = updatedRequestList.find(item =>
+                item.itemName === itemName &&
+                item.selectedItemId === selectedItem.selectedItemId &&
+                item.labRoom === selectedItem.labRoom &&
+                item.quantity === selectedItem.quantity &&
+                item.program === selectedItem.program &&
+                item.timeFrom === selectedItem.timeFrom &&
+                item.timeTo === selectedItem.timeTo
+              );
+
               requestorLogData = {
-                ...data,
                 action: "Deployed",
                 deployedBy: user.name || "Unknown",
                 deployedById: user.id,
                 deployedAt: getTodayDate(),
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                item: scannedItem,
+                borrower: data.userName || "Unknown",
+                borrowedDate: data.dateRequired,
+                timeFrom: data.timeFrom || "00:00",
+                timeTo: data.timeTo || "00:00"
               };
+
+              break;
 
             } else if (currentStatus === "deployed") {
               alreadyDeployed = true;
@@ -348,7 +393,16 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
             userRequestSnapshot.forEach(async (docSnap) => {
               const docData = docSnap.data();
-              const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+              // const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+              const hasMatchingItem = docData.requestList?.some(item =>
+                item.itemName === itemName &&
+                item.selectedItemId === selectedItem.selectedItemId &&
+                item.labRoom === selectedItem.labRoom &&
+                item.quantity === selectedItem.quantity &&
+                item.program === selectedItem.program &&
+                item.timeFrom === selectedItem.timeFrom &&
+                item.timeTo === selectedItem.timeTo
+              );
 
               if (hasMatchingItem) {
                 await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {

@@ -141,42 +141,94 @@ const CameraUpdateItems = ({ onClose }) => {
     }
   };
 
+  // const handleAddQuantity = async (addedQuantity) => {
+  //   const { itemId, itemName, labRoom } = currentItem;
+
+  //   try {
+  //     // Update inventory
+  //     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+  //     const snapshot = await getDocs(inventoryQuery);
+
+  //     snapshot.forEach(async docSnap => {
+  //       const ref = doc(db, 'inventory', docSnap.id);
+  //       const existing = docSnap.data();
+  //       await updateDoc(ref, {
+  //         quantity: (existing.quantity || 0) + addedQuantity,
+  //       });
+  //     });
+
+  //     // Update labRoom subcollection
+  //     const labRef = doc(db, `labRoom/${labRoom}/items`, itemId);
+  //     const labSnap = await getDoc(labRef);
+  //     if (labSnap.exists()) {
+  //       const existing = labSnap.data();
+  //       await updateDoc(labRef, {
+  //         quantity: (existing.quantity || 0) + addedQuantity,
+  //       });
+  //     }
+
+  //     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+  //   } catch (err) {
+  //     console.error("Quantity update error:", err);
+  //     Alert.alert("Error", "Failed to update quantity.");
+  //   } finally {
+  //     setModalVisible(false);
+  //     setScanned(false);
+  //   }
+  // };
+
   const handleAddQuantity = async (addedQuantity) => {
     const { itemId, itemName, labRoom } = currentItem;
 
     try {
-      // Update inventory
+      // 🔁 Update inventory
       const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
       const snapshot = await getDocs(inventoryQuery);
 
       snapshot.forEach(async docSnap => {
         const ref = doc(db, 'inventory', docSnap.id);
         const existing = docSnap.data();
+
+        const newQty = (existing.quantity || 0) + addedQuantity;
+        const newGood = (existing.condition?.Good || 0) + addedQuantity;
+
         await updateDoc(ref, {
-          quantity: (existing.quantity || 0) + addedQuantity,
+          quantity: newQty,
+          'condition.Good': newGood
         });
+
+        console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
       });
 
-      // Update labRoom subcollection
+      // 🔁 Update labRoom subcollection
       const labRef = doc(db, `labRoom/${labRoom}/items`, itemId);
       const labSnap = await getDoc(labRef);
+
       if (labSnap.exists()) {
         const existing = labSnap.data();
+
+        const newQty = (existing.quantity || 0) + addedQuantity;
+        const newGood = (existing.condition?.Good || 0) + addedQuantity;
+
         await updateDoc(labRef, {
-          quantity: (existing.quantity || 0) + addedQuantity,
+          quantity: newQty,
+          'condition.Good': newGood
         });
+
+        console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
       }
 
       Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+
     } catch (err) {
       console.error("Quantity update error:", err);
       Alert.alert("Error", "Failed to update quantity.");
+
     } finally {
       setModalVisible(false);
       setScanned(false);
     }
   };
-
 
   return (
     <View style={styles.container}>

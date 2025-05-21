@@ -310,7 +310,7 @@ export default function PendingRequestScreen() {
         <Card.Content>
           <Text style={styles.name}>{index + 1}. Requestor: {item.userName || 'N/A'}</Text>
           <Text style={styles.request}>Room: {item.room}</Text>
-          <Text style={styles.reason}>Course Code: {item.courseCode}</Text>
+          <Text style={styles.reason}>Course Code: {item.course}</Text>
           <Text style={styles.reason}>Course Description: {item.courseDescription}</Text>
           {/* <Text style={styles.date}>
             Requisition Date: {item.timestamp ? item.timestamp.toDate().toLocaleString() : 'N/A'}
