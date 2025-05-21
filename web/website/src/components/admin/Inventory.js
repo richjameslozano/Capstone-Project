@@ -65,6 +65,7 @@ const Inventory = () => {
   const [filterUsageType, setFilterUsageType] = useState(null);
   const [searchText, setSearchText] = useState('');
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [disableExpiryDate, setDisableExpiryDate] = useState(false);
   const db = getFirestore();
 
   useEffect(() => {
@@ -120,18 +121,39 @@ const Inventory = () => {
     );
   });  
 
+//  const handleCategoryChange = (value) => {
+//     let type = "";
+
+//     if (["Chemical", "Reagent"].includes(value)) {
+//       type = "Consumable";
+      
+//     } else if (["Equipment", "Glasswares", "Materials"].includes(value)) {
+//       type = "Fixed";
+//     }
+
+//     setItemType(type);
+//     setSelectedCategory(value);
+//     form.setFieldsValue({ type });
+//   };
+
  const handleCategoryChange = (value) => {
     let type = "";
+    let disableExpiry = false;
 
     if (["Chemical", "Reagent"].includes(value)) {
       type = "Consumable";
-      
-    } else if (["Equipment", "Glasswares", "Materials"].includes(value)) {
+      disableExpiry = false;
+    } else if (value === "Materials") {
+      type = "Consumable";
+      disableExpiry = true; // disable expiry even though it's Consumable
+    } else if (["Equipment", "Glasswares"].includes(value)) {
       type = "Fixed";
+      disableExpiry = true;
     }
 
     setItemType(type);
     setSelectedCategory(value);
+    setDisableExpiryDate(disableExpiry); // new state
     form.setFieldsValue({ type });
   };
 
@@ -723,7 +745,7 @@ const printPdf = () => {
                       style={{ width: "100%" }}
                       placeholder="Select Date of Expiry"
                       disabledDate={disabledExpiryDate}
-                      disabled={itemType === "Fixed"}
+                      disabled={disableExpiryDate}
                     />
                   </Form.Item>
                 </Col>
