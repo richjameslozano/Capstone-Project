@@ -15,6 +15,11 @@ import {
   SnippetsOutlined,
   ClockCircleOutlined,
   SearchOutlined,
+  SolutionOutlined,
+  ShoppingCartOutlined,
+  DollarCircleOutlined,
+  RollbackOutlined,
+  SwapLeftOutlined,
 } from '@ant-design/icons';
 
 
@@ -379,17 +384,17 @@ const LayoutMain = () => {
     },
     {
       key: "/main/orders",
-      icon: <ClockCircleOutlined />,
+      icon: <ShoppingCartOutlined />,
       label: "Orders",      
     },
     {
       key: "/main/capex-request",
-      icon: <ClockCircleOutlined />,
+      icon: <DollarCircleOutlined />,
       label: "Capex Request",
     },
     {
       key: "/main/return-items",
-      icon: <ClockCircleOutlined />,
+      icon: <RollbackOutlined />,
       label: "Return Items",
     },
     {
