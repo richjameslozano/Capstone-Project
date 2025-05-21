@@ -14,7 +14,10 @@ import {
   FileDoneOutlined,
   SnippetsOutlined,
   ClockCircleOutlined,
+  SearchOutlined,
 } from '@ant-design/icons';
+
+
 import { Button, Layout, Menu, theme } from 'antd';
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
@@ -366,7 +369,7 @@ const LayoutMain = () => {
     },
     {
       key: "/main/search-items",
-      icon: <ClockCircleOutlined />,
+      icon: <SearchOutlined/>,
       label: "Search Items",
     },
     {
@@ -471,10 +474,11 @@ const LayoutMain = () => {
 
         <Content
           style={{
-            marginTop: 64,
-            paddingTop: 60,
-            margin: '24px 16px',
-            padding: 24,
+            marginTop: 80,
+            padding: 20,
+            paddingTop: 20,
+            marginLeft: 16,
+            marginRight: 16,
             minHeight: "100vh",
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
