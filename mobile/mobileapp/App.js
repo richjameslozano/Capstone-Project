@@ -89,14 +89,14 @@ const CustomDrawerContent = ({ navigation }) => {
 
   useEffect(() => {
     if (isFocused) {
-      StatusBar.setBarStyle('light-content');
+      StatusBar.setBarStyle('dark-content');
       StatusBar.setBackgroundColor('transparent');
     }
   }, [isFocused]);
 
   return (
     <View style={styles.drawerContent}>
-
+        
         <View style={styles.upperSection}>
           <View style={styles.headProfile}>
           <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
@@ -164,47 +164,6 @@ const CustomDrawerContent = ({ navigation }) => {
         <Icon2 name="cash-multiple" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Capex Request</Title>
       </TouchableOpacity>
-
-      {/* <TouchableOpacity
-        style={styles.logoutButton}
-        onPress={() => {
-          Alert.alert(
-            "Logout Confirmation",
-            "Are you sure you want to log out?",
-            [
-              { text: "Cancel", style: "cancel" },
-              {
-                text: "Logout",
-                style: "destructive",
-                onPress: async () => {
-                  try {
-                    if (user?.id) {
-                      await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
-                        action: "User Logged Out (Mobile)",
-                        userName: user.name || "User",
-                        timestamp: serverTimestamp(),
-                      });
-
-                    } else {
-                      console.warn("No user data available for logout log.");
-                    }
-
-                  } catch (error) {
-                    console.error("Error logging logout:", error);
-
-                  } finally {
-                    logout();
-                    navigation.replace("Login");
-                  }
-                },
-              },
-            ]
-          );
-        }}
-      >
-        <Icon name="log-out-outline" size={24} color="black" />
-        <Title style={styles.logoutText}>Logout</Title>
-      </TouchableOpacity> */}
     </View>
   );
 };
@@ -234,7 +193,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
 
    useEffect(() => {
     if (isFocused) {
-      StatusBar.setBarStyle('light-content');
+      StatusBar.setBarStyle('dark-content');
       StatusBar.setBackgroundColor('transparent');
     }
   }, [isFocused]);
@@ -242,10 +201,6 @@ const CustomAdminDrawerContent = ({ navigation }) => {
   return (
     
     <View style={styles.drawerContent}>
-      <StatusBar
-        translucent
-        backgroundColor="transparent"
-      />
 
       <View style={styles.upperSection}>
           <View style={styles.headProfile}>
@@ -269,21 +224,11 @@ const CustomAdminDrawerContent = ({ navigation }) => {
             <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
         </View>
       </View>
-      {/* <TouchableOpacity onPress={() => navigation.navigate('ProfileScreen')}>
-        <View style={styles.profileSection}>
-          {profileImage ? (
-            <Avatar.Image size={50} source={{ uri: profileImage }} />
-          ) : (
-              <Avatar.Text size={50} label={getInitials(user?.name)} />
-            )}
 
-            <Text style={styles.profileName}>
-              {user ? capitalizeName(user.name) : 'Guest'}
-            </Text>
-
-            <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
-        </View>
-      </TouchableOpacity> */}
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
+        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>My Account</Title>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
          <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
@@ -295,10 +240,10 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Inventory</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')} style={styles.drawerItem}>
+      {/* <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')} style={styles.drawerItem}>
         <Icon2 name="progress-clock" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Pending Requests</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
         <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
@@ -310,10 +255,10 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Request Log</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
+      {/* <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
         <Icon2 name="qrcode" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>QR Scanner</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
         <Icon2 name="hand-extended-outline" size={25} style={styles.icon} />
@@ -324,42 +269,6 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         <Icon2 name="cash-multiple" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Capex Request List</Title>
       </TouchableOpacity>
-
-      {/* <TouchableOpacity
-        style={styles.logoutButton} 
-        onPress={() => {
-          Alert.alert(
-            "Logout Confirmation", 
-            "Are you sure you want to log out?", 
-            [
-              { text: "Cancel", style: "cancel" },
-              { 
-                text: "Logout", 
-                style: "destructive", 
-                onPress: async () => {
-                  try {
-                    if (user?.id) {
-                      await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
-                        action: "User Logged Out (Mobile)",
-                        userName: user.name || "User",
-                        timestamp: serverTimestamp(),
-                      });
-                    }
-                  } catch (error) {
-                    console.error("Failed to log logout activity:", error);
-                  } finally {
-                    logout();
-                    navigation.replace('Login'); 
-                  }
-                }
-              }
-            ]
-          );
-        }}
-      >
-        <Icon name="log-out-outline" size={24} color="black" />
-        <Title style={styles.logoutText}>Logout</Title>
-      </TouchableOpacity> */}
 
     </View>
   );
@@ -402,6 +311,7 @@ const AdminDrawer = () => {
       <Drawer.Screen name="CameraScreen" component={CameraScreen} />
       <Drawer.Screen name="RequestLogScreen" component={LogScreen} />
       <Drawer.Screen name="InventoryStocks" component={InventoryStocks} />
+      <Drawer.Screen name="RequestScreen" component={RequestScreen} />
       <Drawer.Screen name="ActivityLogScreen" component={ActivityLogScreen} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
       <Drawer.Screen name="BorrowCatalogScreen" component={BorrowCatalogScreen} />

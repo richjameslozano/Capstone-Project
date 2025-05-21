@@ -1,11 +1,28 @@
-import { StyleSheet } from 'react-native';
+
+import { StatusBar, StyleSheet } from 'react-native';
+
 
 export default StyleSheet.create({
    container3: {
-    flex: 2,
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    paddingTop:60,
+    flex: 1,
+    backgroundColor: '#e9ecee',
+    padding: 7,
+  },
+
+  dashboardHeader:{
+    position: 'absolute',
+    backgroundColor: '#fff',
+    flex: 1,
+    paddingTop: StatusBar.currentHeight+15,
+    left: 0,
+    right:0,
+    flexDirection: 'row',
+    paddingBottom: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+    justifyContent:'space-between',
+    borderBottomWidth: 1,
+    borderColor: '#e9ecee'
   },
 
   userType: {
@@ -29,18 +46,20 @@ export default StyleSheet.create({
     padding: 5,
   },
 
-  grid: {
-    marginTop: 20,
+  actionContainer:{
+    backgroundColor: 'white',
+    borderRadius: 5,
+    padding:10,
   },
 
   card: {
     flex: 1,
     backgroundColor: 'white',
     padding: 16,
-    margin: 10,
-    borderRadius: 10,
+    borderRadius: 8,
     alignItems: 'center',
-    elevation: 3,
+    margin: 5,
+    elevation:2,
     minWidth: '45%', 
     shadowColor: '#000',
     shadowOffset: { width: -3, height: 5 },
