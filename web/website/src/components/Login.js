@@ -55,6 +55,13 @@ const Login = () => {
 
   const [animateInputs, setAnimateInputs] = useState(false);
 
+  const departmentOptionsByJobTitle = {
+    Dean: ["SAH", "SAS", "SOO", "SOD"],
+    "Program Chair": ["Nursing", "Medical Technology", "Psychology", "Optometry", "Dentistry", "Physical Therapy"],
+    Faculty: ["SHS", "Nursing", "Medical Technology", "Psychology", "Dentistry", "Optometry", "Physical Therapy"],
+    "Laboratory Custodian": []  // If no departments or fixed options
+  };
+
      useEffect(() => {
     const handleBackButton = (event) => {
       event.preventDefault();
@@ -74,10 +81,30 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
+  // const handleSignUpChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setSignUpData({ ...signUpData, [name]: value });
+  // };  
+
   const handleSignUpChange = (e) => {
     const { name, value } = e.target;
-    setSignUpData({ ...signUpData, [name]: value });
-  };  
+
+    // If jobTitle changes, reset department
+    if (name === "jobTitle") {
+      setSignUpData({
+        ...signUpData,
+        jobTitle: value,
+        department: "" // reset department when job title changes
+      });
+    } else {
+      setSignUpData({
+        ...signUpData,
+        [name]: value
+      });
+    }
+  };
+
+  const currentDepartments = departmentOptionsByJobTitle[signUpData.jobTitle] || [];
 
   const signUpAnimate = (e) =>{
     if(signUpMode === true){
@@ -635,13 +662,13 @@ const Login = () => {
                       value={signUpData.department}
                       onChange={handleSignUpChange}
                       required
+                      disabled={!signUpData.jobTitle} 
                     >
                       <option value="">Select Department</option>
-                      <option value="Medical Technology">Medical Technology</option>
-                      <option value="Nursing">Nursing</option>
-                      <option value="Dentistry">Dentistry</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Optometry">Optometry</option>
+                        {currentDepartments.map((dept) => (
+                          <option key={dept} value={dept}>{dept}
+                      </option>
+                      ))}
                     </select>
                   </div>
   

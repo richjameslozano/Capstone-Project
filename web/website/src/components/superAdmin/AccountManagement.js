@@ -58,6 +58,13 @@ const AccountManagement = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [filteredAccounts, setFilteredAccounts] = useState([]);
+  const [jobTitle, setJobTitle] = useState("");
+  const departmentOptionsByJobTitle = {
+    Dean: ["SAH", "SAS", "SOO", "SOD"],
+    "Program Chair": ["Nursing", "Medical Technology", "Psychology", "Optometry", "Dentistry", "Physical Therapy"],
+    Faculty: ["SHS", "Nursing", "Medical Technology", "Psychology", "Dentistry", "Optometry", "Physical Therapy"],
+    "Laboratory Custodian": [], // no departments or could be empty
+  };
 
   useEffect(() => {
     const loginSuccessFlag = sessionStorage.getItem("loginSuccess");
@@ -128,6 +135,31 @@ const AccountManagement = () => {
     setShowModal(false);
     sessionStorage.removeItem("loginSuccess");
   };  
+
+  const onJobTitleChange = (value) => {
+      setJobTitle(value);
+
+      // Set role based on job title (as you did)
+      form.setFieldsValue({
+        role:
+          value === "Dean"
+            ? "admin"
+
+            : value === "Laboratory Custodian"
+            ? "super-user"
+
+            : value === "Program Chair"
+            ? "admin"
+
+            : value === "Faculty"
+            ? "User"
+
+            : "",
+        department: undefined, // clear department when job title changes
+      });
+    };
+
+  const departments = departmentOptionsByJobTitle[jobTitle] || [];
 
   const handleSearch = () => {
     let filteredData = [...accounts]; // Start with all accounts
@@ -547,6 +579,23 @@ const AccountManagement = () => {
               </Form.Item>
 
               <Form.Item
+                name="jobTitle"
+                label="Job Title"
+                rules={[{ required: true, message: "Please select a role" }]}
+              >
+                <Select
+                  placeholder="Select Role"
+                  onChange={onJobTitleChange} 
+                  allowClear
+                >
+                  <Option value="Dean">Dean</Option>
+                  <Option value="Program Chair">Program Chair</Option>
+                  <Option value="Laboratory Custodian">Laboratory Custodian</Option>
+                  <Option value="Faculty">Faculty</Option>
+                </Select>
+              </Form.Item>
+
+              <Form.Item
                 name="department"
                 label="Department"
                 rules={[
@@ -556,42 +605,15 @@ const AccountManagement = () => {
                   },
                 ]}
               >
-                <Select placeholder="Select Department">
-                  <Option value="Nursing">Nursing</Option>
-                  <Option value="Medical Technology">
-                    Medical Technology
-                  </Option>
-                  <Option value="Dentistry">Dentistry</Option>
-                  <Option value="Pharmacy">Pharmacy</Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="jobTitle"
-                label="Job Title"
-                rules={[{ required: true, message: "Please select a role" }]}
-              >
-                <Select
-                  placeholder="Select Role"
-                  onChange={(value) => {
-                    form.setFieldsValue({
-                    role:
-                      value === "Dean"
-                        ? "admin"
-                        : value === "Laboratory Custodian"
-                        ? "super-user"
-                        : value === "Program Chair"
-                        ? "admin"
-                        : value === "Faculty"
-                        ? "User"
-                        : "",
-                    });
-                  }}
+                <Select placeholder="Select Department"
+                disabled={!jobTitle} 
+                allowClear
                 >
-                  <Option value="Dean">Dean</Option>
-                  <Option value="Program Chair">Program Chair</Option>
-                  <Option value="Laboratory Custodian">Laboratory Custodian</Option>
-                  <Option value="Faculty">Faculty</Option>
+                {departments.map((dept) => (
+                    <Option key={dept} value={dept}>
+                      {dept}
+                    </Option>
+                ))}
                 </Select>
               </Form.Item>
 
