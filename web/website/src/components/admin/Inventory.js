@@ -343,6 +343,13 @@ const printPdf = () => {
       unit: values.unit || null,
       // usageType: values.usageType,
       rawTimestamp: new Date(),
+      ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+        condition: {
+          Good: quantityNumber,
+          Defect: 0,
+          Damage: 0,
+        },
+      }),
     };
 
     const encryptedData = CryptoJS.AES.encrypt(
