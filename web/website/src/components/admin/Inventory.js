@@ -663,6 +663,14 @@ const printPdf = () => {
     return current && entryDate && current.isBefore(entryDate.endOf("day"));
   };
 
+  const formatCondition = (cond) => {
+    if (cond && typeof cond === 'object') {
+      return `Good: ${cond.Good ?? 0}, Defect: ${cond.Defect ?? 0}, Damage: ${cond.Damage ?? 0}`;
+    }
+    
+    return cond || 'N/A';
+  };
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
 
@@ -921,7 +929,8 @@ const printPdf = () => {
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
                 <p><strong>Status:</strong> {selectedRow.status}</p>
-                <p><strong>Condition:</strong> {selectedRow.condition}</p>
+                {/* <p><strong>Condition:</strong> {selectedRow.condition}</p> */}
+                <p><strong>Condition:</strong> {formatCondition(selectedRow.condition)}</p>
                 <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
                 <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
                 <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
