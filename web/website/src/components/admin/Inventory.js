@@ -144,9 +144,11 @@ const Inventory = () => {
     if (["Chemical", "Reagent"].includes(value)) {
       type = "Consumable";
       disableExpiry = false;
+
     } else if (value === "Materials") {
       type = "Consumable";
-      disableExpiry = true; // disable expiry even though it's Consumable
+      disableExpiry = true; 
+
     } else if (["Equipment", "Glasswares"].includes(value)) {
       type = "Fixed";
       disableExpiry = true;
@@ -346,6 +348,7 @@ const printPdf = () => {
       },
       unit: values.unit || null,
       // usageType: values.usageType,
+      volume: values.category === "Glasswares" ? values.volume : null,
       rawTimestamp: new Date(),
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
         condition: {
@@ -554,10 +557,15 @@ const printPdf = () => {
       dataIndex: "quantity",
       key: "quantity",
       render: (text, record) => {
-        const { category, unit } = record;
+        const { category, unit, volume } = record;
         if (["Chemical", "Reagent"].includes(category)) {
           return `${text} ${unit || ""}`;
         }
+
+        if (category === "Glasswares" && volume) {
+          return `${text} pcs / ${volume} ML`;
+        }
+
         return text;
       },
     },
@@ -947,11 +955,23 @@ const printPdf = () => {
                       label="Unit"
                       rules={[{ required: true, message: "Please select a unit!" }]}
                     >
-                      <Select placeholder="Select Unit">
-                        <Option value="ML">ML</Option>
-                        <Option value="L">L</Option>
-                        <Option value="GALLON">GALLON</Option>
-                      </Select>
+                      <Input value="ML" disabled />
+                    </Form.Item>
+                  </Col>
+                )}
+
+                {selectedCategory === "Glasswares" && (
+                  <Col span={8}>
+                    <Form.Item
+                      name="volume"
+                      label="Volume"
+                      rules={[{ required: true, message: "Please enter the volume!" }]}
+                    >
+                      <Input
+                        type="number"
+                        addonAfter="ML"
+                        placeholder="Enter volume"
+                      />
                     </Form.Item>
                   </Col>
                 )}
@@ -1034,7 +1054,17 @@ const printPdf = () => {
               <div>
                 <p><strong>Item ID:</strong> {selectedRow.itemId}</p>
                 <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
-                <p><strong>Quantity:</strong> {selectedRow.quantity}</p>
+                {/* <p><strong>Quantity:</strong> {selectedRow.quantity}</p> */}
+                <p>
+                  <strong>Quantity:</strong>{" "}
+                  {selectedRow.quantity}
+                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit ? ` ${selectedRow.unit}` : ""}
+                </p>
+                {selectedRow.category === "Glasswares" && selectedRow.volume && (
+                  <p>
+                    <strong>Volume:</strong> {selectedRow.volume} ML
+                  </p>
+                )}
                 <p><strong>Category:</strong> {selectedRow.category}</p>
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
