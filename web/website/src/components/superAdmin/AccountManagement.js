@@ -775,6 +775,31 @@ const AccountManagement = () => {
           </Form>
         </Modal>
 
+        <Modal
+          title="Add Department"
+          visible={isDeptModalVisible}
+          onOk={handleAddDepartment}
+          onCancel={handleDeptCancel}
+          okText="Add"
+          zIndex={1022}
+        >
+          <Input
+            placeholder="Enter department name"
+            value={newDepartment}
+            onChange={(e) => setNewDepartment(e.target.value)}
+            onPressEnter={handleAddDepartment}
+          />
+
+          <List
+            size="small"
+            header={<div>Departments List</div>}
+            bordered
+            dataSource={departmentsAll}
+            renderItem={item => <List.Item key={item.id}>{item.name}</List.Item>}
+            style={{ marginTop: 16, maxHeight: 200, overflowY: "auto" }}
+          />
+        </Modal>
+
         <NotificationModal  
           isVisible={isNotificationVisible}
           onClose={() => setIsNotificationVisible(false)}
