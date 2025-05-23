@@ -15,24 +15,13 @@ export default function InventoryStocks({ navigation }) {
   const [modalVisible, setModalVisible] = useState(false);
   const [filterCategory, setFilterCategory] = useState('All');
 
-  // useEffect(() => {
-  //   const fetchInventory = async () => {
-  //     try {
-  //       const inventoryCollection = collection(db, 'inventory');
-  //       const inventorySnapshot = await getDocs(inventoryCollection);
-  //       const inventoryList = inventorySnapshot.docs.map(doc => ({
-  //         id: doc.id,
-  //         ...doc.data()
-  //       }));
 
-  //       setInventoryItems(inventoryList);
-  //     } catch (error) {
-  //       console.error("Error fetching inventory: ", error);
-  //     }
-  //   };
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
 
-  //   fetchInventory();
-  // }, []);
 
   useEffect(() => {
     const fetchInventory = () => {
@@ -81,11 +70,30 @@ export default function InventoryStocks({ navigation }) {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+                     <TouchableOpacity onPress={() => {
+                if (navigation?.openDrawer) {
+                  navigation.openDrawer();
+      
+                } else {
+                  console.warn("Drawer navigation not available");
+                }
+              }} 
+              >
+                       <Icon name="menu" size={28} color="black" /> 
+                     </TouchableOpacity>
+                    <View>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>NU <Text style={{color: '#f4c430'}}>MOA</Text></Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13}}>Laboratory System</Text>
+                    </View>
+      
+                     <TouchableOpacity style={{padding: 2}}>
+                       <Icon name="information-outline" size={24} color="#000" />
+                     </TouchableOpacity>
+                   </View>
 
-      <Text style={styles.pageTitle}>Inventory Stocks</Text>
-
-      <TextInput
+      <View style={[styles.container2, {marginTop: headerHeight}]}>
+        <TextInput
         style={styles.searchBar}
         placeholder="Search Item Description..."
         value={searchQuery}
@@ -150,6 +158,9 @@ export default function InventoryStocks({ navigation }) {
           </View>
         ))}
       </ScrollView>
+      </View>
+
+      
 
       <Modal visible={modalVisible} transparent={true} animationType="slide">
         <View style={styles.modalContainer}>

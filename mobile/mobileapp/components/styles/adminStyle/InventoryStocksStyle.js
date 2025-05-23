@@ -1,10 +1,27 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f4f4f4',
-    padding: 15,
+    backgroundColor: '#e9ecee',
+    padding: 7,
+    paddingTop: 5,
+  },
+
+  inventoryStocksHeader:{
+    position: 'absolute',
+        backgroundColor: '#fff',
+        flex: 1,
+        paddingTop: StatusBar.currentHeight+15,
+        left: 0,
+        right:0,
+        flexDirection: 'row',
+        paddingBottom: 10,
+        paddingHorizontal: 15,
+        alignItems: 'center',
+        justifyContent:'space-between',
+        borderBottomWidth: 1,
+        borderColor: '#e9ecee'
   },
 
   pageTitle:{

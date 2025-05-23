@@ -12,12 +12,11 @@ export default function AdminDashboard({ navigation }) {
   const [isModalVisible, setModalVisible] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
 
-   const isFocused = useIsFocused();
-
-    const handleHeaderLayout = (event) => {
+const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
     setHeaderHeight(height);
   };
+    
 
   
 useFocusEffect(
