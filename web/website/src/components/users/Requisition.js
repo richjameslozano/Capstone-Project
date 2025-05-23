@@ -91,7 +91,12 @@ const Requisition = () => {
       item.labRoom &&
       item.status &&
       item.condition &&
-      item.department
+      item.department &&
+      (
+        (["Chemical", "Reagent"].includes(item.category) && item.unit) ||
+        (item.category === "Materials" && item.volume) ||
+        (!["Chemical", "Reagent", "Materials"].includes(item.category)) // for other categories, no unit/volume required
+      )
     );
   
     const timeValid = timeFrom && timeTo &&
@@ -109,37 +114,70 @@ const Requisition = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const fetchRequestList = async () => {
-      const userId = localStorage.getItem("userId");
-      if (userId) {
-        try {
-          const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-          const querySnapshot = await getDocs(tempRequestRef);
-          const tempRequestList = querySnapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
-              ...data,
-              selectedItem: {
-                value: data.selectedItemId,
-                label: data.selectedItemLabel, // <-- This restores the label after refresh
-              },
-            };
-          });          
+  // useEffect(() => {
+  //   const fetchRequestList = async () => {
+  //     const userId = localStorage.getItem("userId");
+  //     if (userId) {
+  //       try {
+  //         const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+  //         const querySnapshot = await getDocs(tempRequestRef);
+  //         const tempRequestList = querySnapshot.docs.map((doc) => {
+  //           const data = doc.data();
+  //           return {
+  //             ...data,
+  //             selectedItem: {
+  //               value: data.selectedItemId,
+  //               label: data.selectedItemLabel, // <-- This restores the label after refresh
+  //             },
+  //           };
+  //         });          
   
-          setRequestList(tempRequestList);
+  //         setRequestList(tempRequestList);
 
-          localStorage.setItem("requestList", JSON.stringify(tempRequestList));
+  //         localStorage.setItem("requestList", JSON.stringify(tempRequestList));
   
-        } catch (error) {
-          console.error("Error fetching request list:", error);
-        }
-      }
-    };
+  //       } catch (error) {
+  //         console.error("Error fetching request list:", error);
+  //       }
+  //     }
+  //   };
   
     
-    fetchRequestList();
-  }, []);  
+  //   fetchRequestList();
+  // }, []);  
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) return;
+
+    const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+
+    const unsubscribe = onSnapshot(
+      tempRequestRef,
+      (querySnapshot) => {
+        const tempRequestList = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            ...data,
+            selectedItem: {
+              value: data.selectedItemId,
+              label: data.selectedItemLabel, // restore label
+            },
+          };
+        });
+
+        setRequestList(tempRequestList);
+        localStorage.setItem("requestList", JSON.stringify(tempRequestList));
+      },
+      (error) => {
+        console.error("Error fetching request list:", error);
+      }
+    );
+
+    // Clean up the listener on unmount
+    return () => unsubscribe();
+  }, []);
 
   // REAL TIME UPDATE TEMREQ
   // useEffect(() => {
@@ -686,7 +724,8 @@ const Requisition = () => {
           >
             {/* Map through filtered items instead of the entire items list */}
             {filteredItems.map((item) => {
-              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
               const isDisabled = selectedIds.includes(item.id);
   
               return (
