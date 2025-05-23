@@ -414,22 +414,63 @@ function getConditionSummary(conditionsArray) {
 }
 
 
-  const handleDeploy = async () => {
-  try {
-    const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
-    await updateDoc(docRef, {
-      status: "Deployed",
+//   const handleDeploy = async () => {
+//   try {
+//     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+//     await updateDoc(docRef, {
+//       status: "Deployed",
+//     });
+
+//     // Optional: feedback or close modal
+//     alert("Request successfully deployed!");
+//     setIsApprovedModalVisible(false);
+
+//   } catch (error) {
+//     console.error("Error updating document:", error);
+//     alert("Failed to deploy request.");
+//   }
+// };
+
+  const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
+    await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+      action, // e.g. "Requested Items" or "Returned Items"
+      userName,
+      timestamp: serverTimestamp(),
+      requestList: requestDetails, 
     });
+  };
 
-    // Optional: feedback or close modal
-    alert("Request successfully deployed!");
-    setIsApprovedModalVisible(false);
+  const handleDeploy = async () => {
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
 
-  } catch (error) {
-    console.error("Error updating document:", error);
-    alert("Failed to deploy request.");
-  }
-};
+    try {
+      // 1. Update the status of the selected approved request
+      const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+      await updateDoc(docRef, {
+        status: "Deployed",
+      });
+
+      const mainItemName = selectedApprovedRequest.requestList?.[0]?.itemName || "Item";
+      
+      const deployMessage = `Deployed "${mainItemName}" to ${selectedApprovedRequest.userName} in ${selectedApprovedRequest.room}`;
+
+      // 2. Log the deploy action in the user's activity log with full message
+      await logRequestOrReturn(userId, userName, deployMessage, {
+        requestId: selectedApprovedRequest.id,
+        status: "Deployed",
+        itemName: mainItemName,
+        userDeployedTo: selectedApprovedRequest.userName,
+      });
+
+      alert("Request successfully deployed!");
+      setIsApprovedModalVisible(false);
+
+    } catch (error) {
+      console.error("Error updating document or logging activity:", error);
+      alert("Failed to deploy request.");
+    }
+  };
 
   // const handleApprove = async () => {
   //   try {
