@@ -7,6 +7,7 @@ export default StyleSheet.create({
     flex: 1,
     backgroundColor: '#e9ecee',
     padding: 7,
+    paddingTop: 5,
   },
 
   dashboardHeader:{

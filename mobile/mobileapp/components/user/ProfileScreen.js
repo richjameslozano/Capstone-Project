@@ -232,8 +232,16 @@ export default function ProfileScreen({ navigation }) {
         style={styles.logoutButton}
         onPress={handleLogout}
       >
-        <Icon name='logout' size={20} color='#6abce2'/>
-        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#6abce2'}}>Log Out</Text>
+        <Icon name='shield-check-outline' size={20} color='#6abce2'/>
+        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#6abce2'}}>Policy</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.logoutButton}
+        onPress={handleLogout}
+      >
+        <Icon name='logout' size={20} color='#5f5f5f'/>
+        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#5f5f5f'}}>Log Out</Text>
       </TouchableOpacity>
     </View>
   );

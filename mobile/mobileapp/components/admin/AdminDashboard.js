@@ -62,7 +62,7 @@ useFocusEffect(
                <TouchableOpacity onPress={() => {
           if (navigation?.openDrawer) {
             navigation.openDrawer();
-            
+
           } else {
             console.warn("Drawer navigation not available");
           }
@@ -81,10 +81,11 @@ useFocusEffect(
              </View>
 
 
-        <View style={[styles.actionContainer, {marginTop: headerHeight+5}]}>
+        <View style={[styles.actionContainer, {marginTop: headerHeight}]}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee', marginBottom: 8}}>
                     <Icon name='gesture-tap-button' size={20} color='#395a7f'/>
                     <Text style={{color: '#395a7f', fontSize: 12, fontWeight: 'bold'}}>Quick Actions</Text>
+
                   </View>
         <FlatList
           data={menuItems}
