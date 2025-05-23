@@ -171,26 +171,26 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         }
     
         // Block check
-        if (userData.isBlocked && userData.blockedUntil) {
-          const now = Timestamp.now().toMillis();
-          const blockedUntil = userData.blockedUntil.toMillis();
+        // if (userData.isBlocked && userData.blockedUntil) {
+        //   const now = Timestamp.now().toMillis();
+        //   const blockedUntil = userData.blockedUntil.toMillis();
     
-          if (now < blockedUntil) {
-            const remainingTime = Math.ceil((blockedUntil - now) / 1000);
-            setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
-            setLoading(false);
-            return;
+        //   if (now < blockedUntil) {
+        //     const remainingTime = Math.ceil((blockedUntil - now) / 1000);
+        //     setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
+        //     setLoading(false);
+        //     return;
   
-          } else {
-            await updateDoc(userDoc.ref, {
-              isBlocked: false,
-              loginAttempts: 0,
-              blockedUntil: null,
-            });
+        //   } else {
+        //     await updateDoc(userDoc.ref, {
+        //       isBlocked: false,
+        //       loginAttempts: 0,
+        //       blockedUntil: null,
+        //     });
   
-            console.log("Account unblocked.");
-          }
-        }
+        //     console.log("Account unblocked.");
+        //   }
+        // }
     
         if (isSuperAdmin) {
           if (userData.password === password) {
@@ -201,22 +201,23 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             navigation.replace("SuperAdminDashboard");
     
           } else {
-            const newAttempts = (userData.loginAttempts || 0) + 1;
+            // const newAttempts = (userData.loginAttempts || 0) + 1;
     
-            if (newAttempts >= 4) {
-              const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
-              await updateDoc(userDoc.ref, {
-                isBlocked: true,
-                blockedUntil: Timestamp.fromMillis(unblockTime),
-              });
+            // if (newAttempts >= 4) {
+            //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
+            //   await updateDoc(userDoc.ref, {
+            //     isBlocked: true,
+            //     blockedUntil: Timestamp.fromMillis(unblockTime),
+            //   });
     
-              setError("Account blocked for 30 minutes.");
+            //   setError("Account blocked for 30 minutes.");
   
-            } else {
-              await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-              setError(`Invalid password. ${4 - newAttempts} attempts left.`);
-            }
-    
+            // } else {
+            //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+            //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
+            // }
+            
+            setError(`Invalid password.`);
             setLoading(false);
             return;
           }
@@ -264,22 +265,23 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           } catch (authError) {
             // console.error("Auth login failed:", authError.message);
     
-            const newAttempts = (userData.loginAttempts || 0) + 1;
+            // const newAttempts = (userData.loginAttempts || 0) + 1;
     
-            if (newAttempts >= 4) {
-              const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
-              await updateDoc(userDoc.ref, {
-                isBlocked: true,
-                blockedUntil: Timestamp.fromMillis(unblockTime),
-              });
+            // if (newAttempts >= 4) {
+            //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
+            //   await updateDoc(userDoc.ref, {
+            //     isBlocked: true,
+            //     blockedUntil: Timestamp.fromMillis(unblockTime),
+            //   });
     
-              setError("Account blocked after 4 failed attempts.");
+            //   setError("Account blocked after 4 failed attempts.");
               
-            } else {
-              await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-              setError(`Invalid password. ${4 - newAttempts} attempts left.`);
-            }
+            // } else {
+            //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+            //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
+            // }
     
+            setError(`Invalid password.`);
             setLoading(false);
             return;
           }

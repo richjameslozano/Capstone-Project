@@ -228,6 +228,17 @@ const AccountManagement = () => {
       email: values.email.trim().toLowerCase(),
     };
 
+    // Validate email domain
+    const email = sanitizedValues.email;
+    const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
+    const isValidEmail = validDomains.some(domain => email.endsWith(domain));
+
+    if (!isValidEmail) {
+      setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
+      setIsNotificationVisible(true);
+      return;
+    }
+
     // Check if the employeeId already exists in the 'accounts' collection
     const employeeQuery = query(
       collection(db, "accounts"),

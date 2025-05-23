@@ -170,26 +170,26 @@ const Login = () => {
       }
   
       // 🔒 Block check
-      if (userData.isBlocked && userData.blockedUntil) {
-        const now = Timestamp.now().toMillis();
-        const blockedUntil = userData.blockedUntil.toMillis();
+      // if (userData.isBlocked && userData.blockedUntil) {
+      //   const now = Timestamp.now().toMillis();
+      //   const blockedUntil = userData.blockedUntil.toMillis();
   
-        if (now < blockedUntil) {
-          const remainingTime = Math.ceil((blockedUntil - now) / 1000);
-          setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
-          setIsLoading(false);
-          return;
+      //   if (now < blockedUntil) {
+      //     const remainingTime = Math.ceil((blockedUntil - now) / 1000);
+      //     setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
+      //     setIsLoading(false);
+      //     return;
 
-        } else {
-          await updateDoc(userDoc.ref, {
-            isBlocked: false,
-            loginAttempts: 0,
-            blockedUntil: null,
-          });
+      //   } else {
+      //     await updateDoc(userDoc.ref, {
+      //       isBlocked: false,
+      //       loginAttempts: 0,
+      //       blockedUntil: null,
+      //     });
           
-          console.log("Account unblocked successfully.");
-        }
-      }
+      //     console.log("Account unblocked successfully.");
+      //   }
+      // }
   
       // 🧠 Super-admin login (Firestore password)
       if (isSuperAdmin) {
@@ -207,21 +207,22 @@ const Login = () => {
           navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
   
         } else {
-          const newAttempts = (userData.loginAttempts || 0) + 1;
+          // const newAttempts = (userData.loginAttempts || 0) + 1;
   
-          if (newAttempts >= 4) {
-            const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000; // 30 minutes
-            await updateDoc(userDoc.ref, {
-              isBlocked: true,
-              blockedUntil: Timestamp.fromMillis(unblockTime),
-            });
+          // if (newAttempts >= 4) {
+          //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000; // 30 minutes
+          //   await updateDoc(userDoc.ref, {
+          //     isBlocked: true,
+          //     blockedUntil: Timestamp.fromMillis(unblockTime),
+          //   });
   
-            setError("Super Admin account blocked. Try again after 30 minutes.");
+          //   setError("Super Admin account blocked. Try again after 30 minutes.");
 
-          } else {
-            await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-            setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
-          }
+          // } else {
+          //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+          //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
+          // }
+          setError(`Invalid password.`);
         }
   
       } else {
@@ -275,19 +276,20 @@ const Login = () => {
   
           const newAttempts = (userData.loginAttempts || 0) + 1;
   
-          if (newAttempts >= 4) {
-            const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
-            await updateDoc(userDoc.ref, {
-              isBlocked: true,
-              blockedUntil: Timestamp.fromMillis(unblockTime),
-            });
+          // if (newAttempts >= 4) {
+          //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
+          //   await updateDoc(userDoc.ref, {
+          //     isBlocked: true,
+          //     blockedUntil: Timestamp.fromMillis(unblockTime),
+          //   });
   
-            setError("Account blocked after 4 failed attempts. Try again after 30 minutes.");
+          //   setError("Account blocked after 4 failed attempts. Try again after 30 minutes.");
 
-          } else {
-            await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-            setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
-          }
+          // } else {
+          //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+          //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
+          // }
+          setError(`Invalid password.`);
         }
       }
   
