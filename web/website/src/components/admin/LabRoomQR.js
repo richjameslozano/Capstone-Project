@@ -302,6 +302,7 @@
 
 // export default LabRoomQR;
 
+// VERSION 3
 import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
@@ -354,6 +355,7 @@ const LabRoomQR = () => {
                 rawTimestamp: itemData.rawTimestamp || "N/A",
                 timestamp: itemData.timestamp || "N/A",
                 unit: itemData.unit || "N/A",
+                volume: itemData.volume || "N/A",
               };
             });
 
@@ -455,20 +457,12 @@ const LabRoomQR = () => {
                       <td>{item.itemId}</td>
                       <td>{item.category}</td>
                       {/* <td>{item.condition}</td> */}
-                      <td>
-                        {item.category === "Chemical" || item.category === "Reagent" ? (
-                          <span style={{ fontStyle: "italic", color: "#999" }}>N/A</span>
-                        ) : (
-                          <>
-                            <div>Good: {item.condition?.Good ?? 0}</div>
-                            <div>Defect: {item.condition?.Defect ?? 0}</div>
-                            <div>Damage: {item.condition?.Damage ?? 0}</div>
-                          </>
-                        )}
-                      </td> 
+                      <td>{["Chemical", "Reagent"].includes(item.category) ? "N/A" : item.condition}</td>
                       <td>{item.department}</td>
                       <td>
                         {item.quantity}
+                        {item.category === "Glasswares" ? " pcs" : ""}
+                        {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
                         {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}
                       </td>
                       <td>{item.status}</td>
