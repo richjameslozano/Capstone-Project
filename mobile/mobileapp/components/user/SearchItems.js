@@ -170,7 +170,12 @@ export default function SearchItemsScreen({ navigation }) {
             {hoveredItem && (
               <View>
                 <Text style={styles.modalTitle}>{hoveredItem.itemName}</Text>
-                <Text>Quantity: {hoveredItem.quantity}</Text>
+                {/* <Text>Quantity: {hoveredItem.quantity}</Text> */}
+                <Text>
+                  Quantity: {hoveredItem.quantity}
+                  {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit ? ` ${hoveredItem.unit}` : ""}
+                  {hoveredItem.category === "Glasswares" && hoveredItem.volume ? ` / ${hoveredItem.volume} ML` : ""}
+                </Text>
                 <Text>Status: {hoveredItem.status}</Text>
                 <Text>Category: {hoveredItem.category}</Text>
                 <Text>Location: {hoveredItem.labRoom}</Text>

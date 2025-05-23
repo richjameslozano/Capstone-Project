@@ -178,7 +178,7 @@ export default function InventoryStocks({ navigation }) {
                 <Text style={styles.modalText}>
                 <Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}
                   {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
-                  {selectedItem.category === "Materials" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
+                  {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                 </Text>
 
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Category:</Text> {selectedItem.category || 'N/A'}</Text>
