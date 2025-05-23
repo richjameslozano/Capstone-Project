@@ -10,8 +10,8 @@ import {
   getAuth,
 } from "firebase/auth";
 import { auth, db } from "../backend/firebase/FirebaseConfig";
-import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, serverTimestamp } from "firebase/firestore";
-import { notification, Modal } from "antd";
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { notification, Modal, message } from "antd";
 import bcrypt from "bcryptjs";
 import "./styles/Login.css";
 
@@ -52,7 +52,8 @@ const Login = () => {
   const navigate = useNavigate();
   const openTermsModal = () => setIsTermModalVisible(true);
   const closeTermsModal = () => setIsTermModalVisible(false);
-
+  const [departmentsAll, setDepartmentsAll] = useState([]);
+  const [currentDepartments, setCurrentDepartments] = useState([]);
   const [animateInputs, setAnimateInputs] = useState(false);
 
   const departmentOptionsByJobTitle = {
@@ -76,26 +77,56 @@ const Login = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+    const unsubscribe = onSnapshot(
+      departmentsCollection,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error("Error fetching departments in real-time: ", error);
+        message.error("Failed to load departments.");
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
 
-  // const handleSignUpChange = (e) => {
-  //   const { name, value } = e.target;
-  //   setSignUpData({ ...signUpData, [name]: value });
-  // };  
-
   const handleSignUpChange = (e) => {
     const { name, value } = e.target;
 
-    // If jobTitle changes, reset department
     if (name === "jobTitle") {
+      let filteredDepts = [];
+
+      if (value === "Faculty") {
+        filteredDepts = departmentsAll.map((dept) => dept.name);
+        
+      } else if (value === "Program Chair") {
+        filteredDepts = departmentsAll
+          .map((dept) => dept.name)
+          .filter((name) => name !== "SHS");
+
+      } else {
+        filteredDepts = departmentOptionsByJobTitle[value] || [];
+      }
+
       setSignUpData({
         ...signUpData,
         jobTitle: value,
-        department: "" // reset department when job title changes
+        department: "" // reset department
       });
+
+      setCurrentDepartments(filteredDepts); 
+
     } else {
       setSignUpData({
         ...signUpData,
@@ -103,8 +134,6 @@ const Login = () => {
       });
     }
   };
-
-  const currentDepartments = departmentOptionsByJobTitle[signUpData.jobTitle] || [];
 
   const signUpAnimate = (e) =>{
     if(signUpMode === true){
@@ -641,7 +670,7 @@ const Login = () => {
                   </div>
   
                 <div className="dropdown-container">
-                <div className="form-group">
+                  <div className="form-group">
                     <label>Job Title</label>
                     <select
                       name="jobTitle"
