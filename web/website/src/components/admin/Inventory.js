@@ -540,6 +540,7 @@ const printPdf = () => {
   const handleDelete = (record) => {
     setItemToDelete(record);
     setDeleteModalVisible(true);
+    setIsRowModalVisible(false)
   };  
 
   const columns = [
@@ -549,9 +550,6 @@ const printPdf = () => {
       sortDirections: ['ascend', 'descend'],
       defaultSortOrder: 'ascend', 
     },
-    { title: "Category", dataIndex: "category", key: "category" },
-    { title: "Department", dataIndex: "department", key: "department" },
-    // { title: "Inventory Balance", dataIndex: "quantity", key: "quantity" },
     {
       title: "Inventory Balance",
       dataIndex: "quantity",
@@ -570,57 +568,7 @@ const printPdf = () => {
       },
     },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
-    { title: "Status", dataIndex: "status", key: "status" },
-    // { title: "Condition", dataIndex: "condition", key: "condition" },
-    // {
-    //   title: "Condition",
-    //   dataIndex: "condition",
-    //   key: "condition",
-    //   render: (condition) => (
-    //     <div>
-    //       <div>Good: {condition?.Good ?? 0}</div>
-    //       <div>Defect: {condition?.Defect ?? 0}</div>
-    //       <div>Damage: {condition?.Damage ?? 0}</div>
-    //     </div>
-    //   ),
-    // },
-    {
-      title: "Condition",
-      dataIndex: "condition",
-      key: "condition",
-      render: (_, record) => {
-        // Only render condition if category is not Chemical or Reagent
-        if (record.category === "Chemical" || record.category === "Reagent") {
-          return <div style={{ fontStyle: "italic", color: "#999" }}>N/A</div>;
-        }
-
-        const condition = record.condition || {};
-        return (
-          <div>
-            <div>Good: {condition.Good ?? 0}</div>
-            <div>Defect: {condition.Defect ?? 0}</div>
-            <div>Damage: {condition.Damage ?? 0}</div>
-          </div>
-        );
-      },
-    },
-    {
-      title: "QR Code",
-      dataIndex: "qrCode",
-      key: "qrCode",
-      render: (qrCode, record) => (
-        <Button
-          type="link"
-          onClick={() => {
-            setSelectedQrCode(qrCode);
-            setSelectedItemName(record.itemName);
-            setQrModalVisible(true);
-          }}
-        >
-          View QR
-        </Button>
-      ),
-    },    
+    { title: "Status", dataIndex: "status", key: "status" },   
     {
       title: "Actions",
       dataIndex: "actions",
@@ -636,18 +584,6 @@ const printPdf = () => {
             }}
           >
             View
-          </Button>
-
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={(e) => {
-              e.stopPropagation(); 
-              handleDelete(record);
-            }}
-          >
-            Archive
           </Button>
 
           <Button
@@ -888,6 +824,57 @@ const printPdf = () => {
             </Button>
           </div>
 
+          <div className="inventory-header">
+            <Space wrap>
+              <Input.Search
+                placeholder="Search"
+                className="search-bar"
+                style={{ width: 200 }}
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+
+              <Select
+                allowClear
+                placeholder="Filter by Category"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterCategory(value)}
+              >
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+                <Option value="Glasswares">Glasswares</Option>
+              </Select>
+
+              <Select
+                allowClear
+                placeholder="Filter by Item Type"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterItemType(value)}
+              >
+                <Option value="Fixed">Fixed</Option>
+                <Option value="Consumable">Consumable</Option>
+              </Select>
+
+              <Button
+                onClick={() => {
+                  setFilterCategory(null);
+                  setFilterItemType(null);
+                  // setFilterUsageType(null);
+                  setSearchText('');
+                }}
+              >
+                Reset Filters
+              </Button>
+
+              <Button type="primary" onClick={exportToExcel}>
+                Export to Excel
+              </Button>
+
+            </Space>
+          </div> 
+
           <Table
             dataSource={filteredData}
             columns={columns}
@@ -1056,7 +1043,7 @@ const printPdf = () => {
                 <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
                 {/* <p><strong>Quantity:</strong> {selectedRow.quantity}</p> */}
                 <p>
-                  <strong>Quantity:</strong>{" "}
+                  <strong>Inventory Balance:</strong>{" "}
                   {selectedRow.quantity}
                   {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit ? ` ${selectedRow.unit}` : ""}
                 </p>
@@ -1069,11 +1056,30 @@ const printPdf = () => {
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
                 <p><strong>Status:</strong> {selectedRow.status}</p>
-                {/* <p><strong>Condition:</strong> {selectedRow.condition}</p> */}
                 <p><strong>Condition:</strong> {formatCondition(selectedRow.condition)}</p>
                 <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
                 <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
                 <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
+                
+                  <div style={{ marginTop: 24, textAlign: 'center' }}>
+                    <h4>Item QR Code</h4>
+                    {selectedRow.qrCode ? (
+                      <QRCodeCanvas value={selectedRow.qrCode} size={200} />
+                    ) : (
+                      <p>No QR Code Available</p>
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: 24, textAlign: 'center' }}>
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDelete(selectedRow)}
+                    >
+                      Archive
+                    </Button>
+                  </div>
               </div>
             )}
           </Modal>
