@@ -22,7 +22,7 @@ export default function InventoryScreen({ navigation }) {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -285,11 +285,6 @@ export default function InventoryScreen({ navigation }) {
       if(item.category === 'Chemical') return 'flask-outline';
       if(item.category === 'Materials') return 'layers-outline';
       if(item.category === 'Reagent') return 'test-tube';
-    }
-
-    const handleBgColor =() =>{
-      if(item.category === 'Equipment') return '#ffffa0';
-      if(item.category === 'Materials') return '#dac4ff';
     }
     
     return (
@@ -894,7 +889,7 @@ export default function InventoryScreen({ navigation }) {
       <View style={[styles.searchFilter, {top: headerHeight}]}>
         <View style={{flex: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 7}}>
           <View style={styles.searchContainer}>
-            <Icon name="magnify" size={20} color="#888" style={styles.searchIcon} />
+            <Icon name="magnify" size={20} color="#888"  />
             <TextInput
               style={styles.searchInput}
               placeholder="Search by item name"
@@ -903,10 +898,6 @@ export default function InventoryScreen({ navigation }) {
             />
           </View>
 
-          {/* <TouchableOpacity style={{backgroundColor:'#efefef', flex:1, borderRadius: 5, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5}}>
-            <Icon name='filter-variant' size={20} color='#515151'/>
-            <Text style={{fontWeight: 'bold', color: '#515151'}}>All</Text>
-          </TouchableOpacity> */}
           <TouchableOpacity
             style={{
               backgroundColor: '#efefef',

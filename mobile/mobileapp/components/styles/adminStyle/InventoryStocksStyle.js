@@ -5,7 +5,8 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#e9ecee',
     padding: 7,
-    paddingTop: 5,
+    paddingTop: 4,
+    gap: 5
   },
 
   inventoryStocksHeader:{
@@ -22,6 +23,39 @@ const styles = StyleSheet.create({
         justifyContent:'space-between',
         borderBottomWidth: 1,
         borderColor: '#e9ecee'
+  },
+
+  container2:{
+    flex:1,
+    backgroundColor: 'white',
+    borderRadius: 5,
+  },
+
+    searchFilter:{
+    width: '100%',
+    alignSelf: 'center', 
+    padding: 5,
+    paddingBottom: 5,
+    backgroundColor: 'white',
+    paddingTop: 10,
+    borderRadius: 5,
+  },
+
+    searchContainer: {
+    width: '70%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
+  },
+
+
+    searchInput: {
+    flex: 1,
+    height: 40,
   },
 
   pageTitle:{
