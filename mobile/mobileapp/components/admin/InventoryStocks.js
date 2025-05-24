@@ -221,7 +221,7 @@ const formatCondition = (cond) => {
               <View style={{padding: 8, borderColor: handleBG(item), borderRadius: 5, borderWidth: 2}}>
               <Text style={{fontSize: 16, fontWeight: 'bold'}}>{item.itemName}</Text>
             
-            <View style={{ gap: 2}}>
+            <View style={{marginTop:5}}>
               <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>Inventory Balance:</Text>
               <Text style={styles.cardValueNum}>{item.quantity}</Text>
