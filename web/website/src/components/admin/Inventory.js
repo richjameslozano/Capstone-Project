@@ -517,6 +517,7 @@ const printPdf = () => {
           }
 
           setIsEditModalVisible(false);
+          setIsRowModalVisible(false)
           setEditingItem(null);
           form.resetFields();
         }
@@ -569,38 +570,38 @@ const printPdf = () => {
     },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },   
-    {
-      title: "Actions",
-      dataIndex: "actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space direction="vertical" size="small">
-          <Button
-            icon={<EyeOutlined />} 
-            onClick={(e) => {
-              e.stopPropagation(); 
-              setSelectedRow(record);
-              setIsRowModalVisible(true);
-            }}
-          >
-            View
-          </Button>
+    // {
+    //   title: "Actions",
+    //   dataIndex: "actions",
+    //   key: "actions",
+    //   render: (_, record) => (
+    //     <Space direction="vertical" size="small">
+    //       <Button
+    //         icon={<EyeOutlined />} 
+    //         onClick={(e) => {
+    //           e.stopPropagation(); 
+    //           setSelectedRow(record);
+    //           setIsRowModalVisible(true);
+    //         }}
+    //       >
+    //         View
+    //       </Button>
 
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={(e) => {
-              e.stopPropagation(); 
-              setSelectedRow(record);
-              setIsEditModalVisible(true);
-              editItem(record)
-            }}
-          >
-            Edit
-          </Button>
-        </Space>
-      ),
-    }    
+    //       <Button
+    //         type="link"
+    //         icon={<EditOutlined />}
+    //         onClick={(e) => {
+    //           e.stopPropagation(); 
+    //           setSelectedRow(record);
+    //           setIsEditModalVisible(true);
+    //           editItem(record)
+    //         }}
+    //       >
+    //         Edit
+    //       </Button>
+    //     </Space>
+    //   ),
+    // }    
   ];
 
   const disabledDate = (current) => {
@@ -612,12 +613,16 @@ const printPdf = () => {
     return current && entryDate && current.isBefore(entryDate.endOf("day"));
   };
 
-  const formatCondition = (cond) => {
-    if (cond && typeof cond === 'object') {
-      return `Good: ${cond.Good ?? 0}, Defect: ${cond.Defect ?? 0}, Damage: ${cond.Damage ?? 0}`;
+  const formatCondition = (condition, category) => {
+    if (category === 'Chemical' || category === 'Reagent') {
+      return 'N/A';
     }
-    
-    return cond || 'N/A';
+
+    if (condition && typeof condition === 'object') {
+      return `Good: ${condition.Good ?? 0}, Defect: ${condition.Defect ?? 0}, Damage: ${condition.Damage ?? 0}`;
+    }
+
+    return condition || 'N/A';
   };
 
   return (
@@ -881,6 +886,14 @@ const printPdf = () => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
+            onRow={(record) => {
+              return {
+                onClick: () => {
+                  setSelectedRow(record);
+                  setIsRowModalVisible(true); // Show the "View Details" modal
+                },
+              };
+            }}
           />
 
           <Modal
@@ -1056,7 +1069,7 @@ const printPdf = () => {
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
                 <p><strong>Status:</strong> {selectedRow.status}</p>
-                <p><strong>Condition:</strong> {formatCondition(selectedRow.condition)}</p>
+                <p><strong>Condition:</strong> {formatCondition(selectedRow.condition, selectedRow.category)}</p>
                 <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
                 <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
                 <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
@@ -1078,6 +1091,20 @@ const printPdf = () => {
                       onClick={() => handleDelete(selectedRow)}
                     >
                       Archive
+                    </Button>
+
+                    <Button
+                      type="link"
+                      icon={<EditOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedRow(selectedRow);
+                        setIsEditModalVisible(true);
+                        editItem(selectedRow);
+                      }}
+                      style={{ marginRight: 12 }}
+                    >
+                      Update Stock
                     </Button>
                   </div>
               </div>
@@ -1104,15 +1131,69 @@ const printPdf = () => {
           </Modal>
 
           <Modal
-            title="Edit Item"
+            title="Update Inventory Balance"
             visible={isEditModalVisible}
             onCancel={() => setIsEditModalVisible(false)}
             onOk={() => editForm.submit()}
             zIndex={1020}
           >
-            <Form layout="vertical" form={editForm} onFinish={updateItem}>
+            <Form layout="vertical" 
+              form={editForm} 
+              onFinish={updateItem}
+              onValuesChange={(changedValues, allValues) => {
+                if ('quantity' in changedValues) {
+                  const newQuantity = parseInt(changedValues.quantity || 0);
+
+                  // Delay to ensure it runs after React updates internal state
+                  setTimeout(() => {
+                    editForm.setFieldsValue({
+                      condition: {
+                        Good: newQuantity,
+                        Defect: 0,
+                        Damage: 0,
+                      },
+                    });
+                  }, 0);
+                }
+              }}
+            >
               <Row gutter={16}>
                 <Col span={12}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    dependencies={[['condition']]} // watch for changes in condition
+                   rules={[
+                      { required: true, message: "Please enter quantity" },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          const condition = getFieldValue('condition') || {};
+                          const totalCondition =
+                            (parseInt(condition.Good) || 0) +
+                            (parseInt(condition.Defect) || 0) +
+                            (parseInt(condition.Damage) || 0);
+
+                          if (value == null || value === "") {
+                            return Promise.resolve(); // wait for value
+                          }
+
+                          // Fix: ensure numbers are properly cast
+                          if (parseInt(value) === totalCondition) {
+                            return Promise.resolve();
+                          }
+
+                          return Promise.reject(
+                            new Error("Sum of Good, Defect, and Damage must equal Quantity")
+                          );
+                        },
+                      }),
+                    ]}
+                  >
+                    <Input type="number" min={0} placeholder="Enter quantity" />
+                  </Form.Item>
+                </Col>
+
+                {/* <Col span={12}>
                   <Form.Item
                     name="category"
                     label="Category"
@@ -1128,7 +1209,7 @@ const printPdf = () => {
                       <Option value="Glasswares">Glasswares</Option>
                     </Select>
                   </Form.Item>
-                </Col>
+                </Col> */}
 
                 {/* <Row gutter={16}>
                 <Col span={24}>
@@ -1143,10 +1224,10 @@ const printPdf = () => {
                 </Col>
                </Row> */}
 
-                <Col span={12}>
+                {/* <Col span={12}>
                   <Form.Item
                     name="labRoom"
-                    label="Lab/Stock Room"
+                    label="Stack Room"
                     rules={[
                       {
                         required: true,
@@ -1156,7 +1237,7 @@ const printPdf = () => {
                   >
                     <Input placeholder="Enter Lab/Stock Room" />
                   </Form.Item>
-                </Col>
+                </Col> */}
               </Row>
 
               <Row gutter={16}>
@@ -1166,7 +1247,7 @@ const printPdf = () => {
                   </Form.Item>
                 </Col> */}
 
-                <Col span={12}>
+                {/* <Col span={12}>
                   <Form.Item
                     name="quantity"
                     label="Quantity"
@@ -1192,7 +1273,7 @@ const printPdf = () => {
                   >
                     <Input type="number" min={0} placeholder="Enter quantity" />
                   </Form.Item>
-                </Col>
+                </Col> */}
               </Row>
 
               {/* <Row gutter={16}>

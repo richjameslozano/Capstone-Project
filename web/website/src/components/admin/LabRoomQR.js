@@ -411,7 +411,7 @@ const LabRoomQR = () => {
           .map(room => (
             <div key={room.id} className="labroom-table-wrapper">
               <h3 className="labroom-title">
-                Room: {room.name} ({room.id})
+                Room: {room.id}
               </h3>
               <table className="labroom-table">
                 <thead>
