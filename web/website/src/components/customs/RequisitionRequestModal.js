@@ -13,22 +13,13 @@ const RequisitionReqestModal = ({
   columns,
   formatDate,
   allItemsChecked,
-  checkedItems,
-  setCheckedItems,
-  onNext,
 }) => {
 
   const [checkedItemIds, setCheckedItemIds] = useState([]);
 
   useEffect(() => {
     if (selectedRequest) {
-      setCheckedItemIds([]);
-    }
-  }, [selectedRequest]);
-
-  useEffect(() => { 
-    if (selectedRequest) {
-        setCheckedItems({}); 
+      setCheckedItemIds([]); // reset when modal opens
     }
   }, [selectedRequest]);
 
@@ -47,16 +38,8 @@ const RequisitionReqestModal = ({
       footer={[
         <Button key="cancel" onClick={handleCancel}>Cancel</Button>,
         <Button key="reject" type="default" onClick={handleReturn}>Reject</Button>,
-       // <Button key="approve" type="primary" onClick={handleApprove}>
-        //   {allItemsChecked ? "Approve" : "Next"}
-        //   Next
-        // </Button>
-        <Button
-          key="approve"
-          type="primary"
-          onClick={() => onNext(checkedItems)}
-        >
-          Next
+        <Button key="approve" type="primary" onClick={handleApprove}>
+          {allItemsChecked ? "Approve" : "Next"}
         </Button>
       ]}
     >

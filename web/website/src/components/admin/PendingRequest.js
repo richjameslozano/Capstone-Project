@@ -563,52 +563,11 @@ const PendingRequest = () => {
     //     description: "Please enter a rejection reason before submitting.",
     //   });
     //   return;
-    // }  
-    
-    // const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
-
-    // try {
-    //   const accountRef = doc(db, "accounts", selectedRequest.accountId);
-    //   const accountSnap = await getDoc(accountRef);
-
-    //   if (accountSnap.exists()) {
-    //     const accountData = accountSnap.data();
-    //     const isDisabled = accountData.disabled || false; // Adjust field name if different
-
-    //     if (isDisabled) {
-    //       setNotificationMessage("Cannot approve: The user's account is disabled.");
-    //       setIsNotificationVisible(true);
-    //       return;
-    //     }
-        
-    //   } else {
-    //     console.warn("Account not found for validation.");
-    //   }
-
-    // } catch (error) {
-    //   console.error("Error checking account status:", error);
-    //   setNotificationMessage("Error verifying account status. Please try again.");
-    //   setIsNotificationVisible(true);
-    //   return;
     // }
-
+  
     setIsMultiRejectModalVisible(false);
-
-    if (!pendingApprovalData) {
-      console.error("pendingApprovalData is undefined");
-      setNotificationMessage("Error verifying account status. Please try again.");
-      setIsNotificationVisible(true);
-      return;
-    }
-
+  
     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
-
-    if (!selectedRequest) {
-      console.error("selectedRequest is undefined in pendingApprovalData");
-      setNotificationMessage("Error verifying account status. Please try again.");
-      setIsNotificationVisible(true);
-      return;
-    }
 
     try {
       const accountRef = doc(db, "accounts", selectedRequest.accountId);
@@ -616,14 +575,14 @@ const PendingRequest = () => {
 
       if (accountSnap.exists()) {
         const accountData = accountSnap.data();
-        const isDisabled = accountData.disabled || false;
+        const isDisabled = accountData.disabled || false; // Adjust field name if different
 
         if (isDisabled) {
           setNotificationMessage("Cannot approve: The user's account is disabled.");
           setIsNotificationVisible(true);
           return;
         }
-
+        
       } else {
         console.warn("Account not found for validation.");
       }
@@ -1047,34 +1006,6 @@ const PendingRequest = () => {
         message: "Error",
         description: "Failed to process the request after rejection confirmation.",
       });
-    }
-  };
-
-  const handleApprove1 = () => {
-    const requestId = selectedRequest?.id;
-    const enrichedItems = selectedRequest.requestList.map((item, index) => {
-      const key = `${requestId}-${index}`;
-      return {
-        ...item,
-        checked: !!checkedItems[key],
-      };
-    });
-
-    const approvedItems = enrichedItems.filter(item => item.checked);
-    const unapprovedItems = enrichedItems.filter(item => !item.checked);
-
-    if (approvedItems.length > 0) {
-      setPendingApprovalData({
-        enrichedItems: approvedItems,
-        uncheckedItems: unapprovedItems,
-        selectedRequest: selectedRequest, 
-      });
-
-      setIsFinalizeModalVisible(true);
-      
-    } else {
-      setNotificationMessage("Please select at least one item to approve.");
-      setIsNotificationVisible(true);
     }
   };
   
@@ -2133,10 +2064,7 @@ const PendingRequest = () => {
           selectedRequest={selectedRequest}
           columns={columns}
           formatDate={formatDate}
-          allItemsChecked={allItemsChecked}
-          checkedItems={checkedItems}
-          setCheckedItems={setCheckedItems}
-          onNext={handleApprove1}
+          allItemsChecked={allItemsChecked} 
         />
 
         <ApprovedRequestModal
