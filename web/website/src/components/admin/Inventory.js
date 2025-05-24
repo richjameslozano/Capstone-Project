@@ -955,7 +955,7 @@ const printPdf = () => {
                       label="Unit"
                       rules={[{ required: true, message: "Please select a unit!" }]}
                     >
-                      <Input value="ML" disabled />
+                      <Input value="ML"/>
                     </Form.Item>
                   </Col>
                 )}
