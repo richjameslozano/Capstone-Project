@@ -15,6 +15,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
   const role = location.state?.role || localStorage.getItem("role");
   const [userName, setUserName] = useState("User");
   const [jobTitle, setJobTitle] = useState("");
+  const [department, setDepartment] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 408);
 
@@ -31,6 +32,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
         const userData = querySnapshot.docs[0].data();
         if (userData.name) setUserName(userData.name);
         if (userData.jobTitle) setJobTitle(userData.jobTitle);
+        if (userData.department) setDepartment(userData.department);
         if (userData.profileImage) setProfileImage(userData.profileImage);
       }
     } catch (error) {
@@ -88,7 +90,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
           {!isMobile && (
             <div className="user-info">
               <div className="user-name">Hi, {capitalizeName(userName)}!</div>
-              <div className="user-title">{jobTitle}</div>
+              <div className="user-title">{jobTitle} of {department}</div>
             </div>
           )}
           <Avatar src={profileImage || undefined}>
