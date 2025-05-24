@@ -5,7 +5,7 @@ import {
   Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import {
   collection, getDocs, doc, updateDoc, getDoc, deleteDoc,
-  setDoc, addDoc, serverTimestamp, onSnapshot
+  setDoc, addDoc, serverTimestamp, onSnapshot, query, where
 } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,6 +21,7 @@ const ReturnItems = () => {
   const [inventoryData, setInventoryData] = useState({});
   const [returnQuantities, setReturnQuantities] = useState({});
   const [itemConditions, setItemConditions] = useState({});
+  const [itemUnitConditions, setItemUnitConditions] = useState({});
 
   useEffect(() => {
     console.log("Updated conditions state:", itemConditions);
@@ -280,6 +281,7 @@ const ReturnItems = () => {
   //       console.error("Error saving returned item details:", error);
   //   }
   //   };
+  
 
   const handleReturn = async () => {
   try {
@@ -405,7 +407,6 @@ const ReturnItems = () => {
     console.error("❌ Error processing return:", error);
   }
 };
-
 
   const closeModal = () => {
     setModalVisible(false);
