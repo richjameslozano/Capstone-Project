@@ -93,6 +93,39 @@ const RequestListScreen = ({navigation}) => {
     return `${paddedHour}:${paddedMinute}`;
   };
 
+  const handleSaveDraft = async () => {
+    try {
+      if (!user?.id) {
+        Alert.alert('Authentication Error', 'No user is currently logged in.');
+        return;
+      }
+
+      const draftId = Date.now().toString();
+      const draftRef = doc(db, 'accounts', user.id, 'draftRequests', draftId);
+
+      await setDoc(draftRef, {
+        ...metadata,
+        filteredMergedData: requestList.map((item) => ({
+          ...item,
+          program: metadata.program,
+          reason: metadata.reason,
+          room: metadata.room,
+          timeFrom: metadata.timeFrom,
+          timeTo: metadata.timeTo,
+          usageType: metadata.usageType,
+        })),
+        timestamp: new Date(),
+        status: 'draft',
+      });
+
+      Alert.alert('Draft Saved', 'Your request has been saved as a draft.');
+
+    } catch (error) {
+      console.error('Error saving draft request:', error);
+      Alert.alert('Error', 'Failed to save your draft request.');
+    }
+  };
+
   const handleRequestNow = async () => {
     console.log('Current metadata:', metadata);
   
@@ -323,7 +356,6 @@ const RequestListScreen = ({navigation}) => {
         <FlatList
         style={{ paddingHorizontal: 5, marginTop: headerHeight+5, paddingTop: 10, backgroundColor:'#fff', borderRadius: 10}}
         showsVerticalScrollIndicator={false}
-        
         scrollEnabled={true}
           data={requestList}
           keyExtractor={(item) => item.id}
@@ -348,7 +380,7 @@ const RequestListScreen = ({navigation}) => {
           <Text>Select All</Text>
           </View>
 
-          <TouchableOpacity style={{width: '50%', backgroundColor: '#a3cae9', justifyContent:'center', alignItems: 'center'}}>
+          <TouchableOpacity onPress={handleSaveDraft}  style={{width: '50%', backgroundColor: '#a3cae9', justifyContent:'center', alignItems: 'center'}}>
             <Text style={styles.requestButtonText}>
               Add to Drafts
             </Text>
