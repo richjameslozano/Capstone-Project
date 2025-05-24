@@ -86,23 +86,36 @@ const styles = StyleSheet.create({
   },
 
   card: {
+    flex: 1,
+    flexDirection: 'row',
     backgroundColor: 'white',
-    padding: 15,
     borderRadius: 8,
     marginBottom: 10,
     elevation: 3,
+    gap: 5
+  },
+
+    imageContainer: {
+      flexDirection: 'row',
+      gap: 5,
+    backgroundColor: '#e9ecee',
+    borderRadius: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 2,
+    paddingVertical:1,
+    paddingRight: 5,
+    alignSelf: 'flex-start'
   },
 
   cardRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 5,
   },
 
   cardLabel: {
-    fontWeight: 'bold',
     fontSize: 14,
-    color: '#333',
+    color: 'gray',
   },
 
   cardValue: {
@@ -117,11 +130,15 @@ const styles = StyleSheet.create({
   },
 
   viewDetailsButton: {
-    marginTop: 10,
-    backgroundColor: '#00796B',
+    backgroundColor: 'white',
+    flex:1,
     padding: 10,
-    borderRadius: 5,
-    alignItems: 'center',
+    alignSelf: 'center',
+    borderWidth: 1,
+    borderColor: '#b9bcbe',
+    justifyContent:'center',
+    borderRadius: 10,
+    elevation: 3
   },
 
   viewDetailsText: {
