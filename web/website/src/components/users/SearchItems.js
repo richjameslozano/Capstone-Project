@@ -242,8 +242,10 @@ const SearchItems = () => {
                   {selectedItem.itemName}
                 </Descriptions.Item>
 
-                <Descriptions.Item label="Quantity">
+               <Descriptions.Item label="Quantity">
                   {selectedItem.quantity}
+                  {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
+                  {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Status">

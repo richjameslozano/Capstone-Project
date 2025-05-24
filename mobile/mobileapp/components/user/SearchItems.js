@@ -110,17 +110,18 @@ export default function SearchItemsScreen({ navigation }) {
           {item.status}
         </Text>
       </View>
+
       <View style={{ flex: 2 }}>
         <Text style={styles.cellText}>{item.category}</Text>
       </View>
-      <View style={{ flex: 2 }}>
+
+      {/* <View style={{ flex: 2 }}>
        <Text style={styles.cellText}>
           {item.condition && typeof item.condition === 'object'
             ? `G:${item.condition.Good ?? 0}, Df:${item.condition.Defect ?? 0}, Dmg:${item.condition.Damage ?? 0}`
             : item.condition || 'N/A'}
         </Text>
-
-      </View>
+      </View> */}
     </TouchableOpacity>
   );
 
@@ -148,7 +149,7 @@ export default function SearchItemsScreen({ navigation }) {
           <Text style={[styles.tableHeaderText, { flex: .6 }]}>Qty </Text>
           <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Status</Text>
           <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Category</Text>
-          <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Condition</Text>
+          {/* <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Condition</Text> */}
         </View>
 
         {/* Items List */}

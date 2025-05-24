@@ -189,8 +189,9 @@ const CameraUpdateItems = ({ onClose }) => {
         const ref = doc(db, 'inventory', docSnap.id);
         const existing = docSnap.data();
 
-        const newQty = (existing.quantity || 0) + addedQuantity;
-        const newGood = (existing.condition?.Good || 0) + addedQuantity;
+        const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+        const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
 
         await updateDoc(ref, {
           quantity: newQty,
@@ -207,8 +208,8 @@ const CameraUpdateItems = ({ onClose }) => {
       if (labSnap.exists()) {
         const existing = labSnap.data();
 
-        const newQty = (existing.quantity || 0) + addedQuantity;
-        const newGood = (existing.condition?.Good || 0) + addedQuantity;
+        const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+        const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
 
         await updateDoc(labRef, {
           quantity: newQty,

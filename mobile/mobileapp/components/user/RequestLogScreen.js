@@ -183,7 +183,7 @@ const RequestLogScreen = () => {
       </Text>
 
       <ScrollView style={{ maxHeight: 400, width: '100%' }}>
-        <Text style={styles.modalText}>By: {selectedLog?.userName || 'Unknown User'}</Text>
+        <Text style={styles.modalText}>Requestor: {selectedLog?.userName || 'Unknown User'}</Text>
         <Text style={styles.modalText}>Program: {selectedLog?.program || 'N/A'}</Text>
         <Text style={styles.modalText}>Course: {selectedLog?.course || 'N/A'}</Text>
         <Text style={styles.modalText}>Reason: {selectedLog?.reason || 'N/A'}</Text>
@@ -204,7 +204,10 @@ const RequestLogScreen = () => {
               <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item</Text>
               <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
               <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
-              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text>
+              {/* <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text> */}
+              {selectedLog?.raw?.action === 'Request Rejected' && (
+                <Text style={[styles.tableHeaderText, { flex: 2 }]}>Reason of Rejection</Text>
+              )}
             </View>
 
             {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
@@ -219,11 +222,16 @@ const RequestLogScreen = () => {
                 <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
                 <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
                 {/* <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text> */}
-                <Text style={[styles.tableCell, { flex: 1 }]}>
+                {/* <Text style={[styles.tableCell, { flex: 1 }]}>
                   {typeof item.condition === 'object'
                     ? `Good: ${item.condition.Good ?? 0}, Defect: ${item.condition.Defect ?? 0}, Damage: ${item.condition.Damage ?? 0}`
                     : item.condition || '—'}
-                </Text>
+                </Text> */}
+                {selectedLog?.raw?.action === 'Request Rejected' && (
+                  <Text style={[styles.tableCell, { flex: 2 }]}>
+                    {item.reason || '—'}
+                  </Text>
+                )}
               </View>
             ))}
           </View>

@@ -695,25 +695,49 @@ const PendingRequest = () => {
       };
   
       // Log approved items
-      await logRequestOrReturn(
-        selectedRequest.accountId,
-        selectedRequest.userName,
-        "Request Approved",
-        enrichedItems,
-        {
-          approvedBy: userName,
-          course: selectedRequest.course || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired,
-          reason: selectedRequest.reason,
-          room: selectedRequest.room,
-          program: selectedRequest.program,
-          timeFrom: selectedRequest.timeFrom || "N/A",
-          timeTo: selectedRequest.timeTo || "N/A",
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-        }
-      );
+      // await logRequestOrReturn(
+      //   selectedRequest.accountId,
+      //   selectedRequest.userName,
+      //   "Request Approved",
+      //   enrichedItems,
+      //   {
+      //     approvedBy: userName,
+      //     course: selectedRequest.course || "N/A",
+      //     courseDescription: selectedRequest.courseDescription || "N/A",
+      //     dateRequired: selectedRequest.dateRequired,
+      //     reason: selectedRequest.reason,
+      //     room: selectedRequest.room,
+      //     program: selectedRequest.program,
+      //     timeFrom: selectedRequest.timeFrom || "N/A",
+      //     timeTo: selectedRequest.timeTo || "N/A",
+      //     timestamp: selectedRequest.timestamp || "N/A",
+      //     rawTimestamp: new Date(),
+      //   }
+      // );
+
+      if (enrichedItems.length > 0) {
+        await addDoc(collection(db, "requestlog"), requestLogEntry);
+
+        await logRequestOrReturn(
+          selectedRequest.accountId,
+          selectedRequest.userName,
+          "Request Approved",
+          enrichedItems,
+          {
+            approvedBy: userName,
+            course: selectedRequest.course || "N/A",
+            courseDescription: selectedRequest.courseDescription || "N/A",
+            dateRequired: selectedRequest.dateRequired,
+            reason: selectedRequest.reason,
+            room: selectedRequest.room,
+            program: selectedRequest.program,
+            timeFrom: selectedRequest.timeFrom || "N/A",
+            timeTo: selectedRequest.timeTo || "N/A",
+            timestamp: selectedRequest.timestamp || "N/A",
+            rawTimestamp: new Date(),
+          }
+        );
+      }
   
       // Log rejected items
       if (rejectedItems.length > 0) {
@@ -910,7 +934,7 @@ const PendingRequest = () => {
         console.error("💥 Failed updating inventory or labRoom items:", err.message);
       }
   
-      await addDoc(collection(db, "requestlog"), requestLogEntry);
+      // await addDoc(collection(db, "requestlog"), requestLogEntry);
   
       if (rejectedItems.length > 0) {
         await addDoc(collection(db, "requestlog"), rejectLogEntry);

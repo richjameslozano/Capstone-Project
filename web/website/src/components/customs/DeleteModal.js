@@ -87,16 +87,16 @@ const DeleteModal = ({ visible, onClose, item, onDeleteSuccess, setDataSource })
 
   return (
     <Modal
-      title="Confirm Delete"
+      title="Confirm Archive"
       visible={visible}
       onOk={handleDelete}
       onCancel={onClose}
-      okText="Delete"
+      okText="Archive"
       okType="danger"
       cancelText="Cancel"
       zIndex={1021}
     >
-      <p>Are you sure you want to delete <strong>{item?.name}</strong>?</p>
+      <p>Are you sure you want to archive <strong>{item?.name}</strong>?</p>
     </Modal>
   );
 };

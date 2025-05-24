@@ -84,11 +84,12 @@ const CameraShowItems = ({ onClose }) => {
         navigation.goBack();
     };
 
-    const showItemDetails = (foundItem, borrowedCount, deployedCount) => {
+    const showItemDetails = (foundItem, borrowedCount, deployedCount, deployedInfo) => {
       const itemData = {
         ...foundItem,
         borrowedCount,
         deployedCount,
+        deployedInfo
       };
 
       setItemDetails(itemData);
@@ -171,6 +172,8 @@ const CameraShowItems = ({ onClose }) => {
           });
 
           let deployedCount = 0;
+          let deployedInfo = [];
+
           borrowSnapshot.forEach(doc => {
             const borrowData = doc.data();
             if (
@@ -180,6 +183,12 @@ const CameraShowItems = ({ onClose }) => {
               borrowData.requestList?.forEach(requestItem => {
                 if ((requestItem.itemName || "").trim() === itemName) {
                   deployedCount += requestItem.quantity || 0;
+
+                  deployedInfo.push({
+                    requestor: borrowData.userName || "Unknown",
+                    room: borrowData.room || borrowData.roomNumber || "N/A",
+                    quantity: requestItem.quantity || 0,
+                  });
                 }
               });
             }
@@ -195,7 +204,7 @@ const CameraShowItems = ({ onClose }) => {
           //         Borrowed Today: ${borrowedCount} times
           //         `;
           // Alert.alert("Item Details", detailMsg);
-          showItemDetails(foundItem, borrowedCount, deployedCount);
+          showItemDetails(foundItem, borrowedCount, deployedCount, deployedInfo);
 
         } else {
           Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
@@ -228,7 +237,7 @@ const CameraShowItems = ({ onClose }) => {
           // await addBorrowedCountToItems(itemsDetailArray);
           await addBorrowedAndDeployedCountToItems(itemsDetailArray)
           // Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
-           showLabRoomDetails(roomId, itemsDetailArray);
+          showLabRoomDetails(roomId, itemsDetailArray);
         }
 
       } else if (typeof parsedData === "string") {

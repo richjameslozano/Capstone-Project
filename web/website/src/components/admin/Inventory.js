@@ -517,6 +517,7 @@ const printPdf = () => {
           }
 
           setIsEditModalVisible(false);
+          setIsRowModalVisible(false)
           setEditingItem(null);
           form.resetFields();
         }
@@ -540,6 +541,7 @@ const printPdf = () => {
   const handleDelete = (record) => {
     setItemToDelete(record);
     setDeleteModalVisible(true);
+    setIsRowModalVisible(false)
   };  
 
   const columns = [
@@ -549,9 +551,6 @@ const printPdf = () => {
       sortDirections: ['ascend', 'descend'],
       defaultSortOrder: 'ascend', 
     },
-    { title: "Category", dataIndex: "category", key: "category" },
-    { title: "Department", dataIndex: "department", key: "department" },
-    // { title: "Inventory Balance", dataIndex: "quantity", key: "quantity" },
     {
       title: "Inventory Balance",
       dataIndex: "quantity",
@@ -570,101 +569,39 @@ const printPdf = () => {
       },
     },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
-    { title: "Status", dataIndex: "status", key: "status" },
-    // { title: "Condition", dataIndex: "condition", key: "condition" },
+    { title: "Status", dataIndex: "status", key: "status" },   
     // {
-    //   title: "Condition",
-    //   dataIndex: "condition",
-    //   key: "condition",
-    //   render: (condition) => (
-    //     <div>
-    //       <div>Good: {condition?.Good ?? 0}</div>
-    //       <div>Defect: {condition?.Defect ?? 0}</div>
-    //       <div>Damage: {condition?.Damage ?? 0}</div>
-    //     </div>
+    //   title: "Actions",
+    //   dataIndex: "actions",
+    //   key: "actions",
+    //   render: (_, record) => (
+    //     <Space direction="vertical" size="small">
+    //       <Button
+    //         icon={<EyeOutlined />} 
+    //         onClick={(e) => {
+    //           e.stopPropagation(); 
+    //           setSelectedRow(record);
+    //           setIsRowModalVisible(true);
+    //         }}
+    //       >
+    //         View
+    //       </Button>
+
+    //       <Button
+    //         type="link"
+    //         icon={<EditOutlined />}
+    //         onClick={(e) => {
+    //           e.stopPropagation(); 
+    //           setSelectedRow(record);
+    //           setIsEditModalVisible(true);
+    //           editItem(record)
+    //         }}
+    //       >
+    //         Edit
+    //       </Button>
+    //     </Space>
     //   ),
-    // },
-    {
-      title: "Condition",
-      dataIndex: "condition",
-      key: "condition",
-      render: (_, record) => {
-        // Only render condition if category is not Chemical or Reagent
-        if (record.category === "Chemical" || record.category === "Reagent") {
-          return <div style={{ fontStyle: "italic", color: "#999" }}>N/A</div>;
-        }
-
-        const condition = record.condition || {};
-        return (
-          <div>
-            <div>Good: {condition.Good ?? 0}</div>
-            <div>Defect: {condition.Defect ?? 0}</div>
-            <div>Damage: {condition.Damage ?? 0}</div>
-          </div>
-        );
-      },
-    },
-    {
-      title: "QR Code",
-      dataIndex: "qrCode",
-      key: "qrCode",
-      render: (qrCode, record) => (
-        <Button
-          type="link"
-          onClick={() => {
-            setSelectedQrCode(qrCode);
-            setSelectedItemName(record.itemName);
-            setQrModalVisible(true);
-          }}
-        >
-          View QR
-        </Button>
-      ),
-    },    
-    {
-      title: "Actions",
-      dataIndex: "actions",
-      key: "actions",
-      render: (_, record) => (
-        <Space direction="vertical" size="small">
-          <Button
-            icon={<EyeOutlined />} 
-            onClick={(e) => {
-              e.stopPropagation(); 
-              setSelectedRow(record);
-              setIsRowModalVisible(true);
-            }}
-          >
-            View
-          </Button>
-
-          <Button
-            type="text"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={(e) => {
-              e.stopPropagation(); 
-              handleDelete(record);
-            }}
-          >
-            Archive
-          </Button>
-
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={(e) => {
-              e.stopPropagation(); 
-              setSelectedRow(record);
-              setIsEditModalVisible(true);
-              editItem(record)
-            }}
-          >
-            Edit
-          </Button>
-        </Space>
-      ),
-    }    
+    // }    
   ];
 
   const disabledDate = (current) => {
@@ -676,12 +613,16 @@ const printPdf = () => {
     return current && entryDate && current.isBefore(entryDate.endOf("day"));
   };
 
-  const formatCondition = (cond) => {
-    if (cond && typeof cond === 'object') {
-      return `Good: ${cond.Good ?? 0}, Defect: ${cond.Defect ?? 0}, Damage: ${cond.Damage ?? 0}`;
+  const formatCondition = (condition, category) => {
+    if (category === 'Chemical' || category === 'Reagent') {
+      return 'N/A';
     }
-    
-    return cond || 'N/A';
+
+    if (condition && typeof condition === 'object') {
+      return `Good: ${condition.Good ?? 0}, Defect: ${condition.Defect ?? 0}, Damage: ${condition.Damage ?? 0}`;
+    }
+
+    return condition || 'N/A';
   };
 
   return (
@@ -888,12 +829,71 @@ const printPdf = () => {
             </Button>
           </div>
 
+          <div className="inventory-header">
+            <Space wrap>
+              <Input.Search
+                placeholder="Search"
+                className="search-bar"
+                style={{ width: 200 }}
+                allowClear
+                onChange={(e) => setSearchText(e.target.value)}
+              />
+
+              <Select
+                allowClear
+                placeholder="Filter by Category"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterCategory(value)}
+              >
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+                <Option value="Glasswares">Glasswares</Option>
+              </Select>
+
+              <Select
+                allowClear
+                placeholder="Filter by Item Type"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterItemType(value)}
+              >
+                <Option value="Fixed">Fixed</Option>
+                <Option value="Consumable">Consumable</Option>
+              </Select>
+
+              <Button
+                onClick={() => {
+                  setFilterCategory(null);
+                  setFilterItemType(null);
+                  // setFilterUsageType(null);
+                  setSearchText('');
+                }}
+              >
+                Reset Filters
+              </Button>
+
+              <Button type="primary" onClick={exportToExcel}>
+                Export to Excel
+              </Button>
+
+            </Space>
+          </div> 
+
           <Table
             dataSource={filteredData}
             columns={columns}
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
+            onRow={(record) => {
+              return {
+                onClick: () => {
+                  setSelectedRow(record);
+                  setIsRowModalVisible(true); // Show the "View Details" modal
+                },
+              };
+            }}
           />
 
           <Modal
@@ -1056,7 +1056,7 @@ const printPdf = () => {
                 <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
                 {/* <p><strong>Quantity:</strong> {selectedRow.quantity}</p> */}
                 <p>
-                  <strong>Quantity:</strong>{" "}
+                  <strong>Inventory Balance:</strong>{" "}
                   {selectedRow.quantity}
                   {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit ? ` ${selectedRow.unit}` : ""}
                 </p>
@@ -1069,11 +1069,44 @@ const printPdf = () => {
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
                 <p><strong>Status:</strong> {selectedRow.status}</p>
-                {/* <p><strong>Condition:</strong> {selectedRow.condition}</p> */}
-                <p><strong>Condition:</strong> {formatCondition(selectedRow.condition)}</p>
+                <p><strong>Condition:</strong> {formatCondition(selectedRow.condition, selectedRow.category)}</p>
                 <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
                 <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
                 <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
+                
+                  <div style={{ marginTop: 24, textAlign: 'center' }}>
+                    <h4>Item QR Code</h4>
+                    {selectedRow.qrCode ? (
+                      <QRCodeCanvas value={selectedRow.qrCode} size={200} />
+                    ) : (
+                      <p>No QR Code Available</p>
+                    )}
+                  </div>
+
+                  <div style={{ marginTop: 24, textAlign: 'center' }}>
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDelete(selectedRow)}
+                    >
+                      Archive
+                    </Button>
+
+                    <Button
+                      type="link"
+                      icon={<EditOutlined />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSelectedRow(selectedRow);
+                        setIsEditModalVisible(true);
+                        editItem(selectedRow);
+                      }}
+                      style={{ marginRight: 12 }}
+                    >
+                      Update Stock
+                    </Button>
+                  </div>
               </div>
             )}
           </Modal>
@@ -1098,15 +1131,69 @@ const printPdf = () => {
           </Modal>
 
           <Modal
-            title="Edit Item"
+            title="Update Inventory Balance"
             visible={isEditModalVisible}
             onCancel={() => setIsEditModalVisible(false)}
             onOk={() => editForm.submit()}
             zIndex={1020}
           >
-            <Form layout="vertical" form={editForm} onFinish={updateItem}>
+            <Form layout="vertical" 
+              form={editForm} 
+              onFinish={updateItem}
+              onValuesChange={(changedValues, allValues) => {
+                if ('quantity' in changedValues) {
+                  const newQuantity = parseInt(changedValues.quantity || 0);
+
+                  // Delay to ensure it runs after React updates internal state
+                  setTimeout(() => {
+                    editForm.setFieldsValue({
+                      condition: {
+                        Good: newQuantity,
+                        Defect: 0,
+                        Damage: 0,
+                      },
+                    });
+                  }, 0);
+                }
+              }}
+            >
               <Row gutter={16}>
                 <Col span={12}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    dependencies={[['condition']]} // watch for changes in condition
+                   rules={[
+                      { required: true, message: "Please enter quantity" },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          const condition = getFieldValue('condition') || {};
+                          const totalCondition =
+                            (parseInt(condition.Good) || 0) +
+                            (parseInt(condition.Defect) || 0) +
+                            (parseInt(condition.Damage) || 0);
+
+                          if (value == null || value === "") {
+                            return Promise.resolve(); // wait for value
+                          }
+
+                          // Fix: ensure numbers are properly cast
+                          if (parseInt(value) === totalCondition) {
+                            return Promise.resolve();
+                          }
+
+                          return Promise.reject(
+                            new Error("Sum of Good, Defect, and Damage must equal Quantity")
+                          );
+                        },
+                      }),
+                    ]}
+                  >
+                    <Input type="number" min={0} placeholder="Enter quantity" />
+                  </Form.Item>
+                </Col>
+
+                {/* <Col span={12}>
                   <Form.Item
                     name="category"
                     label="Category"
@@ -1122,7 +1209,7 @@ const printPdf = () => {
                       <Option value="Glasswares">Glasswares</Option>
                     </Select>
                   </Form.Item>
-                </Col>
+                </Col> */}
 
                 {/* <Row gutter={16}>
                 <Col span={24}>
@@ -1137,10 +1224,10 @@ const printPdf = () => {
                 </Col>
                </Row> */}
 
-                <Col span={12}>
+                {/* <Col span={12}>
                   <Form.Item
                     name="labRoom"
-                    label="Lab/Stock Room"
+                    label="Stack Room"
                     rules={[
                       {
                         required: true,
@@ -1150,7 +1237,7 @@ const printPdf = () => {
                   >
                     <Input placeholder="Enter Lab/Stock Room" />
                   </Form.Item>
-                </Col>
+                </Col> */}
               </Row>
 
               <Row gutter={16}>
@@ -1160,7 +1247,7 @@ const printPdf = () => {
                   </Form.Item>
                 </Col> */}
 
-                <Col span={12}>
+                {/* <Col span={12}>
                   <Form.Item
                     name="quantity"
                     label="Quantity"
@@ -1186,7 +1273,7 @@ const printPdf = () => {
                   >
                     <Input type="number" min={0} placeholder="Enter quantity" />
                   </Form.Item>
-                </Col>
+                </Col> */}
               </Row>
 
               {/* <Row gutter={16}>
