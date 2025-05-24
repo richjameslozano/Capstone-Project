@@ -29,6 +29,7 @@ const styles = StyleSheet.create({
     flex:1,
     backgroundColor: 'white',
     borderRadius: 5,
+    paddingVertical: 5,
   },
 
     searchFilter:{
@@ -87,12 +88,13 @@ const styles = StyleSheet.create({
 
   card: {
     flex: 1,
-    flexDirection: 'row',
     backgroundColor: 'white',
     borderRadius: 8,
     marginBottom: 10,
     elevation: 3,
-    gap: 5
+    gap: 5,
+    padding: 5,
+    paddingRight: 0,
   },
 
     imageContainer: {
@@ -114,7 +116,8 @@ const styles = StyleSheet.create({
   },
 
   cardLabel: {
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: 400,
     color: 'gray',
   },
 
@@ -124,21 +127,14 @@ const styles = StyleSheet.create({
   },
 
   cardValueNum: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#00796B',
+    fontSize: 13,
+    color: '#000',
   },
 
   viewDetailsButton: {
-    backgroundColor: 'white',
-    flex:1,
-    padding: 10,
     alignSelf: 'center',
-    borderWidth: 1,
     borderColor: '#b9bcbe',
-    justifyContent:'center',
-    borderRadius: 10,
-    elevation: 3
+    alignSelf: 'center',
   },
 
   viewDetailsText: {
@@ -181,6 +177,11 @@ const styles = StyleSheet.create({
   closeButtonText: {
     color: 'white',
     fontWeight: 'bold',
+  },
+
+  row:{
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 });
 

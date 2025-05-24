@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, LayoutAnimation, Platform, UIManager } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getDocs, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig'; 
@@ -16,7 +16,7 @@ export default function InventoryStocks({ navigation }) {
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
   const categoryOptions = ['All', 'Equipment', 'Chemical', 'Materials', 'Reagent', 'Glasswares'];
   const [filterCategory, setFilterCategory] = useState('All');
-
+  const [isOpen, setIsOpen] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('All');
 
 
@@ -26,6 +26,19 @@ export default function InventoryStocks({ navigation }) {
     setHeaderHeight(height);
   };
 
+  useEffect(() => {
+  if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+    UIManager.setLayoutAnimationEnabledExperimental(true);
+  }
+}, []);
+
+
+
+
+const handleOpen = (id) => {
+  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  setIsOpen(prev => (prev === id ? null : id));
+};
 
 
 
@@ -101,13 +114,14 @@ export default function InventoryStocks({ navigation }) {
     setModalVisible(true);
   };
 
-  const formatCondition = (cond) => {
-    if (cond && typeof cond === 'object') {
-      return `Good: ${cond.Good ?? 0}, Defect: ${cond.Defect ?? 0}, Damage: ${cond.Damage ?? 0}`;
-    }
-    
-    return cond || 'N/A';
-  };
+const formatCondition = (cond) => {
+  if (cond && typeof cond === 'object') {
+    return `Good: ${cond.Good ?? 0}\nDefect: ${cond.Defect ?? 0}\nDamage: ${cond.Damage ?? 0}`;
+  }
+
+  return cond || 'N/A';
+};
+
 
   return (
     <View style={styles.container}>
@@ -127,7 +141,7 @@ export default function InventoryStocks({ navigation }) {
                       <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Inventory</Text>
                       <Text style={{ fontWeight: 300, fontSize: 13}}>View Inventory Items</Text>
                     </View>
-      
+
                      <TouchableOpacity style={{padding: 2}}>
                        <Icon name="information-outline" size={24} color="#000" />
                      </TouchableOpacity>
@@ -192,8 +206,9 @@ export default function InventoryStocks({ navigation }) {
       <ScrollView style={{paddingHorizontal: 8, paddingVertical: 10}}>
         {filteredItems.map((item) => (
           <View key={item.id} style={styles.card}>
-            <View style={{width: '80%'}}>
-            <View style={{flexDirection: 'row', justifyContent: 'space-between', padding: 5}}>
+             <View style={{flexDirection: 'row'}}>
+            <View style={{width: '85%', gap: 5}}>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems:'center'}}>
             <View style={[styles.imageContainer, {backgroundColor: handleBG(item)}]}>
               <Icon name={handleIcon(item)} size={20} color={handleColor(item)}/>
               <Text style={{fontSize: 13, fontWeight: 'bold', color: handleColor(item)}}>{item.category}</Text>
@@ -203,30 +218,76 @@ export default function InventoryStocks({ navigation }) {
 
            
 
-              <View style={{paddingHorizontal: 10}}>
-              <Text style={{fontSize: 18, fontWeight: 'bold'}}>{item.itemName}</Text>
+              <View style={{padding: 8, borderColor: handleBG(item), borderRadius: 5, borderWidth: 2}}>
+              <Text style={{fontSize: 16, fontWeight: 'bold'}}>{item.itemName}</Text>
             
-            <View style={{paddingVertical: 10, gap: 5}}>
+            <View style={{ gap: 2}}>
               <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>Inventory Balance:</Text>
               <Text style={styles.cardValueNum}>{item.quantity}</Text>
              </View>
 
              <View style={styles.cardRow}>
-              <Text style={styles.cardLabel}>Condition:</Text>
-              <Text style={styles.cardValueNum}>{formatCondition(item.condition)}</Text>
+              <Text style={styles.cardLabel}>Stock Room:</Text>
+              <Text style={styles.cardValueNum}>{item.labRoom}</Text>
+              
+              </View>   
+              {isOpen === item.id  && (
+              
+             <View style={{flex: 1, marginTop: 10}}>
+                 <Text style={{color: handleColor(item), fontWeight: 'bold'}}>Other Details</Text>
+                <View style={{justifyContent: 'space-between'}}>
+                  <View style={styles.row}>
+                <Text style={styles.cardLabel}>Department</Text>
+                <Text style={styles.cardValueNum}>{item.department}</Text>
+                </View>
+
+                <View style={styles.row}>
+                <Text style={styles.cardLabel}>Entry Date:</Text>
+                <Text style={styles.cardValueNum}>{item.entryCurrentDate}</Text>
+                </View>
+
+                <View style={styles.row}>
+                <Text style={styles.cardLabel}>Expire Date: </Text>
+                <Text style={styles.cardValueNum}>{item.expireDate || 'N/A'}</Text>
+                </View>
+
+                <View style={styles.row}>
+                <Text style={styles.cardLabel}>Type: </Text>
+                <Text style={styles.cardValueNum}>{item.type}</Text>
+                </View>
+
+                <View style={styles.row}>
+                 <Text style={styles.cardLabel}>Inventory Balance:  </Text>
+                <Text style={styles.cardValueNum}>{item.quantity}
+                  {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}
+                  {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}</Text>
+                </View>
+
+                <View style={[styles.row, {marginTop:5}]}>
+                <Text style={styles.cardLabel}>Condition: </Text>
+                <Text style={styles.cardValueNum}>{formatCondition(item.condition)}</Text>
+                </View>
+                </View>
               </View>
+          )}  
             </View>
 
               </View>
+
+              
             
             </View>
 
-          <View style={{flex:1, alignSelf: 'flex-start', paddingVertical: 35, alignItems: 'flex-start', paddingRight:15}}>
-            <TouchableOpacity style={styles.viewDetailsButton} onPress={() => openDetailsModal(item)}>
-                <Icon name='eye-outline' size={30}/>
+          <View style={{flex:1, backgroundColor: 'white', borderRadius: 5, paddingTop:'12%'}}>
+            <TouchableOpacity style={styles.viewDetailsButton} onPress={() => handleOpen(item.id)}>
+                <Icon name={isOpen === item.id ?'chevron-up-circle-outline':'chevron-down-circle-outline'} size={25} color='#395a7f'/>
             </TouchableOpacity>
             </View>
+           </View>
+
+            
+
           </View>
         ))}
       </ScrollView>
