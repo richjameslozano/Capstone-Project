@@ -26,12 +26,7 @@ export default function InventoryStocks({ navigation }) {
     setHeaderHeight(height);
   };
 
-  const handleIcon =(item)=>{
-      if(item.category === 'Equipment') return 'cube-outline';
-      if(item.category === 'Chemical') return 'flask-outline';
-      if(item.category === 'Materials') return 'layers-outline';
-      if(item.category === 'Reagent') return 'test-tube';
-    }
+
 
 
   useEffect(() => {
@@ -59,6 +54,32 @@ export default function InventoryStocks({ navigation }) {
   
     fetchInventory();
   }, []);
+
+    const handleIcon =(item)=>{
+      if(item.category === 'Equipment') return 'cube-outline';
+      if(item.category === 'Chemical') return 'flask-outline';
+      if(item.category === 'Materials') return 'layers-outline';
+      if(item.category === 'Reagent') return 'test-tube';
+      if(item.category === 'Glasswares') return 'beaker-outline';
+    }
+
+
+    const handleColor =(item)=>{
+      if(item.category === 'Equipment') return '#026A5D';
+      if(item.category === 'Chemical') return '#631990';
+      if(item.category === 'Materials') return '#ee8d24';
+      if(item.category === 'Reagent') return '#235284';
+      if(item.category === 'Glasswares') return '#5a5a59';
+    }
+
+    const handleBG =(item)=>{
+      if(item.category === 'Equipment') return '#C8E6C9';
+      if(item.category === 'Chemical') return '#E4D6EC';
+      if(item.category === 'Materials') return '#f8d496';
+      if(item.category === 'Reagent') return '#b8e2f4';
+      if(item.category === 'Glasswares') return '#e9ecee';
+    }
+
 
   const filteredData = inventoryItems.filter(item =>
     item.itemName?.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -103,8 +124,8 @@ export default function InventoryStocks({ navigation }) {
                        <Icon name="menu" size={28} color="black" /> 
                      </TouchableOpacity>
                     <View>
-                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>NU <Text style={{color: '#f4c430'}}>MOA</Text></Text>
-                      <Text style={{ fontWeight: 300, fontSize: 13}}>Laboratory System</Text>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Inventory</Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13}}>View Inventory Items</Text>
                     </View>
       
                      <TouchableOpacity style={{padding: 2}}>
@@ -168,66 +189,44 @@ export default function InventoryStocks({ navigation }) {
 
       <View style={[styles.container2]}>
 
-      {/* <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginHorizontal: 10 }}>
-        <View style={{ flex: 1, marginRight: 5 }}>
-          <Picker
-            selectedValue={filterType}
-            style={styles.picker}
-            onValueChange={(itemValue) => setFilterType(itemValue)}
-          >
-            <Picker.Item label="All Types" value="All" />
-            <Picker.Item label="Fixed" value="Fixed" />
-            <Picker.Item label="Consumables" value="Consumables" />
-          </Picker>
-        </View>
-
-        <View style={{ flex: 1, marginLeft: 5 }}>
-          <Picker
-            selectedValue={filterCategory}
-            style={styles.picker}
-            onValueChange={(itemValue) => setFilterCategory(itemValue)}
-          >
-            <Picker.Item label="All Categories" value="All" />
-            <Picker.Item label="Chemical" value="Chemical" />
-            <Picker.Item label="Reagent" value="Reagent" />
-            <Picker.Item label="Materials" value="Materials" />
-            <Picker.Item label="Equipment" value="Equipment" />
-            <Picker.Item label="Glasswares" value="Glasswares" />
-          </Picker>
-        </View>
-      </View> */}
-
       <ScrollView style={{paddingHorizontal: 8, paddingVertical: 10}}>
         {filteredItems.map((item) => (
           <View key={item.id} style={styles.card}>
-            <View style={[styles.imageContainer]}>
-              <Icon name={handleIcon()} size={30} color={'black'}/>
+            <View style={{width: '80%'}}>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', padding: 5}}>
+            <View style={[styles.imageContainer, {backgroundColor: handleBG(item)}]}>
+              <Icon name={handleIcon(item)} size={20} color={handleColor(item)}/>
+              <Text style={{fontSize: 13, fontWeight: 'bold', color: handleColor(item)}}>{item.category}</Text>
             </View>
+              <Text style={{color: 'gray', fontSize: 13, fontWeight: 300}}>{item.itemId || item.id}</Text>
+              </View>
 
+           
 
-            <View style={styles.cardRow}>
-              <Text style={styles.cardLabel}>ID:</Text>
-              <Text style={styles.cardValue}>{item.itemId || item.id}</Text>
-            </View>
-
-            <View style={styles.cardRow}>
-              <Text style={styles.cardLabel}>Item Name:</Text>
-              <Text style={styles.cardValue}>{item.itemName}</Text>
-            </View>
-
-            <View style={styles.cardRow}>
-              <Text style={styles.cardLabel}>Balance:</Text>
+              <View style={{paddingHorizontal: 10}}>
+              <Text style={{fontSize: 18, fontWeight: 'bold'}}>{item.itemName}</Text>
+            
+            <View style={{paddingVertical: 10, gap: 5}}>
+              <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Inventory Balance:</Text>
               <Text style={styles.cardValueNum}>{item.quantity}</Text>
-            </View>
+             </View>
 
-            <View style={styles.cardRow}>
+             <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>Condition:</Text>
               <Text style={styles.cardValueNum}>{formatCondition(item.condition)}</Text>
+              </View>
             </View>
 
+              </View>
+            
+            </View>
+
+          <View style={{flex:1, alignSelf: 'flex-start', paddingVertical: 35, alignItems: 'flex-start', paddingRight:15}}>
             <TouchableOpacity style={styles.viewDetailsButton} onPress={() => openDetailsModal(item)}>
-              <Text style={styles.viewDetailsText}>View Details</Text>
+                <Icon name='eye-outline' size={30}/>
             </TouchableOpacity>
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -281,6 +280,7 @@ export default function InventoryStocks({ navigation }) {
                   {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
                   {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                 </Text>
+
 
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Category:</Text> {selectedItem.category || 'N/A'}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Condition:</Text> {selectedItem.condition || 'N/A'}</Text> */}
