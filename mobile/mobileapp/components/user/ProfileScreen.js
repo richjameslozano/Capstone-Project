@@ -192,7 +192,7 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 19}}>{capitalizeInitials(user?.name)}</Text>
-        <Text style={{textAlign: 'center', color: 'gray'}}>{user?.jobTitle}</Text>
+        <Text style={{textAlign: 'center', color: 'gray'}}>{user?.jobTitle} of {user?.department}</Text>
       </View>
       
       <View style={styles.secondSection}>
