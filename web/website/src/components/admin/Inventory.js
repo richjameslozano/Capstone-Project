@@ -375,35 +375,114 @@ const printPdf = () => {
       // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
     };
 
-    try {
+    // try {
+    //   await addDoc(collection(db, "inventory"), {
+    //     ...inventoryItem,
+    //     qrCode: encryptedData,
+    //   });
+
+    //   // 🔽 NEW: Ensure labRoom document exists
+    //   const labRoomRef = doc(db, "labRoom", values.labRoom);
+    //   const labRoomSnap = await getDoc(labRoomRef);
+
+    //   // 🔽 Create labRoom doc if it doesn't exist
+    //   if (!labRoomSnap.exists()) {
+    //     await setDoc(labRoomRef, {
+    //       createdAt: new Date(),
+    //     });
+    //   }
+
+    //   // 🔽 Add full item details to subcollection under labRoom
+    //   await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
+    //     ...inventoryItem,
+    //     qrCode: encryptedData,
+    //   });
+
+    //    // 🔽 Generate Lab Room QR Code containing all items
+    //   const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+    //   const allLabRoomItems = [];
+    //   labRoomItemsSnap.forEach((docItem) => {
+    //     const itemData = docItem.data();
+    //     const quantityNumbers = Number(itemData.quantity); 
+    //     allLabRoomItems.push({
+    //       itemId: itemData.itemId,
+    //       itemName: itemData.itemName,
+    //       quantity: itemData.quantity,
+    //       condition: {
+    //         Good: quantityNumbers,
+    //         Defect: 0,
+    //         Damage: 0,
+    //       },
+    //       status: itemData.status,
+    //     });
+    //   });
+
+    //   const labRoomQRData = CryptoJS.AES.encrypt(
+    //     JSON.stringify({
+    //       labRoom: values.labRoom,
+    //       items: allLabRoomItems,
+    //     }),
+    //     SECRET_KEY
+    //   ).toString();
+
+    //   // 🔽 Store labRoom QR code on the labRoom document
+    //   await updateDoc(labRoomRef, {
+    //     qrCode: labRoomQRData,
+    //     updatedAt: new Date(),
+    //   });
+
+    //   setDataSource([...dataSource, newItem]);
+    //   setCount(count + 1);
+    //   form.resetFields();
+    //   setItemName("");
+    //   setItemId("");
+    //   setIsModalVisible(false);
+
+    // } catch (error) {
+    //   console.error("Error adding document to Firestore:", error);
+    // }
+
+     try {
+      // 🔽 Add to inventory collection
       await addDoc(collection(db, "inventory"), {
         ...inventoryItem,
         qrCode: encryptedData,
       });
 
-      // 🔽 NEW: Ensure labRoom document exists
-      const labRoomRef = doc(db, "labRoom", values.labRoom);
-      const labRoomSnap = await getDoc(labRoomRef);
+      // 🔽 Check if labRoom with the given room number already exists
+      const labRoomQuery = query(
+        collection(db, "labRoom"),
+        where("roomNumber", "==", values.labRoom)
+      );
+      const labRoomSnapshot = await getDocs(labRoomQuery);
 
-      // 🔽 Create labRoom doc if it doesn't exist
-      if (!labRoomSnap.exists()) {
-        await setDoc(labRoomRef, {
+      let labRoomRef;
+
+      if (labRoomSnapshot.empty) {
+        // 🔽 Create new labRoom document with generated ID
+        labRoomRef = await addDoc(collection(db, "labRoom"), {
+          roomNumber: values.labRoom,
           createdAt: new Date(),
         });
+
+      } else {
+        // 🔽 Use existing labRoom document
+        labRoomRef = labRoomSnapshot.docs[0].ref;
       }
 
-      // 🔽 Add full item details to subcollection under labRoom
+      // 🔽 Add item to the labRoom's subcollection
       await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
         ...inventoryItem,
         qrCode: encryptedData,
+        roomNumber: values.labRoom,
       });
 
-       // 🔽 Generate Lab Room QR Code containing all items
+      // 🔽 Fetch all items under this labRoom
       const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
       const allLabRoomItems = [];
       labRoomItemsSnap.forEach((docItem) => {
         const itemData = docItem.data();
-        const quantityNumbers = Number(itemData.quantity); 
+        const quantityNumbers = Number(itemData.quantity);
         allLabRoomItems.push({
           itemId: itemData.itemId,
           itemName: itemData.itemName,
@@ -417,6 +496,7 @@ const printPdf = () => {
         });
       });
 
+      // 🔽 Generate encrypted QR code with labRoom data
       const labRoomQRData = CryptoJS.AES.encrypt(
         JSON.stringify({
           labRoom: values.labRoom,
@@ -425,7 +505,7 @@ const printPdf = () => {
         SECRET_KEY
       ).toString();
 
-      // 🔽 Store labRoom QR code on the labRoom document
+      // 🔽 Update labRoom document with the generated QR code
       await updateDoc(labRoomRef, {
         qrCode: labRoomQRData,
         updatedAt: new Date(),
@@ -466,13 +546,67 @@ const printPdf = () => {
   const updateItem = async (values) => {
     const safeValues = {
       category: values.category ?? "",
-      labRoom: values.labRoom ?? "",
+      // labRoom: values.labRoom ?? "",
+      labRoom: "", 
       quantity: values.quantity ?? 0,
       status: values.status ?? "Available",
       condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
       // condition: values.condition ?? "Good",
       // usageType: values.usageType ?? "",
     };
+
+    // try {
+    //   const snapshot = await getDocs(collection(db, "inventory"));
+
+    //   snapshot.forEach(async (docItem) => {
+    //     const data = docItem.data();
+
+    //     if (data.itemId === editingItem.itemId) {
+    //       const inventoryId = docItem.id;
+    //       const itemRef = doc(db, "inventory", inventoryId);
+
+    //       await updateDoc(itemRef, safeValues);
+
+    //       setIsNotificationVisible(true);
+    //       setNotificationMessage("Item updated successfully!");
+
+    //       const updatedItem = {
+    //         ...editingItem,
+    //         ...safeValues,
+    //       };
+
+    //       setDataSource((prevData) =>
+    //         prevData.map((item) =>
+    //           item.id === editingItem.id ? updatedItem : item
+    //         )
+    //       );
+
+    //       const labRoomId = safeValues.labRoom;
+    //       const itemId = data.itemId;
+
+    //       if (labRoomId && itemId) {
+    //         const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+    //         const labRoomSnap = await getDoc(labRoomItemRef);
+
+    //         if (labRoomSnap.exists()) {
+    //           await updateDoc(labRoomItemRef, safeValues);
+    //           console.log(`🏫 labRoom/${labRoomId}/items/${itemId} updated successfully`);
+
+    //         } else {
+    //           console.warn(`⚠️ labRoom item not found for itemId: ${itemId} in labRoom: ${labRoomId}`);
+    //         }
+    //       }
+
+    //       setIsEditModalVisible(false);
+    //       setIsRowModalVisible(false)
+    //       setEditingItem(null);
+    //       form.resetFields();
+    //     }
+    //   });
+      
+    // } catch (error) {
+    //   console.error("Error updating document in Firestore:", error);
+    // }
 
     try {
       const snapshot = await getDocs(collection(db, "inventory"));
@@ -484,6 +618,17 @@ const printPdf = () => {
           const inventoryId = docItem.id;
           const itemRef = doc(db, "inventory", inventoryId);
 
+          // Use the labRoom from the existing Firestore document
+          const existingLabRoom = data.labRoom;
+          if (!existingLabRoom) {
+            console.warn("❌ Existing item has no labRoom, cannot update labRoom items subcollection.");
+            return;
+          }
+
+          // Add labRoom to safeValues here from existing data
+          safeValues.labRoom = existingLabRoom;
+
+          // Update inventory doc with safeValues (including labRoom from Firestore)
           await updateDoc(itemRef, safeValues);
 
           setIsNotificationVisible(true);
@@ -500,29 +645,45 @@ const printPdf = () => {
             )
           );
 
-          const labRoomId = safeValues.labRoom;
+          // Now get the roomNumber string for query (padStart if needed)
+          const roomNumber = existingLabRoom.toString().padStart(4, '0');
+
           const itemId = data.itemId;
 
-          if (labRoomId && itemId) {
-            const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-            const labRoomSnap = await getDoc(labRoomItemRef);
+          console.log("🧪 Matching roomNumber:", roomNumber);
+          console.log("🆔 Matching itemId:", itemId);
 
-            if (labRoomSnap.exists()) {
+          // Query labRoom collection for the matching roomNumber
+          const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
+          const labRoomSnapshot = await getDocs(labRoomQuery);
+
+          if (!labRoomSnapshot.empty) {
+            const labRoomDoc = labRoomSnapshot.docs[0];
+            const labRoomRef = labRoomDoc.ref;
+
+            // Reference to the item inside labRoom/items/itemId
+            const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
+            const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+            if (labRoomItemSnap.exists()) {
               await updateDoc(labRoomItemRef, safeValues);
-              console.log(`🏫 labRoom/${labRoomId}/items/${itemId} updated successfully`);
+              console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
 
             } else {
-              console.warn(`⚠️ labRoom item not found for itemId: ${itemId} in labRoom: ${labRoomId}`);
+              console.warn(`⚠️ Item ${itemId} not found in labRoom`);
             }
+
+          } else {
+            console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
           }
 
           setIsEditModalVisible(false);
-          setIsRowModalVisible(false)
+          setIsRowModalVisible(false);
           setEditingItem(null);
           form.resetFields();
         }
       });
-      
+
     } catch (error) {
       console.error("Error updating document in Firestore:", error);
     }
@@ -558,7 +719,7 @@ const printPdf = () => {
       render: (text, record) => {
         const { category, unit, volume } = record;
         if (["Chemical", "Reagent"].includes(category)) {
-          return `${text} ${unit || ""}`;
+          return `${text} pcs / ${unit || ""} ML `;
         }
 
         if (category === "Glasswares" && volume) {
@@ -955,7 +1116,10 @@ const printPdf = () => {
                       label="Unit"
                       rules={[{ required: true, message: "Please select a unit!" }]}
                     >
-                      <Input value="ML"/>
+                      <Input 
+                      type="number"
+                      addonAfter="ML"
+                      value="ML"/>
                     </Form.Item>
                   </Col>
                 )}
@@ -1058,7 +1222,8 @@ const printPdf = () => {
                 <p>
                   <strong>Inventory Balance:</strong>{" "}
                   {selectedRow.quantity}
-                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit ? ` ${selectedRow.unit}` : ""}
+                  {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
                 </p>
                 {selectedRow.category === "Glasswares" && selectedRow.volume && (
                   <p>

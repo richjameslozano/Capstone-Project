@@ -165,22 +165,28 @@ export default function SearchItemsScreen({ navigation }) {
       </View>
 
       {/* Modal for Item Details */}
-      <Modal visible={hoveredItem !== null} onRequestClose={closeModal}>
+      {/* <Modal visible={hoveredItem !== null} onRequestClose={closeModal}>
         <View style={styles.modalContainer}>
           <ScrollView>
             {hoveredItem && (
               <View>
                 <Text style={styles.modalTitle}>{hoveredItem.itemName}</Text>
-                {/* <Text>Quantity: {hoveredItem.quantity}</Text> */}
+                <Text>Quantity: {hoveredItem.quantity}</Text>
                 <Text>
                   Quantity: {hoveredItem.quantity}
                   {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit ? ` ${hoveredItem.unit}` : ""}
                   {hoveredItem.category === "Glasswares" && hoveredItem.volume ? ` / ${hoveredItem.volume} ML` : ""}
                 </Text>
+                <Text>
+                  Quantity: {hoveredItem.quantity}
+                  {["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
+                  {hoveredItem.category === "Glasswares" && hoveredItem.volume && ` / ${hoveredItem.volume} ML`}
+                </Text>
                 <Text>Status: {hoveredItem.status}</Text>
                 <Text>Category: {hoveredItem.category}</Text>
                 <Text>Location: {hoveredItem.labRoom}</Text>
-                {/* <Text>Condition: {hoveredItem.condition || 'N/A'}</Text> */}
+                <Text>Condition: {hoveredItem.condition || 'N/A'}</Text>
                 <Text>
                   Condition: {hoveredItem.condition && typeof hoveredItem.condition === 'object'
                     ? `Good: ${String(hoveredItem.condition.Good ?? 0)}, Defect: ${String(hoveredItem.condition.Defect ?? 0)}, Damage: ${String(hoveredItem.condition.Damage ?? 0)}`
@@ -194,6 +200,39 @@ export default function SearchItemsScreen({ navigation }) {
               <Text style={styles.closeButtonText}>Close</Text>
             </TouchableOpacity>
           </ScrollView>
+        </View>
+      </Modal> */}
+
+      <Modal transparent={true} visible={hoveredItem !== null} onRequestClose={closeModal}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <ScrollView>
+              {hoveredItem && (
+                <View>
+                  <Text style={styles.modalTitle}>{hoveredItem.itemName}</Text>
+                  <Text>
+                    Quantity: {hoveredItem.quantity}
+                    {["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && " pcs"}
+                    {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
+                    {hoveredItem.category === "Glasswares" && hoveredItem.volume && ` / ${hoveredItem.volume} ML`}
+                  </Text>
+                  <Text>Status: {hoveredItem.status}</Text>
+                  <Text>Category: {hoveredItem.category}</Text>
+                  <Text>Location: {hoveredItem.labRoom}</Text>
+                  <Text>
+                    Condition: {hoveredItem.condition && typeof hoveredItem.condition === 'object'
+                      ? `Good: ${String(hoveredItem.condition.Good ?? 0)}, Defect: ${String(hoveredItem.condition.Defect ?? 0)}, Damage: ${String(hoveredItem.condition.Damage ?? 0)}`
+                      : "N/A"}
+                  </Text>
+                  <Text>Item Type: {hoveredItem.type || 'N/A'}</Text>
+                  <Text>Date Acquired: {hoveredItem.entryCurrentDate || 'N/A'}</Text>
+                </View>
+              )}
+              <TouchableOpacity onPress={closeModal} style={styles.closeButton}>
+                <Text style={styles.closeButtonText}>Close</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </View>
         </View>
       </Modal>
     </View>

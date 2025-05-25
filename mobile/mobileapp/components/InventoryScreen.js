@@ -882,7 +882,7 @@ export default function InventoryScreen({ navigation }) {
         
     )}
     
-  {isComplete && (
+  {/* {isComplete && (
     <View style={{flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7}}>
 
 
@@ -979,8 +979,98 @@ export default function InventoryScreen({ navigation }) {
       </View> 
       </View>
       </View>
-  )}
+  )} */}
 
+        {isComplete && (
+          <View style={{ flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7 }}>
+            
+            {/* Header/Search Filter */}
+            <View style={[styles.searchFilter, { top: headerHeight }]}>
+                <View style={{flex: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 7}}>
+                  <View style={styles.searchContainer}>
+                    <Icon name="magnify" size={20} color="#888"  />
+                    <TextInput
+                      style={styles.searchInput}
+                      placeholder="Search by item name"
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: '#efefef',
+                      flex: 1,
+                      borderRadius: 5,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      gap: 5,
+                      padding: 10,
+                    }}
+                    onPress={() => setIsCategoryModalVisible(true)}
+                  >
+                    <Icon name='filter-variant' size={20} color='#515151' />
+                    <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
+                  </TouchableOpacity>
+
+                </View>
+                  <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5, paddingHorizontal:10}}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='cube-outline' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}}>- Equipment</Text>
+                  </View>
+
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='flask-outline' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}}>- Chemical</Text>
+                  </View>
+
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='layers-outline' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}}>- Material</Text>
+                  </View>
+
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='test-tube' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}} >- Reagent</Text>
+                  </View>
+                </View>
+            </View>
+
+            {/* List Section */}
+            <View style={[styles.wholeSection2, { marginTop: headerHeight + 85, flex: 1 }]}>
+              <FlatList
+                contentContainerStyle={{ paddingBottom: 80, paddingHorizontal: 5, paddingTop: 5 }}
+                data={filteredItems}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                ListEmptyComponent={
+                  <Text style={{ textAlign: 'center', marginTop: 20 }}>No items found</Text>
+                }
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="always"
+              />
+
+              {/* Floating Button / Bottom View */}
+              <View style={styles.bottomContainer}>
+                <View style={styles.requestAddContainer}>
+                  <TouchableOpacity
+                    style={styles.requestButton}
+                    onPress={() => navigation.navigate('RequestListScreen')}
+                  >
+                    <Text style={styles.requestButtonText}>Item List</Text>
+                    {tempRequestCount > 0 && (
+                      <View style={styles.notificationBadge}>
+                        <Text style={styles.notificationText}>{tempRequestCount}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
 </KeyboardAvoidingView>
 
       <Modal visible={modalVisible} transparent animationType="fade">
@@ -1005,7 +1095,13 @@ export default function InventoryScreen({ navigation }) {
                   }
                 </Text>
                 <Text style={styles.itemType}>Status: {selectedItem?.status}</Text>
-                <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text>
+                {/* <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text> */}
+                <Text style={styles.itemType}>
+                  Available Quantity: {selectedItem?.quantity}
+                  {["Glasswares", "Chemical", "Reagent"].includes(selectedItem?.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedItem?.category) && selectedItem?.unit && ` / ${selectedItem.unit} ML`}
+                  {selectedItem?.category === "Glasswares" && selectedItem?.volume && ` / ${selectedItem.volume} ML`}
+                </Text>
               </View>
             </TouchableWithoutFeedback> 
           </View>

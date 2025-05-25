@@ -251,10 +251,17 @@ const formatCondition = (cond) => {
                 </View>
 
                 <View style={styles.row}>
-                 <Text style={styles.cardLabel}>Inventory Balance:  </Text>
-                <Text style={styles.cardValueNum}>{item.quantity}
+                <Text style={styles.cardLabel}>Inventory Balance:  </Text>
+                {/* <Text style={styles.cardValueNum}>{item.quantity}
                   {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}
-                  {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}</Text>
+                  {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
+                </Text> */}
+                <Text style={styles.cardValueNum}>
+                  {item.quantity}
+                  {["Glasswares", "Chemical", "Reagent"].includes(item.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(item.category) && item.unit && ` / ${item.unit} ML`}
+                  {item.category === "Glasswares" && item.volume && ` / ${item.volume} ML`}
+                </Text>
                 </View>
 
                 <View style={[styles.row, {marginTop:5}]}>
@@ -334,8 +341,6 @@ const formatCondition = (cond) => {
                   {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
                   {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                 </Text>
-
-
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Category:</Text> {selectedItem.category || 'N/A'}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Condition:</Text> {selectedItem.condition || 'N/A'}</Text> */}
                 <Text style={styles.modalText}>
