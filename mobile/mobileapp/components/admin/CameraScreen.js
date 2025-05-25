@@ -617,30 +617,85 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                       [`condition.${conditionReturned}`]: currentCondQty + returnQty,
                     });
 
-                  const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
+                  // const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
+                  // const itemId = inventorySnap.data().itemId;
+
+                  // if (labRoomId && itemId) {
+                  //   const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+                  //   const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+                  //   if (labRoomItemSnap.exists()) {
+                  //   const labData = labRoomItemSnap.data();
+                  //   const currentLabQty = Number(labData.quantity || 0);
+                  //   const currentLabCond = labData.condition || {};
+                  //   const labCondQty = Number(currentLabCond[conditionReturned] || 0);
+
+                  //   await updateDoc(labRoomItemRef, {
+                  //     quantity: currentLabQty + returnQty,
+                  //     [`condition.${conditionReturned}`]: labCondQty + returnQty,
+                  //   });
+
+                  //   } else {
+                  //     console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+                  //   }
+
+                  // } else {
+                  //   console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+                  // }
+
+                  const labRoomNumber = inventorySnap.data().labRoom; // assuming labRoom holds room number like "LR-101"
                   const itemId = inventorySnap.data().itemId;
 
-                  if (labRoomId && itemId) {
-                    const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-                    const labRoomItemSnap = await getDoc(labRoomItemRef);
+                  if (!labRoomNumber || !itemId) {
+                    console.warn(`⚠️ Missing labRoomNumber or itemId for inventoryId ${inventoryId}`);
+                    return;
+                  }
 
-                    if (labRoomItemSnap.exists()) {
-                    const labData = labRoomItemSnap.data();
+                  try {
+                    // 🔍 STEP 1: Find labRoom document by roomNumber
+                    const labRoomQuery = query(
+                      collection(db, "labRoom"),
+                      where("roomNumber", "==", labRoomNumber)
+                    );
+                    const labRoomSnapshot = await getDocs(labRoomQuery);
+
+                    if (labRoomSnapshot.empty) {
+                      console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomNumber}`);
+                      return;
+                    }
+
+                    const labRoomDoc = labRoomSnapshot.docs[0];
+                    const labRoomId = labRoomDoc.id;
+
+                    // 🔍 STEP 2: Find item in the labRoom/{labRoomId}/items by itemId field
+                    const labItemsRef = collection(db, "labRoom", labRoomId, "items");
+                    const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
+                    const itemSnapshot = await getDocs(itemQuery);
+
+                    if (itemSnapshot.empty) {
+                      console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+                      return;
+                    }
+
+                    const itemDoc = itemSnapshot.docs[0];
+                    const labItemDocId = itemDoc.id;
+                    const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
+
+                    const labData = itemDoc.data();
                     const currentLabQty = Number(labData.quantity || 0);
                     const currentLabCond = labData.condition || {};
                     const labCondQty = Number(currentLabCond[conditionReturned] || 0);
 
-                    await updateDoc(labRoomItemRef, {
+                    // ✅ Update the labRoom item quantity and condition
+                    await updateDoc(labItemRef, {
                       quantity: currentLabQty + returnQty,
                       [`condition.${conditionReturned}`]: labCondQty + returnQty,
                     });
 
-                    } else {
-                      console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
-                    }
+                    console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
 
-                  } else {
-                    console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+                  } catch (error) {
+                    console.error("🔥 Error updating labRoom item:", error);
                   }
 
                 } else {
