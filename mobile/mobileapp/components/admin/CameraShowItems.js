@@ -302,6 +302,7 @@ const CameraShowItems = ({ onClose }) => {
       //     // Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
       //      showLabRoomDetails(roomId, itemsDetailArray);
       //   }
+      
       } else if (
         typeof parsedData === "string" ||
         parsedData.labRoom ||
