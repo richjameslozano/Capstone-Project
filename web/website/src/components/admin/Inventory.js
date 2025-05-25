@@ -1222,7 +1222,8 @@ const printPdf = () => {
                 <p>
                   <strong>Inventory Balance:</strong>{" "}
                   {selectedRow.quantity}
-                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit ? ` ${selectedRow.unit}` : ""}
+                  {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
                 </p>
                 {selectedRow.category === "Glasswares" && selectedRow.volume && (
                   <p>
