@@ -881,24 +881,48 @@ function getConditionSummary(conditionsArray) {
       const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
       await updateDoc(borrowDocRef, { status: "Return Approved" });
   
-      // ✅ Log request in requestlog
-      const requestLogRef = collection(db, "requestlog");
-      await addDoc(requestLogRef, {
-        requisitionId,
-        userName: selectedApprovedRequest.userName || "N/A",
-        timestamp: serverTimestamp(),
-        dateRequired: selectedApprovedRequest.dateRequired || "N/A",
-        timeFrom: selectedApprovedRequest.timeFrom || "N/A",
-        timeTo: selectedApprovedRequest.timeTo || "N/A",
-        reason: selectedApprovedRequest.reason || "N/A",
-        room: selectedApprovedRequest.room || "N/A",
-        course: selectedApprovedRequest.course || "N/A",
-        courseDescription: selectedApprovedRequest.courseDescription || "N/A",
-        program: selectedApprovedRequest.program || "N/A",
-        status: "Returned",
-        requestList: selectedApprovedRequest.requestList || [],
-        approvedBy: approverName,
-      });
+      // // ✅ Log request in requestlog
+      // const requestLogRef = collection(db, "requestlog");
+      // await addDoc(requestLogRef, {
+      //   requisitionId,
+      //   userName: selectedApprovedRequest.userName || "N/A",
+      //   timestamp: serverTimestamp(),
+      //   dateRequired: selectedApprovedRequest.dateRequired || "N/A",
+      //   timeFrom: selectedApprovedRequest.timeFrom || "N/A",
+      //   timeTo: selectedApprovedRequest.timeTo || "N/A",
+      //   reason: selectedApprovedRequest.reason || "N/A",
+      //   room: selectedApprovedRequest.room || "N/A",
+      //   course: selectedApprovedRequest.course || "N/A",
+      //   courseDescription: selectedApprovedRequest.courseDescription || "N/A",
+      //   program: selectedApprovedRequest.program || "N/A",
+      //   status: "Returned",
+      //   requestList: selectedApprovedRequest.requestList || [],
+      //   approvedBy: approverName,
+      // });
+
+       // Step 1: Find the matching requestlog document using a field (like accountId)
+      const requestLogQuery = query(
+        collection(db, "requestlog"),
+        where("accountId", "==", selectedApprovedRequest.accountId)
+      );
+
+      const requestLogSnapshot = await getDocs(requestLogQuery);
+
+      if (!requestLogSnapshot.empty) {
+        // Assuming only one match — update that document
+        const requestLogDoc = requestLogSnapshot.docs[0];
+        const requestLogDocRef = doc(db, "requestlog", requestLogDoc.id);
+
+        await updateDoc(requestLogDocRef, {
+          status: "Returned",
+          timestamp: serverTimestamp(),
+        });
+
+        console.log("✅ Requestlog status updated to 'Returned'");
+        
+      } else {
+        console.warn("⚠️ No matching requestlog document found for accountId:", selectedApprovedRequest.accountId);
+      }
   
       console.log("Return approved and inventory updated.");
       setIsApprovedModalVisible(false);
