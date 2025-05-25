@@ -317,7 +317,7 @@ const LayoutMain = () => {
     {
       key: "/main/lab-room",
       icon: <HomeOutlined />,
-      label: "Lab Room Details",
+      label: "Stock Room Details",
     },
     {
       key: "/main/admin-activity-log",
@@ -366,7 +366,7 @@ const LayoutMain = () => {
   {
       key: "/main/lab-room",
       icon: <HistoryOutlined />,
-      label: "Lab Room Details",
+      label: "Stock Room Details",
     },
     {
       key: "logout",
