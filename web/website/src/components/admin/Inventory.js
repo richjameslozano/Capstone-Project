@@ -719,7 +719,7 @@ const printPdf = () => {
       render: (text, record) => {
         const { category, unit, volume } = record;
         if (["Chemical", "Reagent"].includes(category)) {
-          return `${text} ${unit || ""}`;
+          return `${text} pcs / ${unit || ""} ML `;
         }
 
         if (category === "Glasswares" && volume) {
@@ -1116,7 +1116,10 @@ const printPdf = () => {
                       label="Unit"
                       rules={[{ required: true, message: "Please select a unit!" }]}
                     >
-                      <Input value="ML"/>
+                      <Input 
+                      type="number"
+                      addonAfter="ML"
+                      value="ML"/>
                     </Form.Item>
                   </Col>
                 )}

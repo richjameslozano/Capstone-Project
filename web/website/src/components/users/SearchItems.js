@@ -242,10 +242,11 @@ const SearchItems = () => {
                   {selectedItem.itemName}
                 </Descriptions.Item>
 
-               <Descriptions.Item label="Quantity">
+                <Descriptions.Item label="Quantity">
                   {selectedItem.quantity}
-                  {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
+                  {["Glasswares", "Chemical", "Reagent"].includes(selectedItem.category) ? " pcs" : ""}
                   {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
+                  {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` / ${selectedItem.unit} ML` : ""}
                 </Descriptions.Item>
 
                 <Descriptions.Item label="Status">

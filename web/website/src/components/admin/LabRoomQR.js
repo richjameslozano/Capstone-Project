@@ -738,9 +738,9 @@ const LabRoomQR = () => {
                       <td>{item.department}</td>
                       <td>
                         {item.quantity}
-                        {item.category === "Glasswares" ? " pcs" : ""}
+                        {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
                         {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
-                        {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}
+                        {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
                       </td>
                       <td>{item.status}</td>
                       <td>{item.type}</td>
