@@ -30,12 +30,15 @@ import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/RequestStyle';
 import Header from '../Header';
 import PagerView from 'react-native-pager-view';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function RequestScreen() {
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modal2Visible, setModal2Visible] = useState(false);
   const [activityData, setActivityData] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
@@ -44,18 +47,14 @@ export default function RequestScreen() {
   const { user } = useAuth();
 
   const [headerHeight, setHeaderHeight] = useState(0);
+  const navigation = useNavigation()
   
     const handleHeaderLayout = (event) => {
       const { height } = event.nativeEvent.layout;
       setHeaderHeight(height);
     };
 
-    // const [activityData, setActivityData] = useState([]);
-    // const [searchQuery, setSearchQuery] = useState('');
-    // const [filteredData, setFilteredData] = useState([]);
-    // const [selectedLog, setSelectedLog] = useState(null);
-    // const [statusFilter, setStatusFilter] = useState('All');
-  
+
     useEffect(() => {
       const fetchActivityLogs = () => {
         try {
@@ -129,16 +128,6 @@ export default function RequestScreen() {
       handleSearch(searchQuery);
     }, [statusFilter]);
 
-    // const handleSearch = (query) => {
-    //   setSearchQuery(query);
-    //   const filtered = activityData.filter(
-    //     (item) =>
-    //       item.date.includes(query) ||
-    //       item.action.toLowerCase().includes(query.toLowerCase()) ||
-    //       item.by.toLowerCase().includes(query.toLowerCase())
-    //   );
-    //   setFilteredData(filtered);
-    // };
 
 const handleSearch = (query) => {
   setSearchQuery(query);
@@ -308,54 +297,52 @@ const handleSearch = (query) => {
 const pagerRef = useRef(null);
 
 
+
+
+
+
+
+
+
+
+
+
+
   return (
     
     <View style={styles.container}>
-      <Header onLayout={handleHeaderLayout} />
-      <View style={[styles.topNav, {top:headerHeight}]}>
-        <TouchableOpacity style={{width: '25%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center',paddingTop: 15}}
-          onPress={() => pagerRef.current.setPage(0)}
-        >
-          <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
-          {/* <View style={{borderBottomWidth: 5, borderColor: '#000', width: '50%', borderRadius: 20, marginTop: 5}}></View> */}
-        </TouchableOpacity>
+       <View style={styles.OrdersHeader} onLayout={handleHeaderLayout}>
+                     <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+                                     <Icon name="keyboard-backspace" size={28} color="black" />
+                                   </TouchableOpacity>
 
-        <Text style={{fontSize: 20, color: 'gray', paddingTop: 10}}>|</Text>
+                    <View>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>My Orders</Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13}}>Monitor Your Orders</Text>
+                    </View>
 
-        <TouchableOpacity style={{width: '25%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center',paddingTop:15}}
-        onPress={() => pagerRef.current.setPage(1)}
-        >
-          <Text style={{fontWeight: 'bold', fontSize: 15}}>Pending</Text>
-          {/* <View style={{borderBottomWidth: 5, borderColor: '#000', width: '50%', borderRadius: 20, marginTop: 5}}></View> */}
-        </TouchableOpacity>
+                     <TouchableOpacity style={{padding: 2}}>
+                       <Icon name="information-outline" size={24} color="#000" />
+                     </TouchableOpacity>
+                   </View>
 
-         <Animated.View style={[styles.border, { transform: [{ translateX: borderTranslateX }] }]} />
-      </View>
-
-      <PagerView ref={pagerRef} style={[styles.containerInner, {marginTop: headerHeight}]} initialPage={0}
-      onPageScroll={(event) => {
-          Animated.spring(position, {
-    toValue: event.nativeEvent.position,
-    stiffness: 200, // Adjust bounce effect
-    damping: 50, // Smooth motion
-    useNativeDriver: false,
-  }).start();
-      }}
-      >
-      <View key="1" style={styles.page}>
-       
-       <Text style={styles.pageTitle}>Request Log</Text>
+            <View style={[styles.searchFilter, {marginTop: headerHeight-3}]}>
+              <View style={{height: 45, flexDirection: 'row', gap: 5, paddingHorizontal: 2}}>
+                <View style={styles.searchContainer}>
+                  <Icon name="magnify" size={20} color="#888"  />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                  />
+                </View>
       
-            <TextInput
-              style={[styles.modalText, { borderBottomWidth: 1, marginBottom: 10 }]}
-              placeholder="Search"
-              value={searchQuery}
-              onChangeText={handleSearch}
-            />
-
-            <View style={{ marginBottom: 10 }}>
+              </View>
+      
+              <View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {['All', 'Request Approved', 'Request Rejected', 'Request Cancelled', 'Deployed'].map((status) => (
+                {['All', 'Approved', 'Rejected', 'Cancelled', 'Deployed'].map((status) => (
                   <TouchableOpacity
                     key={status}
                     style={{
@@ -374,6 +361,47 @@ const pagerRef = useRef(null);
                 ))}
               </ScrollView>
             </View>
+            </View>
+      
+      {/* <View style={[styles.topNav, {marginTop:headerHeight-3}]}>
+        <TouchableOpacity style={{width: '50%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center'}}
+          onPress={() => pagerRef.current.setPage(0)}
+        >
+          <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
+ 
+        </TouchableOpacity>
+
+        <Text style={{fontSize: 20, color: 'gray'}}>|</Text>
+
+        <TouchableOpacity style={{width: '50%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center'}}
+        onPress={() => pagerRef.current.setPage(1)}
+        >
+        </TouchableOpacity>
+
+         <Animated.View style={[styles.border, { transform: [{ translateX: borderTranslateX }] }]} />
+      </View> */}
+
+<View style={{flex:1, borderRadius: 5, overflow: 'hidden'}}>
+      <PagerView ref={pagerRef} style={[styles.containerInner]} initialPage={0}
+      onPageScroll={(event) => {
+          Animated.spring(position, {
+    toValue: event.nativeEvent.position,
+    stiffness: 200, // Adjust bounce effect
+    damping: 50, // Smooth motion
+    useNativeDriver: false,
+  }).start();
+      }}
+      >
+      <View key="1" style={styles.page}>
+      
+            <TextInput
+              style={[styles.modalText, { borderBottomWidth: 1, marginBottom: 10 }]}
+              placeholder="Search"
+              value={searchQuery}
+              onChangeText={handleSearch}
+            />
+
+            
       
             {/* Table Header */}
             <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
@@ -479,17 +507,8 @@ const pagerRef = useRef(null);
           contentContainerStyle={styles.listContainer}
         />
       )}
-      </View>
-      {/* <View key="3" style={styles.page}><Text>Page 3</Text></View> */}
-      
-      {/* <Text style={styles.title}>📋 Request List</Text> */}
 
-    
-      </PagerView>
-
-
-
-      <Modal visible={modalVisible} transparent animationType="slide">
+      <Modal visible={modal2Visible} transparent animationType="slide">
         <View style={styles.modalContainer}>
           <ScrollView style={styles.modalContent}>
             <Text style={styles.modalTitle}>Request Details - {selectedRequest?.id}</Text>
@@ -535,6 +554,13 @@ const pagerRef = useRef(null);
           </ScrollView>
         </View>
       </Modal>
+      </View>
+
+      </PagerView>
+</View>
+
+
+      
     </View>
   );
 }
