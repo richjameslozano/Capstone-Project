@@ -94,7 +94,54 @@ const CameraUpdateItems = ({ onClose }) => {
         }
     };
 
-    const handleBarCodeScanned = async ({ data }) => {
+  //   const handleBarCodeScanned = async ({ data }) => {
+  //   if (scanned) return;
+  //   setScanned(true);
+
+  //   try {
+  //     const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+  //     const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+  //     if (!decryptedData) throw new Error("Invalid QR Code");
+
+  //     let parsedData;
+  //     try {
+  //       parsedData = JSON.parse(decryptedData);
+
+  //     } catch {
+  //       parsedData = decryptedData;
+  //     }
+
+  //     // if (parsedData.itemName && parsedData.itemId && parsedData.labRoom) {
+  //     //   setCurrentItem(parsedData);
+  //     //   setModalVisible(true);
+
+  //     // } else {
+  //     //   Alert.alert("Invalid QR", "QR does not contain valid item data.");
+  //     //   setScanned(false);
+  //     // }
+
+  //     if (parsedData.itemName && parsedData.itemId && parsedData.labRoom) {
+  //       if (parsedData.itemId !== selectedItem.itemId) {
+  //         Alert.alert("Invalid Item", "You can only scan the selected item.");
+  //         setScanned(false);
+  //         return;
+  //       }
+
+  //       setCurrentItem(parsedData);
+  //       setModalVisible(true);
+  //     } else {
+  //       Alert.alert("Invalid QR", "QR does not contain valid item data.");
+  //       setScanned(false);
+  //     }
+          
+  //   } catch (err) {
+  //     console.error("QR Scan Error:", err);
+  //     Alert.alert("Scan Failed", "Failed to read QR code.");
+  //     setScanned(false);
+  //   }
+  // };
+
+  const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
     setScanned(true);
 
@@ -111,29 +158,42 @@ const CameraUpdateItems = ({ onClose }) => {
         parsedData = decryptedData;
       }
 
-      // if (parsedData.itemName && parsedData.itemId && parsedData.labRoom) {
-      //   setCurrentItem(parsedData);
-      //   setModalVisible(true);
+      const { itemId } = parsedData;
 
-      // } else {
-      //   Alert.alert("Invalid QR", "QR does not contain valid item data.");
-      //   setScanned(false);
-      // }
-
-      if (parsedData.itemName && parsedData.itemId && parsedData.labRoom) {
-        if (parsedData.itemId !== selectedItem.itemId) {
-          Alert.alert("Invalid Item", "You can only scan the selected item.");
-          setScanned(false);
-          return;
-        }
-
-        setCurrentItem(parsedData);
-        setModalVisible(true);
-      } else {
-        Alert.alert("Invalid QR", "QR does not contain valid item data.");
+      if (!itemId) {
+        Alert.alert("Invalid QR", "QR does not contain a valid item ID.");
         setScanned(false);
+        return;
       }
-          
+
+      // ✅ Fetch item data from inventory collection
+      const itemQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+      const snapshot = await getDocs(itemQuery);
+
+      if (snapshot.empty) {
+        Alert.alert("Item Not Found", `No item with ID ${itemId} found in inventory.`);
+        setScanned(false);
+        return;
+      }
+
+      const itemData = snapshot.docs[0].data();
+
+      if (itemId !== selectedItem.itemId) {
+        Alert.alert("Invalid Item", "You can only scan the selected item.");
+        setScanned(false);
+        return;
+      }
+
+      const fullItem = {
+        ...itemData,
+        itemId,
+      };
+
+      console.log("✅ Scanned Item:", fullItem);
+
+      setCurrentItem(fullItem);
+      setModalVisible(true);
+      
     } catch (err) {
       console.error("QR Scan Error:", err);
       Alert.alert("Scan Failed", "Failed to read QR code.");
@@ -177,48 +237,121 @@ const CameraUpdateItems = ({ onClose }) => {
   //   }
   // };
 
+  // const handleAddQuantity = async (addedQuantity) => {
+  //   const { itemId, itemName, labRoom } = currentItem;
+
+  //   try {
+  //     // 🔁 Update inventory
+  //     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+  //     const snapshot = await getDocs(inventoryQuery);
+
+  //     snapshot.forEach(async docSnap => {
+  //       const ref = doc(db, 'inventory', docSnap.id);
+  //       const existing = docSnap.data();
+
+  //       const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //       const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+
+  //       await updateDoc(ref, {
+  //         quantity: newQty,
+  //         'condition.Good': newGood
+  //       });
+
+  //       console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+  //     });
+
+  //     // 🔁 Update labRoom subcollection
+  //     const labRef = doc(db, `labRoom/${labRoom}/items`, itemId);
+  //     const labSnap = await getDoc(labRef);
+
+  //     if (labSnap.exists()) {
+  //       const existing = labSnap.data();
+
+  //       const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //       const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+  //       await updateDoc(labRef, {
+  //         quantity: newQty,
+  //         'condition.Good': newGood
+  //       });
+
+  //       console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+  //     }
+
+  //     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+
+  //   } catch (err) {
+  //     console.error("Quantity update error:", err);
+  //     Alert.alert("Error", "Failed to update quantity.");
+
+  //   } finally {
+  //     setModalVisible(false);
+  //     setScanned(false);
+  //   }
+  // };
+
   const handleAddQuantity = async (addedQuantity) => {
-    const { itemId, itemName, labRoom } = currentItem;
+    const { itemId, itemName, labRoom: roomNumber } = currentItem;
 
     try {
-      // 🔁 Update inventory
+      console.log("roomNumber:", roomNumber); // Should be '0930'
+      console.log("itemId:", itemId);         // Should be 'DENT02'
+
       const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
       const snapshot = await getDocs(inventoryQuery);
 
-      snapshot.forEach(async docSnap => {
-        const ref = doc(db, 'inventory', docSnap.id);
-        const existing = docSnap.data();
+        snapshot.forEach(async docSnap => {
+          const ref = doc(db, 'inventory', docSnap.id);
+          const existing = docSnap.data();
 
-        const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-        const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+          const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+          const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
 
 
-        await updateDoc(ref, {
-          quantity: newQty,
-          'condition.Good': newGood
+          await updateDoc(ref, {
+            quantity: newQty,
+            'condition.Good': newGood
+          });
+
+          console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
         });
 
-        console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-      });
 
-      // 🔁 Update labRoom subcollection
-      const labRef = doc(db, `labRoom/${labRoom}/items`, itemId);
-      const labSnap = await getDoc(labRef);
+      // ✅ STEP 1: Get the labRoom doc ID using roomNumber
+      const labRoomQuery = query(
+        collection(db, 'labRoom'),
+        where('roomNumber', '==', roomNumber)
+      );
+      const labRoomSnap = await getDocs(labRoomQuery);
 
-      if (labSnap.exists()) {
-        const existing = labSnap.data();
-
-        const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-        const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
-
-        await updateDoc(labRef, {
-          quantity: newQty,
-          'condition.Good': newGood
-        });
-
-        console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+      if (labRoomSnap.empty) {
+        Alert.alert("Error", `Lab room ${roomNumber} not found.`);
+        return;
       }
 
+      const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
+
+      // ✅ STEP 2: Get item in subcollection
+      const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
+      const itemDocSnap = await getDoc(itemDocRef);
+
+      if (!itemDocSnap.exists()) {
+        Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
+        return;
+      }
+
+      // ✅ STEP 3: Update quantity and condition
+      const existing = itemDocSnap.data();
+      const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+      const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+      await updateDoc(itemDocRef, {
+        quantity: newQty,
+        'condition.Good': newGood,
+      });
+
+      console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
       Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
 
     } catch (err) {
