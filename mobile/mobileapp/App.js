@@ -274,6 +274,111 @@ const CustomAdminDrawerContent = ({ navigation }) => {
   );
 };
 
+const CustomSuperUserDrawerContent = ({ navigation }) => {
+  const { user, logout } = useAuth();  
+  const [profileImage, setProfileImage] = useState(null);
+  const isFocused = useIsFocused();
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      try {
+        if (!user?.id) return;
+        const userDoc = await getDocs(collection(db, "accounts"));
+        const userData = userDoc.docs.find(doc => doc.id === user.id)?.data();
+        if (userData?.profileImage) {
+          setProfileImage(userData.profileImage);
+        }
+
+      } catch (error) {
+        console.error("Error fetching profile image:", error);
+      }
+    };
+
+    fetchProfileImage();
+  }, [isFocused]);
+
+   useEffect(() => {
+    if (isFocused) {
+      StatusBar.setBarStyle('dark-content');
+      StatusBar.setBackgroundColor('transparent');
+    }
+  }, [isFocused]);
+
+  return (
+    
+    <View style={styles.drawerContent}>
+
+      <View style={styles.upperSection}>
+          <View style={styles.headProfile}>
+          <TouchableOpacity style={styles.profileSection} onPress={() => navigation.navigate('ProfileScreen')}>
+            <View style={styles.avatarBorder}>
+          {profileImage ? (
+            
+            <Avatar.Image size={70} source={{ uri: profileImage }} />
+            
+          ) : (
+              <Avatar.Text size={70} backgroundColor='#a3cae9' label={getInitials(user?.name)} />
+            )}
+            </View>
+          </TouchableOpacity>
+          </View>
+
+            <View>
+            <Text style={styles.profileName}>
+              {user ? capitalizeName(user.name) : 'Guest'}
+            </Text>
+            <Text style={{fontSize: 13, color: '#dceaf2', marginTop: 0}}>{user ? user.jobTitle : 'Job Title'}</Text>    
+        </View>
+      </View>
+
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
+        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>My Account</Title>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
+         <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Dashboard</Title>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
+        <Icon2 name="package-variant" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Inventory</Title>
+      </TouchableOpacity>
+
+      {/* <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')} style={styles.drawerItem}>
+        <Icon2 name="progress-clock" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Pending Requests</Title>
+      </TouchableOpacity> */}
+
+      <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
+        <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Activity Log</Title>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('RequestLogScreen')} style={styles.drawerItem}>
+        <Icon2 name="book-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Request Log</Title>
+      </TouchableOpacity>
+
+      {/* <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
+        <Icon2 name="qrcode" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>QR Scanner</Title>
+      </TouchableOpacity> */}
+
+      <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
+        <Icon2 name="hand-extended-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Borrow Catalog</Title>
+      </TouchableOpacity>
+
+      {/* <TouchableOpacity onPress={() => navigation.navigate('CapexRequestListScreen')} style={styles.drawerItem}>
+        <Icon2 name="cash-multiple" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Capex Request List</Title>
+      </TouchableOpacity> */}
+    </View>
+  );
+};
+
 function UserDrawer() {
   return (
     <Drawer.Navigator
@@ -328,6 +433,35 @@ const AdminDrawer = () => {
   );
 };
 
+const SuperUserDrawer = () => {
+  return (
+    <Drawer.Navigator
+      initialRouteName="Admin2Dashboard"
+      screenOptions={{ headerShown: false }}
+      drawerContent={(props) => <CustomSuperUserDrawerContent {...props} />}
+    >
+      <Drawer.Screen name="Admin2Dashboard" component={Admin2Dashboard} />
+      <Drawer.Screen name="PendingRequestScreen" component={PendingRequestScreen} />
+      <Drawer.Screen name="InventoryScreen" component={InventoryScreen} />
+      <Drawer.Screen name="CameraScreen" component={CameraScreen} />
+      <Drawer.Screen name="RequestLogScreen" component={LogScreen} />
+      <Drawer.Screen name="InventoryStocks" component={InventoryStocks} />
+      <Drawer.Screen name="RequestListScreen" component={RequestListScreen} />
+      <Drawer.Screen name="RequestScreen" component={RequestScreen} />
+      <Drawer.Screen name="ActivityLogScreen" component={ActivityLogScreen} />
+      <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
+      <Drawer.Screen name="BorrowCatalogScreen" component={BorrowCatalogScreen} />
+      <Drawer.Screen name="ProfileScreen" component={ProfileScreen} />
+      <Drawer.Screen name="RequestorListScreen" component={RequestorListScreen} />
+      <Drawer.Screen name="RequestedItemsScreen" component={RequestedItemsScreen} />
+      <Drawer.Screen name="ItemListScreen" component={ItemListScreen} />
+      <Drawer.Screen name="CameraShowItems" component={CameraShowItems} />
+      <Drawer.Screen name="QRScanScreen" component={QRScanScreen} />
+      <Drawer.Screen name="CameraUpdateItems" component={CameraUpdateItems} />
+    </Drawer.Navigator>
+  );
+};
+
 export default function App() {
   return (
     <RequestMetadataProvider>
@@ -341,6 +475,7 @@ export default function App() {
                     <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />
                     <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />
+                    <Stack.Screen name="Super-User" component={SuperUserDrawer} options={{ headerShown: false }} />
                     <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>
                   </Stack.Navigator>
                 </NavigationContainer>
