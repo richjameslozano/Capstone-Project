@@ -82,15 +82,15 @@ const handleOpen = (id) => {
       if(item.category === 'Chemical') return '#631990';
       if(item.category === 'Materials') return '#ee8d24';
       if(item.category === 'Reagent') return '#235284';
-      if(item.category === 'Glasswares') return '#5a5a59';
+      if(item.category === 'Glasswares') return '#d09902';
     }
 
     const handleBG =(item)=>{
       if(item.category === 'Equipment') return '#C8E6C9';
       if(item.category === 'Chemical') return '#E4D6EC';
-      if(item.category === 'Materials') return '#f8d496';
+      if(item.category === 'Materials') return '#f8d496'; 
       if(item.category === 'Reagent') return '#b8e2f4';
-      if(item.category === 'Glasswares') return '#e9ecee';
+      if(item.category === 'Glasswares') return '#fff2ce';
     }
 
 
@@ -126,17 +126,10 @@ const formatCondition = (cond) => {
   return (
     <View style={styles.container}>
       <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-                     <TouchableOpacity onPress={() => {
-                if (navigation?.openDrawer) {
-                  navigation.openDrawer();
-      
-                } else {
-                  console.warn("Drawer navigation not available");
-                }
-              }} 
-              >
-                       <Icon name="menu" size={28} color="black" /> 
-                     </TouchableOpacity>
+                     <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+                                     <Icon name="keyboard-backspace" size={28} color="black" />
+                                   </TouchableOpacity>
+
                     <View>
                       <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Inventory</Text>
                       <Text style={{ fontWeight: 300, fontSize: 13}}>View Inventory Items</Text>
