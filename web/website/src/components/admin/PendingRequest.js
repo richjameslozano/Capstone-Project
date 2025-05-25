@@ -403,54 +403,124 @@ const PendingRequest = () => {
           console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
 
           // 🔁 Update labRoom item quantity
-          const itemId = data.itemId;
-          const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-          const labRoomItemSnap = await getDoc(labRoomItemRef);
+          // const itemId = data.itemId;
+          // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+          // const labRoomItemSnap = await getDoc(labRoomItemRef);
 
-          if (labRoomItemSnap.exists()) {
-            const labData = labRoomItemSnap.data();
+          // if (labRoomItemSnap.exists()) {
+          //   const labData = labRoomItemSnap.data();
 
-            const currentLabQty = Number(labData.quantity || 0);
-            const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-            await updateDoc(labRoomItemRef, { quantity: newLabQty });
-            console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+          //   const currentLabQty = Number(labData.quantity || 0);
+          //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+          //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
+          //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
 
-            // ⚙️ Also update labRoom condition breakdown
-            let labGood = labData.condition?.Good ?? 0;
-            let labDamage = labData.condition?.Damage ?? 0;
-            let labDefect = labData.condition?.Defect ?? 0;
+          //   // ⚙️ Also update labRoom condition breakdown
+          //   let labGood = labData.condition?.Good ?? 0;
+          //   let labDamage = labData.condition?.Damage ?? 0;
+          //   let labDefect = labData.condition?.Defect ?? 0;
 
-            let remainingLab = requestedQty;
+          //   let remainingLab = requestedQty;
 
-            if (remainingLab > 0) {
-              const deductFromLabGood = Math.min(labGood, remainingLab);
-              labGood -= deductFromLabGood;
-              remainingLab -= deductFromLabGood;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabGood = Math.min(labGood, remainingLab);
+          //     labGood -= deductFromLabGood;
+          //     remainingLab -= deductFromLabGood;
+          //   }
 
-            if (remainingLab > 0) {
-              const deductFromLabDamage = Math.min(labDamage, remainingLab);
-              labDamage -= deductFromLabDamage;
-              remainingLab -= deductFromLabDamage;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
+          //     labDamage -= deductFromLabDamage;
+          //     remainingLab -= deductFromLabDamage;
+          //   }
 
-            if (remainingLab > 0) {
-              const deductFromLabDefect = Math.min(labDefect, remainingLab);
-              labDefect -= deductFromLabDefect;
-              remainingLab -= deductFromLabDefect;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
+          //     labDefect -= deductFromLabDefect;
+          //     remainingLab -= deductFromLabDefect;
+          //   }
 
-            await updateDoc(labRoomItemRef, {
-              'condition.Good': labGood,
-              'condition.Damage': labDamage,
-              'condition.Defect': labDefect
-            });
+          //   await updateDoc(labRoomItemRef, {
+          //     'condition.Good': labGood,
+          //     'condition.Damage': labDamage,
+          //     'condition.Defect': labDefect
+          //   });
 
-            console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
+          //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
           
-          } else {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          // } else {
+          //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          // }
+
+          // 🔁 Update labRoom item quantity
+          const roomNumber = item.labRoom; // e.g. "0930"
+          const labRoomCollectionRef = collection(db, "labRoom");
+          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+          const querySnapshot = await getDocs(q);
+
+          if (querySnapshot.empty) {
+            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+            return;
           }
+
+          // 2. Get Firestore doc ID of the labRoom
+          const labRoomDoc = querySnapshot.docs[0];
+          const labRoomDocId = labRoomDoc.id;
+
+          // 3. Query items subcollection for item with matching itemId
+          const itemId = data.itemId; // e.g. "DENT02"
+          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+          const itemSnapshot = await getDocs(itemQuery);
+
+          if (itemSnapshot.empty) {
+            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+            return;
+          }
+
+          // 4. Get the Firestore doc ID of the item document
+          const itemDoc = itemSnapshot.docs[0];
+          const itemDocId = itemDoc.id;
+          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+          const labData = itemDoc.data();
+
+          const currentLabQty = Number(labData.quantity || 0);
+          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+          await updateDoc(labRoomItemRef, { quantity: newLabQty });
+          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+
+          // Update condition breakdown
+          let labGood = labData.condition?.Good ?? 0;
+          let labDamage = labData.condition?.Damage ?? 0;
+          let labDefect = labData.condition?.Defect ?? 0;
+
+          let remainingLab = requestedQty;
+
+          if (remainingLab > 0) {
+            const deductFromLabGood = Math.min(labGood, remainingLab);
+            labGood -= deductFromLabGood;
+            remainingLab -= deductFromLabGood;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDamage = Math.min(labDamage, remainingLab);
+            labDamage -= deductFromLabDamage;
+            remainingLab -= deductFromLabDamage;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDefect = Math.min(labDefect, remainingLab);
+            labDefect -= deductFromLabDefect;
+            remainingLab -= deductFromLabDefect;
+          }
+
+          await updateDoc(labRoomItemRef, {
+            'condition.Good': labGood,
+            'condition.Damage': labDamage,
+            'condition.Defect': labDefect
+          });
+
+          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
 
         }
       } catch (err) {
@@ -879,55 +949,125 @@ const PendingRequest = () => {
 
           console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
 
-          // 🔁 Update labRoom item quantity
-          const itemId = data.itemId;
-          const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-          const labRoomItemSnap = await getDoc(labRoomItemRef);
+          // // 🔁 Update labRoom item quantity
+          // const itemId = data.itemId;
+          // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+          // const labRoomItemSnap = await getDoc(labRoomItemRef);
 
-          if (labRoomItemSnap.exists()) {
-            const labData = labRoomItemSnap.data();
+          // if (labRoomItemSnap.exists()) {
+          //   const labData = labRoomItemSnap.data();
 
-            const currentLabQty = Number(labData.quantity || 0);
-            const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-            await updateDoc(labRoomItemRef, { quantity: newLabQty });
-            console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+          //   const currentLabQty = Number(labData.quantity || 0);
+          //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+          //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
+          //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
 
-            // ⚙️ Also update labRoom condition breakdown
-            let labGood = labData.condition?.Good ?? 0;
-            let labDamage = labData.condition?.Damage ?? 0;
-            let labDefect = labData.condition?.Defect ?? 0;
+          //   // ⚙️ Also update labRoom condition breakdown
+          //   let labGood = labData.condition?.Good ?? 0;
+          //   let labDamage = labData.condition?.Damage ?? 0;
+          //   let labDefect = labData.condition?.Defect ?? 0;
 
-            let remainingLab = requestedQty;
+          //   let remainingLab = requestedQty;
 
-            if (remainingLab > 0) {
-              const deductFromLabGood = Math.min(labGood, remainingLab);
-              labGood -= deductFromLabGood;
-              remainingLab -= deductFromLabGood;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabGood = Math.min(labGood, remainingLab);
+          //     labGood -= deductFromLabGood;
+          //     remainingLab -= deductFromLabGood;
+          //   }
 
-            if (remainingLab > 0) {
-              const deductFromLabDamage = Math.min(labDamage, remainingLab);
-              labDamage -= deductFromLabDamage;
-              remainingLab -= deductFromLabDamage;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
+          //     labDamage -= deductFromLabDamage;
+          //     remainingLab -= deductFromLabDamage;
+          //   }
 
-            if (remainingLab > 0) {
-              const deductFromLabDefect = Math.min(labDefect, remainingLab);
-              labDefect -= deductFromLabDefect;
-              remainingLab -= deductFromLabDefect;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
+          //     labDefect -= deductFromLabDefect;
+          //     remainingLab -= deductFromLabDefect;
+          //   }
 
-            await updateDoc(labRoomItemRef, {
-              'condition.Good': labGood,
-              'condition.Damage': labDamage,
-              'condition.Defect': labDefect
-            });
+          //   await updateDoc(labRoomItemRef, {
+          //     'condition.Good': labGood,
+          //     'condition.Damage': labDamage,
+          //     'condition.Defect': labDefect
+          //   });
 
-            console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
+          //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
           
-          } else {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          // } else {
+          //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          // }
+
+             // 🔁 Update labRoom item quantity
+          const roomNumber = item.labRoom; // e.g. "0930"
+          const labRoomCollectionRef = collection(db, "labRoom");
+          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+          const querySnapshot = await getDocs(q);
+
+          if (querySnapshot.empty) {
+            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+            return;
           }
+
+          // 2. Get Firestore doc ID of the labRoom
+          const labRoomDoc = querySnapshot.docs[0];
+          const labRoomDocId = labRoomDoc.id;
+
+          // 3. Query items subcollection for item with matching itemId
+          const itemId = data.itemId; // e.g. "DENT02"
+          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+          const itemSnapshot = await getDocs(itemQuery);
+
+          if (itemSnapshot.empty) {
+            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+            return;
+          }
+
+          // 4. Get the Firestore doc ID of the item document
+          const itemDoc = itemSnapshot.docs[0];
+          const itemDocId = itemDoc.id;
+          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+          const labData = itemDoc.data();
+
+          const currentLabQty = Number(labData.quantity || 0);
+          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+          await updateDoc(labRoomItemRef, { quantity: newLabQty });
+          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+
+          // Update condition breakdown
+          let labGood = labData.condition?.Good ?? 0;
+          let labDamage = labData.condition?.Damage ?? 0;
+          let labDefect = labData.condition?.Defect ?? 0;
+
+          let remainingLab = requestedQty;
+
+          if (remainingLab > 0) {
+            const deductFromLabGood = Math.min(labGood, remainingLab);
+            labGood -= deductFromLabGood;
+            remainingLab -= deductFromLabGood;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDamage = Math.min(labDamage, remainingLab);
+            labDamage -= deductFromLabDamage;
+            remainingLab -= deductFromLabDamage;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDefect = Math.min(labDefect, remainingLab);
+            labDefect -= deductFromLabDefect;
+            remainingLab -= deductFromLabDefect;
+          }
+
+          await updateDoc(labRoomItemRef, {
+            'condition.Good': labGood,
+            'condition.Damage': labDamage,
+            'condition.Defect': labDefect
+          });
+
+          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
 
         }
       } catch (err) {
@@ -1443,54 +1583,124 @@ const PendingRequest = () => {
           console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
 
           // 🔁 Update labRoom item quantity
-          const itemId = data.itemId;
-          const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-          const labRoomItemSnap = await getDoc(labRoomItemRef);
+          // const itemId = data.itemId;
+          // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+          // const labRoomItemSnap = await getDoc(labRoomItemRef);
 
-          if (labRoomItemSnap.exists()) {
-            const labData = labRoomItemSnap.data();
+          // if (labRoomItemSnap.exists()) {
+          //   const labData = labRoomItemSnap.data();
 
-            const currentLabQty = Number(labData.quantity || 0);
-            const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-            await updateDoc(labRoomItemRef, { quantity: newLabQty });
-            console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+          //   const currentLabQty = Number(labData.quantity || 0);
+          //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+          //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
+          //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
 
-            // ⚙️ Also update labRoom condition breakdown
-            let labGood = labData.condition?.Good ?? 0;
-            let labDamage = labData.condition?.Damage ?? 0;
-            let labDefect = labData.condition?.Defect ?? 0;
+          //   // ⚙️ Also update labRoom condition breakdown
+          //   let labGood = labData.condition?.Good ?? 0;
+          //   let labDamage = labData.condition?.Damage ?? 0;
+          //   let labDefect = labData.condition?.Defect ?? 0;
 
-            let remainingLab = requestedQty;
+          //   let remainingLab = requestedQty;
 
-            if (remainingLab > 0) {
-              const deductFromLabGood = Math.min(labGood, remainingLab);
-              labGood -= deductFromLabGood;
-              remainingLab -= deductFromLabGood;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabGood = Math.min(labGood, remainingLab);
+          //     labGood -= deductFromLabGood;
+          //     remainingLab -= deductFromLabGood;
+          //   }
 
-            if (remainingLab > 0) {
-              const deductFromLabDamage = Math.min(labDamage, remainingLab);
-              labDamage -= deductFromLabDamage;
-              remainingLab -= deductFromLabDamage;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
+          //     labDamage -= deductFromLabDamage;
+          //     remainingLab -= deductFromLabDamage;
+          //   }
 
-            if (remainingLab > 0) {
-              const deductFromLabDefect = Math.min(labDefect, remainingLab);
-              labDefect -= deductFromLabDefect;
-              remainingLab -= deductFromLabDefect;
-            }
+          //   if (remainingLab > 0) {
+          //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
+          //     labDefect -= deductFromLabDefect;
+          //     remainingLab -= deductFromLabDefect;
+          //   }
 
-            await updateDoc(labRoomItemRef, {
-              'condition.Good': labGood,
-              'condition.Damage': labDamage,
-              'condition.Defect': labDefect
-            });
+          //   await updateDoc(labRoomItemRef, {
+          //     'condition.Good': labGood,
+          //     'condition.Damage': labDamage,
+          //     'condition.Defect': labDefect
+          //   });
 
-            console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
+          //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
           
-          } else {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          // } else {
+          //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+          // }
+
+             // 🔁 Update labRoom item quantity
+          const roomNumber = item.labRoom; // e.g. "0930"
+          const labRoomCollectionRef = collection(db, "labRoom");
+          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+          const querySnapshot = await getDocs(q);
+
+          if (querySnapshot.empty) {
+            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+            return;
           }
+
+          // 2. Get Firestore doc ID of the labRoom
+          const labRoomDoc = querySnapshot.docs[0];
+          const labRoomDocId = labRoomDoc.id;
+
+          // 3. Query items subcollection for item with matching itemId
+          const itemId = data.itemId; // e.g. "DENT02"
+          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+          const itemSnapshot = await getDocs(itemQuery);
+
+          if (itemSnapshot.empty) {
+            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+            return;
+          }
+
+          // 4. Get the Firestore doc ID of the item document
+          const itemDoc = itemSnapshot.docs[0];
+          const itemDocId = itemDoc.id;
+          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+          const labData = itemDoc.data();
+
+          const currentLabQty = Number(labData.quantity || 0);
+          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+          await updateDoc(labRoomItemRef, { quantity: newLabQty });
+          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+
+          // Update condition breakdown
+          let labGood = labData.condition?.Good ?? 0;
+          let labDamage = labData.condition?.Damage ?? 0;
+          let labDefect = labData.condition?.Defect ?? 0;
+
+          let remainingLab = requestedQty;
+
+          if (remainingLab > 0) {
+            const deductFromLabGood = Math.min(labGood, remainingLab);
+            labGood -= deductFromLabGood;
+            remainingLab -= deductFromLabGood;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDamage = Math.min(labDamage, remainingLab);
+            labDamage -= deductFromLabDamage;
+            remainingLab -= deductFromLabDamage;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDefect = Math.min(labDefect, remainingLab);
+            labDefect -= deductFromLabDefect;
+            remainingLab -= deductFromLabDefect;
+          }
+
+          await updateDoc(labRoomItemRef, {
+            'condition.Good': labGood,
+            'condition.Damage': labDamage,
+            'condition.Defect': labDefect
+          });
+
+          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
 
         }
       } catch (err) {
