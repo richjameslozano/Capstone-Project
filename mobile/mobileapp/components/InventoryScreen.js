@@ -677,7 +677,7 @@ export default function InventoryScreen({ navigation }) {
           </View>
 
           <View style={styles.programSection}>
-              <Text style={styles.label}>Course Code:</Text>
+              <Text style={styles.label}>Course Description:</Text>
               <TextInput style={{width: '60%', backgroundColor: 'gray', backgroundColor: '#e9ecee', borderRadius: 5, paddingHorizontal: 10}} placeholder='<autofill>'></TextInput>
           </View>
         </View>

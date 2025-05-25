@@ -24,7 +24,7 @@ import Admin2Dashboard from './components/admin/AdminDashboard';
 import PendingRequestScreen from './components/admin/PendingRequestScreen';
 import InventoryScreen from './components/InventoryScreen';
 import CameraScreen from './components/admin/CameraScreen';
-import RequestScreen from './components/user/RequestScreen';
+import OrdersScreen from './components/user/OrdersScreen';
 import RequestListScreen from './components/user/RequestListScreen';
 import RequestLogScreen from './components/user/RequestLogScreen';
 import LogScreen from './components/admin/LogScreen';
@@ -135,7 +135,7 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Search Items</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('RequestScreen')}>
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('OrdersScreen')}>
         <Icon2 name="history" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Orders</Title>
       </TouchableOpacity>
@@ -390,7 +390,7 @@ function UserDrawer() {
       <Drawer.Screen name="UserDashboard" component={UserDashboard} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
       <Drawer.Screen name="PolicyScreen" component={PolicyScreen} />
-      <Drawer.Screen name="RequestScreen" component={RequestScreen} />
+      <Drawer.Screen name="OrdersScreen" component={OrdersScreen} />
       <Drawer.Screen name="RequestListScreen" component={RequestListScreen} />
       <Drawer.Screen name="UserHistoryLogScreen" component={RequestLogScreen} />
       <Drawer.Screen name="SearchItems" component={SearchItems} />
@@ -417,7 +417,7 @@ const AdminDrawer = () => {
       <Drawer.Screen name="RequestLogScreen" component={LogScreen} />
       <Drawer.Screen name="InventoryStocks" component={InventoryStocks} />
       <Drawer.Screen name="RequestListScreen" component={RequestListScreen} />
-      <Drawer.Screen name="RequestScreen" component={RequestScreen} />
+      <Drawer.Screen name="OrdersScreen" component={OrdersScreen} />
       <Drawer.Screen name="ActivityLogScreen" component={ActivityLogScreen} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
       <Drawer.Screen name="BorrowCatalogScreen" component={BorrowCatalogScreen} />
@@ -447,7 +447,7 @@ const SuperUserDrawer = () => {
       <Drawer.Screen name="RequestLogScreen" component={LogScreen} />
       <Drawer.Screen name="InventoryStocks" component={InventoryStocks} />
       <Drawer.Screen name="RequestListScreen" component={RequestListScreen} />
-      <Drawer.Screen name="RequestScreen" component={RequestScreen} />
+      <Drawer.Screen name="OrdersScreen" component={OrdersScreen} />
       <Drawer.Screen name="ActivityLogScreen" component={ActivityLogScreen} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
       <Drawer.Screen name="BorrowCatalogScreen" component={BorrowCatalogScreen} />
