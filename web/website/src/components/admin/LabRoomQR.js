@@ -484,6 +484,7 @@
 // VERSION 4
 import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
+import { Layout, Row, Col, Table, Input, Button, Typography, Modal } from "antd";
 import { collection, getDocs, onSnapshot, doc, updateDoc, writeBatch, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/LabRoomQR.css";
@@ -491,6 +492,8 @@ import "../styles/adminStyle/LabRoomQR.css";
 const LabRoomQR = () => {
   const [labRooms, setLabRooms] = useState([]);
   const [originalRoomNumbers, setOriginalRoomNumbers] = useState({});
+  const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
+  const [confirmRoomId, setConfirmRoomId] = useState(null);
   const qrRefs = useRef({});
 
   useEffect(() => {
@@ -657,7 +660,7 @@ const LabRoomQR = () => {
               <h3 className="labroom-title">
                 Room:
                 <input
-                  type="text"
+                  type="number"
                   value={room.roomNumber}
                   onChange={(e) => {
                     const newRoomNumber = e.target.value;
@@ -668,10 +671,20 @@ const LabRoomQR = () => {
                   style={{ marginLeft: "10px", width: "120px" }}
                 />
 
-                <button
+                {/* <button
                   onClick={() =>
                     updateRoomNumber(room.id, originalRoomNumbers[room.id], room.roomNumber)
                   }
+                  style={{ marginLeft: "10px" }}
+                >
+                  Save
+                </button> */}
+
+                <button
+                  onClick={() => {
+                    setConfirmRoomId(room.id);
+                    setIsConfirmModalVisible(true);
+                  }}
                   style={{ marginLeft: "10px" }}
                 >
                   Save
@@ -738,6 +751,35 @@ const LabRoomQR = () => {
             </div>
           ))
       )}
+
+        <Modal
+          title="Confirm Room Number Update"
+          open={isConfirmModalVisible}
+          zIndex={1023}
+          onOk={() => {
+            if (confirmRoomId) {
+              updateRoomNumber(
+                confirmRoomId,
+                originalRoomNumbers[confirmRoomId],
+                labRooms.find(r => r.id === confirmRoomId)?.roomNumber
+              );
+            }
+            setIsConfirmModalVisible(false);
+            setConfirmRoomId(null);
+          }}
+          onCancel={() => {
+            setIsConfirmModalVisible(false);
+            setConfirmRoomId(null);
+          }}
+          okText="Yes, Update"
+          cancelText="Cancel"
+        >
+          <p>
+            Are you sure you want to change the room number from "
+            <strong>{originalRoomNumbers[confirmRoomId]}</strong>" to "
+            <strong>{labRooms.find(r => r.id === confirmRoomId)?.roomNumber}</strong>"?
+          </p>
+        </Modal>
     </div>
   );
 };
