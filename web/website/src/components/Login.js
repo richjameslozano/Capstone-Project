@@ -653,7 +653,7 @@ const Login = () => {
                     />
                   </div>
   
-                  <div className="form-group">
+                  {/* <div className="form-group">
                     <label>Employee ID</label>
                     <input
                       type="text"
@@ -663,6 +663,28 @@ const Login = () => {
                         if (/^[0-9-]{0,7}$/.test(rawValue)) {
                           setSignUpData({ ...signUpData, employeeId: rawValue });
                         }
+                      }}
+                      placeholder="e.g., 12-3456"
+                      required
+                    />
+                  </div> */}
+
+                  <div className="form-group">
+                    <label>Employee ID</label>
+                    <input
+                      type="text"
+                      value={signUpData.employeeId}
+                      onChange={(e) => {
+                        let rawValue = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+                        if (rawValue.length > 6) rawValue = rawValue.slice(0, 6); // Limit to 6 digits
+
+                        // Insert dash after the second digit
+                        let formattedValue = rawValue;
+                        if (rawValue.length > 2) {
+                          formattedValue = rawValue.slice(0, 2) + '-' + rawValue.slice(2);
+                        }
+
+                        setSignUpData({ ...signUpData, employeeId: formattedValue });
                       }}
                       placeholder="e.g., 12-3456"
                       required
