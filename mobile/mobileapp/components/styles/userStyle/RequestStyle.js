@@ -10,7 +10,7 @@ export default StyleSheet.create({
 
   containerInner:{
     flex:1,
-    backgroundColor:'#fff',
+    backgroundColor:'#e9ecee',
     borderRadius: 5,
   },
 
@@ -33,8 +33,8 @@ export default StyleSheet.create({
   
   page:{
     flex: 1,
-    paddingTop: 60,
     borderRadius: 5,
+    gap: 5
   },
 
       searchFilter:{
@@ -89,7 +89,20 @@ export default StyleSheet.create({
   },
 
   listContainer: {
-    paddingBottom: 80,
+    paddingVertical: 15,
+    backgroundColor: 'white',
+     borderRadius: 5,
+     gap: 10,
+  },
+
+  pendingCard:{
+    padding: 10,
+    backgroundColor: 'white',
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+    borderRadius: 5,
+    gap: 5,
   },
 
   card: {

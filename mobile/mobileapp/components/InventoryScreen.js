@@ -707,7 +707,7 @@ export default function InventoryScreen({ navigation }) {
 
       {/* Modal with Calendar */}
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={calendarVisible}
         onRequestClose={() => setCalendarVisible(false)}

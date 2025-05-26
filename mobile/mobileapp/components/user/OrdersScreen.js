@@ -10,7 +10,8 @@ import {
   ScrollView,
   Animated,
   Easing,
-  TextInput
+  TextInput,
+  StatusBar
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import {
@@ -25,6 +26,7 @@ import {
   where,
   onSnapshot
 } from 'firebase/firestore';
+
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/RequestStyle';
@@ -205,6 +207,7 @@ const handleSearch = (query) => {
             items: enrichedItems,
             status: 'PENDING',
             message: data.reason || '',
+            usageType: data.usageType || '',
           });
         }
   
@@ -271,6 +274,16 @@ const handleSearch = (query) => {
     }
   };
 
+
+      const handleStatus =(item)=>{
+      if(item.status === 'PENDING') return 'orange';
+      if(item.status === 'Chemical') return '#E4D6EC';
+      if(item.status === 'Materials') return '#f8d496'; 
+      if(item.status === 'Reagent') return '#b8e2f4';
+      if(item.category === 'Glasswares') return '#fff2ce';
+    }
+
+
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => { setSelectedRequest(item); setModalVisible(true); }}>
       <Card style={styles.card}>
@@ -279,6 +292,43 @@ const handleSearch = (query) => {
         <Text>Date Required: {item.dateRequired}</Text>
         <Text>Status: {item.status}</Text>
       </Card>
+    </TouchableOpacity>
+  );
+
+
+  const renderItem2 = ({ item }) => (
+    <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
+        <Text style={{backgroundColor: handleStatus(item), fontWeight: 'bold', color: 'white', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 3}}>{item.status}</Text>
+        <Text style={{fontWeight: 300, color: 'gray', fontSize: 13}}>{item.dateRequested.toLocaleDateString()}</Text>
+      </View>
+
+    <View>
+      <Text style={{fontWeight: 300, fontSize: 13}}>Items Requested:</Text>
+  {item.items?.length > 0 ? (
+  item.items.map((innerItem, index) => (
+    <View key={index} style={{paddingHorizontal: 10, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between'}}>
+
+        <Text style={{fontWeight: 'bold'}}>{innerItem.itemName}</Text>
+        <Text style={{fontWeight: 300}}>x {innerItem.quantity}</Text>
+    </View>
+  ))
+) : (
+  <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+)}
+    </View>
+
+      <View style={{padding: 10, backgroundColor: '#C8EAF9', marginTop: 5, borderRadius: 5,}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Usage Type:</Text>
+          <Text style={{fontWeight: 300, fontSize: 13}}>{item.usageType}</Text>
+        </View>
+
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Date Required:</Text>
+          <Text style={{fontWeight: 'bold', fontSize: 13, color: '#395a7f'}}>{item.dateRequired}</Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 
@@ -326,7 +376,40 @@ const pagerRef = useRef(null);
                      </TouchableOpacity>
                    </View>
 
-            <View style={[styles.searchFilter, {marginTop: headerHeight-3}]}>
+            
+      
+      {/* <View style={[styles.topNav, {marginTop:headerHeight-3}]}>
+        <TouchableOpacity style={{width: '50%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center'}}
+          onPress={() => pagerRef.current.setPage(0)}
+        >
+          <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
+ 
+        </TouchableOpacity>
+
+        <Text style={{fontSize: 20, color: 'gray'}}>|</Text>
+
+        <TouchableOpacity style={{width: '50%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center'}}
+        onPress={() => pagerRef.current.setPage(1)}
+        >
+        </TouchableOpacity>
+
+         <Animated.View style={[styles.border, { transform: [{ translateX: borderTranslateX }] }]} />
+      </View> */}
+
+<View style={{flex:1, borderRadius: 5, overflow: 'hidden', marginTop: headerHeight-3}}>
+      <PagerView ref={pagerRef} style={[styles.containerInner]} initialPage={0}
+      onPageScroll={(event) => {
+          Animated.spring(position, {
+    toValue: event.nativeEvent.position,
+    stiffness: 200, // Adjust bounce effect
+    damping: 50, // Smooth motion
+    useNativeDriver: false,
+  }).start();
+      }}
+      >
+      <View key="1" style={styles.page}>
+
+          <View style={[styles.searchFilter]}>
               <View style={{height: 45, flexDirection: 'row', gap: 5, paddingHorizontal: 2}}>
                 <View style={styles.searchContainer}>
                   <Icon name="magnify" size={20} color="#888"  />
@@ -334,7 +417,7 @@ const pagerRef = useRef(null);
                     style={styles.searchInput}
                     placeholder="Search"
                     value={searchQuery}
-                    onChangeText={setSearchQuery}
+                    onChangeText={handleSearch}
                   />
                 </View>
       
@@ -362,45 +445,13 @@ const pagerRef = useRef(null);
               </ScrollView>
             </View>
             </View>
-      
-      {/* <View style={[styles.topNav, {marginTop:headerHeight-3}]}>
-        <TouchableOpacity style={{width: '50%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center'}}
-          onPress={() => pagerRef.current.setPage(0)}
-        >
-          <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
- 
-        </TouchableOpacity>
 
-        <Text style={{fontSize: 20, color: 'gray'}}>|</Text>
-
-        <TouchableOpacity style={{width: '50%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center'}}
-        onPress={() => pagerRef.current.setPage(1)}
-        >
-        </TouchableOpacity>
-
-         <Animated.View style={[styles.border, { transform: [{ translateX: borderTranslateX }] }]} />
-      </View> */}
-
-<View style={{flex:1, borderRadius: 5, overflow: 'hidden'}}>
-      <PagerView ref={pagerRef} style={[styles.containerInner]} initialPage={0}
-      onPageScroll={(event) => {
-          Animated.spring(position, {
-    toValue: event.nativeEvent.position,
-    stiffness: 200, // Adjust bounce effect
-    damping: 50, // Smooth motion
-    useNativeDriver: false,
-  }).start();
-      }}
-      >
-      <View key="1" style={styles.page}>
-      
-            <TextInput
-              style={[styles.modalText, { borderBottomWidth: 1, marginBottom: 10 }]}
-              placeholder="Search"
-              value={searchQuery}
-              onChangeText={handleSearch}
-            />
-
+          <FlatList
+          data={requests}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
             
       
             {/* Table Header */}
@@ -500,16 +551,27 @@ const pagerRef = useRef(null);
       ) : requests.length === 0 ? (
         <Text style={{ textAlign: 'center', marginTop: 20 }}>No requests found.</Text>
       ) : (
-        <FlatList
+        <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='clock-outline' size={23} color='#6abce2'/>
+                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Pending Orders</Text>
+                  </View>
+            <FlatList
           data={requests}
           keyExtractor={(item) => item.id}
-          renderItem={renderItem}
+          renderItem={renderItem2}
           contentContainerStyle={styles.listContainer}
         />
+        </View>
+        
       )}
 
-      <Modal visible={modal2Visible} transparent animationType="slide">
+      <Modal visible={modal2Visible} transparent animationType="fade">
         <View style={styles.modalContainer}>
+          <StatusBar
+          translucent
+          backgroundColor={'transparent'}
+          />
           <ScrollView style={styles.modalContent}>
             <Text style={styles.modalTitle}>Request Details - {selectedRequest?.id}</Text>
             <Text><Text style={styles.label}>Requester:</Text> {selectedRequest?.requester}</Text>
@@ -547,7 +609,7 @@ const pagerRef = useRef(null);
               <TouchableOpacity onPress={cancelRequest} style={styles.cancelButton}>
                 <Text style={styles.cancelText}>Cancel Request</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              <TouchableOpacity onPress={() => setModal2Visible(false)} style={styles.closeButton}>
                 <Text style={styles.closeText}>Close</Text>
               </TouchableOpacity>
             </View>
