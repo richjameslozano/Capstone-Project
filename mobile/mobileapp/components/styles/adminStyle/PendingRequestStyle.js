@@ -1,10 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#e9ecee',
+    paddingBottom: 7,
   },
 
   title: {
@@ -13,6 +13,32 @@ export default StyleSheet.create({
     marginBottom: 20,
     textAlign: 'center',
     color: '#333',
+  },
+
+      pendingHeader:{
+        position: 'absolute',
+            backgroundColor: '#fff',
+            flex: 1,
+            paddingTop: StatusBar.currentHeight+15,
+            left: 0,
+            right:0,
+            flexDirection: 'row',
+            paddingBottom: 10,
+            paddingHorizontal: 15,
+            alignItems: 'center',
+            justifyContent:'space-between',
+            borderBottomWidth: 1,
+            borderColor: '#e9ecee',
+             zIndex: 999
+      },
+
+  note:{
+    backgroundColor: '#6e9fc1', 
+    width: '100%', 
+    height: 'auto',
+    paddingHorizontal: 20,
+    paddingVertical: 3,
+
   },
 
   card: {
