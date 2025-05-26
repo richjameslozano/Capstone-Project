@@ -1,11 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar } from 'react-native';
 import { Card } from 'react-native-paper';
 import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/adminStyle/PendingRequestStyle';
 import Header from '../Header';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export default function PendingRequestScreen() {
   const { user } = useAuth();
@@ -15,20 +17,35 @@ export default function PendingRequestScreen() {
   const [rejectReason, setRejectReason] = useState('');
   const [viewModalVisible, setViewModalVisible] = useState(false);
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const [isNote, setIsNote] = useState(true)
+
+  const navigation = useNavigation()
+
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
+
+  const handleIsNote = () =>{
+    if(!isNote){
+      setIsNote(true)
+    }
+    else if(isNote){
+      setIsNote(false)
+    }
+  }
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle('dark-content');
+      StatusBar.setBackgroundColor('transparent'); // Android only
+      StatusBar.setTranslucent(true)
+    }, [])
+  );
+
   useEffect(() => {
     fetchPendingRequests();
   }, []);
-
-  // const fetchPendingRequests = async () => {
-  //   try {
-  //     const querySnapshot = await getDocs(collection(db, 'userrequests'));
-  //     const data = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-  //     setPendingRequests(data);
-
-  //   } catch (error) {
-  //     console.error('Error fetching pending requests:', error);
-  //   }
-  // };
 
   const fetchPendingRequests = async () => {
     try {
@@ -322,15 +339,48 @@ export default function PendingRequestScreen() {
     </Card>
   );
 
+
+
+
   return (
     <View style={styles.container}>
-      <Header />
-      <Text style={styles.title}>Pending Requests</Text>
-      <FlatList
+             <View style={styles.pendingHeader} onLayout={handleHeaderLayout}>
+                    <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+                                                         <Icon name="keyboard-backspace" size={28} color="black" />
+                                                       </TouchableOpacity>
+                    <View>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Pending Requests</Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Subject for Approval</Text>
+                    </View>
+      
+                     <TouchableOpacity style={{padding: 2}}>
+                       <Icon name="information-outline" size={24} color="#000" />
+                     </TouchableOpacity>
+                   </View>
+              
+              <TouchableOpacity 
+              style={[styles.note, { top: headerHeight }]} 
+              onPress={handleIsNote}
+            >
+              <Text
+                style={{ fontWeight: '300', fontSize: 11, color: '#fff' }}
+                numberOfLines={isNote ? undefined : 1} // ✅ Collapse to 1 line when hidden
+              >
+                <Text style={{ fontWeight: 'bold' }}>Note: </Text>
+                The items listed on this page are subject to approval by the Laboratory Custodians/Technicians. 
+                This page is intended for viewing requests submitted by faculty staff only. 
+                Please note that all approvals must be processed through the web application.
+              </Text>
+            </TouchableOpacity>
+
+      <View style={{marginTop: headerHeight, flex: 1, backgroundColor: '#fff', padding: 10}}>
+        <FlatList
         data={pendingRequests}
         renderItem={renderItem}
         keyExtractor={(item) => item.id}
       />
+      </View>
+      
 
       <Modal
         visible={viewModalVisible}
