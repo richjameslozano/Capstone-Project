@@ -277,7 +277,7 @@ const handleSearch = (query) => {
 
       const handleStatus =(item)=>{
       if(item.status === 'PENDING') return 'orange';
-      if(item.status === 'Chemical') return '#E4D6EC';
+      if(item.status === 'APPROVED') return '#395a7f';
       if(item.status === 'Materials') return '#f8d496'; 
       if(item.status === 'Reagent') return '#b8e2f4';
       if(item.category === 'Glasswares') return '#fff2ce';
@@ -285,14 +285,41 @@ const handleSearch = (query) => {
 
 
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => { setSelectedRequest(item); setModalVisible(true); }}>
-      <Card style={styles.card}>
-        <Text style={styles.requestId}>ID: {item.id}</Text>
-        <Text>Date Requested: {item.dateRequested.toLocaleDateString()}</Text>
-        <Text>Date Required: {item.dateRequired}</Text>
-        <Text>Status: {item.status}</Text>
-      </Card>
+          <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
+        <Text style={{backgroundColor: handleStatus(item), fontWeight: 'bold', color: 'white', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 3}}>{item.status}</Text>
+        {/* <Text style={{fontWeight: 300, color: 'gray', fontSize: 13}}>{item.dateRequested.toLocaleDateString()}</Text> */}
+      </View>
+
+    <View>
+      <Text style={{fontWeight: 300, fontSize: 13}}>Items Requested:</Text>
+  {item.items?.length > 0 ? (
+  item.items.map((innerItem, index) => (
+    <View key={index} style={{paddingHorizontal: 10, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between'}}>
+
+        <Text style={{fontWeight: 'bold'}}>{innerItem.itemName}</Text>
+        <Text style={{fontWeight: 300}}>x {innerItem.quantity}</Text>
+    </View>
+  ))
+) : (
+  <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+)}
+    </View>
+
+      <View style={{padding: 10, backgroundColor: '#C8EAF9', marginTop: 5, borderRadius: 5,}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Usage Type:</Text>
+          <Text style={{fontWeight: 300, fontSize: 13}}>{item.usageType}</Text>
+        </View>
+
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Date Required:</Text>
+          <Text style={{fontWeight: 'bold', fontSize: 13, color: '#395a7f'}}>{item.dateRequired}</Text>
+        </View>
+      </View>
     </TouchableOpacity>
+
+
   );
 
 
@@ -477,8 +504,8 @@ const pagerRef = useRef(null);
               ))}
             </ScrollView>
       
-            <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+            <Modal visible={modalVisible} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
               {selectedLog?.status === 'CANCELLED'

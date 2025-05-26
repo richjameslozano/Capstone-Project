@@ -232,7 +232,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
 
       <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
          <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Dashboard</Title>
+        <Title style={styles.titleStyle}>Home</Title>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
