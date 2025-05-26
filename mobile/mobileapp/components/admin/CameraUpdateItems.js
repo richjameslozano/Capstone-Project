@@ -21,18 +21,19 @@ const CameraUpdateItems = ({ onClose }) => {
   const [scanned, setScanned] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
-  const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
   const scanLinePosition = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
   const route = useRoute();
   const selectedItem = route.params?.selectedItem;
+ const [permission, requestPermission] = useCameraPermissions();
 
-  useEffect(() => {
-    if (!permission) {
-      requestPermission();
-    }
-  }, [permission]);
+useEffect(() => {
+  if (permission?.status !== 'granted') {
+    requestPermission();
+  }
+}, [permission]);
+
 
   useEffect(() => {
     animateScanLine();

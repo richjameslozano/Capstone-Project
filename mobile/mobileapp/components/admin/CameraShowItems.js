@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
 import { useNavigation } from '@react-navigation/native';
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { CameraView,useCameraPermissions } from 'expo-camera';
+
 import CryptoJS from "crypto-js";
 import { collection, query, getDocs, where, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -31,7 +32,7 @@ const CameraShowItems = ({ onClose }) => {
   const [labModalVisible, setLabModalVisible] = useState(false);
 
   useEffect(() => {
-    if (!permission) {
+    if (!permission && !permission.granted) {
       requestPermission();
     }
   }, [permission]);

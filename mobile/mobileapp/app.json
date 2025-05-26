@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "NULS MOA",
-    "slug": "NULS MOA",
+    "name": "NULS-MOA",
+    "slug": "NULS-MOA",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -24,6 +24,11 @@
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "6035ab36-a335-4e7e-81ab-0810d12ccfdd"
+      }
     }
   }
 }

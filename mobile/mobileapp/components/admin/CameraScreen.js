@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react"; 
 import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
 import { useNavigation } from '@react-navigation/native';
-import { CameraView, useCameraPermissions } from "expo-camera";
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
 import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc, getDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -23,7 +23,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!permission) {
+    if (!permission && !permission.granted) {
       requestPermission();
     }
   }, [permission]);
