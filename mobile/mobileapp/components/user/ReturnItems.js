@@ -5,7 +5,7 @@ import {
   Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
 import {
   collection, getDocs, doc, updateDoc, getDoc, deleteDoc,
-  setDoc, addDoc, serverTimestamp, onSnapshot
+  setDoc, addDoc, serverTimestamp, onSnapshot, query, where
 } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
@@ -21,6 +21,7 @@ const ReturnItems = () => {
   const [inventoryData, setInventoryData] = useState({});
   const [returnQuantities, setReturnQuantities] = useState({});
   const [itemConditions, setItemConditions] = useState({});
+  const [itemUnitConditions, setItemUnitConditions] = useState({});
 
   useEffect(() => {
     console.log("Updated conditions state:", itemConditions);
@@ -208,78 +209,204 @@ const ReturnItems = () => {
     }
   };
 
-    const handleReturn = async () => {
-    try {
-        const currentDate = new Date().toISOString();
+  // const handleReturn = async () => {
+  //   try {
+  //       const currentDate = new Date().toISOString();
 
-        const fullReturnData = {
-        accountId: user.id,  // Use user.id for accountId
-        approvedBy: selectedRequest.raw?.approvedBy || "N/A",
-        courseCode: selectedRequest.raw?.courseCode || "N/A",
-        courseDescription: selectedRequest.raw?.courseDescription || "N/A",
-        dateRequired: selectedRequest.raw?.dateRequired || "N/A",
-        program: selectedRequest.raw?.program || "N/A",
-        reason: selectedRequest.raw?.reason || "No reason provided",
-        room: selectedRequest.raw?.room || "N/A",
-        timeFrom: selectedRequest.raw?.timeFrom || "N/A",
-        timeTo: selectedRequest.raw?.timeTo || "N/A",
-        timestamp: serverTimestamp(),
-        userName: selectedRequest.raw?.userName || "N/A",
-        requisitionId: selectedRequest.requisitionId,
-        status: "Returned",
-        requestList: (selectedRequest.raw?.requestList || [])
-            .map((item) => {
-            const returnQty = Number(returnQuantities[item.itemIdFromInventory] || 0);
-            if (returnQty <= 0) return null;
+  //       const fullReturnData = {
+  //       accountId: user.id,  // Use user.id for accountId
+  //       approvedBy: selectedRequest.raw?.approvedBy || "N/A",
+  //       courseCode: selectedRequest.raw?.courseCode || "N/A",
+  //       courseDescription: selectedRequest.raw?.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.raw?.dateRequired || "N/A",
+  //       program: selectedRequest.raw?.program || "N/A",
+  //       reason: selectedRequest.raw?.reason || "No reason provided",
+  //       room: selectedRequest.raw?.room || "N/A",
+  //       timeFrom: selectedRequest.raw?.timeFrom || "N/A",
+  //       timeTo: selectedRequest.raw?.timeTo || "N/A",
+  //       timestamp: serverTimestamp(),
+  //       userName: selectedRequest.raw?.userName || "N/A",
+  //       requisitionId: selectedRequest.requisitionId,
+  //       status: "Returned",
+  //       requestList: (selectedRequest.raw?.requestList || [])
+  //           .map((item) => {
+  //           const returnQty = Number(returnQuantities[item.itemIdFromInventory] || 0);
+  //           if (returnQty <= 0) return null;
 
-            return {
-                ...item,
-                returnedQuantity: returnQty,
-                condition: itemConditions[item.itemIdFromInventory] || item.condition || "Good",
-                status: "Returned",
-                dateReturned: currentDate,
-            };
-            })
-            .filter(Boolean),
-        };
+  //           return {
+  //               ...item,
+  //               returnedQuantity: returnQty,
+  //               condition: itemConditions[item.itemIdFromInventory] || item.condition || "Good",
+  //               status: "Returned",
+  //               dateReturned: currentDate,
+  //           };
+  //           })
+  //           .filter(Boolean),
+  //       };
 
-        // Save to returnedItems and userreturneditems
-        const returnedRef = doc(collection(db, "returnedItems"));
-        const userReturnedRef = doc(collection(db, `accounts/${user.id}/userreturneditems`));
-        await setDoc(returnedRef, fullReturnData);
-        await setDoc(userReturnedRef, fullReturnData);
+  //       // Save to returnedItems and userreturneditems
+  //       const returnedRef = doc(collection(db, "returnedItems"));
+  //       const userReturnedRef = doc(collection(db, `accounts/${user.id}/userreturneditems`));
+  //       await setDoc(returnedRef, fullReturnData);
+  //       await setDoc(userReturnedRef, fullReturnData);
 
-        // Update full data in original borrowcatalog
-        const borrowDocRef = doc(db, "borrowcatalog", selectedRequest.requisitionId);
-        await setDoc(borrowDocRef, fullReturnData, { merge: true });
+  //       // Update full data in original borrowcatalog
+  //       const borrowDocRef = doc(db, "borrowcatalog", selectedRequest.requisitionId);
+  //       await setDoc(borrowDocRef, fullReturnData, { merge: true });
 
-        // 🗑️ Delete from userrequestlog
-        const userRequestLogRef = doc(db, `accounts/${user.id}/userrequestlog/${selectedRequest.requisitionId}`);
-        await deleteDoc(userRequestLogRef);
+  //       // 🗑️ Delete from userrequestlog
+  //       const userRequestLogRef = doc(db, `accounts/${user.id}/userrequestlog/${selectedRequest.requisitionId}`);
+  //       await deleteDoc(userRequestLogRef);
 
-        // 📝 Add to history log
-        const historyRef = doc(collection(db, `accounts/${user.id}/historylog`));
-        await setDoc(historyRef, {
-        ...fullReturnData,
-        action: "Returned",
-        date: currentDate,
-        });
+  //       // 📝 Add to history log
+  //       const historyRef = doc(collection(db, `accounts/${user.id}/historylog`));
+  //       await setDoc(historyRef, {
+  //       ...fullReturnData,
+  //       action: "Returned",
+  //       date: currentDate,
+  //       });
 
-        // 📝 Add to activity log
-        const activityRef = doc(collection(db, `accounts/${user.id}/activitylog`));
-        await setDoc(activityRef, {
-        ...fullReturnData,
-        action: "Returned",
-        date: currentDate,
-        });
+  //       // 📝 Add to activity log
+  //       const activityRef = doc(collection(db, `accounts/${user.id}/activitylog`));
+  //       await setDoc(activityRef, {
+  //       ...fullReturnData,
+  //       action: "Returned",
+  //       date: currentDate,
+  //       });
 
-        console.log("Returned items processed, removed from userRequests, added to history log.");
-        closeModal();
+  //       console.log("Returned items processed, removed from userRequests, added to history log.");
+  //       closeModal();
         
-    } catch (error) {
-        console.error("Error saving returned item details:", error);
-    }
+  //   } catch (error) {
+  //       console.error("Error saving returned item details:", error);
+  //   }
+  //   };
+  
+
+  const handleReturn = async () => {
+  try {
+    const currentDate = new Date().toISOString();
+    const timestamp = serverTimestamp();
+
+    const fullReturnData = {
+      accountId: user.id,
+      approvedBy: selectedRequest.raw?.approvedBy || "N/A",
+      courseCode: selectedRequest.raw?.courseCode || "N/A",
+      courseDescription: selectedRequest.raw?.courseDescription || "N/A",
+      dateRequired: selectedRequest.raw?.dateRequired || "N/A",
+      program: selectedRequest.raw?.program || "N/A",
+      reason: selectedRequest.raw?.reason || "No reason provided",
+      room: selectedRequest.raw?.room || "N/A",
+      timeFrom: selectedRequest.raw?.timeFrom || "N/A",
+      timeTo: selectedRequest.raw?.timeTo || "N/A",
+      timestamp,
+      userName: selectedRequest.raw?.userName || "N/A",
+      requisitionId: selectedRequest.requisitionId,
+      status: "Returned",
+      requestList: (selectedRequest.raw?.requestList || [])
+        .map((item) => {
+          const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
+          const conditions = Array.from({ length: item.quantity }, (_, idx) =>
+            returnedConditions[idx] || "Good"
+          );
+          return {
+            ...item,
+            returnedQuantity: conditions.length,
+            conditions,
+            scannedCount: 0,
+            dateReturned: currentDate,
+          };
+        }),
     };
+
+    console.log("Saving fullReturnData:", JSON.stringify(fullReturnData, null, 2));
+
+    // 🔄 Update condition counts in inventory
+    for (const item of selectedRequest.raw?.requestList || []) {
+      const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
+      if (returnedConditions.length === 0) continue;
+
+      const inventoryDocRef = doc(db, "inventory", item.itemIdFromInventory);
+      const inventoryDoc = await getDoc(inventoryDocRef);
+
+      if (!inventoryDoc.exists()) continue;
+
+      const inventoryData = inventoryDoc.data();
+      const existingConditionCount = inventoryData.conditionCount || {
+        Good: 0,
+        Damage: 0,
+        Defect: 0,
+      };
+
+      const newCounts = { ...existingConditionCount };
+      returnedConditions.forEach((condition) => {
+        if (newCounts[condition] !== undefined) {
+          newCounts[condition]++;
+        }
+      });
+
+      await updateDoc(inventoryDocRef, {
+        conditionCount: newCounts,
+      });
+    }
+
+    // 💾 Save to returnedItems and userreturneditems
+    const returnedRef = doc(collection(db, "returnedItems"));
+    const userReturnedRef = doc(collection(db, `accounts/${user.id}/userreturneditems`));
+    await setDoc(returnedRef, fullReturnData);
+    await setDoc(userReturnedRef, fullReturnData);
+
+    // 📋 Update borrowcatalog document
+    const borrowQuery = query(
+      collection(db, "borrowcatalog"),
+      where("userName", "==", selectedRequest.raw?.userName),
+      where("dateRequired", "==", selectedRequest.raw?.dateRequired),
+      where("room", "==", selectedRequest.raw?.room),
+      where("timeFrom", "==", selectedRequest.raw?.timeFrom),
+      where("timeTo", "==", selectedRequest.raw?.timeTo)
+    );
+
+    const querySnapshot = await getDocs(borrowQuery);
+    if (!querySnapshot.empty) {
+      const docToUpdate = querySnapshot.docs[0];
+      const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
+      await updateDoc(borrowDocRef, {
+        requestList: fullReturnData.requestList,
+        status: "Returned",
+      });
+      console.log("✅ Borrowcatalog updated.");
+    } else {
+      console.warn("⚠️ No matching document found in borrowcatalog.");
+    }
+
+    // 🗑️ Remove from userrequestlog
+    const userRequestLogRef = doc(
+      db,
+      `accounts/${user.id}/userrequestlog/${selectedRequest.requisitionId}`
+    );
+    await deleteDoc(userRequestLogRef);
+
+    // 📝 Add to history and activity logs
+    const historyRef = doc(collection(db, `accounts/${user.id}/historylog`));
+    await setDoc(historyRef, {
+      ...fullReturnData,
+      action: "Returned",
+      date: currentDate,
+    });
+
+    const activityRef = doc(collection(db, `accounts/${user.id}/activitylog`));
+    await setDoc(activityRef, {
+      ...fullReturnData,
+      action: "Returned",
+      date: currentDate,
+    });
+
+    console.log("✅ Return process completed.");
+    closeModal();
+  } catch (error) {
+    console.error("❌ Error processing return:", error);
+  }
+};
 
   const closeModal = () => {
     setModalVisible(false);
@@ -328,7 +455,7 @@ const ReturnItems = () => {
         </ScrollView>
       </View>
 
-        <Modal visible={modalVisible} animationType="slide" onRequestClose={closeModal} transparent={true}>
+        {/* <Modal visible={modalVisible} animationType="slide" onRequestClose={closeModal} transparent={true}>
             <View style={styles.modalOverlay}>
                 <KeyboardAvoidingView
                 behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -396,8 +523,8 @@ const ReturnItems = () => {
                             }}
                             >
                             <Picker.Item label="Good" value="Good" />
-                            <Picker.Item label="Damaged" value="Damaged" />
-                            <Picker.Item label="Needs Repair" value="Needs Repair" />
+                            <Picker.Item label="Defect" value="Defect" />
+                            <Picker.Item label="Damage" value="Damage" />
                         </Picker>
                         </View>
                         </View>
@@ -411,12 +538,100 @@ const ReturnItems = () => {
                 </ScrollView>
                 </KeyboardAvoidingView>
             </View>
+        </Modal> */}
+
+        <Modal visible={modalVisible} animationType="slide" onRequestClose={closeModal} transparent={true}>
+          <View style={styles.modalOverlay}>
+            <KeyboardAvoidingView
+              behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+              style={{ flex: 1, width: '90%' }}
+            >
+              <ScrollView contentContainerStyle={styles.modalContent} keyboardShouldPersistTaps="handled">
+                <Text style={styles.modalTitle}>📄 Requisition Slip</Text>
+                <Text>Name: {selectedRequest?.raw?.userName}</Text>
+                <Text>Requisition ID: {selectedRequest?.requisitionId}</Text>
+                <Text>Request Date: {selectedRequest?.timestamp}</Text>
+
+                <Text style={styles.boldText}>Requested Items:</Text>
+
+                <View style={styles.tableContainer2}>
+                  <View style={styles.tableHeader}>
+                    <Text style={styles.headerCell}>Item Name</Text>
+                    <Text style={styles.headerCell}>Quantity</Text>
+                    <Text style={styles.headerCell}>Returned Qty</Text>
+                    <Text style={styles.headerCell}>Condition</Text>
+                  </View>
+
+                  {selectedRequest?.raw?.requestList?.map((item, index) => {
+                    // Create an array of length item.quantity to render each quantity separately
+                    const quantityArray = Array.from({ length: item.quantity }, (_, i) => i + 1);
+                    return quantityArray.map((q, i) => (
+                      <View key={`${index}-${i}`} style={styles.tableRow}>
+                        <Text style={[styles.cell, { flex: 1 }]}>{item.itemName}</Text>
+                        {/* Show quantity as 1 since it's separate */}
+                        <Text style={[styles.cell, { flex: 0.7 }]}>1</Text>
+
+                        <View style={{ flex: 1, paddingHorizontal: 4 }}>
+                          <TextInput
+                            placeholder="Returned Qty"
+                            keyboardType="number-pad"
+                            style={styles.input}
+                            value={returnQuantities[`${item.itemIdFromInventory}-${i}`] || ""}
+                            onChangeText={(text) => {
+                              const input = parseInt(text, 10);
+                              const max = 1; // since we split quantities as individual
+
+                              if (!isNaN(input) && input <= max) {
+                                setReturnQuantities((prev) => ({
+                                  ...prev,
+                                  [`${item.itemIdFromInventory}-${i}`]: input.toString(),
+                                }));
+                              } else if (input > max) {
+                                alert(`Returned quantity cannot exceed borrowed quantity (${max}).`);
+                              } else {
+                                setReturnQuantities((prev) => ({
+                                  ...prev,
+                                  [`${item.itemIdFromInventory}-${i}`]: "",
+                                }));
+                              }
+                            }}
+                          />
+                        </View>
+
+                        <View style={{ flex: 1, paddingHorizontal: 4 }}>
+                          <Picker
+                            selectedValue={itemConditions[`${item.itemIdFromInventory}-${i}`] || "Good"}
+                            style={styles.picker}
+                            onValueChange={(value) => {
+                              setItemConditions((prev) => ({
+                                ...prev,
+                                [`${item.itemIdFromInventory}-${i}`]: value,
+                              }));
+                            }}
+                          >
+                            <Picker.Item label="Good" value="Good" />
+                            <Picker.Item label="Defect" value="Defect" />
+                            <Picker.Item label="Damage" value="Damage" />
+                          </Picker>
+                        </View>
+                      </View>
+                    ));
+                  })}
+                </View>
+
+                <View style={styles.modalButtons}>
+                  <Button title="Back" onPress={closeModal} />
+                  {selectedRequest?.status === 'Deployed' && (
+                    <Button title="Return" onPress={handleReturn} />
+                  )}
+                </View>
+              </ScrollView>
+            </KeyboardAvoidingView>
+          </View>
         </Modal>
+
     </View>
   );
 };
 
 export default ReturnItems;
-
-
-// Dito din di ko pa nagalaw, balikan ko later hehe pampadami ng commit

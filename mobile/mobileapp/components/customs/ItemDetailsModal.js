@@ -65,6 +65,17 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
             Deployed Today: <Text style={styles.value}>{deployedCount} times</Text>
           </Text>
 
+          {deployedCount > 0 && itemData.deployedInfo?.length > 0 && (
+            <>
+              <Text style={styles.label}>Deployed To:</Text>
+              {itemData.deployedInfo.map((info, index) => (
+                <Text key={index} style={styles.value}>
+                  • {info.requestor} — Room: {info.room}, Qty: {info.quantity}
+                </Text>
+              ))}
+            </>
+          )}
+
           <Text style={styles.label}>
             Condition: <Text style={styles.value}>{formatCondition(condition)}</Text>
           </Text>

@@ -192,7 +192,7 @@ export default function ProfileScreen({ navigation }) {
         </View>
 
         <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 19}}>{capitalizeInitials(user?.name)}</Text>
-        <Text style={{textAlign: 'center', color: 'gray'}}>{user?.jobTitle}</Text>
+        <Text style={{textAlign: 'center', color: 'gray'}}>{user?.jobTitle} of {user?.department}</Text>
       </View>
       
       <View style={styles.secondSection}>
@@ -232,8 +232,16 @@ export default function ProfileScreen({ navigation }) {
         style={styles.logoutButton}
         onPress={handleLogout}
       >
-        <Icon name='logout' size={20} color='#6abce2'/>
-        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#6abce2'}}>Log Out</Text>
+        <Icon name='shield-check-outline' size={20} color='#6abce2'/>
+        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#6abce2'}}>Policy</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity 
+        style={styles.logoutButton}
+        onPress={handleLogout}
+      >
+        <Icon name='logout' size={20} color='#5f5f5f'/>
+        <Text style={{fontWeight: 'bold', fontSize: 15, color: '#5f5f5f'}}>Log Out</Text>
       </TouchableOpacity>
     </View>
   );

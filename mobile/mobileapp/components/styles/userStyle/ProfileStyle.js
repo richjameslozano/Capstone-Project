@@ -85,6 +85,7 @@ export default StyleSheet.create({
     borderRadius: 8,
     justifyContent: 'center',
     alignItems: 'center',
+    gap:10,
   },
 
   logoutText: {

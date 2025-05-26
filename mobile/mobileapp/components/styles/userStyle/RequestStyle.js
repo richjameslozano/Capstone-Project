@@ -1,38 +1,76 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    backgroundColor: '#e9ecee',
+    padding: 7,
+    gap: 5,
   },
 
   containerInner:{
     flex:1,
-    backgroundColor:'#fff',
+    backgroundColor:'#e9ecee',
+    borderRadius: 5,
   },
 
+    OrdersHeader:{
+      position: 'absolute',
+          backgroundColor: '#fff',
+          flex: 1,
+          paddingTop: StatusBar.currentHeight+15,
+          left: 0,
+          right:0,
+          flexDirection: 'row',
+          paddingBottom: 10,
+          paddingHorizontal: 15,
+          alignItems: 'center',
+          justifyContent:'space-between',
+          borderBottomWidth: 1,
+          borderColor: '#e9ecee',
+           zIndex: 999
+    },
+  
   page:{
     flex: 1,
-    paddingTop: 60
+    borderRadius: 5,
+    gap: 5
+  },
+
+      searchFilter:{
+    width: '100%',
+    alignSelf: 'center', 
+    padding: 5,
+    backgroundColor: 'white',
+    paddingVertical: 10,
+    borderRadius: 5,
+    gap: 5,
+  },
+
+      searchContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#fff',
   },
   
   topNav:{
-    position: 'absolute',
-    flex: 1
-,   right: 0,
-    left: 0,
+    width: '60%',
     height: 'auto',
     backgroundColor: '#fff',
     flexDirection: 'row',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
     alignItems: 'center',
-    zIndex: 999,
-    // borderBottomColor: '#acacac',
-    // borderBottomWidth: 1,
-    paddingBottom: 10,
-    gap: 20
+    paddingHorizontal: 10,
+    paddingVertical: 15,
+    borderRadius: 10,
+    alignSelf: 'center',
   },
+
    border: { 
     position: 'absolute', 
     bottom: 0, 
@@ -51,7 +89,20 @@ export default StyleSheet.create({
   },
 
   listContainer: {
-    paddingBottom: 80,
+    paddingVertical: 15,
+    backgroundColor: 'white',
+     borderRadius: 5,
+     gap: 10,
+  },
+
+  pendingCard:{
+    padding: 10,
+    backgroundColor: 'white',
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#dcdcdc',
+    borderRadius: 5,
+    gap: 5,
   },
 
   card: {

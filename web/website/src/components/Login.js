@@ -10,8 +10,8 @@ import {
   getAuth,
 } from "firebase/auth";
 import { auth, db } from "../backend/firebase/FirebaseConfig";
-import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, serverTimestamp } from "firebase/firestore";
-import { notification, Modal } from "antd";
+import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
+import { notification, Modal, message } from "antd";
 import bcrypt from "bcryptjs";
 import "./styles/Login.css";
 
@@ -52,8 +52,16 @@ const Login = () => {
   const navigate = useNavigate();
   const openTermsModal = () => setIsTermModalVisible(true);
   const closeTermsModal = () => setIsTermModalVisible(false);
-
+  const [departmentsAll, setDepartmentsAll] = useState([]);
+  const [currentDepartments, setCurrentDepartments] = useState([]);
   const [animateInputs, setAnimateInputs] = useState(false);
+
+  const departmentOptionsByJobTitle = {
+    Dean: ["SAH", "SAS", "SOO", "SOD"],
+    "Program Chair": ["Nursing", "Medical Technology", "Psychology", "Optometry", "Dentistry", "Physical Therapy"],
+    Faculty: ["SHS", "Nursing", "Medical Technology", "Psychology", "Dentistry", "Optometry", "Physical Therapy"],
+    "Laboratory Custodian": []  // If no departments or fixed options
+  };
 
      useEffect(() => {
     const handleBackButton = (event) => {
@@ -69,6 +77,25 @@ const Login = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+    const unsubscribe = onSnapshot(
+      departmentsCollection,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error("Error fetching departments in real-time: ", error);
+        message.error("Failed to load departments.");
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -76,8 +103,37 @@ const Login = () => {
 
   const handleSignUpChange = (e) => {
     const { name, value } = e.target;
-    setSignUpData({ ...signUpData, [name]: value });
-  };  
+
+    if (name === "jobTitle") {
+      let filteredDepts = [];
+
+      if (value === "Faculty") {
+        filteredDepts = departmentsAll.map((dept) => dept.name);
+        
+      } else if (value === "Program Chair") {
+        filteredDepts = departmentsAll
+          .map((dept) => dept.name)
+          .filter((name) => name !== "SHS");
+
+      } else {
+        filteredDepts = departmentOptionsByJobTitle[value] || [];
+      }
+
+      setSignUpData({
+        ...signUpData,
+        jobTitle: value,
+        department: "" // reset department
+      });
+
+      setCurrentDepartments(filteredDepts); 
+
+    } else {
+      setSignUpData({
+        ...signUpData,
+        [name]: value
+      });
+    }
+  };
 
   const signUpAnimate = (e) =>{
     if(signUpMode === true){
@@ -143,26 +199,26 @@ const Login = () => {
       }
   
       // 🔒 Block check
-      if (userData.isBlocked && userData.blockedUntil) {
-        const now = Timestamp.now().toMillis();
-        const blockedUntil = userData.blockedUntil.toMillis();
+      // if (userData.isBlocked && userData.blockedUntil) {
+      //   const now = Timestamp.now().toMillis();
+      //   const blockedUntil = userData.blockedUntil.toMillis();
   
-        if (now < blockedUntil) {
-          const remainingTime = Math.ceil((blockedUntil - now) / 1000);
-          setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
-          setIsLoading(false);
-          return;
+      //   if (now < blockedUntil) {
+      //     const remainingTime = Math.ceil((blockedUntil - now) / 1000);
+      //     setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
+      //     setIsLoading(false);
+      //     return;
 
-        } else {
-          await updateDoc(userDoc.ref, {
-            isBlocked: false,
-            loginAttempts: 0,
-            blockedUntil: null,
-          });
+      //   } else {
+      //     await updateDoc(userDoc.ref, {
+      //       isBlocked: false,
+      //       loginAttempts: 0,
+      //       blockedUntil: null,
+      //     });
           
-          console.log("Account unblocked successfully.");
-        }
-      }
+      //     console.log("Account unblocked successfully.");
+      //   }
+      // }
   
       // 🧠 Super-admin login (Firestore password)
       if (isSuperAdmin) {
@@ -180,21 +236,22 @@ const Login = () => {
           navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
   
         } else {
-          const newAttempts = (userData.loginAttempts || 0) + 1;
+          // const newAttempts = (userData.loginAttempts || 0) + 1;
   
-          if (newAttempts >= 4) {
-            const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000; // 30 minutes
-            await updateDoc(userDoc.ref, {
-              isBlocked: true,
-              blockedUntil: Timestamp.fromMillis(unblockTime),
-            });
+          // if (newAttempts >= 4) {
+          //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000; // 30 minutes
+          //   await updateDoc(userDoc.ref, {
+          //     isBlocked: true,
+          //     blockedUntil: Timestamp.fromMillis(unblockTime),
+          //   });
   
-            setError("Super Admin account blocked. Try again after 30 minutes.");
+          //   setError("Super Admin account blocked. Try again after 30 minutes.");
 
-          } else {
-            await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-            setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
-          }
+          // } else {
+          //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+          //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
+          // }
+          setError(`Invalid password.`);
         }
   
       } else {
@@ -248,19 +305,20 @@ const Login = () => {
   
           const newAttempts = (userData.loginAttempts || 0) + 1;
   
-          if (newAttempts >= 4) {
-            const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
-            await updateDoc(userDoc.ref, {
-              isBlocked: true,
-              blockedUntil: Timestamp.fromMillis(unblockTime),
-            });
+          // if (newAttempts >= 4) {
+          //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
+          //   await updateDoc(userDoc.ref, {
+          //     isBlocked: true,
+          //     blockedUntil: Timestamp.fromMillis(unblockTime),
+          //   });
   
-            setError("Account blocked after 4 failed attempts. Try again after 30 minutes.");
+          //   setError("Account blocked after 4 failed attempts. Try again after 30 minutes.");
 
-          } else {
-            await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-            setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
-          }
+          // } else {
+          //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+          //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
+          // }
+          setError(`Invalid password.`);
         }
       }
   
@@ -612,7 +670,7 @@ const Login = () => {
                   </div>
   
                 <div className="dropdown-container">
-                <div className="form-group">
+                  <div className="form-group">
                     <label>Job Title</label>
                     <select
                       name="jobTitle"
@@ -635,13 +693,13 @@ const Login = () => {
                       value={signUpData.department}
                       onChange={handleSignUpChange}
                       required
+                      disabled={!signUpData.jobTitle} 
                     >
                       <option value="">Select Department</option>
-                      <option value="Medical Technology">Medical Technology</option>
-                      <option value="Nursing">Nursing</option>
-                      <option value="Dentistry">Dentistry</option>
-                      <option value="Pharmacy">Pharmacy</option>
-                      <option value="Optometry">Optometry</option>
+                        {currentDepartments.map((dept) => (
+                          <option key={dept} value={dept}>{dept}
+                      </option>
+                      ))}
                     </select>
                   </div>
   

@@ -14,7 +14,20 @@ import {
   FileDoneOutlined,
   SnippetsOutlined,
   ClockCircleOutlined,
+  SearchOutlined,
+  SolutionOutlined,
+  ShoppingCartOutlined,
+  DollarCircleOutlined,
+  RollbackOutlined,
+  SwapLeftOutlined,
+  ShoppingOutlined,
+  DatabaseOutlined,
+  ApartmentOutlined,
+  BuildOutlined,
+  HomeOutlined,
 } from '@ant-design/icons';
+
+
 import { Button, Layout, Menu, theme } from 'antd';
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
@@ -272,34 +285,44 @@ const LayoutMain = () => {
       label: "Inventory",
     },
     {
+      key: "/main/requisition",
+      icon: <FileDoneOutlined />,
+      label: "Requisition",
+    },
+    {
+      key: "/main/orders",
+      icon: <ShoppingCartOutlined />,
+      label: "Orders",      
+    },
+    {
       key: "/main/pending-request",
       icon: <FileTextOutlined />,
       label: "Pending Requests",
     },
     {
       key: "/main/borrow-catalog",
-      icon: <AppstoreOutlined />,
+      icon: <ShoppingOutlined />,
       label: "Borrow Catalog",
+    },
+    {
+      key: "/main/request-log",
+      icon: <DatabaseOutlined />,
+      label: "Request Log",
+    },
+    {
+      key: "/main/capex-request-list",
+      icon: <DollarCircleOutlined />,
+      label: "Capex Request List",
+    },
+    {
+      key: "/main/lab-room",
+      icon: <HomeOutlined />,
+      label: "Stock Room Details",
     },
     {
       key: "/main/admin-activity-log",
       icon: <HistoryOutlined />,
       label: "Activity Log",
-    },
-    {
-      key: "/main/request-log",
-      icon: <HistoryOutlined />,
-      label: "Request Log",
-    },
-    {
-      key: "/main/capex-request-list",
-      icon: <HistoryOutlined />,
-      label: "Capex Request List",
-    },
-    {
-      key: "/main/lab-room",
-      icon: <HistoryOutlined />,
-      label: "Lab Room Details",
     },
     {
       key: "logout",
@@ -340,6 +363,11 @@ const LayoutMain = () => {
       icon: <HistoryOutlined />,
       label: "Request Log",
     },
+  {
+      key: "/main/lab-room",
+      icon: <HistoryOutlined />,
+      label: "Stock Room Details",
+    },
     {
       key: "logout",
       icon: <LogoutOutlined />,
@@ -361,7 +389,7 @@ const LayoutMain = () => {
     },
     {
       key: "/main/search-items",
-      icon: <ClockCircleOutlined />,
+      icon: <SearchOutlined/>,
       label: "Search Items",
     },
     {
@@ -371,17 +399,17 @@ const LayoutMain = () => {
     },
     {
       key: "/main/orders",
-      icon: <ClockCircleOutlined />,
+      icon: <ShoppingCartOutlined />,
       label: "Orders",      
     },
     {
       key: "/main/capex-request",
-      icon: <ClockCircleOutlined />,
+      icon: <DollarCircleOutlined />,
       label: "Capex Request",
     },
     {
       key: "/main/return-items",
-      icon: <ClockCircleOutlined />,
+      icon: <RollbackOutlined />,
       label: "Return Items",
     },
     {
@@ -466,10 +494,11 @@ const LayoutMain = () => {
 
         <Content
           style={{
-            marginTop: 64,
-            paddingTop: 60,
-            margin: '24px 16px',
-            padding: 24,
+            marginTop: 80,
+            padding: 20,
+            paddingTop: 20,
+            marginLeft: 16,
+            marginRight: 16,
             minHeight: "100vh",
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
@@ -501,15 +530,15 @@ const LayoutMain = () => {
               <Route path="/borrow-catalog" element={<BorrowCatalog />} />
               <Route path="/request-log" element={<RequestLog />} />
               <Route path="/admin-activity-log" element={<AdminActivityLog />} />
+              <Route path="/lab-room" element={<LabRoomQR/>} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />
-              <Route path="/lab-room" element={<LabRoomQR/>} />
             </Route>
 
             {/* User-only routes */}
-            <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
               <Route path="/requisition" element={<Requisition />} />
               <Route path="/request-list" element={<RequestList />} />
               <Route path="/search-items" element={<SearchItems />} />

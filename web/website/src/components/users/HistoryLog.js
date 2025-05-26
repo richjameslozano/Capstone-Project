@@ -15,11 +15,11 @@ import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc,
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
-
+  
 const { Content } = Layout;
 const { Title } = Typography;
 
-const columns = [
+const columns2 = [
   {
     title: "Date",
     dataIndex: "date",
@@ -68,76 +68,7 @@ const HistoryLog = () => {
     }
   };
 
-  // const fetchRequests = async () => {
-  //   setLoading(true);
-  //   try {
-  //     const userId = localStorage.getItem("userId");
-  //     if (!userId) throw new Error("User ID not found in localStorage.");
 
-  //     const querySnapshot = await getDocs(collection(db, `accounts/${userId}/userRequests`));
-  //     const fetched = [];
-
-  //     for (const docSnap of querySnapshot.docs) {
-  //       const data = docSnap.data();
-  //       const enrichedItems = await Promise.all(
-  //         (data.filteredMergedData || []).map(async (item) => {
-  //           const inventoryId = item.selectedItemId || item.selectedItem?.value;
-  //           let itemId = "N/A";
-
-  //           if (inventoryId) {
-  //             try {
-  //               const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
-  //               if (invDoc.exists()) {
-  //                 itemId = invDoc.data().itemId || "N/A";
-  //               }
-
-  //             } catch (err) {
-  //               console.error(`Error fetching inventory item ${inventoryId}:`, err);
-  //             }
-  //           }
-
-  //           return {
-  //             ...item,
-  //             itemIdFromInventory: itemId,
-  //           };
-  //         })
-  //       );
-
-  //       fetched.push({
-  //         id: docSnap.id,
-  //         dateRequested: data.timestamp
-  //           ? new Date(data.timestamp.seconds * 1000).toLocaleDateString()
-  //           : "N/A",
-  //         dateRequired: data.dateRequired || "N/A",
-  //         requester: data.userName || "Unknown",
-  //         room: data.room || "N/A",
-  //         timeNeeded: `${data.timeFrom || "N/A"} - ${data.timeTo || "N/A"}`,
-  //         courseCode: data.program || "N/A",
-  //         courseDescription: data.reason || "N/A",
-  //         items: enrichedItems,
-  //         status: "PENDING",
-  //         message: data.reason || "",
-  //         usageType: data.usageType || "",
-  //       });
-  //     }
-
-  //     const sortedByDate = fetched.sort((a, b) => {
-  //       const dateA = new Date(a.dateRequested);
-  //       const dateB = new Date(b.dateRequested);
-  //       return dateB - dateA; 
-  //     });
-      
-  //     setRequests(sortedByDate);      
-
-  //   } catch (err) {
-  //     console.error("Error fetching requests:", err);
-  //     setNotificationMessage("Failed to fetch user requests.");
-  //     setNotificationVisible(true);
-      
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
 
   const fetchRequests = () => {
     setLoading(true);
@@ -368,62 +299,6 @@ const HistoryLog = () => {
       ),
     },
   ];
-  // NOT REAL TIME
-  // useEffect(() => {
-  //   const fetchActivityLogs = async () => {
-  //     try {
-  //       const userId = localStorage.getItem("userId");
-  //       if (!userId) throw new Error("User ID not found");
-    
-  //       const activityRef = collection(db, `accounts/${userId}/historylog`);
-  //       const querySnapshot = await getDocs(activityRef);
-    
-  //       const logs = querySnapshot.docs.map((doc, index) => {
-  //         const data = doc.data();
-  //         const logDate =
-  //           data.cancelledAt?.toDate?.() ||
-  //           data.timestamp?.toDate?.() ||
-  //           new Date();
-    
-  //         const isCancelled = data.status === "CANCELLED";
-  //         const action = isCancelled
-  //           ? "Cancelled a request"
-  //           : data.action || "Modified a request";
-    
-  //         const by = action === "Request Approved"
-  //           ? data.approvedBy
-  //           : action === "Request Rejected"
-  //           ? data.rejectedBy
-  //           : data.userName || "Unknown User";
-
-    
-  //         return {
-  //           key: doc.id || index.toString(),
-  //           date: logDate.toLocaleString("en-US", {
-  //             year: "numeric",
-  //             month: "short",
-  //             day: "numeric",
-  //             hour: "numeric",
-  //             minute: "2-digit",
-  //             hour12: true,
-  //           }),
-  //           rawDate: logDate,
-  //           action: action,
-  //           by: by,
-  //           fullData: data,
-  //         };
-  //       });
-    
-  //       const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
-  //       setActivityData(sortedLogs);
-    
-  //     } catch (error) {
-  //       console.error("Failed to fetch activity logs:", error);
-  //     }
-  //   };    
-  
-  //   fetchActivityLogs();
-  // }, []);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -540,7 +415,7 @@ const HistoryLog = () => {
           </div>
 
           <Table
-            columns={columns}
+            columns={columns2}
             dataSource={filteredData}
             pagination={{ pageSize: 10 }}
             bordered

@@ -10,6 +10,7 @@ import {
   Tag,
   Popconfirm,
   message,
+  List,
 } from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -25,6 +26,7 @@ import {
   onSnapshot,
   query,
   where,
+  setDoc,
 } from "firebase/firestore";
 import { debounce } from 'lodash';
 import Sidebar from "../Sidebar";
@@ -58,6 +60,17 @@ const AccountManagement = () => {
   const [statusFilter, setStatusFilter] = useState("");
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [filteredAccounts, setFilteredAccounts] = useState([]);
+  const [jobTitle, setJobTitle] = useState("");
+  const departmentOptionsByJobTitle = {
+    Dean: ["SAH", "SAS", "SOO", "SOD"],
+    "Program Chair": ["Nursing", "Medical Technology", "Psychology", "Optometry", "Dentistry", "Physical Therapy"],
+    Faculty: ["SHS", "Nursing", "Medical Technology", "Psychology", "Dentistry", "Optometry", "Physical Therapy"],
+    "Laboratory Custodian": [], 
+  };
+  const [isDeptModalVisible, setIsDeptModalVisible] = useState(false);
+  const [newDepartment, setNewDepartment] = useState("");
+  const [departmentsAll, setDepartmentsAll] = useState([]);
+  const [departments, setDepartments] = useState([]);  
 
   useEffect(() => {
     const loginSuccessFlag = sessionStorage.getItem("loginSuccess");
@@ -99,6 +112,26 @@ const AccountManagement = () => {
   }, []);  
 
   useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+
+    const unsubscribe = onSnapshot(
+      departmentsCollection,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map(doc => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList); // full objects
+      },
+      (error) => {
+        console.error("Error fetching departments in real-time: ", error);
+        message.error("Failed to load departments.");
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     fetchAdminCredentials();
   }, []);
 
@@ -128,6 +161,51 @@ const AccountManagement = () => {
     setShowModal(false);
     sessionStorage.removeItem("loginSuccess");
   };  
+
+ const showDeptModal = () => {
+    setNewDepartment("");
+    setIsDeptModalVisible(true);
+  };
+
+  const handleDeptCancel = () => {
+    setIsDeptModalVisible(false);
+  };
+
+  const onJobTitleChange = (value) => {
+    setJobTitle(value);
+
+    form.setFieldsValue({
+      role:
+        value === "Dean"
+          ? "admin"
+
+          : value === "Laboratory Custodian"
+          ? "super-user"
+
+          : value === "Program Chair"
+          ? "admin"
+
+          : value === "Faculty"
+          ? "User"
+
+          : "",
+      department: undefined, 
+    });
+
+    if (value === "Faculty") {
+      const facultyDepts = departmentsAll.map((dept) => dept.name);
+      setDepartments(facultyDepts);
+
+    } else if (value === "Program Chair") {
+      const programChairDepts = departmentsAll
+        .map((dept) => dept.name)
+        .filter((name) => name !== "SHS");
+      setDepartments(programChairDepts);
+
+    } else {
+      setDepartments(departmentOptionsByJobTitle[value] || []);
+    }
+  };
 
   const handleSearch = () => {
     let filteredData = [...accounts]; // Start with all accounts
@@ -195,6 +273,17 @@ const AccountManagement = () => {
       name: values.name.trim().toLowerCase(),
       email: values.email.trim().toLowerCase(),
     };
+
+    // Validate email domain
+    const email = sanitizedValues.email;
+    const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
+    const isValidEmail = validDomains.some(domain => email.endsWith(domain));
+
+    if (!isValidEmail) {
+      setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
+      setIsNotificationVisible(true);
+      return;
+    }
 
     // Check if the employeeId already exists in the 'accounts' collection
     const employeeQuery = query(
@@ -319,6 +408,54 @@ const AccountManagement = () => {
     }
   };
 
+  const capitalizeWords = (str) =>
+    str
+      .toLowerCase()
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const handleAddDepartment = async () => {
+    const trimmedName = newDepartment.trim();
+
+    if (!trimmedName) {
+      setModalMessage("Department name cannot be empty.");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    try {
+      const formattedName = capitalizeWords(trimmedName);
+
+      // Check if department already exists
+      const deptQuery = query(collection(db, "departments"), where("name", "==", formattedName));
+      const existingDepts = await getDocs(deptQuery);
+
+      if (!existingDepts.empty) {
+        setModalMessage("Department already exists!");
+        setIsNotificationVisible(true);
+        return;
+      }
+
+      // Generate custom doc ref so we can include the ID
+      const deptRef = doc(collection(db, "departments"));
+      const id = deptRef.id;
+
+      await setDoc(deptRef, {
+        id,
+        name: formattedName,
+        createdAt: new Date(),
+      });
+
+      setModalMessage("Department added successfully!");
+      setIsNotificationVisible(true);
+      setIsDeptModalVisible(false);
+      setNewDepartment("");
+
+    } catch (error) {
+      console.error("Failed to add department: ", error);
+      message.error("Failed to add department.");
+    }
+  };
+
   const confirmDelete = (id) => {
     setActionType("delete");
     setSelectedAccountId(id);
@@ -425,6 +562,15 @@ const AccountManagement = () => {
               onClick={() => showModalHandler(null)}
             >
               Add Account
+            </Button>
+
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              style={{ marginBottom: 16 }}
+              onClick={showDeptModal}
+            >
+              Add Department
             </Button>
           </div>
 
@@ -540,10 +686,27 @@ const AccountManagement = () => {
                   maxLength={7}
                   onChange={(e) => {
                     const value = e.target.value;
-                    const onlyNumbersAndDash = value.replace(/[^0-9-]/g, ""); // Remove non-numeric/non-dash
-                    e.target.value = onlyNumbersAndDash; // Set corrected value back
+                    const onlyNumbersAndDash = value.replace(/[^0-9-]/g, "");
+                    e.target.value = onlyNumbersAndDash; 
                   }}
                 />
+              </Form.Item>
+
+              <Form.Item
+                name="jobTitle"
+                label="Job Title"
+                rules={[{ required: true, message: "Please select a role" }]}
+              >
+                <Select
+                  placeholder="Select Role"
+                  onChange={onJobTitleChange} 
+                  allowClear
+                >
+                  <Option value="Dean">Dean</Option>
+                  <Option value="Program Chair">Program Chair</Option>
+                  <Option value="Laboratory Custodian">Laboratory Custodian</Option>
+                  <Option value="Faculty">Faculty</Option>
+                </Select>
               </Form.Item>
 
               <Form.Item
@@ -556,42 +719,15 @@ const AccountManagement = () => {
                   },
                 ]}
               >
-                <Select placeholder="Select Department">
-                  <Option value="Nursing">Nursing</Option>
-                  <Option value="Medical Technology">
-                    Medical Technology
-                  </Option>
-                  <Option value="Dentistry">Dentistry</Option>
-                  <Option value="Pharmacy">Pharmacy</Option>
-                </Select>
-              </Form.Item>
-
-              <Form.Item
-                name="jobTitle"
-                label="Job Title"
-                rules={[{ required: true, message: "Please select a role" }]}
-              >
-                <Select
-                  placeholder="Select Role"
-                  onChange={(value) => {
-                    form.setFieldsValue({
-                    role:
-                      value === "Dean"
-                        ? "admin"
-                        : value === "Laboratory Custodian"
-                        ? "super-user"
-                        : value === "Program Chair"
-                        ? "admin"
-                        : value === "Faculty"
-                        ? "User"
-                        : "",
-                    });
-                  }}
+                <Select placeholder="Select Department"
+                disabled={!jobTitle} 
+                allowClear
                 >
-                  <Option value="Dean">Dean</Option>
-                  <Option value="Program Chair">Program Chair</Option>
-                  <Option value="Laboratory Custodian">Laboratory Custodian</Option>
-                  <Option value="Faculty">Faculty</Option>
+                {departments.map((dept) => (
+                    <Option key={dept} value={dept}>
+                      {dept}
+                    </Option>
+                ))}
                 </Select>
               </Form.Item>
 
@@ -637,6 +773,31 @@ const AccountManagement = () => {
               </p>
             )}
           </Form>
+        </Modal>
+
+        <Modal
+          title="Add Department"
+          visible={isDeptModalVisible}
+          onOk={handleAddDepartment}
+          onCancel={handleDeptCancel}
+          okText="Add"
+          zIndex={1022}
+        >
+          <Input
+            placeholder="Enter department name"
+            value={newDepartment}
+            onChange={(e) => setNewDepartment(e.target.value)}
+            onPressEnter={handleAddDepartment}
+          />
+
+          <List
+            size="small"
+            header={<div>Departments List</div>}
+            bordered
+            dataSource={departmentsAll}
+            renderItem={item => <List.Item key={item.id}>{item.name}</List.Item>}
+            style={{ marginTop: 16, maxHeight: 200, overflowY: "auto" }}
+          />
         </Modal>
 
         <NotificationModal  

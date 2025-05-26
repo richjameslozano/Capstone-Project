@@ -9,7 +9,7 @@ export default function UserDashboard({ navigation }) {
   const menuItems = [
     { title: 'Request Items', subtitle: 'Materials & Supplies', icon: 'clipboard-list', screen: 'InventoryScreen', color: '#4CAF50' },
     { title: 'Status Board', subtitle: 'Records', icon: 'file-document-outline', screen: 'UserHistoryLogScreen', color: '#1A4572' }, 
-    { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', screen: 'CalendarScreen', color: '#673AB7' }, 
+    // { title: 'Calendar', subtitle: 'Block the Date!', icon: 'calendar', screen: 'CalendarScreen', color: '#673AB7' }, 
     { title: 'Orders', subtitle: ' Scheduled Requests', icon: 'clock-alert', screen: 'RequestScreen', color: '#A52A2A' }, 
     { title: 'Policies', subtitle: 'Rules & Regulations', icon: 'file-document', screen: 'PolicyScreen', color: '#7D284D' }, 
     { title: 'Search Items', subtitle: 'Materials', icon: 'file-document', screen: 'SearchItems', color: '#7D284D' }, 

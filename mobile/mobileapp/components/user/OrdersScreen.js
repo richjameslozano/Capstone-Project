@@ -10,7 +10,8 @@ import {
   ScrollView,
   Animated,
   Easing,
-  TextInput
+  TextInput,
+  StatusBar
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import {
@@ -25,17 +26,21 @@ import {
   where,
   onSnapshot
 } from 'firebase/firestore';
+
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/RequestStyle';
 import Header from '../Header';
 import PagerView from 'react-native-pager-view';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from '@react-navigation/native';
 
 export default function RequestScreen() {
   const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [modal2Visible, setModal2Visible] = useState(false);
   const [activityData, setActivityData] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredData, setFilteredData] = useState([]);
@@ -44,18 +49,14 @@ export default function RequestScreen() {
   const { user } = useAuth();
 
   const [headerHeight, setHeaderHeight] = useState(0);
+  const navigation = useNavigation()
   
     const handleHeaderLayout = (event) => {
       const { height } = event.nativeEvent.layout;
       setHeaderHeight(height);
     };
 
-    // const [activityData, setActivityData] = useState([]);
-    // const [searchQuery, setSearchQuery] = useState('');
-    // const [filteredData, setFilteredData] = useState([]);
-    // const [selectedLog, setSelectedLog] = useState(null);
-    // const [statusFilter, setStatusFilter] = useState('All');
-  
+
     useEffect(() => {
       const fetchActivityLogs = () => {
         try {
@@ -129,16 +130,6 @@ export default function RequestScreen() {
       handleSearch(searchQuery);
     }, [statusFilter]);
 
-    // const handleSearch = (query) => {
-    //   setSearchQuery(query);
-    //   const filtered = activityData.filter(
-    //     (item) =>
-    //       item.date.includes(query) ||
-    //       item.action.toLowerCase().includes(query.toLowerCase()) ||
-    //       item.by.toLowerCase().includes(query.toLowerCase())
-    //   );
-    //   setFilteredData(filtered);
-    // };
 
 const handleSearch = (query) => {
   setSearchQuery(query);
@@ -216,6 +207,7 @@ const handleSearch = (query) => {
             items: enrichedItems,
             status: 'PENDING',
             message: data.reason || '',
+            usageType: data.usageType || '',
           });
         }
   
@@ -282,14 +274,88 @@ const handleSearch = (query) => {
     }
   };
 
+
+      const handleStatus =(item)=>{
+      if(item.status === 'PENDING') return 'orange';
+      if(item.status === 'APPROVED') return '#395a7f';
+      if(item.status === 'Materials') return '#f8d496'; 
+      if(item.status === 'Reagent') return '#b8e2f4';
+      if(item.category === 'Glasswares') return '#fff2ce';
+    }
+
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => { setSelectedRequest(item); setModalVisible(true); }}>
-      <Card style={styles.card}>
-        <Text style={styles.requestId}>ID: {item.id}</Text>
-        <Text>Date Requested: {item.dateRequested.toLocaleDateString()}</Text>
-        <Text>Date Required: {item.dateRequired}</Text>
-        <Text>Status: {item.status}</Text>
-      </Card>
+          <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
+        <Text style={{backgroundColor: handleStatus(item), fontWeight: 'bold', color: 'white', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 3}}>{item.status}</Text>
+        {/* <Text style={{fontWeight: 300, color: 'gray', fontSize: 13}}>{item.dateRequested.toLocaleDateString()}</Text> */}
+      </View>
+
+    <View>
+      <Text style={{fontWeight: 300, fontSize: 13}}>Items Requested:</Text>
+  {item.items?.length > 0 ? (
+  item.items.map((innerItem, index) => (
+    <View key={index} style={{paddingHorizontal: 10, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between'}}>
+
+        <Text style={{fontWeight: 'bold'}}>{innerItem.itemName}</Text>
+        <Text style={{fontWeight: 300}}>x {innerItem.quantity}</Text>
+    </View>
+  ))
+) : (
+  <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+)}
+    </View>
+
+      <View style={{padding: 10, backgroundColor: '#C8EAF9', marginTop: 5, borderRadius: 5,}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Usage Type:</Text>
+          <Text style={{fontWeight: 300, fontSize: 13}}>{item.usageType}</Text>
+        </View>
+
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Date Required:</Text>
+          <Text style={{fontWeight: 'bold', fontSize: 13, color: '#395a7f'}}>{item.dateRequired}</Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+
+
+  );
+
+
+  const renderItem2 = ({ item }) => (
+    <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
+      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
+        <Text style={{backgroundColor: handleStatus(item), fontWeight: 'bold', color: 'white', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 3}}>{item.status}</Text>
+        <Text style={{fontWeight: 300, color: 'gray', fontSize: 13}}>{item.dateRequested.toLocaleDateString()}</Text>
+      </View>
+
+    <View>
+      <Text style={{fontWeight: 300, fontSize: 13}}>Items Requested:</Text>
+  {item.items?.length > 0 ? (
+  item.items.map((innerItem, index) => (
+    <View key={index} style={{paddingHorizontal: 10, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between'}}>
+
+        <Text style={{fontWeight: 'bold'}}>{innerItem.itemName}</Text>
+        <Text style={{fontWeight: 300}}>x {innerItem.quantity}</Text>
+    </View>
+  ))
+) : (
+  <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+)}
+    </View>
+
+      <View style={{padding: 10, backgroundColor: '#C8EAF9', marginTop: 5, borderRadius: 5,}}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Usage Type:</Text>
+          <Text style={{fontWeight: 300, fontSize: 13}}>{item.usageType}</Text>
+        </View>
+
+        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+          <Text style={{fontSize: 13}}>Date Required:</Text>
+          <Text style={{fontWeight: 'bold', fontSize: 13, color: '#395a7f'}}>{item.dateRequired}</Text>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 
@@ -308,31 +374,57 @@ const handleSearch = (query) => {
 const pagerRef = useRef(null);
 
 
+
+
+
+
+
+
+
+
+
+
+
   return (
     
     <View style={styles.container}>
-      <Header onLayout={handleHeaderLayout} />
-      <View style={[styles.topNav, {top:headerHeight}]}>
-        <TouchableOpacity style={{width: '25%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center',paddingTop: 15}}
+       <View style={styles.OrdersHeader} onLayout={handleHeaderLayout}>
+                     <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+                                     <Icon name="keyboard-backspace" size={28} color="black" />
+                                   </TouchableOpacity>
+
+                    <View>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>My Orders</Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13}}>Monitor Your Orders</Text>
+                    </View>
+
+                     <TouchableOpacity style={{padding: 2}}>
+                       <Icon name="information-outline" size={24} color="#000" />
+                     </TouchableOpacity>
+                   </View>
+
+            
+      
+      {/* <View style={[styles.topNav, {marginTop:headerHeight-3}]}>
+        <TouchableOpacity style={{width: '50%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center'}}
           onPress={() => pagerRef.current.setPage(0)}
         >
           <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
-          {/* <View style={{borderBottomWidth: 5, borderColor: '#000', width: '50%', borderRadius: 20, marginTop: 5}}></View> */}
+ 
         </TouchableOpacity>
 
-        <Text style={{fontSize: 20, color: 'gray', paddingTop: 10}}>|</Text>
+        <Text style={{fontSize: 20, color: 'gray'}}>|</Text>
 
-        <TouchableOpacity style={{width: '25%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center',paddingTop:15}}
+        <TouchableOpacity style={{width: '50%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center'}}
         onPress={() => pagerRef.current.setPage(1)}
         >
-          <Text style={{fontWeight: 'bold', fontSize: 15}}>Pending</Text>
-          {/* <View style={{borderBottomWidth: 5, borderColor: '#000', width: '50%', borderRadius: 20, marginTop: 5}}></View> */}
         </TouchableOpacity>
 
          <Animated.View style={[styles.border, { transform: [{ translateX: borderTranslateX }] }]} />
-      </View>
+      </View> */}
 
-      <PagerView ref={pagerRef} style={[styles.containerInner, {marginTop: headerHeight}]} initialPage={0}
+<View style={{flex:1, borderRadius: 5, overflow: 'hidden', marginTop: headerHeight-3}}>
+      <PagerView ref={pagerRef} style={[styles.containerInner]} initialPage={0}
       onPageScroll={(event) => {
           Animated.spring(position, {
     toValue: event.nativeEvent.position,
@@ -343,19 +435,24 @@ const pagerRef = useRef(null);
       }}
       >
       <View key="1" style={styles.page}>
-       
-       <Text style={styles.pageTitle}>Request Log</Text>
-      
-            <TextInput
-              style={[styles.modalText, { borderBottomWidth: 1, marginBottom: 10 }]}
-              placeholder="Search"
-              value={searchQuery}
-              onChangeText={handleSearch}
-            />
 
-            <View style={{ marginBottom: 10 }}>
+          <View style={[styles.searchFilter]}>
+              <View style={{height: 45, flexDirection: 'row', gap: 5, paddingHorizontal: 2}}>
+                <View style={styles.searchContainer}>
+                  <Icon name="magnify" size={20} color="#888"  />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChangeText={handleSearch}
+                  />
+                </View>
+      
+              </View>
+      
+              <View>
               <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {['All', 'Request Approved', 'Request Rejected', 'Request Cancelled', 'Deployed'].map((status) => (
+                {['All', 'Approved', 'Rejected', 'Cancelled', 'Deployed'].map((status) => (
                   <TouchableOpacity
                     key={status}
                     style={{
@@ -374,6 +471,15 @@ const pagerRef = useRef(null);
                 ))}
               </ScrollView>
             </View>
+            </View>
+
+          <FlatList
+          data={requests}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+            
       
             {/* Table Header */}
             <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
@@ -398,8 +504,8 @@ const pagerRef = useRef(null);
               ))}
             </ScrollView>
       
-            <Modal visible={modalVisible} transparent animationType="slide">
-        <View style={styles.modalOverlay}>
+            <Modal visible={modalVisible} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>
               {selectedLog?.status === 'CANCELLED'
@@ -429,7 +535,7 @@ const pagerRef = useRef(null);
                     <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
-                    <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text>
+                    {/* <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text> */}
                   </View>
       
                   {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
@@ -443,7 +549,12 @@ const pagerRef = useRef(null);
                       <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemName}</Text>
                       <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
                       <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
-                      <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text>
+                      {/* <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text> */}
+                      {/* <Text style={[styles.tableCell, { flex: 1 }]}>
+                        {typeof item.condition === 'object'
+                          ? `Good: ${item.condition.Good ?? 0}, Defect: ${item.condition.Defect ?? 0}, Damage: ${item.condition.Damage ?? 0}`
+                          : item.condition || '—'}
+                      </Text> */}
                     </View>
                   ))}
                 </View>
@@ -461,43 +572,42 @@ const pagerRef = useRef(null);
 
       </View>
 
-
-
-
       <View key="2" style={styles.page}>
          {loading ? (
         <ActivityIndicator size="large" color="#1890ff" style={{ marginTop: 30 }} />
       ) : requests.length === 0 ? (
         <Text style={{ textAlign: 'center', marginTop: 20 }}>No requests found.</Text>
       ) : (
-        <FlatList
+        <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='clock-outline' size={23} color='#6abce2'/>
+                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Pending Orders</Text>
+                  </View>
+            <FlatList
           data={requests}
           keyExtractor={(item) => item.id}
-          renderItem={renderItem}
+          renderItem={renderItem2}
           contentContainerStyle={styles.listContainer}
         />
+        </View>
+        
       )}
-      </View>
-      {/* <View key="3" style={styles.page}><Text>Page 3</Text></View> */}
-      
-      {/* <Text style={styles.title}>📋 Request List</Text> */}
 
-    
-      </PagerView>
-
-
-
-      <Modal visible={modalVisible} transparent animationType="slide">
+      <Modal visible={modal2Visible} transparent animationType="fade">
         <View style={styles.modalContainer}>
+          <StatusBar
+          translucent
+          backgroundColor={'transparent'}
+          />
           <ScrollView style={styles.modalContent}>
             <Text style={styles.modalTitle}>Request Details - {selectedRequest?.id}</Text>
             <Text><Text style={styles.label}>Requester:</Text> {selectedRequest?.requester}</Text>
             <Text><Text style={styles.label}>Requisition Date:</Text> {selectedRequest?.dateRequested?.toLocaleDateString()}</Text>
             <Text><Text style={styles.label}>Date Required:</Text> {selectedRequest?.dateRequired}</Text>
             <Text><Text style={styles.label}>Time Needed:</Text> {selectedRequest?.timeNeeded}</Text>
-            <Text><Text style={styles.label}>Course Code:</Text> {selectedRequest?.courseCode}</Text>
+            <Text><Text style={styles.label}>Course Code:</Text> {selectedRequest?.course}</Text>
             <Text><Text style={styles.label}>Course Description:</Text> {selectedRequest?.courseDescription}</Text>
-            <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.room}</Text>
+            <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.labRoom}</Text>
 
             <Text style={styles.subTitle}>Requested Items:</Text>
               <View style={styles.table}>
@@ -526,13 +636,20 @@ const pagerRef = useRef(null);
               <TouchableOpacity onPress={cancelRequest} style={styles.cancelButton}>
                 <Text style={styles.cancelText}>Cancel Request</Text>
               </TouchableOpacity>
-              <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+              <TouchableOpacity onPress={() => setModal2Visible(false)} style={styles.closeButton}>
                 <Text style={styles.closeText}>Close</Text>
               </TouchableOpacity>
             </View>
           </ScrollView>
         </View>
       </Modal>
+      </View>
+
+      </PagerView>
+</View>
+
+
+      
     </View>
   );
 }

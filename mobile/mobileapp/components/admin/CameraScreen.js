@@ -89,6 +89,355 @@ const CameraScreen = ({ onClose, selectedItem }) => {
     }
   };
 
+  // const handleBarCodeScanned = async ({ data }) => {
+  //   if (scanned) return;
+
+  //   setScanned(true);
+
+  //   try {
+  //     const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+  //     const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+
+  //     if (!decryptedData) throw new Error("Invalid QR Code");
+
+  //     const parsedData = JSON.parse(decryptedData);
+  //     const { itemName } = parsedData;
+
+  //     const todayDate = getTodayDate();
+  //     const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
+  //     const querySnapshot = await getDocs(q);
+
+  //     let found = false;
+  //     let alreadyDeployed = false;
+  //     let invalidStatus = false;
+  //     const borrowedItemsDetails = [];
+
+  //     let requestorUserId = null;
+  //     let requestorLogData = null;
+  //     let allDeployed = false;
+  //     let updatedRequestList = null;
+
+  //     if (!querySnapshot.empty) {
+  //       for (const docSnap of querySnapshot.docs) {
+  //         const data = docSnap.data();
+  //         const borrowedItem = data.requestList.find(
+  //           (item) =>
+  //             item.itemName === itemName &&
+  //             item.selectedItemId === selectedItem.selectedItemId &&
+  //             item.labRoom === selectedItem.labRoom &&
+  //             item.quantity === selectedItem.quantity &&
+  //             item.program === selectedItem.program &&
+  //             item.timeFrom === selectedItem.timeFrom &&
+  //             item.timeTo === selectedItem.timeTo
+  //         );
+
+  //         if (borrowedItem) {
+  //           found = true;
+  //           const currentStatus = data.status?.toLowerCase();
+
+  //           if (currentStatus === "borrowed") {
+  //             // updatedRequestList = data.requestList.map((item) => {
+  //             //   if (item.itemName === itemName) {
+  //             //     const currentCount = item.scannedCount || 0;
+  //             //     const maxCount = item.quantity || 1;
+
+  //             //     if (currentCount < maxCount) {
+  //             //       return {
+  //             //         ...item,
+  //             //         scannedCount: currentCount + 1,
+  //             //       };
+
+  //             //     } else {
+  //             //       console.warn("Scan limit reached for", item.itemName);
+  //             //       message.warning(`Maximum scans reached for "${item.itemName}".`);
+  //             //       return item;
+  //             //     }
+  //             //   }
+  //             //   return item;
+  //             // });
+
+  //             // updatedRequestList = data.requestList.map((item) => {
+  //             //   if (item.itemName === itemName) {
+  //             //     // Instead of incrementing by 1 each scan,
+  //             //     // just set scannedCount = quantity directly:
+  //             //     return {
+  //             //       ...item,
+  //             //       scannedCount: item.quantity,  // mark all as scanned/deployed at once
+  //             //     };
+  //             //   }
+  //             //   return item;
+  //             // });
+
+  //             updatedRequestList = data.requestList.map((item) => {
+  //               if (
+  //                 item.itemName === itemName &&
+  //                 item.selectedItemId === selectedItem.selectedItemId &&
+  //                 item.labRoom === selectedItem.labRoom &&
+  //                 item.quantity === selectedItem.quantity &&
+  //                 item.program === selectedItem.program &&
+  //                 item.timeFrom === selectedItem.timeFrom &&
+  //                 item.timeTo === selectedItem.timeTo
+  //               ) {
+  //                 return {
+  //                   ...item,
+  //                   scannedCount: item.quantity,
+  //                 };
+  //               }
+  //               return item;
+  //             });
+
+  //             allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity);
+
+  //             await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
+  //               requestList: updatedRequestList,
+  //               ...(allDeployed && { status: "Deployed" })
+  //             });
+              
+  //             const deployedItem = data.requestList.find(item => item.itemName === itemName);
+
+  //             Alert.alert("Deployed", `Deployed ${deployedItem.quantity} ${itemName} item(s).`);
+
+  //             borrowedItemsDetails.push({
+  //               borrower: data.userName || "Unknown",
+  //               borrowedDate: data.dateRequired,
+  //               timeFrom: data.timeFrom || "00:00",
+  //               timeTo: data.timeTo || "00:00"
+  //             });
+
+  //             requestorUserId = data.accountId;
+  //             // requestorLogData = {
+  //             //   ...data,
+  //             //   action: "Deployed",
+  //             //   deployedBy: user.name || "Unknown",
+  //             //   deployedById: user.id,
+  //             //   deployedAt: getTodayDate(),
+  //             //   timestamp: serverTimestamp()
+  //             // };
+
+  //             const scannedItem = updatedRequestList.find(item =>
+  //               item.itemName === itemName &&
+  //               item.selectedItemId === selectedItem.selectedItemId &&
+  //               item.labRoom === selectedItem.labRoom &&
+  //               item.quantity === selectedItem.quantity &&
+  //               item.program === selectedItem.program &&
+  //               item.timeFrom === selectedItem.timeFrom &&
+  //               item.timeTo === selectedItem.timeTo
+  //             );
+
+  //             requestorLogData = {
+  //               action: "Deployed",
+  //               deployedBy: user.name || "Unknown",
+  //               deployedById: user.id,
+  //               deployedAt: getTodayDate(),
+  //               timestamp: serverTimestamp(),
+  //               item: scannedItem,
+  //               borrower: data.userName || "Unknown",
+  //               borrowedDate: data.dateRequired,
+  //               timeFrom: data.timeFrom || "00:00",
+  //               timeTo: data.timeTo || "00:00"
+  //             };
+
+  //             break;
+
+  //           } else if (currentStatus === "deployed") {
+  //             alreadyDeployed = true;
+
+  //           } else if (currentStatus === "returned") {
+  //             // ✅ Handle return approval
+  //             const requestorId = data.accountId;
+  //             const borrowDocRef = doc(db, "borrowcatalog", docSnap.id);
+
+  //             const inventoryId = borrowedItem.selectedItemId;
+  //             const returnQty = borrowedItem.returnedQuantity || 1; // ✅ SAFER
+
+  //             if (inventoryId && !isNaN(returnQty)) {
+  //               const inventoryRef = doc(db, "inventory", inventoryId);
+  //               const inventorySnap = await getDoc(inventoryRef);
+
+  //               if (inventorySnap.exists()) {
+  //                 const currentQty = inventorySnap.data().quantity || 0;
+  //                 await updateDoc(inventoryRef, {
+  //                   quantity: currentQty + returnQty,
+  //                 });
+
+  //                 console.log(`✅ Inventory updated. Returned ${returnQty} of ${itemName}.`);
+
+  //                 const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
+  //                 const itemId = inventorySnap.data().itemId;
+
+  //                 if (labRoomId && itemId) {
+  //                   const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+  //                   const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+  //                   if (labRoomItemSnap.exists()) {
+  //                     const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+  //                     const newLabQty = currentLabQty + returnQty;
+
+  //                     await updateDoc(labRoomItemRef, {
+  //                       quantity: newLabQty,
+  //                     });
+
+  //                     console.log(`🏫 LabRoom item updated: ${currentLabQty} → ${newLabQty} for itemId ${itemId} in labRoom ${labRoomId}`);
+
+  //                   } else {
+  //                     console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+  //                   }
+
+  //                 } else {
+  //                   console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+  //                 }
+
+  //               } else {
+  //                 console.warn(`❌ Inventory item not found for ID: ${inventoryId}`);
+  //               }
+  //             }
+              
+  //             await updateDoc(borrowDocRef, { status: "Return Approved" });
+
+  //             const userRequestQuery = query(
+  //               collection(db, `accounts/${requestorId}/userrequestlog`),
+  //               where("dateRequired", "==", data.dateRequired)
+  //             );
+
+  //             const userRequestSnapshot = await getDocs(userRequestQuery);
+
+  //             for (const userDoc of userRequestSnapshot.docs) {
+  //               const userData = userDoc.data();
+  //               const hasMatchingItem = userData.requestList?.some(item => item.itemName === itemName);
+
+  //               // if (hasMatchingItem) {
+  //               //   await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
+  //               //     status: "Return Approved"
+  //               //   });
+
+  //                 if (hasMatchingItem) {
+  //                 // Inject usageType into userData
+  //                 userData.usageType = hasMatchingItem.usageType || "Unknown";
+
+  //                 await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
+  //                   status: "Return Approved"
+  //                 });
+
+  //                 await addDoc(collection(db, `accounts/${requestorId}/historylog`), {
+  //                   ...userData,
+  //                   action: "Return Approved",
+  //                   approvedBy: user.name || "Unknown",
+  //                   approvedById: user.id,
+  //                   approvedAt: getTodayDate(),
+  //                   timestamp: serverTimestamp(),
+  //                 });
+
+  //                 Alert.alert("Return Approved", `Return of "${itemName}" approved.`);
+  //                 break;
+  //               }
+  //             }
+
+  //             return; 
+
+  //           } else {
+  //             invalidStatus = true;
+  //           }
+  //         }
+  //       }
+
+  //       if (borrowedItemsDetails.length > 0) {
+  //         borrowedItemsDetails.sort((a, b) => {
+  //           const [aH, aM] = a.timeFrom.split(":").map(Number);
+  //           const [bH, bM] = b.timeFrom.split(":").map(Number);
+  //           return aH * 60 + aM - (bH * 60 + bM);
+  //         });
+
+  //         let detailsMessage = `Item: ${itemName}\n\n`;
+  //         borrowedItemsDetails.forEach((detail) => {
+  //           detailsMessage += `Requestor: ${detail.borrower}\nDate: ${detail.borrowedDate}\nTime: ${detail.timeFrom} - ${detail.timeTo}\n\n`;
+  //         });
+
+  //         Alert.alert("Item Deployed", detailsMessage);
+
+  //         const firstDetail = borrowedItemsDetails[0];
+
+  //         const updatedScannedItem = updatedRequestList.find(
+  //           (item) => item.itemName === itemName && item.selectedItemId === selectedItem.selectedItemId
+  //         );
+
+  //         const scannedCount = updatedScannedItem?.scannedCount || 0;
+
+  //         console.log("Scanned count after update:", scannedCount);
+
+  //         await logRequestOrReturn(
+  //           user.id,
+  //           user.name || "Unknown",
+  //           `Deployed "${itemName}" to ${firstDetail.borrower} in ${selectedItem.labRoom} (Scanned: ${scannedCount})`
+  //         );
+
+  //         if (allDeployed && requestorUserId && requestorLogData) {
+  //           try {
+  //             console.log("Writing to historylog for:", requestorUserId);
+  //             await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), requestorLogData);
+
+  //           } catch (error) {
+  //             console.error("Failed to write to historylog:", error);
+  //           }
+
+  //         } else {
+  //           console.warn("Missing requestorUserId or log data.");
+  //         }
+
+  //         try {
+  //           const userRequestQuery = query(
+  //             collection(db, `accounts/${requestorUserId}/userrequestlog`),
+  //             where("dateRequired", "==", getTodayDate())
+  //           );
+
+  //           const userRequestSnapshot = await getDocs(userRequestQuery);
+
+  //           userRequestSnapshot.forEach(async (docSnap) => {
+  //             const docData = docSnap.data();
+  //             // const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+  //             const hasMatchingItem = docData.requestList?.some(item =>
+  //               item.itemName === itemName &&
+  //               item.selectedItemId === selectedItem.selectedItemId &&
+  //               item.labRoom === selectedItem.labRoom &&
+  //               item.quantity === selectedItem.quantity &&
+  //               item.program === selectedItem.program &&
+  //               item.timeFrom === selectedItem.timeFrom &&
+  //               item.timeTo === selectedItem.timeTo
+  //             );
+
+  //             if (hasMatchingItem) {
+  //               await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
+  //                 status: "Deployed"
+  //               });
+
+  //               console.log("✅ userrequestlog status updated to 'Deployed'");
+  //             }
+  //           });
+            
+  //         } catch (err) {
+  //           console.error("❌ Failed to update userrequestlog:", err);
+  //         }          
+
+  //       } else if (alreadyDeployed) {
+  //         Alert.alert("Already Deployed", `Item "${itemName}" has already been deployed.`);
+
+  //       } else if (invalidStatus) {
+  //         Alert.alert("Invalid Status", `Item "${itemName}" is not currently in a 'Borrowed' status.`);
+
+  //       } else if (!found) {
+  //         Alert.alert("Item not found", "No records found for this item on today's date.");
+  //       }
+
+  //     } else {
+  //       Alert.alert("No data found", "No records found for today in the borrow catalog.");
+  //     }
+
+  //   } catch (error) {
+  //     console.error("QR Scan Error:", error);
+  //   }
+
+  //   setTimeout(() => setScanned(false), 1500);
+  // };
+
   const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
 
@@ -126,7 +475,9 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               item.selectedItemId === selectedItem.selectedItemId &&
               item.labRoom === selectedItem.labRoom &&
               item.quantity === selectedItem.quantity &&
-              item.program === selectedItem.program
+              item.program === selectedItem.program &&
+              item.timeFrom === selectedItem.timeFrom &&
+              item.timeTo === selectedItem.timeTo
           );
 
           if (borrowedItem) {
@@ -134,25 +485,25 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             const currentStatus = data.status?.toLowerCase();
 
             if (currentStatus === "borrowed") {
-              updatedRequestList = data.requestList.map((item) => {
-                if (item.itemName === itemName) {
-                  const currentCount = item.scannedCount || 0;
-                  const maxCount = item.quantity || 1;
+              // updatedRequestList = data.requestList.map((item) => {
+              //   if (item.itemName === itemName) {
+              //     const currentCount = item.scannedCount || 0;
+              //     const maxCount = item.quantity || 1;
 
-                  if (currentCount < maxCount) {
-                    return {
-                      ...item,
-                      scannedCount: currentCount + 1,
-                    };
+              //     if (currentCount < maxCount) {
+              //       return {
+              //         ...item,
+              //         scannedCount: currentCount + 1,
+              //       };
 
-                  } else {
-                    console.warn("Scan limit reached for", item.itemName);
-                    message.warning(`Maximum scans reached for "${item.itemName}".`);
-                    return item;
-                  }
-                }
-                return item;
-              });
+              //     } else {
+              //       console.warn("Scan limit reached for", item.itemName);
+              //       message.warning(`Maximum scans reached for "${item.itemName}".`);
+              //       return item;
+              //     }
+              //   }
+              //   return item;
+              // });
 
               // updatedRequestList = data.requestList.map((item) => {
               //   if (item.itemName === itemName) {
@@ -165,6 +516,24 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               //   }
               //   return item;
               // });
+
+              updatedRequestList = data.requestList.map((item) => {
+                if (
+                  item.itemName === itemName &&
+                  item.selectedItemId === selectedItem.selectedItemId &&
+                  item.labRoom === selectedItem.labRoom &&
+                  item.quantity === selectedItem.quantity &&
+                  item.program === selectedItem.program &&
+                  item.timeFrom === selectedItem.timeFrom &&
+                  item.timeTo === selectedItem.timeTo
+                ) {
+                  return {
+                    ...item,
+                    scannedCount: item.quantity,
+                  };
+                }
+                return item;
+              });
 
               allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity);
 
@@ -185,14 +554,39 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               });
 
               requestorUserId = data.accountId;
+              // requestorLogData = {
+              //   ...data,
+              //   action: "Deployed",
+              //   deployedBy: user.name || "Unknown",
+              //   deployedById: user.id,
+              //   deployedAt: getTodayDate(),
+              //   timestamp: serverTimestamp()
+              // };
+
+              const scannedItem = updatedRequestList.find(item =>
+                item.itemName === itemName &&
+                item.selectedItemId === selectedItem.selectedItemId &&
+                item.labRoom === selectedItem.labRoom &&
+                item.quantity === selectedItem.quantity &&
+                item.program === selectedItem.program &&
+                item.timeFrom === selectedItem.timeFrom &&
+                item.timeTo === selectedItem.timeTo
+              );
+
               requestorLogData = {
-                ...data,
                 action: "Deployed",
                 deployedBy: user.name || "Unknown",
                 deployedById: user.id,
                 deployedAt: getTodayDate(),
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                item: scannedItem,
+                borrower: data.userName || "Unknown",
+                borrowedDate: data.dateRequired,
+                timeFrom: data.timeFrom || "00:00",
+                timeTo: data.timeTo || "00:00"
               };
+
+              break;
 
             } else if (currentStatus === "deployed") {
               alreadyDeployed = true;
@@ -204,42 +598,104 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
               const inventoryId = borrowedItem.selectedItemId;
               const returnQty = borrowedItem.returnedQuantity || 1; // ✅ SAFER
+              const conditionReturned = Array.isArray(borrowedItem.conditions) && borrowedItem.conditions[0]
+              ? borrowedItem.conditions[0]
+              : "Good"; // default condition
 
               if (inventoryId && !isNaN(returnQty)) {
                 const inventoryRef = doc(db, "inventory", inventoryId);
                 const inventorySnap = await getDoc(inventoryRef);
 
-                if (inventorySnap.exists()) {
-                  const currentQty = inventorySnap.data().quantity || 0;
-                  await updateDoc(inventoryRef, {
-                    quantity: currentQty + returnQty,
-                  });
+              if (inventorySnap.exists()) {
+                    const inventoryData = inventorySnap.data();
+                    const currentQty = inventoryData.quantity || 0;
+                    const currentCond = inventoryData.condition || {};
+                    const currentCondQty = Number(currentCond[conditionReturned] || 0);
 
-                  console.log(`✅ Inventory updated. Returned ${returnQty} of ${itemName}.`);
+                    await updateDoc(inventoryRef, {
+                      quantity: currentQty + returnQty,
+                      [`condition.${conditionReturned}`]: currentCondQty + returnQty,
+                    });
 
-                  const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
+                  // const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
+                  // const itemId = inventorySnap.data().itemId;
+
+                  // if (labRoomId && itemId) {
+                  //   const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+                  //   const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+                  //   if (labRoomItemSnap.exists()) {
+                  //   const labData = labRoomItemSnap.data();
+                  //   const currentLabQty = Number(labData.quantity || 0);
+                  //   const currentLabCond = labData.condition || {};
+                  //   const labCondQty = Number(currentLabCond[conditionReturned] || 0);
+
+                  //   await updateDoc(labRoomItemRef, {
+                  //     quantity: currentLabQty + returnQty,
+                  //     [`condition.${conditionReturned}`]: labCondQty + returnQty,
+                  //   });
+
+                  //   } else {
+                  //     console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+                  //   }
+
+                  // } else {
+                  //   console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+                  // }
+
+                  const labRoomNumber = inventorySnap.data().labRoom; // assuming labRoom holds room number like "LR-101"
                   const itemId = inventorySnap.data().itemId;
 
-                  if (labRoomId && itemId) {
-                    const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-                    const labRoomItemSnap = await getDoc(labRoomItemRef);
+                  if (!labRoomNumber || !itemId) {
+                    console.warn(`⚠️ Missing labRoomNumber or itemId for inventoryId ${inventoryId}`);
+                    return;
+                  }
 
-                    if (labRoomItemSnap.exists()) {
-                      const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
-                      const newLabQty = currentLabQty + returnQty;
+                  try {
+                    // 🔍 STEP 1: Find labRoom document by roomNumber
+                    const labRoomQuery = query(
+                      collection(db, "labRoom"),
+                      where("roomNumber", "==", labRoomNumber)
+                    );
+                    const labRoomSnapshot = await getDocs(labRoomQuery);
 
-                      await updateDoc(labRoomItemRef, {
-                        quantity: newLabQty,
-                      });
-
-                      console.log(`🏫 LabRoom item updated: ${currentLabQty} → ${newLabQty} for itemId ${itemId} in labRoom ${labRoomId}`);
-
-                    } else {
-                      console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+                    if (labRoomSnapshot.empty) {
+                      console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomNumber}`);
+                      return;
                     }
 
-                  } else {
-                    console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+                    const labRoomDoc = labRoomSnapshot.docs[0];
+                    const labRoomId = labRoomDoc.id;
+
+                    // 🔍 STEP 2: Find item in the labRoom/{labRoomId}/items by itemId field
+                    const labItemsRef = collection(db, "labRoom", labRoomId, "items");
+                    const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
+                    const itemSnapshot = await getDocs(itemQuery);
+
+                    if (itemSnapshot.empty) {
+                      console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+                      return;
+                    }
+
+                    const itemDoc = itemSnapshot.docs[0];
+                    const labItemDocId = itemDoc.id;
+                    const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
+
+                    const labData = itemDoc.data();
+                    const currentLabQty = Number(labData.quantity || 0);
+                    const currentLabCond = labData.condition || {};
+                    const labCondQty = Number(currentLabCond[conditionReturned] || 0);
+
+                    // ✅ Update the labRoom item quantity and condition
+                    await updateDoc(labItemRef, {
+                      quantity: currentLabQty + returnQty,
+                      [`condition.${conditionReturned}`]: labCondQty + returnQty,
+                    });
+
+                    console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
+
+                  } catch (error) {
+                    console.error("🔥 Error updating labRoom item:", error);
                   }
 
                 } else {
@@ -346,18 +802,68 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
             const userRequestSnapshot = await getDocs(userRequestQuery);
 
-            userRequestSnapshot.forEach(async (docSnap) => {
+            // userRequestSnapshot.forEach(async (docSnap) => {
+            //   const docData = docSnap.data();
+            //   // const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+            //   const hasMatchingItem = docData.requestList?.some(item =>
+            //     item.itemName === itemName &&
+            //     item.selectedItemId === selectedItem.selectedItemId &&
+            //     item.labRoom === selectedItem.labRoom &&
+            //     item.quantity === selectedItem.quantity &&
+            //     item.program === selectedItem.program &&
+            //     item.timeFrom === selectedItem.timeFrom &&
+            //     item.timeTo === selectedItem.timeTo
+            //   );
+
+            //   if (hasMatchingItem) {
+            //     await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
+            //       status: "Deployed"
+            //     });
+
+            //     console.log("✅ userrequestlog status updated to 'Deployed'");
+            //   }
+            // });
+
+            for (const docSnap of userRequestSnapshot.docs) {
               const docData = docSnap.data();
-              const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
+              const hasMatchingItem = docData.requestList?.some(item => {
+                const matches =
+                  item.itemName === itemName &&
+                  item.selectedItemId === selectedItem.selectedItemId &&
+                  item.labRoom === selectedItem.labRoom &&
+                  item.quantity === selectedItem.quantity &&
+                  docData.timeFrom === requestorLogData.timeFrom &&
+                  docData.timeTo === requestorLogData.timeTo;
+
+                console.log("Comparing item:");
+                console.log("  itemName:", item.itemName, "==", itemName);
+                console.log("  selectedItemId:", item.selectedItemId, "==", selectedItem.selectedItemId);
+                console.log("  labRoom:", item.labRoom, "==", selectedItem.labRoom);
+                console.log("  quantity:", item.quantity, "==", selectedItem.quantity);
+                console.log("  program:", docData.program, "==", requestorLogData.program);
+                console.log("  timeFrom:", docData.timeFrom, "==", requestorLogData.timeFrom);
+                console.log("  timeTo:", docData.timeTo, "==", requestorLogData.timeTo);
+                console.log("  ➤ Matches:", matches);
+
+                return matches;
+              });
+
+              console.log("Checking userrequestlog doc ID:", docSnap.id);
+              console.log("Matching requestList item:", hasMatchingItem);
+
 
               if (hasMatchingItem) {
-                await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
-                  status: "Deployed"
-                });
-
-                console.log("✅ userrequestlog status updated to 'Deployed'");
+                try {
+                  await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
+                    status: "Deployed"
+                  });
+                  console.log("✅ userrequestlog status updated to 'Deployed'");
+                  
+                } catch (err) {
+                  console.error("❌ Failed to update userrequestlog document:", err);
+                }
               }
-            });
+            }
             
           } catch (err) {
             console.error("❌ Failed to update userrequestlog:", err);

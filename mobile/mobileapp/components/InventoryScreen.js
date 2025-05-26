@@ -22,7 +22,7 @@ export default function InventoryScreen({ navigation }) {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [selectedDepartment, setSelectedDepartment] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
@@ -71,16 +71,11 @@ export default function InventoryScreen({ navigation }) {
 
           StatusBar.setBarStyle('light-content');
           StatusBar.setBackgroundColor('transparent');
+          StatusBar.setTranslucent(true)
     }, [])
   );
 
-  // const isFocused = useIsFocused();
-  // useEffect(() => {
-  //     if (isFocused) {
-  //       StatusBar.setBarStyle('light-content');
-  //       StatusBar.setBackgroundColor('transparent');
-  //     }
-  //   }, [isFocused]);
+
    
   useEffect(() => {
     const inventoryCollection = collection(db, 'inventory');  
@@ -253,7 +248,7 @@ export default function InventoryScreen({ navigation }) {
   
       await addDoc(collectionRef, {
         category: item.category || '',
-        condition: item.condition || '',
+        // condition: item.condition || '',
         department: item.department || '',
         entryDate: item.entryCurrentDate || '',
         expiryDate: item.expiryDate || '',
@@ -290,11 +285,6 @@ export default function InventoryScreen({ navigation }) {
       if(item.category === 'Chemical') return 'flask-outline';
       if(item.category === 'Materials') return 'layers-outline';
       if(item.category === 'Reagent') return 'test-tube';
-    }
-
-    const handleBgColor =() =>{
-      if(item.category === 'Equipment') return '#ffffa0';
-      if(item.category === 'Materials') return '#dac4ff';
     }
     
     return (
@@ -576,7 +566,7 @@ export default function InventoryScreen({ navigation }) {
       <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
         }}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
                 <Icon name="keyboard-backspace" size={28} color="white" />
               </TouchableOpacity>
                 <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white'}}>Requisition Slip</Text>
@@ -591,11 +581,11 @@ export default function InventoryScreen({ navigation }) {
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
-      <StatusBar
+      {/* <StatusBar
                       translucent
                       backgroundColor="transparent"
                       barStyle="light-content" // or 'light-content' depending on your design
-                    />
+                    /> */}
       {!isComplete && (
      
         <View style={{flex:1}}>
@@ -687,7 +677,7 @@ export default function InventoryScreen({ navigation }) {
           </View>
 
           <View style={styles.programSection}>
-              <Text style={styles.label}>Course Code:</Text>
+              <Text style={styles.label}>Course Description:</Text>
               <TextInput style={{width: '60%', backgroundColor: 'gray', backgroundColor: '#e9ecee', borderRadius: 5, paddingHorizontal: 10}} placeholder='<autofill>'></TextInput>
           </View>
         </View>
@@ -717,7 +707,7 @@ export default function InventoryScreen({ navigation }) {
 
       {/* Modal with Calendar */}
       <Modal
-        animationType="slide"
+        animationType="fade"
         transparent={true}
         visible={calendarVisible}
         onRequestClose={() => setCalendarVisible(false)}
@@ -892,14 +882,14 @@ export default function InventoryScreen({ navigation }) {
         
     )}
     
-  {isComplete && (
+  {/* {isComplete && (
     <View style={{flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7}}>
 
 
       <View style={[styles.searchFilter, {top: headerHeight}]}>
         <View style={{flex: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 7}}>
           <View style={styles.searchContainer}>
-            <Icon name="magnify" size={20} color="#888" style={styles.searchIcon} />
+            <Icon name="magnify" size={20} color="#888"  />
             <TextInput
               style={styles.searchInput}
               placeholder="Search by item name"
@@ -908,10 +898,6 @@ export default function InventoryScreen({ navigation }) {
             />
           </View>
 
-          {/* <TouchableOpacity style={{backgroundColor:'#efefef', flex:1, borderRadius: 5, justifyContent: 'center', alignItems: 'center', flexDirection: 'row', gap: 5}}>
-            <Icon name='filter-variant' size={20} color='#515151'/>
-            <Text style={{fontWeight: 'bold', color: '#515151'}}>All</Text>
-          </TouchableOpacity> */}
           <TouchableOpacity
             style={{
               backgroundColor: '#efefef',
@@ -993,8 +979,98 @@ export default function InventoryScreen({ navigation }) {
       </View> 
       </View>
       </View>
-  )}
+  )} */}
 
+        {isComplete && (
+          <View style={{ flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7 }}>
+            
+            {/* Header/Search Filter */}
+            <View style={[styles.searchFilter, { top: headerHeight }]}>
+                <View style={{flex: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 7}}>
+                  <View style={styles.searchContainer}>
+                    <Icon name="magnify" size={20} color="#888"  />
+                    <TextInput
+                      style={styles.searchInput}
+                      placeholder="Search by item name"
+                      value={searchQuery}
+                      onChangeText={setSearchQuery}
+                    />
+                  </View>
+
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: '#efefef',
+                      flex: 1,
+                      borderRadius: 5,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      gap: 5,
+                      padding: 10,
+                    }}
+                    onPress={() => setIsCategoryModalVisible(true)}
+                  >
+                    <Icon name='filter-variant' size={20} color='#515151' />
+                    <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
+                  </TouchableOpacity>
+
+                </View>
+                  <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5, paddingHorizontal:10}}>
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='cube-outline' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}}>- Equipment</Text>
+                  </View>
+
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='flask-outline' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}}>- Chemical</Text>
+                  </View>
+
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='layers-outline' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}}>- Material</Text>
+                  </View>
+
+                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                  <Icon name='test-tube' size={16} color={'gray'}/>
+                  <Text style={{fontWeight: 300, fontSize: 11}} >- Reagent</Text>
+                  </View>
+                </View>
+            </View>
+
+            {/* List Section */}
+            <View style={[styles.wholeSection2, { marginTop: headerHeight + 85, flex: 1 }]}>
+              <FlatList
+                contentContainerStyle={{ paddingBottom: 80, paddingHorizontal: 5, paddingTop: 5 }}
+                data={filteredItems}
+                renderItem={renderItem}
+                keyExtractor={(item) => item.id}
+                ListEmptyComponent={
+                  <Text style={{ textAlign: 'center', marginTop: 20 }}>No items found</Text>
+                }
+                showsVerticalScrollIndicator={false}
+                keyboardShouldPersistTaps="always"
+              />
+
+              {/* Floating Button / Bottom View */}
+              <View style={styles.bottomContainer}>
+                <View style={styles.requestAddContainer}>
+                  <TouchableOpacity
+                    style={styles.requestButton}
+                    onPress={() => navigation.navigate('RequestListScreen')}
+                  >
+                    <Text style={styles.requestButtonText}>Item List</Text>
+                    {tempRequestCount > 0 && (
+                      <View style={styles.notificationBadge}>
+                        <Text style={styles.notificationText}>{tempRequestCount}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+          </View>
+        )}
 </KeyboardAvoidingView>
 
       <Modal visible={modalVisible} transparent animationType="fade">
@@ -1010,9 +1086,22 @@ export default function InventoryScreen({ navigation }) {
                 <Text style={styles.itemType}>Type: {selectedItem?.type}</Text>
                 <Text style={styles.itemType}>Department: {selectedItem?.department}</Text>
                 <Text style={styles.itemType}>Category: {selectedItem?.category}</Text>
-                <Text style={styles.itemType}>Condition: {selectedItem?.condition}</Text>
+                {/* <Text style={styles.itemType}>Condition: {selectedItem?.condition}</Text> */}
+                <Text style={styles.itemType}>
+                  Condition: {
+                    selectedItem?.condition && typeof selectedItem.condition === 'object'
+                      ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
+                      : selectedItem?.condition || 'N/A'
+                  }
+                </Text>
                 <Text style={styles.itemType}>Status: {selectedItem?.status}</Text>
-                <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text>
+                {/* <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text> */}
+                <Text style={styles.itemType}>
+                  Available Quantity: {selectedItem?.quantity}
+                  {["Glasswares", "Chemical", "Reagent"].includes(selectedItem?.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedItem?.category) && selectedItem?.unit && ` / ${selectedItem.unit} ML`}
+                  {selectedItem?.category === "Glasswares" && selectedItem?.volume && ` / ${selectedItem.volume} ML`}
+                </Text>
               </View>
             </TouchableWithoutFeedback> 
           </View>
