@@ -23,7 +23,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
   const navigation = useNavigation();
 
   useEffect(() => {
-    if (!permission && !permission.granted) {
+  if (permission?.status !== 'granted') {
       requestPermission();
     }
   }, [permission]);
