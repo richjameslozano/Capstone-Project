@@ -31,8 +31,9 @@ const CameraShowItems = ({ onClose }) => {
   const [labRoomId, setLabRoomId] = useState("");
   const [labModalVisible, setLabModalVisible] = useState(false);
 
+
   useEffect(() => {
-    if (!permission && !permission.granted) {
+  if (permission?.status !== 'granted') {
       requestPermission();
     }
   }, [permission]);
