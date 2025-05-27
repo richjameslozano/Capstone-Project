@@ -17,6 +17,7 @@
     "jspdf": "^2.5.2",
     "jspdf-autotable": "^3.8.4",
     "moment": "^2.30.1",
+    "pip": "^0.0.1",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
