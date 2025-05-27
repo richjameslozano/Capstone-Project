@@ -22,6 +22,13 @@ import "./styles/Dashboard.css";
    const [recentProducts, setRecentProducts] = useState([]);
    const location = useLocation();
    const navigate = useNavigate();
+   //expiry list
+   const [expiredItems, setExpiredItems] = useState([]);
+   const [expiringSoonItems, setExpiringSoonItems] = useState([]);
+   const [damagedItems, setDamagedItems] = useState([]);
+
+
+
  
    const [topProducts, setTopProducts] = useState([
      { title: "Raspberry Pi", sold: 6, quantity: 10 },
@@ -37,6 +44,114 @@ import "./styles/Dashboard.css";
      { key: 3, name: "Electronics Project Enclosure Case Box", date: "2019-02-03", total: "$30.00" },
      { key: 4, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
    ]);
+
+
+   const expiryColumns = [
+  {
+    title: "Item Name",
+    dataIndex: "itemName",
+    key: "itemName",
+  },
+  {
+    title: "Category",
+    dataIndex: "category",
+    key: "category",
+  },
+  {
+    title: "Expiry Date",
+    dataIndex: "expiryDate",
+    key: "expiryDate",
+  },
+];
+
+
+   //expiry
+    useEffect(() => {
+    const fetchExpiryItems = async () => {
+      const inventoryRef = collection(db, "inventory");
+      const snapshot = await getDocs(inventoryRef);
+
+      const today = new Date();
+      const EXPIRY_SOON_DAYS = 7;
+
+      const expired = [];
+      const expiringSoon = [];
+
+      snapshot.forEach((doc) => {
+  const data = doc.data();
+
+  // Check if expiryDate exists and is valid
+  if (!data.expiryDate) {
+    return; // skip this item, no expiry
+  }
+
+  // Convert Firestore Timestamp or string to Date
+        const expiryDate = data.expiryDate?.toDate
+          ? data.expiryDate.toDate()
+          : new Date(data.expiryDate);
+
+        if (isNaN(expiryDate.getTime())) {
+          return; // skip invalid date
+        }
+
+        const today = new Date();
+        const diffTime = expiryDate - today;
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+        const itemInfo = {
+          key: doc.id,
+          itemName: data.itemName,
+          expiryDate: expiryDate.toDateString(),
+          category: data.category || "N/A",
+        };
+
+        if (diffDays < 0) {
+          expired.push(itemInfo);
+        } else if (diffDays <= EXPIRY_SOON_DAYS) {
+          expiringSoon.push(itemInfo);
+        }
+      });
+      setExpiredItems(expired);
+      setExpiringSoonItems(expiringSoon);
+    };
+
+    fetchExpiryItems();
+  }, []);
+
+  //for item condition
+  useEffect(() => {
+  const fetchDamagedOrDefectiveItems = async () => {
+    const inventoryRef = collection(db, "inventory");
+    const snapshot = await getDocs(inventoryRef);
+    const problematicItems = [];
+
+    snapshot.forEach((doc) => {
+      const data = doc.data();
+      const condition = data.condition;
+      if (!condition) return;
+
+      const damage = condition.Damage || 0;
+      const defect = condition.Defect || 0;
+
+      if (damage > 0 || defect > 0) {
+        problematicItems.push({
+          key: doc.id, // Important for Table/List keys
+          itemName: data.itemName,
+          itemId: data.itemId,
+          department: data.department,
+          labRoom: data.labRoom,
+          damageQty: damage,
+          defectQty: defect,
+          totalQty: data.quantity || 0,
+        });
+      }
+    });
+
+    setDamagedItems(problematicItems);
+  };
+
+  fetchDamagedOrDefectiveItems();
+}, []);
  
     useEffect(() => {
       const q = collectionGroup(db, "userrequests");
@@ -265,9 +380,27 @@ import "./styles/Dashboard.css";
             {/* AI Analytics Section */}
             <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
               <Col xs={24} md={8}>
+
                 <Card title="Item Expiry">
-                  <div>{predictedSales ? `$${predictedSales}` : 'Loading prediction...'}</div>
+                  <h4>Expired Items</h4>
+                  <Table
+                    dataSource={expiredItems}
+                    columns={expiryColumns}
+                    pagination={false}
+                    size="small"
+                    locale={{ emptyText: "No expired items" }}
+                  />
+
+                  <h4 style={{ marginTop: "20px" }}>Expiring Soon (Next 7 Days)</h4>
+                  <Table
+                    dataSource={expiringSoonItems}
+                    columns={expiryColumns}
+                    pagination={false}
+                    size="small"
+                    locale={{ emptyText: "No items expiring soon" }}
+                  />
                 </Card>
+
               </Col>
 
               <Col xs={24} md={8}>
@@ -284,6 +417,42 @@ import "./styles/Dashboard.css";
                     )}
                   />
                 </Card>
+              </Col>
+              <Col xs={24} md={8}>
+                <Card title="Damaged / Defective Items">
+                    <Table
+                      dataSource={damagedItems}
+                      columns={[
+                        {
+                          title: "Item Name",
+                          dataIndex: "itemName",
+                          key: "itemName",
+                        },
+                        {
+                          title: "Item ID",
+                          dataIndex: "itemId",
+                          key: "itemId",
+                        },
+
+                        {
+                          title: "Lab Room",
+                          dataIndex: "labRoom",
+                          key: "labRoom",
+                        },
+                        {
+                          title: "Damaged",
+                          dataIndex: "damageQty",
+                          key: "damageQty",
+                        },
+                        {
+                          title: "Defective",
+                          dataIndex: "defectQty",
+                          key: "defectQty",
+                        },
+                      ]}
+                    />
+                    </Card>
+
               </Col>
             </Row>
 
