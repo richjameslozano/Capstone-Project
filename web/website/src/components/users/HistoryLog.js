@@ -49,9 +49,7 @@ const HistoryLog = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [actionFilter, setActionFilter] = useState("ALL");
-
-
-    const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isCancelVisible, setIsCancelVisible] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -67,8 +65,6 @@ const HistoryLog = () => {
       setUserName(user.displayName || "Unknown User");
     }
   };
-
-
 
   const fetchRequests = () => {
     setLoading(true);
@@ -105,6 +101,7 @@ const HistoryLog = () => {
               return {
                 ...item,
                 itemIdFromInventory: itemId,
+                volume: item.volume ?? "N/A", 
               };
             })
           );
@@ -144,10 +141,12 @@ const HistoryLog = () => {
   
       // Cleanup listener on unmount
       return () => unsubscribe();
+
     } catch (err) {
       console.error("Error fetching requests:", err);
       setNotificationMessage("Failed to fetch user requests.");
       setNotificationVisible(true);
+      
     } finally {
       setLoading(false);
     }
@@ -262,44 +261,6 @@ const HistoryLog = () => {
     },
   ];
 
-  const itemColumns = [
-    {
-      title: "Item #",
-      key: "index",
-      render: (_, __, index) => <span>{index + 1}</span>,
-    },
-    {
-      title: "Item Name",
-      dataIndex: "itemName",
-      key: "itemName",
-    },
-    {
-      title: "Item ID",
-      dataIndex: "itemIdFromInventory",
-      key: "itemIdFromInventory",
-    },
-    {
-      title: "Qty",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
-      render: (department) => (
-        <span
-          style={{
-            color: department === "MEDTECH" ? "magenta" : "orange",
-            fontWeight: "bold",
-          }}
-        >
-          {department}
-        </span>
-      ),
-    },
-  ];
-
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
@@ -379,6 +340,64 @@ const HistoryLog = () => {
     setModalVisible(true);
   };
 
+    const hasGlassware = Array.isArray(selectedRequest?.items)
+    ? selectedRequest.items.some(
+        (item) => item.category?.toLowerCase() === "glasswares"
+      )
+    : false;
+
+
+  const itemColumns = [
+    {
+      title: "Item #",
+      key: "index",
+      render: (_, __, index) => <span>{index + 1}</span>,
+    },
+    {
+      title: "Item Name",
+      dataIndex: "itemName",
+      key: "itemName",
+    },
+    {
+      title: "Item ID",
+      dataIndex: "itemIdFromInventory",
+      key: "itemIdFromInventory",
+    },
+    {
+      title: "Qty",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
+      render: (department) => (
+        <span
+          style={{
+            color: department === "MEDTECH" ? "magenta" : "orange",
+            fontWeight: "bold",
+          }}
+        >
+          {department}
+        </span>
+      ),
+    },
+    
+  ];
+
+  if (hasGlassware) {
+    itemColumns.push({
+      title: "Volume",
+      dataIndex: "volume",  // access volume field from item data
+      key: "volume",
+      render: (volume, record) =>
+        record.category?.toLowerCase() === "glasswares" ? volume || "N/A" : "",
+    });
+  }
+  console.log("Items in selectedRequest:", selectedRequest?.items);
+  console.log("Columns:", itemColumns);
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout className="site-layout">
@@ -456,7 +475,7 @@ const HistoryLog = () => {
                   {selectedLog.program || "N/A"}
                 </Descriptions.Item>
 
-                <Descriptions.Item label="Items Requested">
+                {/* <Descriptions.Item label="Items Requested">
                   {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
                     <ul style={{ paddingLeft: 20 }}>
                       {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
@@ -465,13 +484,55 @@ const HistoryLog = () => {
                           <ul style={{ marginLeft: 20 }}>
                             <li>Quantity: {item.quantity}</li>
                             {item.category && <li>Category: {item.category}</li>}
-                            {/* {item.condition && <li>Condition: {item.condition}</li>} */}
                             {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
                             {item.usageType && <li>Usage Type: {item.usageType}</li>}
                             {item.itemType && <li>Item Type: {item.itemType}</li>}
                             {item.department && <li>Department: {item.department}</li>}
                             {selectedLog.action === "Request Rejected" && item.reason && (
                               <li><strong>Rejection Reason:</strong> {item.reason}</li>
+                            )}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "None"
+                  )}
+                </Descriptions.Item> */}
+
+                <Descriptions.Item label="Items Requested">
+                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+                    <ul style={{ paddingLeft: 20 }}>
+                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+                        <li key={index} style={{ marginBottom: 10 }}>
+                          <strong>{item.itemName}</strong>
+                          <ul style={{ marginLeft: 20 }}>
+                            <li>Quantity: {item.quantity}</li>
+                            {/* {item.category && <li>Category: {item.category}</li>} */}
+                            {item.category && <li>Category: {item.category}</li>}
+                            {item.category === "Glasswares" && item.volume && (
+                              <li>Volume: {item.volume}</li>
+                            )}
+                            {/* {item.condition && <li>Condition: {item.condition}</li>} */}
+                            {/* {item.condition && (
+                              <li>
+                                Condition:
+                                <ul>
+                                  <li>Good: {item.condition.Good ?? 0}</li>
+                                  <li>Defect: {item.condition.Defect ?? 0}</li>
+                                  <li>Damage: {item.condition.Damage ?? 0}</li>
+                                </ul>
+                              </li>
+                            )} */}
+                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
+                            {item.itemType && <li>Item Type: {item.itemType}</li>}
+                            {item.department && <li>Department: {item.department}</li>}
+                            {/* {selectedLog.action === "Request Rejected" && item.reason && (
+                              <li><strong>Rejection Reason:</strong> {item.reason}</li>
+                            )} */}
+                            {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
+                              <li><strong>Rejection Reason:</strong> {item.rejectionReason || item.reason}</li>
                             )}
                           </ul>
                         </li>

@@ -705,6 +705,148 @@ const ReturnItems = () => {
     setInventoryData({});
   };
 
+  // const handleReturn = async () => {
+  //   try {
+  //     const userId = localStorage.getItem("userId");
+  //     if (!userId || !selectedRequest) {
+  //       console.error("Missing user ID or request data");
+  //       return;
+  //     }
+  
+  //     const timestamp = serverTimestamp();
+  //     const currentDateString = new Date().toISOString();
+
+  //     console.log("Selected Request Raw:", selectedRequest.raw);
+  //     console.log("Request List:", selectedRequest.raw?.requestList);
+
+  
+  //     const fullReturnData = {
+  //       accountId: userId,
+  //       approvedBy: selectedRequest.raw?.approvedBy || "N/A",
+  //       courseCode: selectedRequest.raw?.courseCode || "N/A",
+  //       courseDescription: selectedRequest.raw?.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.raw?.dateRequired || "N/A",
+  //       program: selectedRequest.raw?.program || "N/A",
+  //       reason: selectedRequest.raw?.reason || "No reason provided",
+  //       room: selectedRequest.raw?.room || "N/A",
+  //       timeFrom: selectedRequest.raw?.timeFrom || "N/A",
+  //       timeTo: selectedRequest.raw?.timeTo || "N/A",
+  //       timestamp: timestamp,
+  //       userName: selectedRequest.raw?.userName || "N/A",
+  //       requisitionId: selectedRequest.requisitionId,
+  //       status: "Returned",
+  //       requestList: (selectedRequest.raw?.requestList || []).map((item) => {
+  //         const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
+  //         // Ensure the conditions array matches the quantity, defaulting to "Good"
+  //         const conditions = Array.from({ length: item.quantity }, (_, idx) =>
+  //           returnedConditions[idx] || "Good"
+  //         );
+  //         return {
+  //           ...item,
+  //           returnedQuantity: conditions.length,
+  //           conditions,
+  //           scannedCount: 0,
+  //           dateReturned: currentDateString,
+  //         };
+  //       }),
+  //     };
+  //     console.log("Saving fullReturnData:", JSON.stringify(fullReturnData, null, 2));
+
+
+  //     // Update condition counts in the Borrow Catalog (inventory)
+  //   for (const item of selectedRequest.raw?.requestList || []) {
+  //     const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
+
+  //     if (returnedConditions.length === 0) continue;
+
+  //     const inventoryDocRef = doc(db, "inventory", item.itemIdFromInventory);
+  //     const inventoryDoc = await getDoc(inventoryDocRef);
+
+  //     if (!inventoryDoc.exists()) continue;
+
+  //     const inventoryData = inventoryDoc.data();
+  //     const existingConditionCount = inventoryData.conditionCount || {
+  //       Good: 0,
+  //       Damage: 0,
+  //       Defect: 0,
+  //     };
+
+  //     // Tally condition counts from the returned units
+  //     const newCounts = { ...existingConditionCount };
+  //     returnedConditions.forEach((condition) => {
+  //       if (newCounts[condition] !== undefined) {
+  //         newCounts[condition]++;
+  //       }
+  //     });
+
+  //     await updateDoc(inventoryDocRef, {
+  //       conditionCount: newCounts,
+  //     });
+  //   }
+
+      
+  //     // Save to returnedItems and userreturneditems
+  //     const returnedRef = doc(collection(db, "returnedItems"));
+  //     const userReturnedRef = doc(collection(db, `accounts/${userId}/userreturneditems`));
+  //     await setDoc(returnedRef, fullReturnData);
+  //     await setDoc(userReturnedRef, fullReturnData);
+  
+  //     const borrowQuery = query(
+  //       collection(db, "borrowcatalog"),
+  //       where("userName", "==", selectedRequest.raw?.userName),
+  //       where("dateRequired", "==", selectedRequest.raw?.dateRequired),
+  //       where("room", "==", selectedRequest.raw?.room),
+  //       where("timeFrom", "==", selectedRequest.raw?.timeFrom),
+  //       where("timeTo", "==", selectedRequest.raw?.timeTo)
+  //     );
+
+  //     const querySnapshot = await getDocs(borrowQuery);
+
+  //     if (!querySnapshot.empty) {
+  //       const docToUpdate = querySnapshot.docs[0];
+  //       const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
+        
+  //       await updateDoc(borrowDocRef, {
+  //         requestList: fullReturnData.requestList,
+  //         status: "Returned",
+  //       });
+  //       console.log("Successfully updated the borrowcatalog document.");
+  //     } else {
+  //       console.error("⚠️ No matching document found in borrowcatalog.");
+  //     }
+
+  //     // 🗑️ Delete from userrequestlog
+  //     const userRequestLogRef = doc(
+  //       db,
+  //       `accounts/${userId}/userrequestlog/${selectedRequest.requisitionId}`
+  //     );
+  //     await deleteDoc(userRequestLogRef);
+
+  
+  //     // 📝 Add to history log
+  //     const historyRef = doc(collection(db, `accounts/${userId}/historylog`));
+  //     await setDoc(historyRef, {
+  //       ...fullReturnData,
+  //       action: "Returned",
+  //       date: currentDateString,
+  //     });
+
+  //     // 📝 Add to history log
+  //     const activityRef = doc(collection(db, `accounts/${userId}/activitylog`));
+  //     await setDoc(activityRef, {
+  //       ...fullReturnData,
+  //       action: "Returned",
+  //       date: currentDateString,
+  //     });
+  
+  //     console.log("Returned items processed, removed from userRequests, added to history log.");
+  //     closeModal();
+  
+  //   } catch (error) {
+  //     console.error("Error saving returned item details:", error);
+  //   }
+  // };  
+
   const handleReturn = async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -847,7 +989,7 @@ const ReturnItems = () => {
     }
   };  
   
-  const filteredData =
+ const filteredData =
     filterStatus === "All"
       ? historyData
       : historyData.filter((item) => item.status === filterStatus);
@@ -859,6 +1001,7 @@ const ReturnItems = () => {
           itemId: item.itemIdFromInventory,
           itemDescription: item.itemName,
           unitIndex: idx + 1,
+          volume: item.volume || (typeof item.quantity === 'object' ? item.quantity.volume : undefined),
         }))
       )
     : [];
@@ -947,7 +1090,7 @@ const ReturnItems = () => {
                 </Col>
               </Row>
 
-              <Table
+              {/* <Table
                 dataSource={unitLevelData}
                 columns={[
                   {
@@ -997,6 +1140,66 @@ const ReturnItems = () => {
                           <Option value="Good">Good</Option>
                           <Option value="Defect">Defect</Option>
                           <Option value="Damage">Damage</Option>
+                        </Select>
+                      );
+                    },
+                  },
+                ]}
+                pagination={{ pageSize: 10 }}
+                style={{ marginTop: 10 }}
+              /> */}
+
+                <Table
+                dataSource={unitLevelData}
+                columns={[
+                  {
+                    title: "Item ID",
+                    dataIndex: "itemId",
+                    key: "itemId",
+                  },
+                  {
+                    title: "Item Description",
+                    dataIndex: "itemDescription",
+                    key: "itemDescription",
+                  },
+                  {
+                    title: "Unit",
+                    key: "unitIndex",
+                    render: (_, record) =>
+                      `#${record.unitIndex}${record.volume ? ` / ${record.volume} ML` : ""}`,
+                  },
+                  {
+                    title: "Condition",
+                    key: "condition",
+                    render: (_, record) => {
+                      const key = `${record.itemId}_${record.unitIndex}`;
+                      return (
+                        <Select
+                          value={itemConditions[key] || "Good"}
+                          onChange={(value) => {
+                            const key = `${record.itemId}_${record.unitIndex}`;
+                            setItemConditions((prev) => ({
+                              ...prev,
+                              [key]: value,
+                            }));
+
+                            // Also update itemUnitConditions
+                            setItemUnitConditions((prev) => {
+                              const currentList = prev[record.itemId] || [];
+                              const updatedList = [...currentList];
+                              updatedList[record.unitIndex - 1] = value;
+                              return {
+                                ...prev,
+                                [record.itemId]: updatedList,
+                              };
+                            });
+                          }}
+
+                          style={{ width: 120 }}
+                        >
+                          <Option value="Good">Good</Option>
+                          <Option value="Damage">Damage</Option>
+                          <Option value="Defect">Defect</Option>
                         </Select>
                       );
                     },

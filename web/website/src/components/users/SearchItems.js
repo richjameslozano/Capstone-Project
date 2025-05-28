@@ -19,9 +19,63 @@ const { Content } = Layout;
 const { Title } = Typography;
 const { Option } = Select;
 
+// const columns = [
+//   {
+//     title: "Item Name",
+//     dataIndex: "description",
+//     key: "description",
+//     sorter: (a, b) => a.description.localeCompare(b.description),
+//   },
+//   {
+//     title: "Stock Qty",
+//     dataIndex: "quantity",
+//     key: "quantity",
+//     sorter: (a, b) => a.quantity - b.quantity,
+//     render: (quantity) => <strong>{quantity}</strong>,
+//   },
+//   {
+//     title: "Status",
+//     dataIndex: "status",
+//     key: "status",
+//     render: (status) => {
+//       let color;
+//       switch (status) {
+//         case "Available":
+//           color = "green";
+//           break;
+//         case "Out of Stock":
+//           color = "red";
+//           break;
+//         case "In Use":
+//           color = "orange";
+//           break;
+//         default:
+//           color = "blue";
+//       }
+//       return <Tag color={color}>{status.toUpperCase()}</Tag>;
+//     },
+//   },
+//   {
+//     title: "Category",
+//     dataIndex: "category",
+//     key: "category",
+//     render: (category) => (
+//       <Tag color={category === "Chemical" ? "blue" : "geekblue"}>
+//         {category.toUpperCase()}
+//       </Tag>
+//     ),
+//   },
+//   {
+//     title: "Room Location",
+//     dataIndex: "room",
+//     key: "room",
+//     sorter: (a, b) => a.room.localeCompare(b.room),
+//   },
+// ];
+
 const columns = [
   {
-    title: "Item Description",
+    title: "Item Name",
     dataIndex: "description",
     key: "description",
     sorter: (a, b) => a.description.localeCompare(b.description),
@@ -30,8 +84,45 @@ const columns = [
     title: "Stock Qty",
     dataIndex: "quantity",
     key: "quantity",
-    sorter: (a, b) => a.quantity - b.quantity,
-    render: (quantity) => <strong>{quantity}</strong>,
+    // sorter: (a, b) => a.quantity - b.quantity,
+    sorter: (a, b) => {
+  const getQty = (q) =>
+    Array.isArray(q)
+      ? q.reduce((sum, item) => sum + (item.qty || 0), 0)
+      : typeof q === "object" && q !== null && "qty" in q
+      ? q.qty
+      : typeof q === "number"
+      ? q
+      : 0;
+
+  return getQty(a.quantity) - getQty(b.quantity);
+},
+    // render: (quantity) => <strong>{quantity}</strong>,
+    render: (quantity) => {
+  if (Array.isArray(quantity)) {
+    return (
+      <strong>
+        {quantity
+          .map((item) =>
+            item && typeof item === "object" && "qty" in item
+              ? `${item.qty} pcs${item.volume ? ` / ${item.volume} ML` : ""}`
+              : "Invalid"
+          )
+          .join(", ")}
+      </strong>
+    );
+  } else if (quantity && typeof quantity === "object" && "qty" in quantity) {
+    return (
+      <strong>
+        {`${quantity.qty} pcs${quantity.volume ? ` / ${quantity.volume} ML` : ""}`}
+      </strong>
+    );
+  } else if (typeof quantity === "number" || typeof quantity === "string") {
+    return <strong>{quantity}</strong>;
+  } else {
+    return <strong>N/A</strong>;
+  }
+}
   },
   {
     title: "Status",
@@ -225,7 +316,7 @@ const SearchItems = () => {
             />
           </div>
 
-          <Modal
+          {/* <Modal
             className="search-modal-container"
             visible={isModalVisible}
             onCancel={() => setIsModalVisible(false)}
@@ -263,10 +354,6 @@ const SearchItems = () => {
                   {selectedItem.type}
                 </Descriptions.Item>
 
-                {/* <Descriptions.Item label="Usage Type">
-                  {selectedItem.usageType}
-                </Descriptions.Item> */}
-
                 <Descriptions.Item label="Category">
                   {selectedItem.category}
                 </Descriptions.Item>
@@ -275,10 +362,6 @@ const SearchItems = () => {
                   {selectedItem.department}
                 </Descriptions.Item>
 
-                {/* <Descriptions.Item label="Laboratory Room">
-                  {selectedItem.labRoom}
-                </Descriptions.Item> */}
-
                 <Descriptions.Item label="Date Acquired">
                   {selectedItem.entryCurrentDate || "N/A"}
                 </Descriptions.Item>
@@ -286,7 +369,123 @@ const SearchItems = () => {
               </Descriptions>
               </>
             )}
-          </Modal>
+          </Modal> */}
+
+            <Modal
+              className="search-modal-container"
+              visible={isModalVisible}
+              onCancel={() => setIsModalVisible(false)}
+              zIndex={1010}
+              footer={null}
+            >
+              {selectedItem && (
+                <>
+                <div style={{marginBottom: '15px'}}>
+                  <strong style={{fontSize: '20px'}}>Item Details</strong>
+                </div>
+                <Descriptions bordered column={1} className="custom-descriptions">
+                  <Descriptions.Item label="Item Name"> 
+                    {selectedItem.itemName}
+                  </Descriptions.Item>
+
+                  {/* <Descriptions.Item label="Quantity">
+                    {selectedItem.quantity}
+                  </Descriptions.Item> */}
+
+                  {/* <Descriptions.Item label="Quantity">
+                    {selectedItem.quantity}
+                    {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
+                    {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
+                  </Descriptions.Item> */}
+
+                  {/* <Descriptions.Item label="Quantity">
+                    {selectedItem.quantity}
+                    {["Glasswares", "Chemical", "Reagent"].includes(selectedItem.category) ? " pcs" : ""}
+                    {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
+                    {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` / ${selectedItem.unit} ML` : ""}
+                  </Descriptions.Item> */}
+
+                  <Descriptions.Item label="Quantity">
+                    {(() => {
+                      const { quantity, category, volume, unit } = selectedItem;
+
+                      if (category === "Glasswares") {
+                        if (Array.isArray(quantity)) {
+                          // Array of {qty, volume}
+                          return quantity
+                            .map((item) => {
+                              if (item && typeof item === "object" && "qty" in item) {
+                                return `${item.qty} pcs${item.volume ? ` / ${item.volume} ML` : ""}`;
+                              } else {
+                                return "Invalid Item";
+                              }
+                            })
+                            .join(", ");
+                        } else if (quantity && typeof quantity === "object" && "qty" in quantity) {
+                          // Single {qty, volume} object
+                          return `${quantity.qty} pcs${quantity.volume ? ` / ${quantity.volume} ML` : ""}`;
+                        } else if (typeof quantity === "number" || typeof quantity === "string") {
+                          // Primitive
+                          return `${quantity} pcs${volume ? ` / ${volume} ML` : ""}`;
+                        } else {
+                          return "N/A";
+                        }
+                      }
+
+                      // For Chemical / Reagent
+                      if (["Chemical", "Reagent"].includes(category)) {
+                        if (typeof quantity === "number" || typeof quantity === "string") {
+                          return `${quantity} pcs${unit ? ` / ${unit} ML` : ""}`;
+                        } else {
+                          return "N/A";
+                        }
+                      }
+
+                      // All other categories
+                      return typeof quantity === "number" || typeof quantity === "string"
+                        ? quantity
+                        : "N/A";
+                    })()}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Status">
+                    {selectedItem.status}
+                  </Descriptions.Item>
+                  
+                  <Descriptions.Item label="Condition">
+                    {selectedItem.condition
+                      ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
+                      : "N/A"}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Item Type">
+                    {selectedItem.type}
+                  </Descriptions.Item>
+
+                  {/* <Descriptions.Item label="Usage Type">
+                    {selectedItem.usageType}
+                  </Descriptions.Item> */}
+
+                  <Descriptions.Item label="Category">
+                    {selectedItem.category}
+                  </Descriptions.Item>
+
+                  <Descriptions.Item label="Department">
+                    {selectedItem.department}
+                  </Descriptions.Item>
+
+                  {/* <Descriptions.Item label="Laboratory Room">
+                    {selectedItem.labRoom}
+                  </Descriptions.Item> */}
+
+                  <Descriptions.Item label="Date Acquired">
+                    {selectedItem.entryCurrentDate || "N/A"}
+                  </Descriptions.Item>
+
+                </Descriptions>
+                </>
+              )}
+            </Modal>
         </Content>
       </Layout>
     </Layout>

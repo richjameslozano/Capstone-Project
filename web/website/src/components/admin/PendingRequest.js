@@ -64,6 +64,7 @@ const PendingRequest = () => {
             return {
               ...item,
               itemIdFromInventory: itemId,
+              volume: item.volume ?? "N/A",  
             };
           })
         );
@@ -103,7 +104,422 @@ const PendingRequest = () => {
     setIsFinalizeModalVisible(true);
   };
 
-  const handleMultiRejectConfirm = async () => {
+  // const handleMultiRejectConfirm = async () => {
+  
+  //   setIsMultiRejectModalVisible(false);
+  
+  //   const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
+
+  //   try {
+  //     const accountRef = doc(db, "accounts", selectedRequest.accountId);
+  //     const accountSnap = await getDoc(accountRef);
+
+  //     if (accountSnap.exists()) {
+  //       const accountData = accountSnap.data();
+  //       const isDisabled = accountData.disabled || false; // Adjust field name if different
+
+  //       if (isDisabled) {
+  //         setNotificationMessage("Cannot approve: The user's account is disabled.");
+  //         setIsNotificationVisible(true);
+  //         return;
+  //       }
+        
+  //     } else {
+  //       console.warn("Account not found for validation.");
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error checking account status:", error);
+  //     setNotificationMessage("Error verifying account status. Please try again.");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+  
+  //   try {
+  //     const rejectedItems = await Promise.all(
+  //       uncheckedItems.map(async (item, index) => {
+  //         const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+  //         const itemKey = `${selectedItemId}-${index}`;
+  //         let itemType = "Unknown";
+  
+  //         if (selectedItemId) {
+  //           try {
+  //             const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+  //             if (inventoryDoc.exists()) {
+  //               itemType = inventoryDoc.data().type || "Unknown";
+  //             }
+
+  //           } catch (err) {
+  //             console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+  //           }
+  //         }
+  
+  //         return {
+  //           ...item,
+  //           selectedItemId,
+  //           itemType,
+  //           reason: rejectionReasons[itemKey] || "No reason provided",
+  //         };
+  //       })
+  //     );
+  
+  //     const auth = getAuth();
+  //     const currentUser = auth.currentUser;
+  //     const userEmail = currentUser.email;
+  
+  //     // Fetch the user name from Firestore
+  //     let userName = "Unknown";
+  //     try {
+  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+  //       const userSnapshot = await getDocs(userQuery);
+  
+  //       if (!userSnapshot.empty) {
+  //         const userDoc = userSnapshot.docs[0];
+  //         const userData = userDoc.data();
+  //         userName = userData.name || "Unknown";
+  //       }
+
+  //     } catch (error) {
+  //       console.error("Error fetching user name:", error);
+  //     }
+  
+  //     const requestLogEntry = {
+  //       accountId: selectedRequest.accountId || "N/A",
+  //       userName: selectedRequest.userName || "N/A",
+  //       room: selectedRequest.room || "N/A",
+  //       course: selectedRequest.course || "N/A",
+  //       courseDescription: selectedRequest.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.dateRequired || "N/A",
+  //       timeFrom: selectedRequest.timeFrom || "N/A",
+  //       timeTo: selectedRequest.timeTo || "N/A",
+  //       timestamp: selectedRequest.timestamp || "N/A",
+  //       rawTimestamp: new Date(),
+  //       requestList: enrichedItems,
+  //       status: "Approved",
+  //       approvedBy: userName,
+  //       reason: selectedRequest.reason || "No reason provided",
+  //       program: selectedRequest.program,
+  //     };
+  
+  //     const rejectLogEntry = {
+  //       accountId: selectedRequest.accountId || "N/A",
+  //       userName: selectedRequest.userName || "N/A",
+  //       room: selectedRequest.room || "N/A",
+  //       course: selectedRequest.course || "N/A",
+  //       courseDescription: selectedRequest.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.dateRequired || "N/A",
+  //       timeFrom: selectedRequest.timeFrom || "N/A",
+  //       timeTo: selectedRequest.timeTo || "N/A",
+  //       timestamp: selectedRequest.timestamp || "N/A",
+  //       rawTimestamp: new Date(),
+  //       requestList: rejectedItems,
+  //       status: "Rejected",
+  //       rejectedBy: userName,
+  //       reason: rejectionReason || "No reason provided",
+  //       program: selectedRequest.program,
+  //     };
+  
+  //     const logRequestOrReturn = async (
+  //       userId,
+  //       userName,
+  //       action,
+  //       requestDetails,
+  //       extraInfo = {}
+  //     ) => {
+  //       await addDoc(collection(db, `accounts/${userId}/historylog`), {
+  //         action,
+  //         userName,
+  //         timestamp: serverTimestamp(),
+  //         requestList: requestDetails,
+  //         ...extraInfo,
+  //       });
+  //     };
+  
+  //     // Log approved items
+  //     await logRequestOrReturn(
+  //       selectedRequest.accountId,
+  //       selectedRequest.userName,
+  //       "Request Approved",
+  //       enrichedItems,
+  //       {
+  //         approvedBy: userName,
+  //         course: selectedRequest.course || "N/A",
+  //         courseDescription: selectedRequest.courseDescription || "N/A",
+  //         dateRequired: selectedRequest.dateRequired,
+  //         reason: selectedRequest.reason,
+  //         room: selectedRequest.room,
+  //         program: selectedRequest.program,
+  //         timeFrom: selectedRequest.timeFrom || "N/A",
+  //         timeTo: selectedRequest.timeTo || "N/A",
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //       }
+  //     );
+  
+  //     // Log rejected items
+  //     if (rejectedItems.length > 0) {
+  //       await logRequestOrReturn(
+  //         selectedRequest.accountId,
+  //         selectedRequest.userName,
+  //         "Request Rejected",
+  //         rejectedItems,
+  //         {
+  //           rejectedBy: userName,
+  //           course: selectedRequest.course || "N/A",
+  //           courseDescription: selectedRequest.courseDescription || "N/A",
+  //           dateRequired: selectedRequest.dateRequired,
+  //           reason: rejectedItems.map(item => item.reason).join(", ") || "No reason provided",
+  //           room: selectedRequest.room,
+  //           program: selectedRequest.program,
+  //           timeFrom: selectedRequest.timeFrom || "N/A",
+  //           timeTo: selectedRequest.timeTo || "N/A",
+  //           timestamp: selectedRequest.timestamp || "N/A",
+  //           rawTimestamp: new Date(),
+  //         }
+  //       );
+  //     }
+
+  //     console.log("Starting inventory update loop...");
+  //     try {
+  //       for (const item of enrichedItems) {
+  //         const inventoryId = item.selectedItemId;
+  //         const requestedQty = Number(item.quantity);
+  //         const labRoomId = item.labRoom;
+
+  //         if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+  //           console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+  //           continue;
+  //         }
+
+  //         if (!labRoomId) {
+  //           console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+  //           continue;
+  //         }
+
+  //         const inventoryRef = doc(db, "inventory", inventoryId);
+  //         const inventorySnap = await getDoc(inventoryRef);
+  //         if (!inventorySnap.exists()) {
+  //           console.warn(`Inventory not found for ID: ${inventoryId}`);
+  //           continue;
+  //         }
+
+  //         const data = inventorySnap.data();
+  //         const currentQty = Number(data.quantity || 0);
+  //         const newQty = Math.max(currentQty - requestedQty, 0);
+  //         await updateDoc(inventoryRef, { quantity: newQty });
+  //         console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+
+  //         // ⚙️ Update inventory condition breakdown
+  //         let remaining = requestedQty;
+  //         const good = data.condition?.Good ?? 0;
+  //         const damage = data.condition?.Damage ?? 0;
+  //         const defect = data.condition?.Defect ?? 0;
+
+  //         let newGood = good;
+  //         let newDamage = damage;
+  //         let newDefect = defect;
+
+  //         if (remaining > 0) {
+  //           const deductFromGood = Math.min(newGood, remaining);
+  //           newGood -= deductFromGood;
+  //           remaining -= deductFromGood;
+  //         }
+
+  //         if (remaining > 0) {
+  //           const deductFromDamage = Math.min(newDamage, remaining);
+  //           newDamage -= deductFromDamage;
+  //           remaining -= deductFromDamage;
+  //         }
+
+  //         if (remaining > 0) {
+  //           const deductFromDefect = Math.min(newDefect, remaining);
+  //           newDefect -= deductFromDefect;
+  //           remaining -= deductFromDefect;
+  //         }
+
+  //         await updateDoc(inventoryRef, {
+  //           'condition.Good': newGood,
+  //           'condition.Damage': newDamage,
+  //           'condition.Defect': newDefect
+  //         });
+
+  //         console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
+
+  //         // 🔁 Update labRoom item quantity
+  //         const roomNumber = item.labRoom; // e.g. "0930"
+  //         const labRoomCollectionRef = collection(db, "labRoom");
+  //         const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+  //         const querySnapshot = await getDocs(q);
+
+  //         if (querySnapshot.empty) {
+  //           console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+  //           return;
+  //         }
+
+  //         // 2. Get Firestore doc ID of the labRoom
+  //         const labRoomDoc = querySnapshot.docs[0];
+  //         const labRoomDocId = labRoomDoc.id;
+
+  //         // 3. Query items subcollection for item with matching itemId
+  //         const itemId = data.itemId; // e.g. "DENT02"
+  //         const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+  //         const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+  //         const itemSnapshot = await getDocs(itemQuery);
+
+  //         if (itemSnapshot.empty) {
+  //           console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+  //           return;
+  //         }
+
+  //         // 4. Get the Firestore doc ID of the item document
+  //         const itemDoc = itemSnapshot.docs[0];
+  //         const itemDocId = itemDoc.id;
+  //         const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+  //         const labData = itemDoc.data();
+
+  //         const currentLabQty = Number(labData.quantity || 0);
+  //         const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+  //         await updateDoc(labRoomItemRef, { quantity: newLabQty });
+  //         console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+
+  //         // Update condition breakdown
+  //         let labGood = labData.condition?.Good ?? 0;
+  //         let labDamage = labData.condition?.Damage ?? 0;
+  //         let labDefect = labData.condition?.Defect ?? 0;
+
+  //         let remainingLab = requestedQty;
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabGood = Math.min(labGood, remainingLab);
+  //           labGood -= deductFromLabGood;
+  //           remainingLab -= deductFromLabGood;
+  //         }
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabDamage = Math.min(labDamage, remainingLab);
+  //           labDamage -= deductFromLabDamage;
+  //           remainingLab -= deductFromLabDamage;
+  //         }
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabDefect = Math.min(labDefect, remainingLab);
+  //           labDefect -= deductFromLabDefect;
+  //           remainingLab -= deductFromLabDefect;
+  //         }
+
+  //         await updateDoc(labRoomItemRef, {
+  //           'condition.Good': labGood,
+  //           'condition.Damage': labDamage,
+  //           'condition.Defect': labDefect
+  //         });
+
+  //         console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+
+  //       }
+  //     } catch (err) {
+  //       console.error("💥 Failed updating inventory or labRoom items:", err.message);
+  //     }
+  
+  //     await addDoc(collection(db, "requestlog"), requestLogEntry);
+  
+  //     if (rejectedItems.length > 0) {
+  //       await addDoc(collection(db, "requestlog"), rejectLogEntry);
+  //     }
+  
+  //     // Process Borrow Catalog
+  //     const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+  
+  //     if (fixedItems.length > 0) {
+  //       const formattedItems = fixedItems.map(item => ({
+  //         category: item.category || "N/A",
+  //         condition: item.condition || "N/A",
+  //         department: item.department || "N/A",
+  //         itemName: item.itemName || "N/A",
+  //         quantity: item.quantity || "1",
+  //         selectedItemId: item.selectedItemId || "N/A",
+  //         status: item.status || "Available",
+  //         program: item.program || "N/A",
+  //         course: item.course || "N/A",
+  //         reason: item.reason || "No reason provided",
+  //         labRoom: item.labRoom || "N/A",
+  //         timeFrom: item.timeFrom || "N/A",
+  //         timeTo: item.timeTo || "N/A",
+  //         usageType: item.usageType || "N/A",
+  //         scannedCount: 0,
+  //       }));
+  
+  //       const borrowCatalogEntry = {
+  //         accountId: selectedRequest.accountId || "N/A",
+  //         userName: selectedRequest.userName || "N/A",
+  //         room: selectedRequest.room || "N/A",
+  //         course: selectedRequest.course || "N/A",
+  //         courseDescription: selectedRequest.courseDescription || "N/A",
+  //         dateRequired: selectedRequest.dateRequired || "N/A",
+  //         timeFrom: selectedRequest.timeFrom || "N/A",
+  //         timeTo: selectedRequest.timeTo || "N/A",
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //         requestList: formattedItems,
+  //         status: "Borrowed",
+  //         approvedBy: userName,
+  //         reason: selectedRequest.reason || "No reason provided",
+  //         program: selectedRequest.program,
+  //       };
+  
+  //       const userRequestLogEntry = {
+  //         ...requestLogEntry,
+  //         status: "Approved",
+  //         approvedBy: userName,
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //       };
+  
+  //       await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  
+  //       await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+  //     }
+  
+  //     await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+  
+  //     // Delete matching user request subcollection doc
+  //     const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+  //     const subDocsSnap = await getDocs(subCollectionRef);
+  
+  //     subDocsSnap.forEach(async (docSnap) => {
+  //       const data = docSnap.data();
+  //       const match = (
+  //         data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+  //         data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+  //       );
+  
+  //       if (match) {
+  //         console.log("✅ Deleting from subcollection:", docSnap.id);
+  //         await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+  //       }
+  //     });
+  
+  //     setApprovedRequests(prev => [...prev, requestLogEntry]);
+  //     setRequests(prev => prev.filter(req => req.id !== selectedRequest.id));
+  //     setCheckedItems({});
+  //     setIsModalVisible(false);
+  //     setSelectedRequest(null);
+  //     setIsFinalizeModalVisible(false)
+  
+  //     notification.success({
+  //       message: "Request Processed",
+  //       description: "Approval and rejection have been logged successfully.",
+  //     });
+  
+  //   } catch (error) {
+  //     console.error("Error processing approval after rejection confirmation:", error);
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Failed to process the request after rejection confirmation.",
+  //     });
+  //   }
+  // };
+
+   const handleMultiRejectConfirm = async () => {
     // if (!rejectionReason.trim()) {
     //   notification.error({
     //     message: "Reason Required",
@@ -335,256 +751,839 @@ const PendingRequest = () => {
 
       // } catch (err) {
       //   console.error("💥 Failed updating inventory or labRoom items:", err.message);
-      // }  
-      
-      try {
-        for (const item of enrichedItems) {
-          const inventoryId = item.selectedItemId;
-          const requestedQty = Number(item.quantity);
-          const labRoomId = item.labRoom;
+      // }   
 
-          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
-            continue;
-          }
+    //  try {
+    //     for (const item of enrichedItems) {
+    //       const inventoryId = item.selectedItemId;
+    //       const requestedQty = Number(item.quantity);
+    //       const labRoomId = item.labRoom;
 
-          if (!labRoomId) {
-            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
-            continue;
-          }
+    //       if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+    //         console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+    //         continue;
+    //       }
 
-          const inventoryRef = doc(db, "inventory", inventoryId);
-          const inventorySnap = await getDoc(inventoryRef);
-          if (!inventorySnap.exists()) {
-            console.warn(`Inventory not found for ID: ${inventoryId}`);
-            continue;
-          }
+    //       if (!labRoomId) {
+    //         console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+    //         continue;
+    //       }
 
-          const data = inventorySnap.data();
-          const currentQty = Number(data.quantity || 0);
-          const newQty = Math.max(currentQty - requestedQty, 0);
-          await updateDoc(inventoryRef, { quantity: newQty });
-          console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+    //       const inventoryRef = doc(db, "inventory", inventoryId);
+    //       const inventorySnap = await getDoc(inventoryRef);
+    //       if (!inventorySnap.exists()) {
+    //         console.warn(`Inventory not found for ID: ${inventoryId}`);
+    //         continue;
+    //       }
 
-          // ⚙️ Update inventory condition breakdown
-          let remaining = requestedQty;
-          const good = data.condition?.Good ?? 0;
-          const damage = data.condition?.Damage ?? 0;
-          const defect = data.condition?.Defect ?? 0;
+    //       const data = inventorySnap.data();
+    //       const currentQty = Number(data.quantity || 0);
+    //       const newQty = Math.max(currentQty - requestedQty, 0);
+    //       await updateDoc(inventoryRef, { quantity: newQty });
+    //       console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
 
-          let newGood = good;
-          let newDamage = damage;
-          let newDefect = defect;
+    //       // ⚙️ Update inventory condition breakdown
+    //       let remaining = requestedQty;
+    //       const good = data.condition?.Good ?? 0;
+    //       const damage = data.condition?.Damage ?? 0;
+    //       const defect = data.condition?.Defect ?? 0;
 
-          if (remaining > 0) {
-            const deductFromGood = Math.min(newGood, remaining);
-            newGood -= deductFromGood;
-            remaining -= deductFromGood;
-          }
+    //       let newGood = good;
+    //       let newDamage = damage;
+    //       let newDefect = defect;
 
-          if (remaining > 0) {
-            const deductFromDamage = Math.min(newDamage, remaining);
-            newDamage -= deductFromDamage;
-            remaining -= deductFromDamage;
-          }
+    //       if (remaining > 0) {
+    //         const deductFromGood = Math.min(newGood, remaining);
+    //         newGood -= deductFromGood;
+    //         remaining -= deductFromGood;
+    //       }
 
-          if (remaining > 0) {
-            const deductFromDefect = Math.min(newDefect, remaining);
-            newDefect -= deductFromDefect;
-            remaining -= deductFromDefect;
-          }
+    //       if (remaining > 0) {
+    //         const deductFromDamage = Math.min(newDamage, remaining);
+    //         newDamage -= deductFromDamage;
+    //         remaining -= deductFromDamage;
+    //       }
 
-          await updateDoc(inventoryRef, {
-            'condition.Good': newGood,
-            'condition.Damage': newDamage,
-            'condition.Defect': newDefect
-          });
+    //       if (remaining > 0) {
+    //         const deductFromDefect = Math.min(newDefect, remaining);
+    //         newDefect -= deductFromDefect;
+    //         remaining -= deductFromDefect;
+    //       }
 
-          console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
+    //       await updateDoc(inventoryRef, {
+    //         'condition.Good': newGood,
+    //         'condition.Damage': newDamage,
+    //         'condition.Defect': newDefect
+    //       });
 
-          // 🔁 Update labRoom item quantity
-          // const itemId = data.itemId;
-          // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-          // const labRoomItemSnap = await getDoc(labRoomItemRef);
+    //       console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
 
-          // if (labRoomItemSnap.exists()) {
-          //   const labData = labRoomItemSnap.data();
+    //         // 🔁 Update labRoom item quantity
+    //         // const itemId = data.itemId;
+    //         // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+    //         // const labRoomItemSnap = await getDoc(labRoomItemRef);
 
-          //   const currentLabQty = Number(labData.quantity || 0);
-          //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+    //         // if (labRoomItemSnap.exists()) {
+    //         //   const labData = labRoomItemSnap.data();
 
-          //   // ⚙️ Also update labRoom condition breakdown
-          //   let labGood = labData.condition?.Good ?? 0;
-          //   let labDamage = labData.condition?.Damage ?? 0;
-          //   let labDefect = labData.condition?.Defect ?? 0;
+    //         //   const currentLabQty = Number(labData.quantity || 0);
+    //         //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+    //         //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
+    //         //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
 
-          //   let remainingLab = requestedQty;
+    //         //   // ⚙️ Also update labRoom condition breakdown
+    //         //   let labGood = labData.condition?.Good ?? 0;
+    //         //   let labDamage = labData.condition?.Damage ?? 0;
+    //         //   let labDefect = labData.condition?.Defect ?? 0;
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabGood = Math.min(labGood, remainingLab);
-          //     labGood -= deductFromLabGood;
-          //     remainingLab -= deductFromLabGood;
-          //   }
+    //         //   let remainingLab = requestedQty;
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
-          //     labDamage -= deductFromLabDamage;
-          //     remainingLab -= deductFromLabDamage;
-          //   }
+    //         //   if (remainingLab > 0) {
+    //         //     const deductFromLabGood = Math.min(labGood, remainingLab);
+    //         //     labGood -= deductFromLabGood;
+    //         //     remainingLab -= deductFromLabGood;
+    //         //   }
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
-          //     labDefect -= deductFromLabDefect;
-          //     remainingLab -= deductFromLabDefect;
-          //   }
+    //         //   if (remainingLab > 0) {
+    //         //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
+    //         //     labDamage -= deductFromLabDamage;
+    //         //     remainingLab -= deductFromLabDamage;
+    //         //   }
 
-          //   await updateDoc(labRoomItemRef, {
-          //     'condition.Good': labGood,
-          //     'condition.Damage': labDamage,
-          //     'condition.Defect': labDefect
-          //   });
+    //         //   if (remainingLab > 0) {
+    //         //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
+    //         //     labDefect -= deductFromLabDefect;
+    //         //     remainingLab -= deductFromLabDefect;
+    //         //   }
 
-          //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
-          
-          // } else {
-          //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
-          // }
+    //         //   await updateDoc(labRoomItemRef, {
+    //         //     'condition.Good': labGood,
+    //         //     'condition.Damage': labDamage,
+    //         //     'condition.Defect': labDefect
+    //         //   });
 
-          // 🔁 Update labRoom item quantity
-          const roomNumber = item.labRoom; // e.g. "0930"
-          const labRoomCollectionRef = collection(db, "labRoom");
-          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
-          const querySnapshot = await getDocs(q);
+    //         //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
+            
+    //         // } else {
+    //         //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+    //         // }
 
-          if (querySnapshot.empty) {
-            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
-            return;
-          }
+    //       // 🔁 Update labRoom item quantity
+    //       const roomNumber = item.labRoom; // e.g. "0930"
+    //       const labRoomCollectionRef = collection(db, "labRoom");
+    //       const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+    //       const querySnapshot = await getDocs(q);
 
-          // 2. Get Firestore doc ID of the labRoom
-          const labRoomDoc = querySnapshot.docs[0];
-          const labRoomDocId = labRoomDoc.id;
+    //       if (querySnapshot.empty) {
+    //         console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+    //         return;
+    //       }
 
-          // 3. Query items subcollection for item with matching itemId
-          const itemId = data.itemId; // e.g. "DENT02"
-          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
-          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
-          const itemSnapshot = await getDocs(itemQuery);
+    //       // 2. Get Firestore doc ID of the labRoom
+    //       const labRoomDoc = querySnapshot.docs[0];
+    //       const labRoomDocId = labRoomDoc.id;
 
-          if (itemSnapshot.empty) {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
-            return;
-          }
+    //       // 3. Query items subcollection for item with matching itemId
+    //       const itemId = data.itemId; // e.g. "DENT02"
+    //       const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+    //       const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+    //       const itemSnapshot = await getDocs(itemQuery);
 
-          // 4. Get the Firestore doc ID of the item document
-          const itemDoc = itemSnapshot.docs[0];
-          const itemDocId = itemDoc.id;
-          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
-          const labData = itemDoc.data();
+    //       if (itemSnapshot.empty) {
+    //         console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+    //         return;
+    //       }
 
-          const currentLabQty = Number(labData.quantity || 0);
-          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+    //       // 4. Get the Firestore doc ID of the item document
+    //       const itemDoc = itemSnapshot.docs[0];
+    //       const itemDocId = itemDoc.id;
+    //       const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+    //       const labData = itemDoc.data();
 
-          // Update condition breakdown
-          let labGood = labData.condition?.Good ?? 0;
-          let labDamage = labData.condition?.Damage ?? 0;
-          let labDefect = labData.condition?.Defect ?? 0;
+    //       const currentLabQty = Number(labData.quantity || 0);
+    //       const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+    //       await updateDoc(labRoomItemRef, { quantity: newLabQty });
+    //       console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
 
-          let remainingLab = requestedQty;
+    //       // Update condition breakdown
+    //       let labGood = labData.condition?.Good ?? 0;
+    //       let labDamage = labData.condition?.Damage ?? 0;
+    //       let labDefect = labData.condition?.Defect ?? 0;
 
-          if (remainingLab > 0) {
-            const deductFromLabGood = Math.min(labGood, remainingLab);
-            labGood -= deductFromLabGood;
-            remainingLab -= deductFromLabGood;
-          }
+    //       let remainingLab = requestedQty;
 
-          if (remainingLab > 0) {
-            const deductFromLabDamage = Math.min(labDamage, remainingLab);
-            labDamage -= deductFromLabDamage;
-            remainingLab -= deductFromLabDamage;
-          }
+    //       if (remainingLab > 0) {
+    //         const deductFromLabGood = Math.min(labGood, remainingLab);
+    //         labGood -= deductFromLabGood;
+    //         remainingLab -= deductFromLabGood;
+    //       }
 
-          if (remainingLab > 0) {
-            const deductFromLabDefect = Math.min(labDefect, remainingLab);
-            labDefect -= deductFromLabDefect;
-            remainingLab -= deductFromLabDefect;
-          }
+    //       if (remainingLab > 0) {
+    //         const deductFromLabDamage = Math.min(labDamage, remainingLab);
+    //         labDamage -= deductFromLabDamage;
+    //         remainingLab -= deductFromLabDamage;
+    //       }
 
-          await updateDoc(labRoomItemRef, {
-            'condition.Good': labGood,
-            'condition.Damage': labDamage,
-            'condition.Defect': labDefect
-          });
+    //       if (remainingLab > 0) {
+    //         const deductFromLabDefect = Math.min(labDefect, remainingLab);
+    //         labDefect -= deductFromLabDefect;
+    //         remainingLab -= deductFromLabDefect;
+    //       }
 
-          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+    //       await updateDoc(labRoomItemRef, {
+    //         'condition.Good': labGood,
+    //         'condition.Damage': labDamage,
+    //         'condition.Defect': labDefect
+    //       });
 
-        }
-      } catch (err) {
-        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+    //       console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+    //     }
+        
+    //   } catch (err) {
+    //     console.error("💥 Failed updating inventory or labRoom items:", err.message);
+    //   }
+
+//     try {
+//   for (const item of enrichedItems) {
+//     const inventoryId = item.selectedItemId;
+//     const labRoomId = item.labRoom;
+//     const category = item.category;
+
+//     if (!inventoryId) {
+//       console.warn(`⛔ Skipping item with missing inventoryId`);
+//       continue;
+//     }
+
+//     if (!labRoomId) {
+//       console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+//       continue;
+//     }
+
+//     const inventoryRef = doc(db, "inventory", inventoryId);
+//     const inventorySnap = await getDoc(inventoryRef);
+//     if (!inventorySnap.exists()) {
+//       console.warn(`Inventory not found for ID: ${inventoryId}`);
+//       continue;
+//     }
+//     const data = inventorySnap.data();
+//     const itemId = data.itemId;
+
+//     const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", labRoomId));
+//     const labRoomSnapshot = await getDocs(labRoomQuery);
+//     if (labRoomSnapshot.empty) {
+//       console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomId}`);
+//       continue;
+//     }
+
+//     const labRoomDoc = labRoomSnapshot.docs[0];
+//     const labRoomDocId = labRoomDoc.id;
+//     const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+//     const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+//     const itemSnapshot = await getDocs(itemQuery);
+
+//     if (itemSnapshot.empty) {
+//       console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId} (${labRoomDocId})`);
+//       continue;
+//     }
+
+//     const itemDoc = itemSnapshot.docs[0];
+//     const itemDocId = itemDoc.id;
+//     const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+//     const labData = itemDoc.data();
+
+//     if (category.toLowerCase() === "glasswares") {
+//       // Glasswares: handle quantity + volume arrays
+//       const quantityArray = Array.isArray(item.quantity)
+//         ? item.quantity.map(qEntry => ({
+//             qty: Number(qEntry.qty) || 0,
+//             volume: Number(qEntry.volume) || 0
+//           }))
+//         : [{
+//             qty: Number(item.quantity) || 0,
+//             volume: Number(item.volume) || 0
+//           }];
+
+//       for (const qEntry of quantityArray) {
+//         const qty = qEntry.qty;
+//         const volume = isNaN(qEntry.volume) || qEntry.volume < 0 ? 0 : qEntry.volume;
+
+//         if (isNaN(qty) || qty <= 0) {
+//           console.warn(`⛔ Skipping invalid qty (${qty}) for inventoryId ${inventoryId}`);
+//           continue;
+//         }
+
+//         let currentQty = 0, currentVolume = 0;
+//         if (Array.isArray(data.quantity)) {
+//           for (const entry of data.quantity) {
+//             currentQty += Number(entry.qty) || 0;
+//             currentVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+//           }
+//         }
+
+//         const volumeToSubtract = qty * volume;
+//         const newQty = Math.max(currentQty - qty, 0);
+//         const newVolume = Math.max(currentVolume - volumeToSubtract, 0);
+
+//         let updatedQuantityArray = [];
+//         let remainingQtyToDeduct = qty;
+//         for (const entry of data.quantity) {
+//           const entryQty = Number(entry.qty) || 0;
+//           const entryVolume = Number(entry.volume) || 0;
+//           if (remainingQtyToDeduct === 0) {
+//             updatedQuantityArray.push(entry);
+//             continue;
+//           }
+//           const deduct = Math.min(entryQty, remainingQtyToDeduct);
+//           const newEntryQty = entryQty - deduct;
+//           if (newEntryQty > 0) {
+//             updatedQuantityArray.push({ qty: newEntryQty, volume: entryVolume });
+//           }
+//           remainingQtyToDeduct -= deduct;
+//         }
+
+//         let remaining = qty;
+//         let newGood = data.condition?.Good ?? 0;
+//         let newDamage = data.condition?.Damage ?? 0;
+//         let newDefect = data.condition?.Defect ?? 0;
+
+//         if (remaining > 0) {
+//           const deductGood = Math.min(newGood, remaining);
+//           newGood -= deductGood; remaining -= deductGood;
+//         }
+//         if (remaining > 0) {
+//           const deductDamage = Math.min(newDamage, remaining);
+//           newDamage -= deductDamage; remaining -= deductDamage;
+//         }
+//         if (remaining > 0) {
+//           const deductDefect = Math.min(newDefect, remaining);
+//           newDefect -= deductDefect; remaining -= deductDefect;
+//         }
+
+//         await updateDoc(inventoryRef, {
+//           quantity: updatedQuantityArray,
+//           'condition.Good': newGood,
+//           'condition.Damage': newDamage,
+//           'condition.Defect': newDefect
+//         });
+
+//         // Lab room updates
+//         let currentLabQty = 0, currentLabVolume = 0;
+//         if (Array.isArray(labData.quantity)) {
+//           for (const entry of labData.quantity) {
+//             currentLabQty += Number(entry.qty) || 0;
+//             currentLabVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+//           }
+//         }
+
+//         let updatedLabQtyArray = [];
+//         let remainingQtyToDeduct1 = qty;
+//         for (const entry of labData.quantity) {
+//           const entryQty = Number(entry.qty) || 0;
+//           const entryVolume = Number(entry.volume) || 0;
+//           if (remainingQtyToDeduct1 === 0) {
+//             updatedLabQtyArray.push(entry);
+//             continue;
+//           }
+//           const deduct = Math.min(entryQty, remainingQtyToDeduct1);
+//           const newEntryQty = entryQty - deduct;
+//           if (newEntryQty > 0) {
+//             updatedLabQtyArray.push({ qty: newEntryQty, volume: entryVolume });
+//           }
+//           remainingQtyToDeduct1 -= deduct;
+//         }
+
+//         let remainingLab = qty;
+//         let labGood = labData.condition?.Good ?? 0;
+//         let labDamage = labData.condition?.Damage ?? 0;
+//         let labDefect = labData.condition?.Defect ?? 0;
+
+//         if (remainingLab > 0) {
+//           const deductGood = Math.min(labGood, remainingLab);
+//           labGood -= deductGood; remainingLab -= deductGood;
+//         }
+//         if (remainingLab > 0) {
+//           const deductDamage = Math.min(labDamage, remainingLab);
+//           labDamage -= deductDamage; remainingLab -= deductDamage;
+//         }
+//         if (remainingLab > 0) {
+//           const deductDefect = Math.min(labDefect, remainingLab);
+//           labDefect -= deductDefect; remainingLab -= deductDefect;
+//         }
+
+//         await updateDoc(labRoomItemRef, {
+//           quantity: updatedLabQtyArray,
+//           'condition.Good': labGood,
+//           'condition.Damage': labDamage,
+//           'condition.Defect': labDefect
+//         });
+
+//         console.log(`✅ Updated Glassware item ${itemId} in ${labRoomId}`);
+//       }
+
+//     } else {
+//       // Other categories: just simple quantity deduction
+//       const requestedQty = Number(item.quantity);
+//       if (isNaN(requestedQty) || requestedQty <= 0) {
+//         console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+//         continue;
+//       }
+
+//       const currentQty = Number(data.quantity) || 0;
+//       const newQty = Math.max(currentQty - requestedQty, 0);
+
+//       let remaining = requestedQty;
+//       let newGood = data.condition?.Good ?? 0;
+//       let newDamage = data.condition?.Damage ?? 0;
+//       let newDefect = data.condition?.Defect ?? 0;
+
+//       if (remaining > 0) {
+//         const deductGood = Math.min(newGood, remaining);
+//         newGood -= deductGood; remaining -= deductGood;
+//       }
+//       if (remaining > 0) {
+//         const deductDamage = Math.min(newDamage, remaining);
+//         newDamage -= deductDamage; remaining -= deductDamage;
+//       }
+//       if (remaining > 0) {
+//         const deductDefect = Math.min(newDefect, remaining);
+//         newDefect -= deductDefect; remaining -= deductDefect;
+//       }
+
+//       await updateDoc(inventoryRef, {
+//         quantity: newQty,
+//         'condition.Good': newGood,
+//         'condition.Damage': newDamage,
+//         'condition.Defect': newDefect
+//       });
+
+//       // Lab room update
+//       const labQty = Number(labData.quantity) || 0;
+//       const newLabQty = Math.max(labQty - requestedQty, 0);
+
+//       let labGood = labData.condition?.Good ?? 0;
+//       let labDamage = labData.condition?.Damage ?? 0;
+//       let labDefect = labData.condition?.Defect ?? 0;
+
+//       let remainingLab = requestedQty;
+//       if (remainingLab > 0) {
+//         const deductGood = Math.min(labGood, remainingLab);
+//         labGood -= deductGood; remainingLab -= deductGood;
+//       }
+//       if (remainingLab > 0) {
+//         const deductDamage = Math.min(labDamage, remainingLab);
+//         labDamage -= deductDamage; remainingLab -= deductDamage;
+//       }
+//       if (remainingLab > 0) {
+//         const deductDefect = Math.min(labDefect, remainingLab);
+//         labDefect -= deductDefect; remainingLab -= deductDefect;
+//       }
+
+//       await updateDoc(labRoomItemRef, {
+//         quantity: newLabQty,
+//         'condition.Good': labGood,
+//         'condition.Damage': labDamage,
+//         'condition.Defect': labDefect
+//       });
+
+//       console.log(`✅ Updated non-glassware item ${itemId} in ${labRoomId}`);
+//     }
+//   }
+// } catch (err) {
+//   console.error("💥 Failed updating inventory or labRoom items:", err.message);
+// }
+
+
+try {
+  for (const item of enrichedItems) {
+    const inventoryId = item.selectedItemId;
+    const labRoomId = item.labRoom;
+    const category = item.category;
+
+    if (!inventoryId) {
+      console.warn(`⛔ Skipping item with missing inventoryId`);
+      continue;
+    }
+
+    if (!labRoomId) {
+      console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+      continue;
+    }
+
+    const inventoryRef = doc(db, "inventory", inventoryId);
+    const inventorySnap = await getDoc(inventoryRef);
+    if (!inventorySnap.exists()) {
+      console.warn(`Inventory not found for ID: ${inventoryId}`);
+      continue;
+    }
+    const data = inventorySnap.data();
+    const itemId = data.itemId;
+
+    const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", labRoomId));
+    const labRoomSnapshot = await getDocs(labRoomQuery);
+    if (labRoomSnapshot.empty) {
+      console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomId}`);
+      continue;
+    }
+
+    const labRoomDoc = labRoomSnapshot.docs[0];
+    const labRoomDocId = labRoomDoc.id;
+    const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+    const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+    const itemSnapshot = await getDocs(itemQuery);
+
+    if (itemSnapshot.empty) {
+      console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId} (${labRoomDocId})`);
+      continue;
+    }
+
+    const itemDoc = itemSnapshot.docs[0];
+    const itemDocId = itemDoc.id;
+    const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+    const labData = itemDoc.data();
+
+
+    if (category.toLowerCase() === "glasswares") {
+  // Glasswares: handle quantity + volume arrays
+  const quantityArray = Array.isArray(item.quantity)
+    ? item.quantity.map(qEntry => ({
+        qty: Number(qEntry.qty) || 0,
+        volume: Number(qEntry.volume) || 0
+      }))
+    : [{
+        qty: Number(item.quantity) || 0,
+        volume: Number(item.volume) || 0
+      }];
+
+  for (const qEntry of quantityArray) {
+    const qty = qEntry.qty;
+    const volume = isNaN(qEntry.volume) || qEntry.volume < 0 ? 0 : qEntry.volume;
+
+    if (isNaN(qty) || qty <= 0) {
+      console.warn(`⛔ Skipping invalid qty (${qty}) for inventoryId ${inventoryId}`);
+      continue;
+    }
+
+    // Deduct from main inventory quantity (data.quantity)
+    let updatedQuantityArray = [];
+    let remainingQtyToDeduct = qty;
+
+    const sortedEntries = [...data.quantity].sort((a, b) => {
+      const volA = Number(a.volume) || 0;
+      const volB = Number(b.volume) || 0;
+      if (volA === volume && volB !== volume) return -1;
+      if (volB === volume && volA !== volume) return 1;
+      return 0;
+    });
+
+    for (const entry of sortedEntries) {
+      const entryQty = Number(entry.qty) || 0;
+      const entryVolume = Number(entry.volume) || 0;
+
+      if (remainingQtyToDeduct === 0) {
+        updatedQuantityArray.push(entry);
+        continue;
       }
-  
+
+      if (entryVolume === volume || remainingQtyToDeduct > 0) {
+        const deduct = Math.min(entryQty, remainingQtyToDeduct);
+        const newEntryQty = entryQty - deduct;
+
+        if (newEntryQty > 0) {
+          updatedQuantityArray.push({ qty: newEntryQty, volume: entryVolume });
+        }
+
+        remainingQtyToDeduct -= deduct;
+      } else {
+        updatedQuantityArray.push(entry);
+      }
+    }
+
+    // Deduct from condition fields in main inventory
+    let remaining = qty;
+    let newGood = data.condition?.Good ?? 0;
+    let newDamage = data.condition?.Damage ?? 0;
+    let newDefect = data.condition?.Defect ?? 0;
+
+    if (remaining > 0) {
+      const deductGood = Math.min(newGood, remaining);
+      newGood -= deductGood; remaining -= deductGood;
+    }
+    if (remaining > 0) {
+      const deductDamage = Math.min(newDamage, remaining);
+      newDamage -= deductDamage; remaining -= deductDamage;
+    }
+    if (remaining > 0) {
+      const deductDefect = Math.min(newDefect, remaining);
+      newDefect -= deductDefect; remaining -= deductDefect;
+    }
+
+    await updateDoc(inventoryRef, {
+      quantity: updatedQuantityArray,
+      'condition.Good': newGood,
+      'condition.Damage': newDamage,
+      'condition.Defect': newDefect
+    });
+
+    // Deduct from lab room quantity (labData.quantity)
+    let updatedLabQtyArray = [];
+    let remainingQtyToDeductLab = qty;
+
+    const sortedLabEntries = [...labData.quantity].sort((a, b) => {
+      const volA = Number(a.volume) || 0;
+      const volB = Number(b.volume) || 0;
+      if (volA === volume && volB !== volume) return -1;
+      if (volB === volume && volA !== volume) return 1;
+      return 0;
+    });
+
+    for (const entry of sortedLabEntries) {
+      const entryQty = Number(entry.qty) || 0;
+      const entryVolume = Number(entry.volume) || 0;
+
+      if (remainingQtyToDeductLab === 0) {
+        updatedLabQtyArray.push(entry);
+        continue;
+      }
+
+      if (entryVolume === volume || remainingQtyToDeductLab > 0) {
+        const deduct = Math.min(entryQty, remainingQtyToDeductLab);
+        const newEntryQty = entryQty - deduct;
+
+        if (newEntryQty > 0) {
+          updatedLabQtyArray.push({ qty: newEntryQty, volume: entryVolume });
+        }
+
+        remainingQtyToDeductLab -= deduct;
+      } else {
+        updatedLabQtyArray.push(entry);
+      }
+    }
+
+    // Deduct from condition fields in lab inventory
+    let remainingLab = qty;
+    let labGood = labData.condition?.Good ?? 0;
+    let labDamage = labData.condition?.Damage ?? 0;
+    let labDefect = labData.condition?.Defect ?? 0;
+
+    if (remainingLab > 0) {
+      const deductGood = Math.min(labGood, remainingLab);
+      labGood -= deductGood; remainingLab -= deductGood;
+    }
+    if (remainingLab > 0) {
+      const deductDamage = Math.min(labDamage, remainingLab);
+      labDamage -= deductDamage; remainingLab -= deductDamage;
+    }
+    if (remainingLab > 0) {
+      const deductDefect = Math.min(labDefect, remainingLab);
+      labDefect -= deductDefect; remainingLab -= deductDefect;
+    }
+
+    await updateDoc(labRoomItemRef, {
+      quantity: updatedLabQtyArray,
+      'condition.Good': labGood,
+      'condition.Damage': labDamage,
+      'condition.Defect': labDefect
+    });
+
+    console.log(`✅ Updated Glassware item ${itemId} in ${labRoomId}`);
+  }
+
+    } else {
+      // Other categories: just simple quantity deduction
+      const requestedQty = Number(item.quantity);
+      if (isNaN(requestedQty) || requestedQty <= 0) {
+        console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+        continue;
+      }
+
+      const currentQty = Number(data.quantity) || 0;
+      const newQty = Math.max(currentQty - requestedQty, 0);
+
+      let remaining = requestedQty;
+      let newGood = data.condition?.Good ?? 0;
+      let newDamage = data.condition?.Damage ?? 0;
+      let newDefect = data.condition?.Defect ?? 0;
+
+      if (remaining > 0) {
+        const deductGood = Math.min(newGood, remaining);
+        newGood -= deductGood; remaining -= deductGood;
+      }
+      if (remaining > 0) {
+        const deductDamage = Math.min(newDamage, remaining);
+        newDamage -= deductDamage; remaining -= deductDamage;
+      }
+      if (remaining > 0) {
+        const deductDefect = Math.min(newDefect, remaining);
+        newDefect -= deductDefect; remaining -= deductDefect;
+      }
+
+      await updateDoc(inventoryRef, {
+        quantity: newQty,
+        'condition.Good': newGood,
+        'condition.Damage': newDamage,
+        'condition.Defect': newDefect
+      });
+
+      // Lab room update
+      const labQty = Number(labData.quantity) || 0;
+      const newLabQty = Math.max(labQty - requestedQty, 0);
+
+      let labGood = labData.condition?.Good ?? 0;
+      let labDamage = labData.condition?.Damage ?? 0;
+      let labDefect = labData.condition?.Defect ?? 0;
+
+      let remainingLab = requestedQty;
+      if (remainingLab > 0) {
+        const deductGood = Math.min(labGood, remainingLab);
+        labGood -= deductGood; remainingLab -= deductGood;
+      }
+      if (remainingLab > 0) {
+        const deductDamage = Math.min(labDamage, remainingLab);
+        labDamage -= deductDamage; remainingLab -= deductDamage;
+      }
+      if (remainingLab > 0) {
+        const deductDefect = Math.min(labDefect, remainingLab);
+        labDefect -= deductDefect; remainingLab -= deductDefect;
+      }
+
+      await updateDoc(labRoomItemRef, {
+        quantity: newLabQty,
+        'condition.Good': labGood,
+        'condition.Damage': labDamage,
+        'condition.Defect': labDefect
+      });
+
+      console.log(`✅ Updated non-glassware item ${itemId} in ${labRoomId}`);
+    }
+  }
+} catch (err) {
+  console.error("💥 Failed updating inventory or labRoom items:", err.message);
+}
+    
       await addDoc(collection(db, "requestlog"), requestLogEntry);
   
       if (rejectedItems.length > 0) {
         await addDoc(collection(db, "requestlog"), rejectLogEntry);
       }
   
-      // Process Borrow Catalog
-      const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+      // // Process Borrow Catalog
+      // const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
   
-      if (fixedItems.length > 0) {
-        const formattedItems = fixedItems.map(item => ({
-          category: item.category || "N/A",
-          condition: item.condition || "N/A",
-          department: item.department || "N/A",
-          itemName: item.itemName || "N/A",
-          quantity: item.quantity || "1",
-          selectedItemId: item.selectedItemId || "N/A",
-          status: item.status || "Available",
-          program: item.program || "N/A",
-          course: item.course || "N/A",
-          reason: item.reason || "No reason provided",
-          labRoom: item.labRoom || "N/A",
-          timeFrom: item.timeFrom || "N/A",
-          timeTo: item.timeTo || "N/A",
-          usageType: item.usageType || "N/A",
-          scannedCount: 0,
-        }));
+      // if (fixedItems.length > 0) {
+      //   const formattedItems = fixedItems.map(item => ({
+      //     category: item.category || "N/A",
+      //     condition: item.condition || "N/A",
+      //     department: item.department || "N/A",
+      //     itemName: item.itemName || "N/A",
+      //     quantity: item.quantity || "1",
+      //     selectedItemId: item.selectedItemId || "N/A",
+      //     status: item.status || "Available",
+      //     program: item.program || "N/A",
+      //     course: item.course || "N/A",
+      //     reason: item.reason || "No reason provided",
+      //     labRoom: item.labRoom || "N/A",
+      //     timeFrom: item.timeFrom || "N/A",
+      //     timeTo: item.timeTo || "N/A",
+      //     usageType: item.usageType || "N/A",
+      //     scannedCount: 0,
+      //   }));
   
-        const borrowCatalogEntry = {
-          accountId: selectedRequest.accountId || "N/A",
-          userName: selectedRequest.userName || "N/A",
-          room: selectedRequest.room || "N/A",
-          course: selectedRequest.course || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired || "N/A",
-          timeFrom: selectedRequest.timeFrom || "N/A",
-          timeTo: selectedRequest.timeTo || "N/A",
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-          requestList: formattedItems,
-          status: "Borrowed",
-          approvedBy: userName,
-          reason: selectedRequest.reason || "No reason provided",
-          program: selectedRequest.program,
-        };
+      //   const borrowCatalogEntry = {
+      //     accountId: selectedRequest.accountId || "N/A",
+      //     userName: selectedRequest.userName || "N/A",
+      //     room: selectedRequest.room || "N/A",
+      //     course: selectedRequest.course || "N/A",
+      //     courseDescription: selectedRequest.courseDescription || "N/A",
+      //     dateRequired: selectedRequest.dateRequired || "N/A",
+      //     timeFrom: selectedRequest.timeFrom || "N/A",
+      //     timeTo: selectedRequest.timeTo || "N/A",
+      //     timestamp: selectedRequest.timestamp || "N/A",
+      //     rawTimestamp: new Date(),
+      //     requestList: formattedItems,
+      //     status: "Borrowed",
+      //     approvedBy: userName,
+      //     reason: selectedRequest.reason || "No reason provided",
+      //     program: selectedRequest.program,
+      //   };
   
-        const userRequestLogEntry = {
-          ...requestLogEntry,
-          status: "Approved",
-          approvedBy: userName,
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-        };
+      //   const userRequestLogEntry = {
+      //     ...requestLogEntry,
+      //     status: "Approved",
+      //     approvedBy: userName,
+      //     timestamp: selectedRequest.timestamp || "N/A",
+      //     rawTimestamp: new Date(),
+      //   };
   
-        await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+      //   await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
   
-        await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
-      }
+      //   await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+      // }
+const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+
+if (fixedItems.length > 0) {
+  const formattedItems = fixedItems.map(item => {
+let volume = "N/A";
+
+if (item.category === "Glasswares") {
+  if (Array.isArray(item.quantity) && item.quantity.length > 0) {
+    volume = item.quantity.map(q => `${q.volume ?? "N/A"} ML`).join(", ");
+  } else if (typeof item.quantity === "object" && item.quantity !== null) {
+    volume = `${item.quantity.volume ?? "N/A"} ML`;
+  } else if (item.volume) {
+    // <- This is the case in your data
+    volume = `${item.volume} ML`;
+  }
+}
+
+    return {
+      category: item.category || "N/A",
+      condition: item.condition || "N/A",
+      department: item.department || "N/A",
+      itemName: item.itemName || "N/A",
+      quantity: item.quantity || "1",
+      volume: volume,
+      selectedItemId: item.selectedItemId || "N/A",
+      status: item.status || "Available",
+      program: item.program || "N/A",
+      course: item.course || "N/A",
+      reason: item.reason || "No reason provided",
+      labRoom: item.labRoom || "N/A",
+      timeFrom: item.timeFrom || "N/A",
+      timeTo: item.timeTo || "N/A",
+      usageType: item.usageType || "N/A",
+      scannedCount: 0,
+    };
+  });
+
+  const borrowCatalogEntry = {
+    accountId: selectedRequest.accountId || "N/A",
+    userName: selectedRequest.userName || "N/A",
+    room: selectedRequest.room || "N/A",
+    course: selectedRequest.course || "N/A",
+    courseDescription: selectedRequest.courseDescription || "N/A",
+    dateRequired: selectedRequest.dateRequired || "N/A",
+    timeFrom: selectedRequest.timeFrom || "N/A",
+    timeTo: selectedRequest.timeTo || "N/A",
+    timestamp: selectedRequest.timestamp || "N/A",
+    rawTimestamp: new Date(),
+    requestList: formattedItems,
+    status: "Borrowed",
+    approvedBy: userName,
+    reason: selectedRequest.reason || "No reason provided",
+    program: selectedRequest.program,
+  };
+
+  const userRequestLogEntry = {
+    ...requestLogEntry,
+    status: "Approved",
+    approvedBy: userName,
+    timestamp: selectedRequest.timestamp || "N/A",
+    rawTimestamp: new Date(),
+  };
+
+  await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+}
   
       await deleteDoc(doc(db, "userrequests", selectedRequest.id));
   
@@ -626,15 +1625,426 @@ const PendingRequest = () => {
     }
   };
 
-  const handleRejectConfirm = async () => {
-    // if (!rejectionReason.trim()) {
-    //   notification.error({
-    //     message: "Reason Required",
-    //     description: "Please enter a rejection reason before submitting.",
-    //   });
-    //   return;
-    // }
+  // const handleRejectConfirm = async () => {
   
+  //   setIsMultiRejectModalVisible(false);
+  
+  //   const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
+
+  //   try {
+  //     const accountRef = doc(db, "accounts", selectedRequest.accountId);
+  //     const accountSnap = await getDoc(accountRef);
+
+  //     if (accountSnap.exists()) {
+  //       const accountData = accountSnap.data();
+  //       const isDisabled = accountData.disabled || false; // Adjust field name if different
+
+  //       if (isDisabled) {
+  //         setNotificationMessage("Cannot approve: The user's account is disabled.");
+  //         setIsNotificationVisible(true);
+  //         return;
+  //       }
+        
+  //     } else {
+  //       console.warn("Account not found for validation.");
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error checking account status:", error);
+  //     setNotificationMessage("Error verifying account status. Please try again.");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+  
+  //   try {
+  //     const rejectedItems = await Promise.all(
+  //       uncheckedItems.map(async (item, index) => {
+  //         const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+  //         let itemType = "Unknown";
+      
+  //         if (selectedItemId) {
+  //           try {
+  //             const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+  //             if (inventoryDoc.exists()) {
+  //               itemType = inventoryDoc.data().type || "Unknown";
+  //             }
+  //           } catch (err) {
+  //             console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+  //           }
+  //         }
+      
+  //         const itemKey = `${selectedItemId}-${index}`;
+  //         const rejectionReason = rejectionReasons[itemKey] || "No reason provided";
+      
+  //         return {
+  //           ...item,
+  //           selectedItemId,
+  //           itemType,
+  //           rejectionReason,
+  //         };
+  //       })
+  //     );
+  
+  //     const auth = getAuth();
+  //     const currentUser = auth.currentUser;
+  //     const userEmail = currentUser.email;
+  
+  //     // Fetch the user name from Firestore
+  //     let userName = "Unknown";
+  //     try {
+  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+  //       const userSnapshot = await getDocs(userQuery);
+  
+  //       if (!userSnapshot.empty) {
+  //         const userDoc = userSnapshot.docs[0];
+  //         const userData = userDoc.data();
+  //         userName = userData.name || "Unknown";
+  //       }
+
+  //     } catch (error) {
+  //       console.error("Error fetching user name:", error);
+  //     }
+  
+  //     const requestLogEntry = {
+  //       accountId: selectedRequest.accountId || "N/A",
+  //       userName: selectedRequest.userName || "N/A",
+  //       room: selectedRequest.room || "N/A",
+  //       course: selectedRequest.course || "N/A",
+  //       courseDescription: selectedRequest.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.dateRequired || "N/A",
+  //       timeFrom: selectedRequest.timeFrom || "N/A",
+  //       timeTo: selectedRequest.timeTo || "N/A",
+  //       timestamp: selectedRequest.timestamp || "N/A",
+  //       rawTimestamp: new Date(),
+  //       requestList: enrichedItems,
+  //       status: "Approved",
+  //       approvedBy: userName,
+  //       reason: selectedRequest.reason || "No reason provided",
+  //       program: selectedRequest.program,
+  //     };
+  
+  //     const rejectLogEntry = {
+  //       accountId: selectedRequest.accountId || "N/A",
+  //       userName: selectedRequest.userName || "N/A",
+  //       room: selectedRequest.room || "N/A",
+  //       course: selectedRequest.course || "N/A",
+  //       courseDescription: selectedRequest.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.dateRequired || "N/A",
+  //       timeFrom: selectedRequest.timeFrom || "N/A",
+  //       timeTo: selectedRequest.timeTo || "N/A",
+  //       timestamp: selectedRequest.timestamp || "N/A",
+  //       rawTimestamp: new Date(),
+  //       requestList: rejectedItems,
+  //       status: "Rejected",
+  //       rejectedBy: userName,
+  //       program: selectedRequest.program,
+  //     };
+  
+  //     const logRequestOrReturn = async (
+  //       userId,
+  //       userName,
+  //       action,
+  //       requestDetails,
+  //       extraInfo = {}
+  //     ) => {
+  //       await addDoc(collection(db, `accounts/${userId}/historylog`), {
+  //         action,
+  //         userName,
+  //         timestamp: serverTimestamp(),
+  //         requestList: requestDetails,
+  //         ...extraInfo,
+  //       });
+  //     };
+
+  //     if (enrichedItems.length > 0) {
+  //       await addDoc(collection(db, "requestlog"), requestLogEntry);
+
+  //       await logRequestOrReturn(
+  //         selectedRequest.accountId,
+  //         selectedRequest.userName,
+  //         "Request Approved",
+  //         enrichedItems,
+  //         {
+  //           approvedBy: userName,
+  //           course: selectedRequest.course || "N/A",
+  //           courseDescription: selectedRequest.courseDescription || "N/A",
+  //           dateRequired: selectedRequest.dateRequired,
+  //           reason: selectedRequest.reason,
+  //           room: selectedRequest.room,
+  //           program: selectedRequest.program,
+  //           timeFrom: selectedRequest.timeFrom || "N/A",
+  //           timeTo: selectedRequest.timeTo || "N/A",
+  //           timestamp: selectedRequest.timestamp || "N/A",
+  //           rawTimestamp: new Date(),
+  //         }
+  //       );
+  //     }
+  
+  //     // Log rejected items
+  //     if (rejectedItems.length > 0) {
+  //       await logRequestOrReturn(
+  //         selectedRequest.accountId,
+  //         selectedRequest.userName,
+  //         "Request Rejected",
+  //         rejectedItems,
+  //         {
+  //           rejectedBy: userName,
+  //           course: selectedRequest.course || "N/A",
+  //           courseDescription: selectedRequest.courseDescription || "N/A",
+  //           dateRequired: selectedRequest.dateRequired,
+  //           reason: rejectionReason || "No reason provided",
+  //           room: selectedRequest.room,
+  //           program: selectedRequest.program,
+  //           timeFrom: selectedRequest.timeFrom || "N/A",
+  //           timeTo: selectedRequest.timeTo || "N/A",
+  //           timestamp: selectedRequest.timestamp || "N/A",
+  //           rawTimestamp: new Date(),
+  //         }
+  //       );
+  //     }
+
+  //     console.log("Starting inventory update loop...");
+      
+  //     try {
+  //       for (const item of enrichedItems) {
+  //         const inventoryId = item.selectedItemId;
+  //         const requestedQty = Number(item.quantity);
+  //         const labRoomId = item.labRoom;
+
+  //         if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+  //           console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+  //           continue;
+  //         }
+
+  //         if (!labRoomId) {
+  //           console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+  //           continue;
+  //         }
+
+  //         const inventoryRef = doc(db, "inventory", inventoryId);
+  //         const inventorySnap = await getDoc(inventoryRef);
+  //         if (!inventorySnap.exists()) {
+  //           console.warn(`Inventory not found for ID: ${inventoryId}`);
+  //           continue;
+  //         }
+
+  //         const data = inventorySnap.data();
+  //         const currentQty = Number(data.quantity || 0);
+  //         const newQty = Math.max(currentQty - requestedQty, 0);
+  //         await updateDoc(inventoryRef, { quantity: newQty });
+  //         console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+
+  //         // ⚙️ Update inventory condition breakdown
+  //         let remaining = requestedQty;
+  //         const good = data.condition?.Good ?? 0;
+  //         const damage = data.condition?.Damage ?? 0;
+  //         const defect = data.condition?.Defect ?? 0;
+
+  //         let newGood = good;
+  //         let newDamage = damage;
+  //         let newDefect = defect;
+
+  //         if (remaining > 0) {
+  //           const deductFromGood = Math.min(newGood, remaining);
+  //           newGood -= deductFromGood;
+  //           remaining -= deductFromGood;
+  //         }
+
+  //         if (remaining > 0) {
+  //           const deductFromDamage = Math.min(newDamage, remaining);
+  //           newDamage -= deductFromDamage;
+  //           remaining -= deductFromDamage;
+  //         }
+
+  //         if (remaining > 0) {
+  //           const deductFromDefect = Math.min(newDefect, remaining);
+  //           newDefect -= deductFromDefect;
+  //           remaining -= deductFromDefect;
+  //         }
+
+  //         await updateDoc(inventoryRef, {
+  //           'condition.Good': newGood,
+  //           'condition.Damage': newDamage,
+  //           'condition.Defect': newDefect
+  //         });
+
+  //         console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
+
+  //         // 🔁 Update labRoom item quantity
+  //         const roomNumber = item.labRoom; // e.g. "0930"
+  //         const labRoomCollectionRef = collection(db, "labRoom");
+  //         const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+  //         const querySnapshot = await getDocs(q);
+
+  //         if (querySnapshot.empty) {
+  //           console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+  //           return;
+  //         }
+
+  //         // 2. Get Firestore doc ID of the labRoom
+  //         const labRoomDoc = querySnapshot.docs[0];
+  //         const labRoomDocId = labRoomDoc.id;
+
+  //         // 3. Query items subcollection for item with matching itemId
+  //         const itemId = data.itemId; // e.g. "DENT02"
+  //         const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+  //         const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+  //         const itemSnapshot = await getDocs(itemQuery);
+
+  //         if (itemSnapshot.empty) {
+  //           console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+  //           return;
+  //         }
+
+  //         // 4. Get the Firestore doc ID of the item document
+  //         const itemDoc = itemSnapshot.docs[0];
+  //         const itemDocId = itemDoc.id;
+  //         const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+  //         const labData = itemDoc.data();
+
+  //         const currentLabQty = Number(labData.quantity || 0);
+  //         const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+  //         await updateDoc(labRoomItemRef, { quantity: newLabQty });
+  //         console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+
+  //         // Update condition breakdown
+  //         let labGood = labData.condition?.Good ?? 0;
+  //         let labDamage = labData.condition?.Damage ?? 0;
+  //         let labDefect = labData.condition?.Defect ?? 0;
+
+  //         let remainingLab = requestedQty;
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabGood = Math.min(labGood, remainingLab);
+  //           labGood -= deductFromLabGood;
+  //           remainingLab -= deductFromLabGood;
+  //         }
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabDamage = Math.min(labDamage, remainingLab);
+  //           labDamage -= deductFromLabDamage;
+  //           remainingLab -= deductFromLabDamage;
+  //         }
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabDefect = Math.min(labDefect, remainingLab);
+  //           labDefect -= deductFromLabDefect;
+  //           remainingLab -= deductFromLabDefect;
+  //         }
+
+  //         await updateDoc(labRoomItemRef, {
+  //           'condition.Good': labGood,
+  //           'condition.Damage': labDamage,
+  //           'condition.Defect': labDefect
+  //         });
+
+  //         console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+
+  //       }
+  //     } catch (err) {
+  //       console.error("💥 Failed updating inventory or labRoom items:", err.message);
+  //     }
+  
+  //     // await addDoc(collection(db, "requestlog"), requestLogEntry);
+  
+  //     if (rejectedItems.length > 0) {
+  //       await addDoc(collection(db, "requestlog"), rejectLogEntry);
+  //     }
+  
+  //     // Process Borrow Catalog
+  //     const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+  
+  //     if (fixedItems.length > 0) {
+  //       const formattedItems = fixedItems.map(item => ({
+  //         category: item.category || "N/A",
+  //         condition: item.condition || "N/A",
+  //         department: item.department || "N/A",
+  //         itemName: item.itemName || "N/A",
+  //         quantity: item.quantity || "1",
+  //         selectedItemId: item.selectedItemId || "N/A",
+  //         status: item.status || "Available",
+  //         program: item.program || "N/A",
+  //         course: item.course || "N/A",
+  //         reason: item.reason || "No reason provided",
+  //         labRoom: item.labRoom || "N/A",
+  //         timeFrom: item.timeFrom || "N/A",
+  //         timeTo: item.timeTo || "N/A",
+  //         usageType: item.usageType || "N/A",
+  //         scannedCount: 0,
+  //       }));
+  
+  //       const borrowCatalogEntry = {
+  //         accountId: selectedRequest.accountId || "N/A",
+  //         userName: selectedRequest.userName || "N/A",
+  //         room: selectedRequest.room || "N/A",
+  //         course: selectedRequest.course || "N/A",
+  //         courseDescription: selectedRequest.courseDescription || "N/A",
+  //         dateRequired: selectedRequest.dateRequired || "N/A",
+  //         timeFrom: selectedRequest.timeFrom || "N/A",
+  //         timeTo: selectedRequest.timeTo || "N/A",
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //         requestList: formattedItems,
+  //         status: "Borrowed",
+  //         approvedBy: userName,
+  //         reason: selectedRequest.reason || "No reason provided",
+  //         program: selectedRequest.program,
+  //       };
+  
+  //       const userRequestLogEntry = {
+  //         ...requestLogEntry,
+  //         status: "Approved",
+  //         approvedBy: userName,
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //       };
+  
+  //       await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  
+  //       await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+  //     }
+  
+  //     await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+  
+  //     // Delete matching user request subcollection doc
+  //     const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+  //     const subDocsSnap = await getDocs(subCollectionRef);
+  
+  //     subDocsSnap.forEach(async (docSnap) => {
+  //       const data = docSnap.data();
+  //       const match = (
+  //         data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+  //         data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+  //       );
+  
+  //       if (match) {
+  //         console.log("✅ Deleting from subcollection:", docSnap.id);
+  //         await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+  //       }
+  //     });
+  
+  //     setApprovedRequests(prev => [...prev, requestLogEntry]);
+  //     setRequests(prev => prev.filter(req => req.id !== selectedRequest.id));
+  //     setCheckedItems({});
+  //     setIsModalVisible(false);
+  //     setSelectedRequest(null);
+  //     setIsFinalizeModalVisible(false)
+  
+  //     notification.success({
+  //       message: "Request Processed",
+  //       description: "Approval and rejection have been logged successfully.",
+  //     });
+  
+  //   } catch (error) {
+  //     console.error("Error processing approval after rejection confirmation:", error);
+  //     notification.error({
+  //       message: "Error",
+  //       description: "Failed to process the request after rejection confirmation.",
+  //     });
+  //   }
+  // };
+
+   const handleRejectConfirm = async () => {  
     setIsMultiRejectModalVisible(false);
   
     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
@@ -884,195 +2294,712 @@ const PendingRequest = () => {
       //   console.error("💥 Failed updating inventory or labRoom items:", err.message);
       // }  
       
-      try {
-        for (const item of enrichedItems) {
-          const inventoryId = item.selectedItemId;
-          const requestedQty = Number(item.quantity);
-          const labRoomId = item.labRoom;
+      // try {
+      //   for (const item of enrichedItems) {
+      //     const inventoryId = item.selectedItemId;
+      //     const requestedQty = Number(item.quantity);
+      //     const labRoomId = item.labRoom;
 
-          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
-            continue;
-          }
+      //     if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+      //       console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+      //       continue;
+      //     }
 
-          if (!labRoomId) {
-            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
-            continue;
-          }
+      //     if (!labRoomId) {
+      //       console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+      //       continue;
+      //     }
 
-          const inventoryRef = doc(db, "inventory", inventoryId);
-          const inventorySnap = await getDoc(inventoryRef);
-          if (!inventorySnap.exists()) {
-            console.warn(`Inventory not found for ID: ${inventoryId}`);
-            continue;
-          }
+      //     const inventoryRef = doc(db, "inventory", inventoryId);
+      //     const inventorySnap = await getDoc(inventoryRef);
+      //     if (!inventorySnap.exists()) {
+      //       console.warn(`Inventory not found for ID: ${inventoryId}`);
+      //       continue;
+      //     }
 
-          const data = inventorySnap.data();
-          const currentQty = Number(data.quantity || 0);
-          const newQty = Math.max(currentQty - requestedQty, 0);
-          await updateDoc(inventoryRef, { quantity: newQty });
-          console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+      //     const data = inventorySnap.data();
+      //     const currentQty = Number(data.quantity || 0);
+      //     const newQty = Math.max(currentQty - requestedQty, 0);
+      //     await updateDoc(inventoryRef, { quantity: newQty });
+      //     console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
 
-          // ⚙️ Update inventory condition breakdown
-          let remaining = requestedQty;
-          const good = data.condition?.Good ?? 0;
-          const damage = data.condition?.Damage ?? 0;
-          const defect = data.condition?.Defect ?? 0;
+      //     // ⚙️ Update inventory condition breakdown
+      //     let remaining = requestedQty;
+      //     const good = data.condition?.Good ?? 0;
+      //     const damage = data.condition?.Damage ?? 0;
+      //     const defect = data.condition?.Defect ?? 0;
 
-          let newGood = good;
-          let newDamage = damage;
-          let newDefect = defect;
+      //     let newGood = good;
+      //     let newDamage = damage;
+      //     let newDefect = defect;
 
-          if (remaining > 0) {
-            const deductFromGood = Math.min(newGood, remaining);
-            newGood -= deductFromGood;
-            remaining -= deductFromGood;
-          }
+      //     if (remaining > 0) {
+      //       const deductFromGood = Math.min(newGood, remaining);
+      //       newGood -= deductFromGood;
+      //       remaining -= deductFromGood;
+      //     }
 
-          if (remaining > 0) {
-            const deductFromDamage = Math.min(newDamage, remaining);
-            newDamage -= deductFromDamage;
-            remaining -= deductFromDamage;
-          }
+      //     if (remaining > 0) {
+      //       const deductFromDamage = Math.min(newDamage, remaining);
+      //       newDamage -= deductFromDamage;
+      //       remaining -= deductFromDamage;
+      //     }
 
-          if (remaining > 0) {
-            const deductFromDefect = Math.min(newDefect, remaining);
-            newDefect -= deductFromDefect;
-            remaining -= deductFromDefect;
-          }
+      //     if (remaining > 0) {
+      //       const deductFromDefect = Math.min(newDefect, remaining);
+      //       newDefect -= deductFromDefect;
+      //       remaining -= deductFromDefect;
+      //     }
 
-          await updateDoc(inventoryRef, {
-            'condition.Good': newGood,
-            'condition.Damage': newDamage,
-            'condition.Defect': newDefect
-          });
+      //     await updateDoc(inventoryRef, {
+      //       'condition.Good': newGood,
+      //       'condition.Damage': newDamage,
+      //       'condition.Defect': newDefect
+      //     });
 
-          console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
+      //     console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
 
-          // // 🔁 Update labRoom item quantity
-          // const itemId = data.itemId;
-          // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-          // const labRoomItemSnap = await getDoc(labRoomItemRef);
+      //       // 🔁 Update labRoom item quantity
+      //       // const itemId = data.itemId;
+      //       // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+      //       // const labRoomItemSnap = await getDoc(labRoomItemRef);
 
-          // if (labRoomItemSnap.exists()) {
-          //   const labData = labRoomItemSnap.data();
+      //       // if (labRoomItemSnap.exists()) {
+      //       //   const labData = labRoomItemSnap.data();
 
-          //   const currentLabQty = Number(labData.quantity || 0);
-          //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+      //       //   const currentLabQty = Number(labData.quantity || 0);
+      //       //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+      //       //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
+      //       //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
 
-          //   // ⚙️ Also update labRoom condition breakdown
-          //   let labGood = labData.condition?.Good ?? 0;
-          //   let labDamage = labData.condition?.Damage ?? 0;
-          //   let labDefect = labData.condition?.Defect ?? 0;
+      //       //   // ⚙️ Also update labRoom condition breakdown
+      //       //   let labGood = labData.condition?.Good ?? 0;
+      //       //   let labDamage = labData.condition?.Damage ?? 0;
+      //       //   let labDefect = labData.condition?.Defect ?? 0;
 
-          //   let remainingLab = requestedQty;
+      //       //   let remainingLab = requestedQty;
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabGood = Math.min(labGood, remainingLab);
-          //     labGood -= deductFromLabGood;
-          //     remainingLab -= deductFromLabGood;
-          //   }
+      //       //   if (remainingLab > 0) {
+      //       //     const deductFromLabGood = Math.min(labGood, remainingLab);
+      //       //     labGood -= deductFromLabGood;
+      //       //     remainingLab -= deductFromLabGood;
+      //       //   }
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
-          //     labDamage -= deductFromLabDamage;
-          //     remainingLab -= deductFromLabDamage;
-          //   }
+      //       //   if (remainingLab > 0) {
+      //       //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
+      //       //     labDamage -= deductFromLabDamage;
+      //       //     remainingLab -= deductFromLabDamage;
+      //       //   }
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
-          //     labDefect -= deductFromLabDefect;
-          //     remainingLab -= deductFromLabDefect;
-          //   }
+      //       //   if (remainingLab > 0) {
+      //       //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
+      //       //     labDefect -= deductFromLabDefect;
+      //       //     remainingLab -= deductFromLabDefect;
+      //       //   }
 
-          //   await updateDoc(labRoomItemRef, {
-          //     'condition.Good': labGood,
-          //     'condition.Damage': labDamage,
-          //     'condition.Defect': labDefect
-          //   });
+      //       //   await updateDoc(labRoomItemRef, {
+      //       //     'condition.Good': labGood,
+      //       //     'condition.Damage': labDamage,
+      //       //     'condition.Defect': labDefect
+      //       //   });
 
-          //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
-          
-          // } else {
-          //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
-          // }
+      //       //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
+            
+      //       // } else {
+      //       //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+      //       // }
 
-             // 🔁 Update labRoom item quantity
-          const roomNumber = item.labRoom; // e.g. "0930"
-          const labRoomCollectionRef = collection(db, "labRoom");
-          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
-          const querySnapshot = await getDocs(q);
+      //     // 🔁 Update labRoom item quantity
+      //     const roomNumber = item.labRoom; // e.g. "0930"
+      //     const labRoomCollectionRef = collection(db, "labRoom");
+      //     const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+      //     const querySnapshot = await getDocs(q);
 
-          if (querySnapshot.empty) {
-            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
-            return;
-          }
+      //     if (querySnapshot.empty) {
+      //       console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+      //       return;
+      //     }
 
-          // 2. Get Firestore doc ID of the labRoom
-          const labRoomDoc = querySnapshot.docs[0];
-          const labRoomDocId = labRoomDoc.id;
+      //     // 2. Get Firestore doc ID of the labRoom
+      //     const labRoomDoc = querySnapshot.docs[0];
+      //     const labRoomDocId = labRoomDoc.id;
 
-          // 3. Query items subcollection for item with matching itemId
-          const itemId = data.itemId; // e.g. "DENT02"
-          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
-          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
-          const itemSnapshot = await getDocs(itemQuery);
+      //     // 3. Query items subcollection for item with matching itemId
+      //     const itemId = data.itemId; // e.g. "DENT02"
+      //     const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+      //     const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+      //     const itemSnapshot = await getDocs(itemQuery);
 
-          if (itemSnapshot.empty) {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
-            return;
-          }
+      //     if (itemSnapshot.empty) {
+      //       console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+      //       return;
+      //     }
 
-          // 4. Get the Firestore doc ID of the item document
-          const itemDoc = itemSnapshot.docs[0];
-          const itemDocId = itemDoc.id;
-          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
-          const labData = itemDoc.data();
+      //     // 4. Get the Firestore doc ID of the item document
+      //     const itemDoc = itemSnapshot.docs[0];
+      //     const itemDocId = itemDoc.id;
+      //     const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+      //     const labData = itemDoc.data();
 
-          const currentLabQty = Number(labData.quantity || 0);
-          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+      //     const currentLabQty = Number(labData.quantity || 0);
+      //     const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+      //     await updateDoc(labRoomItemRef, { quantity: newLabQty });
+      //     console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
 
-          // Update condition breakdown
-          let labGood = labData.condition?.Good ?? 0;
-          let labDamage = labData.condition?.Damage ?? 0;
-          let labDefect = labData.condition?.Defect ?? 0;
+      //     // Update condition breakdown
+      //     let labGood = labData.condition?.Good ?? 0;
+      //     let labDamage = labData.condition?.Damage ?? 0;
+      //     let labDefect = labData.condition?.Defect ?? 0;
 
-          let remainingLab = requestedQty;
+      //     let remainingLab = requestedQty;
 
-          if (remainingLab > 0) {
-            const deductFromLabGood = Math.min(labGood, remainingLab);
-            labGood -= deductFromLabGood;
-            remainingLab -= deductFromLabGood;
-          }
+      //     if (remainingLab > 0) {
+      //       const deductFromLabGood = Math.min(labGood, remainingLab);
+      //       labGood -= deductFromLabGood;
+      //       remainingLab -= deductFromLabGood;
+      //     }
 
-          if (remainingLab > 0) {
-            const deductFromLabDamage = Math.min(labDamage, remainingLab);
-            labDamage -= deductFromLabDamage;
-            remainingLab -= deductFromLabDamage;
-          }
+      //     if (remainingLab > 0) {
+      //       const deductFromLabDamage = Math.min(labDamage, remainingLab);
+      //       labDamage -= deductFromLabDamage;
+      //       remainingLab -= deductFromLabDamage;
+      //     }
 
-          if (remainingLab > 0) {
-            const deductFromLabDefect = Math.min(labDefect, remainingLab);
-            labDefect -= deductFromLabDefect;
-            remainingLab -= deductFromLabDefect;
-          }
+      //     if (remainingLab > 0) {
+      //       const deductFromLabDefect = Math.min(labDefect, remainingLab);
+      //       labDefect -= deductFromLabDefect;
+      //       remainingLab -= deductFromLabDefect;
+      //     }
 
-          await updateDoc(labRoomItemRef, {
-            'condition.Good': labGood,
-            'condition.Damage': labDamage,
-            'condition.Defect': labDefect
-          });
+      //     await updateDoc(labRoomItemRef, {
+      //       'condition.Good': labGood,
+      //       'condition.Damage': labDamage,
+      //       'condition.Defect': labDefect
+      //     });
 
-          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+      //     console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+      //   }
+        
+      // } catch (err) {
+      //   console.error("💥 Failed updating inventory or labRoom items:", err.message);
+      // }
 
-        }
-      } catch (err) {
-        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+//       try {
+//   for (const item of enrichedItems) {
+//     const inventoryId = item.selectedItemId;
+//     const labRoomId = item.labRoom;
+//     const category = item.category;
+
+//     if (!inventoryId) {
+//       console.warn(`⛔ Skipping item with missing inventoryId`);
+//       continue;
+//     }
+
+//     if (!labRoomId) {
+//       console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+//       continue;
+//     }
+
+//     const inventoryRef = doc(db, "inventory", inventoryId);
+//     const inventorySnap = await getDoc(inventoryRef);
+//     if (!inventorySnap.exists()) {
+//       console.warn(`Inventory not found for ID: ${inventoryId}`);
+//       continue;
+//     }
+//     const data = inventorySnap.data();
+//     const itemId = data.itemId;
+
+//     const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", labRoomId));
+//     const labRoomSnapshot = await getDocs(labRoomQuery);
+//     if (labRoomSnapshot.empty) {
+//       console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomId}`);
+//       continue;
+//     }
+
+//     const labRoomDoc = labRoomSnapshot.docs[0];
+//     const labRoomDocId = labRoomDoc.id;
+//     const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+//     const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+//     const itemSnapshot = await getDocs(itemQuery);
+
+//     if (itemSnapshot.empty) {
+//       console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId} (${labRoomDocId})`);
+//       continue;
+//     }
+
+//     const itemDoc = itemSnapshot.docs[0];
+//     const itemDocId = itemDoc.id;
+//     const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+//     const labData = itemDoc.data();
+
+//     if (category.toLowerCase() === "glasswares") {
+//       // Glasswares: handle quantity + volume arrays
+//       const quantityArray = Array.isArray(item.quantity)
+//         ? item.quantity.map(qEntry => ({
+//             qty: Number(qEntry.qty) || 0,
+//             volume: Number(qEntry.volume) || 0
+//           }))
+//         : [{
+//             qty: Number(item.quantity) || 0,
+//             volume: Number(item.volume) || 0
+//           }];
+
+//       for (const qEntry of quantityArray) {
+//         const qty = qEntry.qty;
+//         const volume = isNaN(qEntry.volume) || qEntry.volume < 0 ? 0 : qEntry.volume;
+
+//         if (isNaN(qty) || qty <= 0) {
+//           console.warn(`⛔ Skipping invalid qty (${qty}) for inventoryId ${inventoryId}`);
+//           continue;
+//         }
+
+//         let currentQty = 0, currentVolume = 0;
+//         if (Array.isArray(data.quantity)) {
+//           for (const entry of data.quantity) {
+//             currentQty += Number(entry.qty) || 0;
+//             currentVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+//           }
+//         }
+
+//         const volumeToSubtract = qty * volume;
+//         const newQty = Math.max(currentQty - qty, 0);
+//         const newVolume = Math.max(currentVolume - volumeToSubtract, 0);
+
+//         let updatedQuantityArray = [];
+//         let remainingQtyToDeduct = qty;
+//         for (const entry of data.quantity) {
+//           const entryQty = Number(entry.qty) || 0;
+//           const entryVolume = Number(entry.volume) || 0;
+//           if (remainingQtyToDeduct === 0) {
+//             updatedQuantityArray.push(entry);
+//             continue;
+//           }
+//           const deduct = Math.min(entryQty, remainingQtyToDeduct);
+//           const newEntryQty = entryQty - deduct;
+//           if (newEntryQty > 0) {
+//             updatedQuantityArray.push({ qty: newEntryQty, volume: entryVolume });
+//           }
+//           remainingQtyToDeduct -= deduct;
+//         }
+
+//         let remaining = qty;
+//         let newGood = data.condition?.Good ?? 0;
+//         let newDamage = data.condition?.Damage ?? 0;
+//         let newDefect = data.condition?.Defect ?? 0;
+
+//         if (remaining > 0) {
+//           const deductGood = Math.min(newGood, remaining);
+//           newGood -= deductGood; remaining -= deductGood;
+//         }
+//         if (remaining > 0) {
+//           const deductDamage = Math.min(newDamage, remaining);
+//           newDamage -= deductDamage; remaining -= deductDamage;
+//         }
+//         if (remaining > 0) {
+//           const deductDefect = Math.min(newDefect, remaining);
+//           newDefect -= deductDefect; remaining -= deductDefect;
+//         }
+
+//         await updateDoc(inventoryRef, {
+//           quantity: updatedQuantityArray,
+//           'condition.Good': newGood,
+//           'condition.Damage': newDamage,
+//           'condition.Defect': newDefect
+//         });
+
+//         // Lab room updates
+//         let currentLabQty = 0, currentLabVolume = 0;
+//         if (Array.isArray(labData.quantity)) {
+//           for (const entry of labData.quantity) {
+//             currentLabQty += Number(entry.qty) || 0;
+//             currentLabVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+//           }
+//         }
+
+//         let updatedLabQtyArray = [];
+//         let remainingQtyToDeduct1 = qty;
+//         for (const entry of labData.quantity) {
+//           const entryQty = Number(entry.qty) || 0;
+//           const entryVolume = Number(entry.volume) || 0;
+//           if (remainingQtyToDeduct1 === 0) {
+//             updatedLabQtyArray.push(entry);
+//             continue;
+//           }
+//           const deduct = Math.min(entryQty, remainingQtyToDeduct1);
+//           const newEntryQty = entryQty - deduct;
+//           if (newEntryQty > 0) {
+//             updatedLabQtyArray.push({ qty: newEntryQty, volume: entryVolume });
+//           }
+//           remainingQtyToDeduct1 -= deduct;
+//         }
+
+//         let remainingLab = qty;
+//         let labGood = labData.condition?.Good ?? 0;
+//         let labDamage = labData.condition?.Damage ?? 0;
+//         let labDefect = labData.condition?.Defect ?? 0;
+
+//         if (remainingLab > 0) {
+//           const deductGood = Math.min(labGood, remainingLab);
+//           labGood -= deductGood; remainingLab -= deductGood;
+//         }
+//         if (remainingLab > 0) {
+//           const deductDamage = Math.min(labDamage, remainingLab);
+//           labDamage -= deductDamage; remainingLab -= deductDamage;
+//         }
+//         if (remainingLab > 0) {
+//           const deductDefect = Math.min(labDefect, remainingLab);
+//           labDefect -= deductDefect; remainingLab -= deductDefect;
+//         }
+
+//         await updateDoc(labRoomItemRef, {
+//           quantity: updatedLabQtyArray,
+//           'condition.Good': labGood,
+//           'condition.Damage': labDamage,
+//           'condition.Defect': labDefect
+//         });
+
+//         console.log(`✅ Updated Glassware item ${itemId} in ${labRoomId}`);
+//       }
+
+//     } else {
+//       // Other categories: just simple quantity deduction
+//       const requestedQty = Number(item.quantity);
+//       if (isNaN(requestedQty) || requestedQty <= 0) {
+//         console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+//         continue;
+//       }
+
+//       const currentQty = Number(data.quantity) || 0;
+//       const newQty = Math.max(currentQty - requestedQty, 0);
+
+//       let remaining = requestedQty;
+//       let newGood = data.condition?.Good ?? 0;
+//       let newDamage = data.condition?.Damage ?? 0;
+//       let newDefect = data.condition?.Defect ?? 0;
+
+//       if (remaining > 0) {
+//         const deductGood = Math.min(newGood, remaining);
+//         newGood -= deductGood; remaining -= deductGood;
+//       }
+//       if (remaining > 0) {
+//         const deductDamage = Math.min(newDamage, remaining);
+//         newDamage -= deductDamage; remaining -= deductDamage;
+//       }
+//       if (remaining > 0) {
+//         const deductDefect = Math.min(newDefect, remaining);
+//         newDefect -= deductDefect; remaining -= deductDefect;
+//       }
+
+//       await updateDoc(inventoryRef, {
+//         quantity: newQty,
+//         'condition.Good': newGood,
+//         'condition.Damage': newDamage,
+//         'condition.Defect': newDefect
+//       });
+
+//       // Lab room update
+//       const labQty = Number(labData.quantity) || 0;
+//       const newLabQty = Math.max(labQty - requestedQty, 0);
+
+//       let labGood = labData.condition?.Good ?? 0;
+//       let labDamage = labData.condition?.Damage ?? 0;
+//       let labDefect = labData.condition?.Defect ?? 0;
+
+//       let remainingLab = requestedQty;
+//       if (remainingLab > 0) {
+//         const deductGood = Math.min(labGood, remainingLab);
+//         labGood -= deductGood; remainingLab -= deductGood;
+//       }
+//       if (remainingLab > 0) {
+//         const deductDamage = Math.min(labDamage, remainingLab);
+//         labDamage -= deductDamage; remainingLab -= deductDamage;
+//       }
+//       if (remainingLab > 0) {
+//         const deductDefect = Math.min(labDefect, remainingLab);
+//         labDefect -= deductDefect; remainingLab -= deductDefect;
+//       }
+
+//       await updateDoc(labRoomItemRef, {
+//         quantity: newLabQty,
+//         'condition.Good': labGood,
+//         'condition.Damage': labDamage,
+//         'condition.Defect': labDefect
+//       });
+
+//       console.log(`✅ Updated non-glassware item ${itemId} in ${labRoomId}`);
+//     }
+//   }
+// } catch (err) {
+//   console.error("💥 Failed updating inventory or labRoom items:", err.message);
+// }
+
+try {
+  for (const item of enrichedItems) {
+    const inventoryId = item.selectedItemId;
+    const labRoomId = item.labRoom;
+    const category = item.category;
+
+    if (!inventoryId) {
+      console.warn(`⛔ Skipping item with missing inventoryId`);
+      continue;
+    }
+
+    if (!labRoomId) {
+      console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+      continue;
+    }
+
+    const inventoryRef = doc(db, "inventory", inventoryId);
+    const inventorySnap = await getDoc(inventoryRef);
+    if (!inventorySnap.exists()) {
+      console.warn(`Inventory not found for ID: ${inventoryId}`);
+      continue;
+    }
+    const data = inventorySnap.data();
+    const itemId = data.itemId;
+
+    const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", labRoomId));
+    const labRoomSnapshot = await getDocs(labRoomQuery);
+    if (labRoomSnapshot.empty) {
+      console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomId}`);
+      continue;
+    }
+
+    const labRoomDoc = labRoomSnapshot.docs[0];
+    const labRoomDocId = labRoomDoc.id;
+    const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+    const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+    const itemSnapshot = await getDocs(itemQuery);
+
+    if (itemSnapshot.empty) {
+      console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId} (${labRoomDocId})`);
+      continue;
+    }
+
+    const itemDoc = itemSnapshot.docs[0];
+    const itemDocId = itemDoc.id;
+    const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+    const labData = itemDoc.data();
+
+
+    if (category.toLowerCase() === "glasswares") {
+  // Glasswares: handle quantity + volume arrays
+  const quantityArray = Array.isArray(item.quantity)
+    ? item.quantity.map(qEntry => ({
+        qty: Number(qEntry.qty) || 0,
+        volume: Number(qEntry.volume) || 0
+      }))
+    : [{
+        qty: Number(item.quantity) || 0,
+        volume: Number(item.volume) || 0
+      }];
+
+  for (const qEntry of quantityArray) {
+    const qty = qEntry.qty;
+    const volume = isNaN(qEntry.volume) || qEntry.volume < 0 ? 0 : qEntry.volume;
+
+    if (isNaN(qty) || qty <= 0) {
+      console.warn(`⛔ Skipping invalid qty (${qty}) for inventoryId ${inventoryId}`);
+      continue;
+    }
+
+    // Deduct from main inventory quantity (data.quantity)
+    let updatedQuantityArray = [];
+    let remainingQtyToDeduct = qty;
+
+    const sortedEntries = [...data.quantity].sort((a, b) => {
+      const volA = Number(a.volume) || 0;
+      const volB = Number(b.volume) || 0;
+      if (volA === volume && volB !== volume) return -1;
+      if (volB === volume && volA !== volume) return 1;
+      return 0;
+    });
+
+    for (const entry of sortedEntries) {
+      const entryQty = Number(entry.qty) || 0;
+      const entryVolume = Number(entry.volume) || 0;
+
+      if (remainingQtyToDeduct === 0) {
+        updatedQuantityArray.push(entry);
+        continue;
       }
+
+      if (entryVolume === volume || remainingQtyToDeduct > 0) {
+        const deduct = Math.min(entryQty, remainingQtyToDeduct);
+        const newEntryQty = entryQty - deduct;
+
+        if (newEntryQty > 0) {
+          updatedQuantityArray.push({ qty: newEntryQty, volume: entryVolume });
+        }
+
+        remainingQtyToDeduct -= deduct;
+      } else {
+        updatedQuantityArray.push(entry);
+      }
+    }
+
+    // Deduct from condition fields in main inventory
+    let remaining = qty;
+    let newGood = data.condition?.Good ?? 0;
+    let newDamage = data.condition?.Damage ?? 0;
+    let newDefect = data.condition?.Defect ?? 0;
+
+    if (remaining > 0) {
+      const deductGood = Math.min(newGood, remaining);
+      newGood -= deductGood; remaining -= deductGood;
+    }
+    if (remaining > 0) {
+      const deductDamage = Math.min(newDamage, remaining);
+      newDamage -= deductDamage; remaining -= deductDamage;
+    }
+    if (remaining > 0) {
+      const deductDefect = Math.min(newDefect, remaining);
+      newDefect -= deductDefect; remaining -= deductDefect;
+    }
+
+    await updateDoc(inventoryRef, {
+      quantity: updatedQuantityArray,
+      'condition.Good': newGood,
+      'condition.Damage': newDamage,
+      'condition.Defect': newDefect
+    });
+
+    // Deduct from lab room quantity (labData.quantity)
+    let updatedLabQtyArray = [];
+    let remainingQtyToDeductLab = qty;
+
+    const sortedLabEntries = [...labData.quantity].sort((a, b) => {
+      const volA = Number(a.volume) || 0;
+      const volB = Number(b.volume) || 0;
+      if (volA === volume && volB !== volume) return -1;
+      if (volB === volume && volA !== volume) return 1;
+      return 0;
+    });
+
+    for (const entry of sortedLabEntries) {
+      const entryQty = Number(entry.qty) || 0;
+      const entryVolume = Number(entry.volume) || 0;
+
+      if (remainingQtyToDeductLab === 0) {
+        updatedLabQtyArray.push(entry);
+        continue;
+      }
+
+      if (entryVolume === volume || remainingQtyToDeductLab > 0) {
+        const deduct = Math.min(entryQty, remainingQtyToDeductLab);
+        const newEntryQty = entryQty - deduct;
+
+        if (newEntryQty > 0) {
+          updatedLabQtyArray.push({ qty: newEntryQty, volume: entryVolume });
+        }
+
+        remainingQtyToDeductLab -= deduct;
+      } else {
+        updatedLabQtyArray.push(entry);
+      }
+    }
+
+    // Deduct from condition fields in lab inventory
+    let remainingLab = qty;
+    let labGood = labData.condition?.Good ?? 0;
+    let labDamage = labData.condition?.Damage ?? 0;
+    let labDefect = labData.condition?.Defect ?? 0;
+
+    if (remainingLab > 0) {
+      const deductGood = Math.min(labGood, remainingLab);
+      labGood -= deductGood; remainingLab -= deductGood;
+    }
+    if (remainingLab > 0) {
+      const deductDamage = Math.min(labDamage, remainingLab);
+      labDamage -= deductDamage; remainingLab -= deductDamage;
+    }
+    if (remainingLab > 0) {
+      const deductDefect = Math.min(labDefect, remainingLab);
+      labDefect -= deductDefect; remainingLab -= deductDefect;
+    }
+
+    await updateDoc(labRoomItemRef, {
+      quantity: updatedLabQtyArray,
+      'condition.Good': labGood,
+      'condition.Damage': labDamage,
+      'condition.Defect': labDefect
+    });
+
+    console.log(`✅ Updated Glassware item ${itemId} in ${labRoomId}`);
+  }
+
+    } else {
+      // Other categories: just simple quantity deduction
+      const requestedQty = Number(item.quantity);
+      if (isNaN(requestedQty) || requestedQty <= 0) {
+        console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+        continue;
+      }
+
+      const currentQty = Number(data.quantity) || 0;
+      const newQty = Math.max(currentQty - requestedQty, 0);
+
+      let remaining = requestedQty;
+      let newGood = data.condition?.Good ?? 0;
+      let newDamage = data.condition?.Damage ?? 0;
+      let newDefect = data.condition?.Defect ?? 0;
+
+      if (remaining > 0) {
+        const deductGood = Math.min(newGood, remaining);
+        newGood -= deductGood; remaining -= deductGood;
+      }
+      if (remaining > 0) {
+        const deductDamage = Math.min(newDamage, remaining);
+        newDamage -= deductDamage; remaining -= deductDamage;
+      }
+      if (remaining > 0) {
+        const deductDefect = Math.min(newDefect, remaining);
+        newDefect -= deductDefect; remaining -= deductDefect;
+      }
+
+      await updateDoc(inventoryRef, {
+        quantity: newQty,
+        'condition.Good': newGood,
+        'condition.Damage': newDamage,
+        'condition.Defect': newDefect
+      });
+
+      // Lab room update
+      const labQty = Number(labData.quantity) || 0;
+      const newLabQty = Math.max(labQty - requestedQty, 0);
+
+      let labGood = labData.condition?.Good ?? 0;
+      let labDamage = labData.condition?.Damage ?? 0;
+      let labDefect = labData.condition?.Defect ?? 0;
+
+      let remainingLab = requestedQty;
+      if (remainingLab > 0) {
+        const deductGood = Math.min(labGood, remainingLab);
+        labGood -= deductGood; remainingLab -= deductGood;
+      }
+      if (remainingLab > 0) {
+        const deductDamage = Math.min(labDamage, remainingLab);
+        labDamage -= deductDamage; remainingLab -= deductDamage;
+      }
+      if (remainingLab > 0) {
+        const deductDefect = Math.min(labDefect, remainingLab);
+        labDefect -= deductDefect; remainingLab -= deductDefect;
+      }
+
+      await updateDoc(labRoomItemRef, {
+        quantity: newLabQty,
+        'condition.Good': labGood,
+        'condition.Damage': labDamage,
+        'condition.Defect': labDefect
+      });
+
+      console.log(`✅ Updated non-glassware item ${itemId} in ${labRoomId}`);
+    }
+  }
+} catch (err) {
+  console.error("💥 Failed updating inventory or labRoom items:", err.message);
+}
+
   
       // await addDoc(collection(db, "requestlog"), requestLogEntry);
   
@@ -1080,58 +3007,126 @@ const PendingRequest = () => {
         await addDoc(collection(db, "requestlog"), rejectLogEntry);
       }
   
+      // // Process Borrow Catalog
+      // const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+  
+      // if (fixedItems.length > 0) {
+      //   const formattedItems = fixedItems.map(item => ({
+      //     category: item.category || "N/A",
+      //     condition: item.condition || "N/A",
+      //     department: item.department || "N/A",
+      //     itemName: item.itemName || "N/A",
+      //     quantity: item.quantity || "1",
+      //     selectedItemId: item.selectedItemId || "N/A",
+      //     status: item.status || "Available",
+      //     program: item.program || "N/A",
+      //     course: item.course || "N/A",
+      //     reason: item.reason || "No reason provided",
+      //     labRoom: item.labRoom || "N/A",
+      //     timeFrom: item.timeFrom || "N/A",
+      //     timeTo: item.timeTo || "N/A",
+      //     usageType: item.usageType || "N/A",
+      //     scannedCount: 0,
+      //   }));
+  
+      //   const borrowCatalogEntry = {
+      //     accountId: selectedRequest.accountId || "N/A",
+      //     userName: selectedRequest.userName || "N/A",
+      //     room: selectedRequest.room || "N/A",
+      //     course: selectedRequest.course || "N/A",
+      //     courseDescription: selectedRequest.courseDescription || "N/A",
+      //     dateRequired: selectedRequest.dateRequired || "N/A",
+      //     timeFrom: selectedRequest.timeFrom || "N/A",
+      //     timeTo: selectedRequest.timeTo || "N/A",
+      //     timestamp: selectedRequest.timestamp || "N/A",
+      //     rawTimestamp: new Date(),
+      //     requestList: formattedItems,
+      //     status: "Borrowed",
+      //     approvedBy: userName,
+      //     reason: selectedRequest.reason || "No reason provided",
+      //     program: selectedRequest.program,
+      //   };
+  
+      //   const userRequestLogEntry = {
+      //     ...requestLogEntry,
+      //     status: "Approved",
+      //     approvedBy: userName,
+      //     timestamp: selectedRequest.timestamp || "N/A",
+      //     rawTimestamp: new Date(),
+      //   };
+  
+      //   await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  
+      //   await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+      // }
+
       // Process Borrow Catalog
-      const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
-  
-      if (fixedItems.length > 0) {
-        const formattedItems = fixedItems.map(item => ({
-          category: item.category || "N/A",
-          condition: item.condition || "N/A",
-          department: item.department || "N/A",
-          itemName: item.itemName || "N/A",
-          quantity: item.quantity || "1",
-          selectedItemId: item.selectedItemId || "N/A",
-          status: item.status || "Available",
-          program: item.program || "N/A",
-          course: item.course || "N/A",
-          reason: item.reason || "No reason provided",
-          labRoom: item.labRoom || "N/A",
-          timeFrom: item.timeFrom || "N/A",
-          timeTo: item.timeTo || "N/A",
-          usageType: item.usageType || "N/A",
-          scannedCount: 0,
-        }));
-  
-        const borrowCatalogEntry = {
-          accountId: selectedRequest.accountId || "N/A",
-          userName: selectedRequest.userName || "N/A",
-          room: selectedRequest.room || "N/A",
-          course: selectedRequest.course || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired || "N/A",
-          timeFrom: selectedRequest.timeFrom || "N/A",
-          timeTo: selectedRequest.timeTo || "N/A",
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-          requestList: formattedItems,
-          status: "Borrowed",
-          approvedBy: userName,
-          reason: selectedRequest.reason || "No reason provided",
-          program: selectedRequest.program,
-        };
-  
-        const userRequestLogEntry = {
-          ...requestLogEntry,
-          status: "Approved",
-          approvedBy: userName,
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-        };
-  
-        await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
-  
-        await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
-      }
+const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+
+if (fixedItems.length > 0) {
+  const formattedItems = fixedItems.map(item => {
+let volume = "N/A";
+
+if (item.category === "Glasswares") {
+  if (Array.isArray(item.quantity) && item.quantity.length > 0) {
+    volume = item.quantity.map(q => `${q.volume ?? "N/A"} ML`).join(", ");
+  } else if (typeof item.quantity === "object" && item.quantity !== null) {
+    volume = `${item.quantity.volume ?? "N/A"} ML`;
+  } else if (item.volume) {
+    // <- This is the case in your data
+    volume = `${item.volume} ML`;
+  }
+}
+
+    return {
+      category: item.category || "N/A",
+      condition: item.condition || "N/A",
+      department: item.department || "N/A",
+      itemName: item.itemName || "N/A",
+      quantity: item.quantity || "1",
+      volume: volume,
+      selectedItemId: item.selectedItemId || "N/A",
+      status: item.status || "Available",
+      program: item.program || "N/A",
+      course: item.course || "N/A",
+      reason: item.reason || "No reason provided",
+      labRoom: item.labRoom || "N/A",
+      timeFrom: item.timeFrom || "N/A",
+      timeTo: item.timeTo || "N/A",
+      usageType: item.usageType || "N/A",
+      scannedCount: 0,
+    };
+  });
+
+  const borrowCatalogEntry = {
+    accountId: selectedRequest.accountId || "N/A",
+    userName: selectedRequest.userName || "N/A",
+    room: selectedRequest.room || "N/A",
+    course: selectedRequest.course || "N/A",
+    courseDescription: selectedRequest.courseDescription || "N/A",
+    dateRequired: selectedRequest.dateRequired || "N/A",
+    timeFrom: selectedRequest.timeFrom || "N/A",
+    timeTo: selectedRequest.timeTo || "N/A",
+    timestamp: selectedRequest.timestamp || "N/A",
+    rawTimestamp: new Date(),
+    requestList: formattedItems,
+    status: "Borrowed",
+    approvedBy: userName,
+    reason: selectedRequest.reason || "No reason provided",
+    program: selectedRequest.program,
+  };
+
+  const userRequestLogEntry = {
+    ...requestLogEntry,
+    status: "Approved",
+    approvedBy: userName,
+    timestamp: selectedRequest.timestamp || "N/A",
+    rawTimestamp: new Date(),
+  };
+
+  await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+}
   
       await deleteDoc(doc(db, "userrequests", selectedRequest.id));
   
@@ -1173,16 +3168,508 @@ const PendingRequest = () => {
     }
   };
   
+  // const handleApprove = async () => {  
+  //   const isChecked = Object.values(checkedItems).some((checked) => checked);
+
+  //   if (!isChecked) {
+  //     setNotificationMessage("No Items selected");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+
+  //   if (selectedRequest) {
+
+  //   try {
+  //     const accountRef = doc(db, "accounts", selectedRequest.accountId);
+  //     const accountSnap = await getDoc(accountRef);
+
+  //     if (accountSnap.exists()) {
+  //       const accountData = accountSnap.data();
+  //       const isDisabled = accountData.disabled || false; // Adjust field name if different
+
+  //       if (isDisabled) {
+  //         setNotificationMessage("Cannot approve: The user's account is disabled.");
+  //         setIsNotificationVisible(true);
+  //         return;
+  //       }
+        
+  //     } else {
+  //       console.warn("Account not found for validation.");
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error checking account status:", error);
+  //     setNotificationMessage("Error verifying account status. Please try again.");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+
+  //   // Filter checked items and prepare for approval
+  //   const filteredItems = selectedRequest.requestList.filter((item, index) => {
+  //     const key = `${selectedRequest.id}-${index}`;
+  //     return checkedItems[key];
+  //   });
+
+  //   if (filteredItems.length === 0) {
+  //     setNotificationMessage("No Items selected");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+    
+  //   console.log("Filtered Items:", filteredItems);
+  //   const enrichedItems = await Promise.all(
+  //     filteredItems.map(async (item) => {
+  //       const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+  //       let itemType = "Unknown";
+
+  //       if (selectedItemId) {
+  //         try {
+  //           const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+
+  //           if (inventoryDoc.exists()) {
+  //             itemType = inventoryDoc.data().type || "Unknown";
+  //           }
+
+  //         } catch (err) {
+  //           console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+  //         }
+  //       }
+
+  //       const enriched = {
+  //         ...item,
+  //         selectedItemId,
+  //         itemType,
+  //       };
+    
+  //       console.log("Enriched item:", enriched); // ✅ Individual log
+  //       return enriched;
+  //     })
+  //   );
+
+  //   // Filter out unchecked items (for rejection)
+  //   const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
+  //     const key = `${selectedRequest.id}-${index}`;
+  //     return !checkedItems[key]; // This will get the unchecked items
+  //   });
+
+  //   // Define rejectionReason variable outside of the condition
+  //   let rejectionReason = null; 
+
+  //   if (uncheckedItems.length > 0) {
+  //     console.log("Enriched Items before multi rejection modal:", enrichedItems); 
+  //     setPendingApprovalData({
+  //       enrichedItems,
+  //       uncheckedItems,
+  //       selectedRequest,
+  //     });
+  //     setIsMultiRejectModalVisible(true); // ✅ Show new modal for multiple items
+  //     return;
+  //   }
+
+  //   // Process rejected items
+  //   const rejectedItems = await Promise.all(
+  //     uncheckedItems.map(async (item) => {
+  //       const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+  //       let itemType = "Unknown";
+
+  //       if (selectedItemId) {
+  //         try {
+  //           const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+  //           if (inventoryDoc.exists()) {
+  //             itemType = inventoryDoc.data().type || "Unknown";
+  //           }
+
+  //         } catch (err) {
+  //           console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+  //         }
+  //       }
+
+  //       return {
+  //         ...item,
+  //         selectedItemId,
+  //         itemType, 
+  //       };
+  //     })
+  //   );
+
+  //   const auth = getAuth();
+  //   const currentUser = auth.currentUser;
+  //   const userEmail = currentUser.email;
+
+  //   // Fetch the user name from Firestore
+  //   let userName = "Unknown";
+  //   try {
+  //     const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+  //     const userSnapshot = await getDocs(userQuery);
+
+  //     if (!userSnapshot.empty) {
+  //       const userDoc = userSnapshot.docs[0];
+  //       const userData = userDoc.data();
+  //       userName = userData.name || "Unknown";
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error fetching user name:", error);
+  //   }
+
+  //   const requestLogEntry = {
+  //     accountId: selectedRequest.accountId || "N/A",
+  //     userName: selectedRequest.userName || "N/A",
+  //     room: selectedRequest.room || "N/A",
+  //     course: selectedRequest.course || "N/A",
+  //     courseDescription: selectedRequest.courseDescription || "N/A",
+  //     dateRequired: selectedRequest.dateRequired || "N/A",
+  //     timeFrom: selectedRequest.timeFrom || "N/A",  
+  //     timeTo: selectedRequest.timeTo || "N/A",  
+  //     timestamp: selectedRequest.timestamp || "N/A",
+  //     rawTimestamp: new Date(),
+  //     requestList: enrichedItems, 
+  //     status: "Approved", 
+  //     approvedBy: userName, 
+  //     reason: selectedRequest.reason || "No reason provided",
+  //     program: selectedRequest.program,
+  //   };
+
+  //   const rejectLogEntry = {
+  //     accountId: selectedRequest.accountId || "N/A",
+  //     userName: selectedRequest.userName || "N/A",
+  //     room: selectedRequest.room || "N/A",
+  //     course: selectedRequest.couse || "N/A",
+  //     courseDescription: selectedRequest.courseDescription || "N/A",
+  //     dateRequired: selectedRequest.dateRequired || "N/A",
+  //     timeFrom: selectedRequest.timeFrom || "N/A",  
+  //     timeTo: selectedRequest.timeTo || "N/A",  
+  //     timestamp: selectedRequest.timestamp || "N/A",
+  //     rawTimestamp: new Date(),
+  //     requestList: rejectedItems, 
+  //     status: "Rejected", 
+  //     rejectedBy: userName, 
+  //     reason: rejectionReason || "No reason provided",  // Use the rejection reason from the input prompt
+  //     program: selectedRequest.program,
+  //   };
+
+  //   // Log approved items in historylog subcollection
+  //   const logRequestOrReturn = async (
+  //     userId,
+  //     userName,
+  //     action,
+  //     requestDetails,
+  //     extraInfo = {} // for fields like dateRequired, approvedBy, etc.
+  //   ) => {
+  //     await addDoc(collection(db, `accounts/${userId}/historylog`), {
+  //       action,
+  //       userName,
+  //       timestamp: serverTimestamp(),
+  //       requestList: requestDetails,
+  //       ...extraInfo, // merge additional data like dateRequired, reason, etc.
+  //     });
+  //   };
+
+  //   // Log approved items
+  //   await logRequestOrReturn(
+  //     selectedRequest.accountId,     // user ID
+  //     selectedRequest.userName,      // user name
+  //     "Request Approved",            // action
+  //     enrichedItems,                 // request list
+  //     {
+  //       approvedBy: userName, // whoever approved
+  //       course: selectedRequest.course || "N/A",
+  //       courseDescription: selectedRequest.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.dateRequired,
+  //       reason: selectedRequest.reason,
+  //       room: selectedRequest.room,
+  //       program: selectedRequest.program,
+  //       timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+  //       timeTo: selectedRequest.timeTo || "N/A",  
+  //       timestamp: selectedRequest.timestamp || "N/A",
+  //       rawTimestamp: new Date(),
+  //     }
+  //   );
+
+  //   // Log rejected items
+  //   if (rejectedItems.length > 0) {
+  //     await logRequestOrReturn(
+  //       selectedRequest.accountId,     // user ID
+  //       selectedRequest.userName,      // user name
+  //       "Request Rejected",            // action
+  //       rejectedItems,                 // request list
+  //       {
+  //         rejectedBy: userName, // whoever rejected
+  //         course: selectedRequest.course || "N/A",
+  //         courseDescription: selectedRequest.courseDescription || "N/A",
+  //         dateRequired: selectedRequest.dateRequired,
+  //         reason: rejectionReason || "No reason provided",  // Reason for rejection
+  //         room: selectedRequest.room,
+  //         program: selectedRequest.program,
+  //         timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+  //         timeTo: selectedRequest.timeTo || "N/A",  
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //       }
+  //     );
+  //   }
+
+  //     try {
+  //       for (const item of enrichedItems) {
+  //         const inventoryId = item.selectedItemId;
+  //         const requestedQty = Number(item.quantity);
+  //         const labRoomId = item.labRoom;
+
+  //         if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+  //           console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+  //           continue;
+  //         }
+
+  //         if (!labRoomId) {
+  //           console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+  //           continue;
+  //         }
+
+  //         const inventoryRef = doc(db, "inventory", inventoryId);
+  //         const inventorySnap = await getDoc(inventoryRef);
+  //         if (!inventorySnap.exists()) {
+  //           console.warn(`Inventory not found for ID: ${inventoryId}`);
+  //           continue;
+  //         }
+
+  //         const data = inventorySnap.data();
+  //         const currentQty = Number(data.quantity || 0);
+  //         const newQty = Math.max(currentQty - requestedQty, 0);
+  //         await updateDoc(inventoryRef, { quantity: newQty });
+  //         console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+
+  //         // ⚙️ Update inventory condition breakdown
+  //         let remaining = requestedQty;
+  //         const good = data.condition?.Good ?? 0;
+  //         const damage = data.condition?.Damage ?? 0;
+  //         const defect = data.condition?.Defect ?? 0;
+
+  //         let newGood = good;
+  //         let newDamage = damage;
+  //         let newDefect = defect;
+
+  //         if (remaining > 0) {
+  //           const deductFromGood = Math.min(newGood, remaining);
+  //           newGood -= deductFromGood;
+  //           remaining -= deductFromGood;
+  //         }
+
+  //         if (remaining > 0) {
+  //           const deductFromDamage = Math.min(newDamage, remaining);
+  //           newDamage -= deductFromDamage;
+  //           remaining -= deductFromDamage;
+  //         }
+
+  //         if (remaining > 0) {
+  //           const deductFromDefect = Math.min(newDefect, remaining);
+  //           newDefect -= deductFromDefect;
+  //           remaining -= deductFromDefect;
+  //         }
+
+  //         await updateDoc(inventoryRef, {
+  //           'condition.Good': newGood,
+  //           'condition.Damage': newDamage,
+  //           'condition.Defect': newDefect
+  //         });
+
+  //         console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
+
+  //         // 🔁 Update labRoom item quantity
+  //         const roomNumber = item.labRoom; // e.g. "0930"
+  //         const labRoomCollectionRef = collection(db, "labRoom");
+  //         const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+  //         const querySnapshot = await getDocs(q);
+
+  //         if (querySnapshot.empty) {
+  //           console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+  //           return;
+  //         }
+
+  //         // 2. Get Firestore doc ID of the labRoom
+  //         const labRoomDoc = querySnapshot.docs[0];
+  //         const labRoomDocId = labRoomDoc.id;
+
+  //         // 3. Query items subcollection for item with matching itemId
+  //         const itemId = data.itemId; // e.g. "DENT02"
+  //         const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+  //         const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+  //         const itemSnapshot = await getDocs(itemQuery);
+
+  //         if (itemSnapshot.empty) {
+  //           console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+  //           return;
+  //         }
+
+  //         // 4. Get the Firestore doc ID of the item document
+  //         const itemDoc = itemSnapshot.docs[0];
+  //         const itemDocId = itemDoc.id;
+  //         const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+  //         const labData = itemDoc.data();
+
+  //         const currentLabQty = Number(labData.quantity || 0);
+  //         const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+  //         await updateDoc(labRoomItemRef, { quantity: newLabQty });
+  //         console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+
+  //         // Update condition breakdown
+  //         let labGood = labData.condition?.Good ?? 0;
+  //         let labDamage = labData.condition?.Damage ?? 0;
+  //         let labDefect = labData.condition?.Defect ?? 0;
+
+  //         let remainingLab = requestedQty;
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabGood = Math.min(labGood, remainingLab);
+  //           labGood -= deductFromLabGood;
+  //           remainingLab -= deductFromLabGood;
+  //         }
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabDamage = Math.min(labDamage, remainingLab);
+  //           labDamage -= deductFromLabDamage;
+  //           remainingLab -= deductFromLabDamage;
+  //         }
+
+  //         if (remainingLab > 0) {
+  //           const deductFromLabDefect = Math.min(labDefect, remainingLab);
+  //           labDefect -= deductFromLabDefect;
+  //           remainingLab -= deductFromLabDefect;
+  //         }
+
+  //         await updateDoc(labRoomItemRef, {
+  //           'condition.Good': labGood,
+  //           'condition.Damage': labDamage,
+  //           'condition.Defect': labDefect
+  //         });
+
+  //         console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+
+  //       }
+  //     } catch (err) {
+  //       console.error("💥 Failed updating inventory or labRoom items:", err.message);
+  //     }
+
+  //   try {
+  //     // Add to requestlog for approval
+  //     await addDoc(collection(db, "requestlog"), requestLogEntry);
+
+  //     // Add to requestlog for rejection
+  //     if (rejectedItems.length > 0) {
+  //       await addDoc(collection(db, "requestlog"), rejectLogEntry);
+  //     }
+
+  //     // Proceed with borrow catalog logic for approved items
+  //     // Filter to get all "Fixed" items
+  //     const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+
+  //     if (fixedItems.length > 0) {
+  //       console.log('Fixed items to be grouped:', fixedItems); // Debugging log to see all fixed items
+
+  //       // Create an array of items with the necessary fields for Firestore
+  //       const formattedItems = fixedItems.map(item => ({
+  //         category: item.category || "N/A",  // Category (e.g., Equipment)
+  //         condition: item.condition || "N/A",  // Condition (e.g., Good)
+  //         department: item.department || "N/A",  // Department (e.g., DENT)
+  //         itemName: item.itemName || "N/A",  // Item name (e.g., Centrifuge)
+  //         quantity: item.quantity || "1",  // Quantity requested
+  //         selectedItemId: item.selectedItemId || "N/A",  // Item ID from Firestore
+  //         status: item.status || "Available",  // Status (e.g., Available)
+  //         program: item.program || "N/A",  // Program associated with the request
+  //         course: item.course || "N/A",
+  //         reason: item.reason || "No reason provided",  // Reason for the request
+  //         labRoom: item.labRoom || "N/A",  // Lab room (e.g., 1224)
+  //         timeFrom: item.timeFrom || "N/A",  // Time From
+  //         timeTo: item.timeTo || "N/A",  // Time To
+  //         usageType: item.usageType || "N/A",  // Usage type (e.g., Community Extension)
+  //         scannedCount: 0,
+  //       }));
+
+  //       // Create a borrow catalog entry with the formatted fixed items
+  //       const borrowCatalogEntry = {
+  //         accountId: selectedRequest.accountId || "N/A",
+  //         userName: selectedRequest.userName || "N/A",
+  //         room: selectedRequest.room || "N/A",
+  //         course: selectedRequest.course || "N/A",
+  //         courseDescription: selectedRequest.courseDescription || "N/A",
+  //         dateRequired: selectedRequest.dateRequired || "N/A",
+  //         timeFrom: selectedRequest.timeFrom || "N/A",  // Add timeFrom
+  //         timeTo: selectedRequest.timeTo || "N/A",  
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //         requestList: formattedItems,  // Add all selected "Fixed" items together
+  //         status: "Borrowed",  // Status as "Borrowed"
+  //         approvedBy: userName,
+  //         reason: selectedRequest.reason || "No reason provided",
+  //         program: selectedRequest.program,
+  //       };
+
+  //       // Add to userrequestlog subcollection for the requestor's account
+  //       const userRequestLogEntry = {
+  //         ...requestLogEntry,
+  //         status: "Approved", 
+  //         approvedBy: userName,
+  //         timestamp: selectedRequest.timestamp || "N/A",
+  //         rawTimestamp: new Date(),
+  //       };
+
+  //       // Add the borrow catalog entry to Firestore
+  //       await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+
+  //       // Add to the user's 'userrequestlog' subcollection
+  //       await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+  //     }
+
+  //       await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+
+  //       // Cleanup the user requests subcollection
+  //       const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+  //       const subDocsSnap = await getDocs(subCollectionRef);
+
+  //       subDocsSnap.forEach(async (docSnap) => {
+  //         const data = docSnap.data();
+  //         const match = (
+  //           data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+  //           data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+  //         );
+
+  //         if (match) {
+  //           console.log("✅ Deleting from subcollection:", docSnap.id);
+  //           await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+  //         }
+  //       });
+
+  //       setApprovedRequests([...approvedRequests, requestLogEntry]);
+  //       setRequests(requests.filter((req) => req.id !== selectedRequest.id));
+  //       setCheckedItems({});
+  //       setIsModalVisible(false);
+  //       setSelectedRequest(null);
+  //       setIsFinalizeModalVisible(false)
+
+  //       notification.success({
+  //         message: "Request Approved",
+  //         description: "Request has been approved and logged.",
+  //       });
+
+  //     } catch (error) {
+  //       console.error("Error adding to requestlog:", error);
+  //       notification.error({
+  //         message: "Approval Failed",
+  //         description: "There was an error logging the approved request.",
+  //       });
+  //     }
+  //   }
+  // };
+
   const handleApprove = async () => {  
-    const isChecked = Object.values(checkedItems).some((checked) => checked);
+  const isChecked = Object.values(checkedItems).some((checked) => checked);
 
-    if (!isChecked) {
-      setNotificationMessage("No Items selected");
-      setIsNotificationVisible(true);
-      return;
-    }
+  if (!isChecked) {
+    setNotificationMessage("No Items selected");
+    setIsNotificationVisible(true);
+    return;
+  }
 
-    if (selectedRequest) {
+  if (selectedRequest) {
 
     try {
       const accountRef = doc(db, "accounts", selectedRequest.accountId);
@@ -1244,6 +3731,7 @@ const PendingRequest = () => {
           ...item,
           selectedItemId,
           itemType,
+          volume: item.volume ?? "N/A", // <-- add this
         };
     
         console.log("Enriched item:", enriched); // ✅ Individual log
@@ -1305,6 +3793,7 @@ const PendingRequest = () => {
           ...item,
           selectedItemId,
           itemType, 
+          volume: item.volume ?? "N/A", // <-- add this
         };
       })
     );
@@ -1466,246 +3955,963 @@ const PendingRequest = () => {
     //   }
     // }
 
-      // try {
-      //   for (const item of enrichedItems) {
-      //     const inventoryId = item.selectedItemId;
-      //     const requestedQty = Number(item.quantity);
-      //     const labRoomId = item.labRoom;  // <-- get labRoom from the item here
+    //   try {
+    //     for (const item of enrichedItems) {
+    //       const inventoryId = item.selectedItemId;
+    //       const requestedQty = Number(item.quantity);
+    //       const labRoomId = item.labRoom;  // <-- get labRoom from the item here
 
-      //     if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-      //       console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
-      //       continue;
-      //     }
+    //       if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+    //         console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+    //         continue;
+    //       }
 
-      //     if (!labRoomId) {
-      //       console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
-      //       continue;
-      //     }
+    //       if (!labRoomId) {
+    //         console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+    //         continue;
+    //       }
 
-      //     // Update inventory quantity (your existing logic)
-      //     const inventoryRef = doc(db, "inventory", inventoryId);
-      //     const inventorySnap = await getDoc(inventoryRef);
-      //     if (!inventorySnap.exists()) {
-      //       console.warn(`Inventory not found for ID: ${inventoryId}`);
-      //       continue;
-      //     }
+    //       // Update inventory quantity (your existing logic)
+    //       const inventoryRef = doc(db, "inventory", inventoryId);
+    //       const inventorySnap = await getDoc(inventoryRef);
+    //       if (!inventorySnap.exists()) {
+    //         console.warn(`Inventory not found for ID: ${inventoryId}`);
+    //         continue;
+    //       }
 
-      //     const currentQty = Number(inventorySnap.data().quantity || 0);
-      //     const newQty = Math.max(currentQty - requestedQty, 0);
-      //     await updateDoc(inventoryRef, { quantity: newQty });
-      //     console.log(`✅ Inventory updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+    //       const currentQty = Number(inventorySnap.data().quantity || 0);
+    //       const newQty = Math.max(currentQty - requestedQty, 0);
+    //       await updateDoc(inventoryRef, { quantity: newQty });
+    //       console.log(`✅ Inventory updated for ${inventoryId}: ${currentQty} → ${newQty}`);
 
-      //     // Now update the labRoom item quantity
-      //     // Important: the doc id in labRoom items collection is itemId (not inventoryId)
-      //     const itemId = inventorySnap.data().itemId;
+    //       // Now update the labRoom item quantity
+    //       // Important: the doc id in labRoom items collection is itemId (not inventoryId)
+    //       const itemId = inventorySnap.data().itemId;
 
-      //     const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-      //     const labRoomItemSnap = await getDoc(labRoomItemRef);
+    //       const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+    //       const labRoomItemSnap = await getDoc(labRoomItemRef);
 
-      //     if (labRoomItemSnap.exists()) {
-      //       const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
-      //       const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-      //       await updateDoc(labRoomItemRef, { quantity: newLabQty });
-      //       console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+    //       if (labRoomItemSnap.exists()) {
+    //         const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+    //         const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+    //         await updateDoc(labRoomItemRef, { quantity: newLabQty });
+    //         console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
 
-      //     } else {
-      //       console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
-      //     }
-      //   }
+    //       } else {
+    //         console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+    //       }
+    //     }
 
-      // } catch (err) {
-      //   console.error("💥 Failed updating inventory or labRoom items:", err.message);
-      // } 
+    //   } catch (err) {
+    //     console.error("💥 Failed updating inventory or labRoom items:", err.message);
+    //   } 
 
-      try {
-        for (const item of enrichedItems) {
-          const inventoryId = item.selectedItemId;
-          const requestedQty = Number(item.quantity);
-          const labRoomId = item.labRoom;
+    //   try {
+    //     for (const item of enrichedItems) {
+    //       const inventoryId = item.selectedItemId;
+    //       const requestedQty = Number(item.quantity);
+    //       const labRoomId = item.labRoom;
 
-          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
-            continue;
-          }
+    //       if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+    //         console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+    //         continue;
+    //       }
 
-          if (!labRoomId) {
-            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
-            continue;
-          }
+    //       if (!labRoomId) {
+    //         console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+    //         continue;
+    //       }
 
-          const inventoryRef = doc(db, "inventory", inventoryId);
-          const inventorySnap = await getDoc(inventoryRef);
-          if (!inventorySnap.exists()) {
-            console.warn(`Inventory not found for ID: ${inventoryId}`);
-            continue;
-          }
+    //       const inventoryRef = doc(db, "inventory", inventoryId);
+    //       const inventorySnap = await getDoc(inventoryRef);
+    //       if (!inventorySnap.exists()) {
+    //         console.warn(`Inventory not found for ID: ${inventoryId}`);
+    //         continue;
+    //       }
 
-          const data = inventorySnap.data();
-          const currentQty = Number(data.quantity || 0);
-          const newQty = Math.max(currentQty - requestedQty, 0);
-          await updateDoc(inventoryRef, { quantity: newQty });
-          console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+    //       const data = inventorySnap.data();
+    //       const currentQty = Number(data.quantity || 0);
+    //       const newQty = Math.max(currentQty - requestedQty, 0);
+    //       await updateDoc(inventoryRef, { quantity: newQty });
+    //       console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
 
-          // ⚙️ Update inventory condition breakdown
-          let remaining = requestedQty;
-          const good = data.condition?.Good ?? 0;
-          const damage = data.condition?.Damage ?? 0;
-          const defect = data.condition?.Defect ?? 0;
+    //       // ⚙️ Update condition breakdown
+    //       let remaining = requestedQty;
+    //       const good = data.condition?.Good ?? 0;
+    //       const damage = data.condition?.Damage ?? 0;
+    //       const defect = data.condition?.Defect ?? 0;
 
-          let newGood = good;
-          let newDamage = damage;
-          let newDefect = defect;
+    //       let newGood = good;
+    //       let newDamage = damage;
+    //       let newDefect = defect;
 
-          if (remaining > 0) {
-            const deductFromGood = Math.min(newGood, remaining);
-            newGood -= deductFromGood;
-            remaining -= deductFromGood;
-          }
+    //       if (remaining > 0) {
+    //         const deductFromGood = Math.min(newGood, remaining);
+    //         newGood -= deductFromGood;
+    //         remaining -= deductFromGood;
+    //       }
 
-          if (remaining > 0) {
-            const deductFromDamage = Math.min(newDamage, remaining);
-            newDamage -= deductFromDamage;
-            remaining -= deductFromDamage;
-          }
+    //       if (remaining > 0) {
+    //         const deductFromDamage = Math.min(newDamage, remaining);
+    //         newDamage -= deductFromDamage;
+    //         remaining -= deductFromDamage;
+    //       }
 
-          if (remaining > 0) {
-            const deductFromDefect = Math.min(newDefect, remaining);
-            newDefect -= deductFromDefect;
-            remaining -= deductFromDefect;
-          }
+    //       if (remaining > 0) {
+    //         const deductFromDefect = Math.min(newDefect, remaining);
+    //         newDefect -= deductFromDefect;
+    //         remaining -= deductFromDefect;
+    //       }
 
-          await updateDoc(inventoryRef, {
-            'condition.Good': newGood,
-            'condition.Damage': newDamage,
-            'condition.Defect': newDefect
-          });
+    //       await updateDoc(inventoryRef, {
+    //         'condition.Good': newGood,
+    //         'condition.Damage': newDamage,
+    //         'condition.Defect': newDefect
+    //       });
 
-          console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
+    //       console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
 
-          // 🔁 Update labRoom item quantity
-          // const itemId = data.itemId;
-          // const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-          // const labRoomItemSnap = await getDoc(labRoomItemRef);
+    //       // 🔁 Update labRoom item quantity
+    //       const itemId = data.itemId;
+    //       const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+    //       const labRoomItemSnap = await getDoc(labRoomItemRef);
 
-          // if (labRoomItemSnap.exists()) {
-          //   const labData = labRoomItemSnap.data();
+    //       if (labRoomItemSnap.exists()) {
+    //         const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+    //         const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+    //         await updateDoc(labRoomItemRef, { quantity: newLabQty });
+    //         console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
 
-          //   const currentLabQty = Number(labData.quantity || 0);
-          //   const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          //   await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          //   console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId}: ${currentLabQty} → ${newLabQty}`);
+    //       } else {
+    //         console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
+    //       }
+    //     }
 
-          //   // ⚙️ Also update labRoom condition breakdown
-          //   let labGood = labData.condition?.Good ?? 0;
-          //   let labDamage = labData.condition?.Damage ?? 0;
-          //   let labDefect = labData.condition?.Defect ?? 0;
+    //   } catch (err) {
+    //     console.error("💥 Failed updating inventory or labRoom items:", err.message);
+    //   } 
 
-          //   let remainingLab = requestedQty;
+    //   try {
+    //     for (const item of enrichedItems) {
+    //       const inventoryId = item.selectedItemId;
+    //       const requestedQty = Number(item.quantity);
+    //       const labRoomId = item.labRoom;
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabGood = Math.min(labGood, remainingLab);
-          //     labGood -= deductFromLabGood;
-          //     remainingLab -= deductFromLabGood;
-          //   }
+    //       if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+    //         console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+    //         continue;
+    //       }
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabDamage = Math.min(labDamage, remainingLab);
-          //     labDamage -= deductFromLabDamage;
-          //     remainingLab -= deductFromLabDamage;
-          //   }
+    //       if (!labRoomId) {
+    //         console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+    //         continue;
+    //       }
 
-          //   if (remainingLab > 0) {
-          //     const deductFromLabDefect = Math.min(labDefect, remainingLab);
-          //     labDefect -= deductFromLabDefect;
-          //     remainingLab -= deductFromLabDefect;
-          //   }
+    //       const inventoryRef = doc(db, "inventory", inventoryId);
+    //       const inventorySnap = await getDoc(inventoryRef);
+    //       if (!inventorySnap.exists()) {
+    //         console.warn(`Inventory not found for ID: ${inventoryId}`);
+    //         continue;
+    //       }
 
-          //   await updateDoc(labRoomItemRef, {
-          //     'condition.Good': labGood,
-          //     'condition.Damage': labDamage,
-          //     'condition.Defect': labDefect
-          //   });
+    //       const data = inventorySnap.data();
+    //       const currentQty = Number(data.quantity || 0);
 
-          //   console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);
-          
-          // } else {
-          //   console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId}`);
-          // }
+    //       const currentVolume = Number(data.volume || 0);
+    //       const volumeToSubtract = Number(item.quantity) * Number(item.volume || 0);
+    //       const newVolume = Math.max(currentVolume - volumeToSubtract, 0);
 
-             // 🔁 Update labRoom item quantity
-          const roomNumber = item.labRoom; // e.g. "0930"
-          const labRoomCollectionRef = collection(db, "labRoom");
-          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
-          const querySnapshot = await getDocs(q);
+    //       const newQty = Math.max(currentQty - requestedQty, 0);
+    //       await updateDoc(inventoryRef, { quantity: newQty, volume: newVolume, });
+    //       console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+    //       console.log(`✅ Inventory volume updated for ${inventoryId}: ${currentVolume}ml → ${newVolume}ml`);
 
-          if (querySnapshot.empty) {
-            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
-            return;
-          }
+    //       // ⚙️ Update inventory condition breakdown
+    //       let remaining = requestedQty;
+    //       const good = data.condition?.Good ?? 0;
+    //       const damage = data.condition?.Damage ?? 0;
+    //       const defect = data.condition?.Defect ?? 0;
 
-          // 2. Get Firestore doc ID of the labRoom
-          const labRoomDoc = querySnapshot.docs[0];
-          const labRoomDocId = labRoomDoc.id;
+    //       let newGood = good;
+    //       let newDamage = damage;
+    //       let newDefect = defect;
 
-          // 3. Query items subcollection for item with matching itemId
-          const itemId = data.itemId; // e.g. "DENT02"
-          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
-          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
-          const itemSnapshot = await getDocs(itemQuery);
+    //       if (remaining > 0) {
+    //         const deductFromGood = Math.min(newGood, remaining);
+    //         newGood -= deductFromGood;
+    //         remaining -= deductFromGood;
+    //       }
 
-          if (itemSnapshot.empty) {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
-            return;
-          }
+    //       if (remaining > 0) {
+    //         const deductFromDamage = Math.min(newDamage, remaining);
+    //         newDamage -= deductFromDamage;
+    //         remaining -= deductFromDamage;
+    //       }
 
-          // 4. Get the Firestore doc ID of the item document
-          const itemDoc = itemSnapshot.docs[0];
-          const itemDocId = itemDoc.id;
-          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
-          const labData = itemDoc.data();
+    //       if (remaining > 0) {
+    //         const deductFromDefect = Math.min(newDefect, remaining);
+    //         newDefect -= deductFromDefect;
+    //         remaining -= deductFromDefect;
+    //       }
 
-          const currentLabQty = Number(labData.quantity || 0);
-          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+    //       await updateDoc(inventoryRef, {
+    //         'condition.Good': newGood,
+    //         'condition.Damage': newDamage,
+    //         'condition.Defect': newDefect
+    //       });
 
-          // Update condition breakdown
-          let labGood = labData.condition?.Good ?? 0;
-          let labDamage = labData.condition?.Damage ?? 0;
-          let labDefect = labData.condition?.Defect ?? 0;
+    //       console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
 
-          let remainingLab = requestedQty;
+    //       // 🔁 Update labRoom item quantity
+    //       const roomNumber = item.labRoom; // e.g. "0930"
+    //       const labRoomCollectionRef = collection(db, "labRoom");
+    //       const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+    //       const querySnapshot = await getDocs(q);
 
-          if (remainingLab > 0) {
-            const deductFromLabGood = Math.min(labGood, remainingLab);
-            labGood -= deductFromLabGood;
-            remainingLab -= deductFromLabGood;
-          }
+    //       if (querySnapshot.empty) {
+    //         console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+    //         return;
+    //       }
 
-          if (remainingLab > 0) {
-            const deductFromLabDamage = Math.min(labDamage, remainingLab);
-            labDamage -= deductFromLabDamage;
-            remainingLab -= deductFromLabDamage;
-          }
+    //       // 2. Get Firestore doc ID of the labRoom
+    //       const labRoomDoc = querySnapshot.docs[0];
+    //       const labRoomDocId = labRoomDoc.id;
 
-          if (remainingLab > 0) {
-            const deductFromLabDefect = Math.min(labDefect, remainingLab);
-            labDefect -= deductFromLabDefect;
-            remainingLab -= deductFromLabDefect;
-          }
+    //       // 3. Query items subcollection for item with matching itemId
+    //       const itemId = data.itemId; // e.g. "DENT02"
+    //       const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+    //       const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+    //       const itemSnapshot = await getDocs(itemQuery);
 
-          await updateDoc(labRoomItemRef, {
-            'condition.Good': labGood,
-            'condition.Damage': labDamage,
-            'condition.Defect': labDefect
-          });
+    //       if (itemSnapshot.empty) {
+    //         console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+    //         return;
+    //       }
 
-          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+    //       // 4. Get the Firestore doc ID of the item document
+    //       const itemDoc = itemSnapshot.docs[0];
+    //       const itemDocId = itemDoc.id;
+    //       const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+    //       const labData = itemDoc.data();
 
-        }
-      } catch (err) {
-        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+    //       const currentLabQty = Number(labData.quantity || 0);
+
+    //       const currentLabVolume = Number(labData.volume || 0);
+    //       const labVolumeToSubtract = Number(item.quantity) * Number(item.volume || 0);
+    //       const newLabVolume = Math.max(currentLabVolume - labVolumeToSubtract, 0);
+
+    //       const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+    //       await updateDoc(labRoomItemRef, { quantity: newLabQty, volume: newLabVolume, });
+    //       console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+    //       console.log(`✅ labRoom volume updated for ${itemId} in room ${roomNumber}: ${currentLabVolume}ml → ${newLabVolume}ml`);
+
+    //       // Update condition breakdown
+    //       let labGood = labData.condition?.Good ?? 0;
+    //       let labDamage = labData.condition?.Damage ?? 0;
+    //       let labDefect = labData.condition?.Defect ?? 0;
+
+    //       let remainingLab = requestedQty;
+
+    //       if (remainingLab > 0) {
+    //         const deductFromLabGood = Math.min(labGood, remainingLab);
+    //         labGood -= deductFromLabGood;
+    //         remainingLab -= deductFromLabGood;
+    //       }
+
+    //       if (remainingLab > 0) {
+    //         const deductFromLabDamage = Math.min(labDamage, remainingLab);
+    //         labDamage -= deductFromLabDamage;
+    //         remainingLab -= deductFromLabDamage;
+    //       }
+
+    //       if (remainingLab > 0) {
+    //         const deductFromLabDefect = Math.min(labDefect, remainingLab);
+    //         labDefect -= deductFromLabDefect;
+    //         remainingLab -= deductFromLabDefect;
+    //       }
+
+    //       await updateDoc(labRoomItemRef, {
+    //         'condition.Good': labGood,
+    //         'condition.Damage': labDamage,
+    //         'condition.Defect': labDefect
+    //       });
+
+    //       console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+    //     }
+        
+    //   } catch (err) {
+    //     console.error("💥 Failed updating inventory or labRoom items:", err.message);
+    //   }
+
+//  try {
+//   for (const item of enrichedItems) {
+//     const inventoryId = item.selectedItemId;
+//     const labRoomId = item.labRoom;
+
+//     if (!inventoryId) {
+//       console.warn(`⛔ Skipping item with missing inventoryId`);
+//       continue;
+//     }
+
+//     if (!labRoomId) {
+//       console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+//       continue;
+//     }
+
+//     // Ensure quantityArray is always an array of objects with numeric qty and volume
+//     const quantityArray = Array.isArray(item.quantity)
+//       ? item.quantity.map(qEntry => ({
+//           qty: Number(qEntry.qty) || 0,
+//           volume: Number(qEntry.volume) || 0
+//         }))
+//       : [{
+//           qty: Number(item.quantity) || 0,
+//           volume: Number(item.volume) || 0
+//         }];
+
+//     for (const qEntry of quantityArray) {
+//       const qty = qEntry.qty;
+//       const volume = qEntry.volume;
+
+//       // Skip invalid quantities
+//       if (isNaN(qty) || qty <= 0) {
+//         console.warn(`⛔ Skipping invalid qty (${qty}) for inventoryId ${inventoryId}`);
+//         continue;
+//       }
+
+//       // Skip invalid volumes
+//       if (isNaN(volume) || volume < 0) {
+//         console.warn(`⚠️ Invalid volume (${volume}) for inventoryId ${inventoryId}, treating as 0`);
+//       }
+//       const safeVolume = isNaN(volume) || volume < 0 ? 0 : volume;
+
+//       // Fetch inventory document
+//       const inventoryRef = doc(db, "inventory", inventoryId);
+//       const inventorySnap = await getDoc(inventoryRef);
+//       if (!inventorySnap.exists()) {
+//         console.warn(`Inventory not found for ID: ${inventoryId}`);
+//         continue;
+//       }
+//       const data = inventorySnap.data();
+
+//       // Calculate new quantity and volume safely
+//       // const currentQty = Number(data.quantity) || 0;
+//       // const currentVolume = Number(data.volume) || 0;
+//       // const currentQty = Number(data.quantity?.qty) || 0;
+//       // const currentVolume = Number(data.quantity?.volume) || 0;
+
+//       let currentQty = 0;
+// let currentVolume = 0;
+
+// if (Array.isArray(data.quantity)) {
+//   for (const entry of data.quantity) {
+//     currentQty += Number(entry.qty) || 0;
+//     currentVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+//   }
+// } else {
+//   currentQty = Number(data.quantity?.qty) || 0;
+//   currentVolume = Number(data.quantity?.volume) || 0;
+// }
+
+
+//       const volumeToSubtract = qty * safeVolume;
+//       const newQty = Math.max(currentQty - qty, 0);
+//       const newVolume = Math.max(currentVolume - volumeToSubtract, 0);
+
+//       // Update inventory
+//       // await updateDoc(inventoryRef, { quantity: newQty, volume: newVolume });
+// //       await updateDoc(inventoryRef, {
+// //   quantity: {
+// //     qty: newQty,
+// //     volume: newVolume
+// //   }
+// // });
+
+// let updatedQuantityArray = [];
+// let remainingQtyToDeduct = qty;
+
+// for (const entry of data.quantity) {
+//   const entryQty = Number(entry.qty) || 0;
+//   const entryVolume = Number(entry.volume) || 0;
+
+//   if (remainingQtyToDeduct === 0) {
+//     updatedQuantityArray.push(entry);
+//     continue;
+//   }
+
+//   const deduct = Math.min(entryQty, remainingQtyToDeduct);
+//   const newEntryQty = entryQty - deduct;
+
+//   if (newEntryQty > 0) {
+//     updatedQuantityArray.push({
+//       qty: newEntryQty,
+//       volume: entryVolume,
+//     });
+//   }
+
+//   remainingQtyToDeduct -= deduct;
+// }
+
+//       console.log(`✅ Inventory updated for ${inventoryId}: qty ${currentQty}→${newQty}, volume ${currentVolume}ml→${newVolume}ml`);
+
+//       // Update inventory condition breakdown
+//       let remaining = qty;
+//       let newGood = data.condition?.Good ?? 0;
+//       let newDamage = data.condition?.Damage ?? 0;
+//       let newDefect = data.condition?.Defect ?? 0;
+
+//       if (remaining > 0) {
+//         const deductFromGood = Math.min(newGood, remaining);
+//         newGood -= deductFromGood;
+//         remaining -= deductFromGood;
+//       }
+//       if (remaining > 0) {
+//         const deductFromDamage = Math.min(newDamage, remaining);
+//         newDamage -= deductFromDamage;
+//         remaining -= deductFromDamage;
+//       }
+//       if (remaining > 0) {
+//         const deductFromDefect = Math.min(newDefect, remaining);
+//         newDefect -= deductFromDefect;
+//         remaining -= deductFromDefect;
+//       }
+
+// await updateDoc(inventoryRef, {
+//   quantity: updatedQuantityArray,
+//   'condition.Good': newGood,
+//   'condition.Damage': newDamage,
+//   'condition.Defect': newDefect
+// });
+
+//       // await updateDoc(inventoryRef, {
+//       //   'condition.Good': newGood,
+//       //   'condition.Damage': newDamage,
+//       //   'condition.Defect': newDefect
+//       // });
+
+//       console.log(`✅ Condition updated for ${inventoryId}: Good(${data.condition?.Good}→${newGood}), Damage(${data.condition?.Damage}→${newDamage}), Defect(${data.condition?.Defect}→${newDefect})`);
+
+//       // Now do the same for labRoom...
+
+//       // Get labRoom doc as before
+//       const labRoomCollectionRef = collection(db, "labRoom");
+//       const q = query(labRoomCollectionRef, where("roomNumber", "==", labRoomId));
+//       const querySnapshot = await getDocs(q);
+
+//       if (querySnapshot.empty) {
+//         console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomId}`);
+//         continue;
+//       }
+
+//       const labRoomDoc = querySnapshot.docs[0];
+//       const labRoomDocId = labRoomDoc.id;
+
+//       const itemId = data.itemId;
+//       const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+//       const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+//       const itemSnapshot = await getDocs(itemQuery);
+
+//       if (itemSnapshot.empty) {
+//         console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId} (${labRoomDocId})`);
+//         continue;
+//       }
+
+//       const itemDoc = itemSnapshot.docs[0];
+//       const itemDocId = itemDoc.id;
+//       const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+//       const labData = itemDoc.data();
+
+// // const currentLabQty = Number(labData.quantity?.qty) || 0;
+// // const currentLabVolume = Number(labData.quantity?.volume) || 0;
+
+// let currentLabQty = 0;
+// let currentLabVolume = 0;
+
+// if (Array.isArray(data.quantity)) {
+//   for (const entry of data.quantity) {
+//     currentLabQty += Number(entry.qty) || 0;
+//     currentLabVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+//   }
+// } else {
+//   currentLabQty = Number(data.quantity?.qty) || 0;
+//   currentLabVolume = Number(data.quantity?.volume) || 0;
+// }
+
+
+
+//       const newLabQty = Math.max(currentLabQty - qty, 0);
+//       const newLabVolume = Math.max(currentLabVolume - volumeToSubtract, 0);
+
+//       // await updateDoc(labRoomItemRef, { quantity: newLabQty, volume: newLabVolume });
+// // Deduct from array entries
+// let updatedQuantityArray1 = [];
+// let remainingQtyToDeduct1 = qty;
+
+// for (const entry of data.quantity) {
+//   const entryQty = Number(entry.qty) || 0;
+//   const entryVolume = Number(entry.volume) || 0;
+
+//   if (remainingQtyToDeduct1 === 0) {
+//     updatedQuantityArray1.push(entry);
+//     continue;
+//   }
+
+//   const deduct = Math.min(entryQty, remainingQtyToDeduct1);
+//   const newEntryQty = entryQty - deduct;
+
+//   if (newEntryQty > 0) {
+//     updatedQuantityArray1.push({
+//       qty: newEntryQty,
+//       volume: entryVolume,
+//     });
+//   }
+
+//   remainingQtyToDeduct1 -= deduct;
+// }
+
+
+
+//       console.log(`✅ labRoom item updated for ${itemId} in room ${labRoomId} (${labRoomDocId}): qty ${currentLabQty}→${newLabQty}, volume ${currentLabVolume}ml→${newLabVolume}ml`);
+
+//       // Update labRoom condition breakdown
+//       let remainingLab = qty;
+//       let labGood = labData.condition?.Good ?? 0;
+//       let labDamage = labData.condition?.Damage ?? 0;
+//       let labDefect = labData.condition?.Defect ?? 0;
+
+//       if (remainingLab > 0) {
+//         const deductFromLabGood = Math.min(labGood, remainingLab);
+//         labGood -= deductFromLabGood;
+//         remainingLab -= deductFromLabGood;
+//       }
+//       if (remainingLab > 0) {
+//         const deductFromLabDamage = Math.min(labDamage, remainingLab);
+//         labDamage -= deductFromLabDamage;
+//         remainingLab -= deductFromLabDamage;
+//       }
+//       if (remainingLab > 0) {
+//         const deductFromLabDefect = Math.min(labDefect, remainingLab);
+//         labDefect -= deductFromLabDefect;
+//         remainingLab -= deductFromLabDefect;
+//       }
+
+// await updateDoc(labRoomItemRef, {
+//  quantity: updatedQuantityArray,
+//   'condition.Good': labGood,
+//   'condition.Damage': labDamage,
+//   'condition.Defect': labDefect
+// });
+
+
+
+//       // await updateDoc(labRoomItemRef, {
+//       //   'condition.Good': labGood,
+//       //   'condition.Damage': labDamage,
+//       //   'condition.Defect': labDefect
+//       // });
+
+//       console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition?.Good}→${labGood}), Damage(${labData.condition?.Damage}→${labDamage}), Defect(${labData.condition?.Defect}→${labDefect})`);
+//     } // end inner quantityArray loop
+//   }
+// } catch (err) {
+//   console.error("💥 Failed updating inventory or labRoom items:", err.message);
+// }
+
+try {
+  for (const item of enrichedItems) {
+    const inventoryId = item.selectedItemId;
+    const labRoomId = item.labRoom;
+    const category = item.category;
+
+    if (!inventoryId) {
+      console.warn(`⛔ Skipping item with missing inventoryId`);
+      continue;
+    }
+
+    if (!labRoomId) {
+      console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+      continue;
+    }
+
+    const inventoryRef = doc(db, "inventory", inventoryId);
+    const inventorySnap = await getDoc(inventoryRef);
+    if (!inventorySnap.exists()) {
+      console.warn(`Inventory not found for ID: ${inventoryId}`);
+      continue;
+    }
+    const data = inventorySnap.data();
+    const itemId = data.itemId;
+
+    const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", labRoomId));
+    const labRoomSnapshot = await getDocs(labRoomQuery);
+    if (labRoomSnapshot.empty) {
+      console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomId}`);
+      continue;
+    }
+
+    const labRoomDoc = labRoomSnapshot.docs[0];
+    const labRoomDocId = labRoomDoc.id;
+    const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+    const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+    const itemSnapshot = await getDocs(itemQuery);
+
+    if (itemSnapshot.empty) {
+      console.warn(`⚠️ labRoom item not found for ${itemId} in room ${labRoomId} (${labRoomDocId})`);
+      continue;
+    }
+
+    const itemDoc = itemSnapshot.docs[0];
+    const itemDocId = itemDoc.id;
+    const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+    const labData = itemDoc.data();
+
+    // if (category.toLowerCase() === "glasswares") {
+    //   // Glasswares: handle quantity + volume arrays
+    //   const quantityArray = Array.isArray(item.quantity)
+    //     ? item.quantity.map(qEntry => ({
+    //         qty: Number(qEntry.qty) || 0,
+    //         volume: Number(qEntry.volume) || 0
+    //       }))
+    //     : [{
+    //         qty: Number(item.quantity) || 0,
+    //         volume: Number(item.volume) || 0
+    //       }];
+
+    //   for (const qEntry of quantityArray) {
+    //     const qty = qEntry.qty;
+    //     const volume = isNaN(qEntry.volume) || qEntry.volume < 0 ? 0 : qEntry.volume;
+
+    //     if (isNaN(qty) || qty <= 0) {
+    //       console.warn(`⛔ Skipping invalid qty (${qty}) for inventoryId ${inventoryId}`);
+    //       continue;
+    //     }
+
+    //     let currentQty = 0, currentVolume = 0;
+    //     if (Array.isArray(data.quantity)) {
+    //       for (const entry of data.quantity) {
+    //         currentQty += Number(entry.qty) || 0;
+    //         currentVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+    //       }
+    //     }
+
+    //     const volumeToSubtract = qty * volume;
+    //     const newQty = Math.max(currentQty - qty, 0);
+    //     const newVolume = Math.max(currentVolume - volumeToSubtract, 0);
+
+    //     let updatedQuantityArray = [];
+    //     let remainingQtyToDeduct = qty;
+    //     for (const entry of data.quantity) {
+    //       const entryQty = Number(entry.qty) || 0;
+    //       const entryVolume = Number(entry.volume) || 0;
+    //       if (remainingQtyToDeduct === 0) {
+    //         updatedQuantityArray.push(entry);
+    //         continue;
+    //       }
+    //       const deduct = Math.min(entryQty, remainingQtyToDeduct);
+    //       const newEntryQty = entryQty - deduct;
+    //       if (newEntryQty > 0) {
+    //         updatedQuantityArray.push({ qty: newEntryQty, volume: entryVolume });
+    //       }
+    //       remainingQtyToDeduct -= deduct;
+    //     }
+
+    //     let remaining = qty;
+    //     let newGood = data.condition?.Good ?? 0;
+    //     let newDamage = data.condition?.Damage ?? 0;
+    //     let newDefect = data.condition?.Defect ?? 0;
+
+    //     if (remaining > 0) {
+    //       const deductGood = Math.min(newGood, remaining);
+    //       newGood -= deductGood; remaining -= deductGood;
+    //     }
+    //     if (remaining > 0) {
+    //       const deductDamage = Math.min(newDamage, remaining);
+    //       newDamage -= deductDamage; remaining -= deductDamage;
+    //     }
+    //     if (remaining > 0) {
+    //       const deductDefect = Math.min(newDefect, remaining);
+    //       newDefect -= deductDefect; remaining -= deductDefect;
+    //     }
+
+    //     await updateDoc(inventoryRef, {
+    //       quantity: updatedQuantityArray,
+    //       'condition.Good': newGood,
+    //       'condition.Damage': newDamage,
+    //       'condition.Defect': newDefect
+    //     });
+
+    //     // Lab room updates
+    //     let currentLabQty = 0, currentLabVolume = 0;
+    //     if (Array.isArray(labData.quantity)) {
+    //       for (const entry of labData.quantity) {
+    //         currentLabQty += Number(entry.qty) || 0;
+    //         currentLabVolume += (Number(entry.qty) || 0) * (Number(entry.volume) || 0);
+    //       }
+    //     }
+
+    //     let updatedLabQtyArray = [];
+    //     let remainingQtyToDeduct1 = qty;
+    //     for (const entry of labData.quantity) {
+    //       const entryQty = Number(entry.qty) || 0;
+    //       const entryVolume = Number(entry.volume) || 0;
+    //       if (remainingQtyToDeduct1 === 0) {
+    //         updatedLabQtyArray.push(entry);
+    //         continue;
+    //       }
+    //       const deduct = Math.min(entryQty, remainingQtyToDeduct1);
+    //       const newEntryQty = entryQty - deduct;
+    //       if (newEntryQty > 0) {
+    //         updatedLabQtyArray.push({ qty: newEntryQty, volume: entryVolume });
+    //       }
+    //       remainingQtyToDeduct1 -= deduct;
+    //     }
+
+    //     let remainingLab = qty;
+    //     let labGood = labData.condition?.Good ?? 0;
+    //     let labDamage = labData.condition?.Damage ?? 0;
+    //     let labDefect = labData.condition?.Defect ?? 0;
+
+    //     if (remainingLab > 0) {
+    //       const deductGood = Math.min(labGood, remainingLab);
+    //       labGood -= deductGood; remainingLab -= deductGood;
+    //     }
+    //     if (remainingLab > 0) {
+    //       const deductDamage = Math.min(labDamage, remainingLab);
+    //       labDamage -= deductDamage; remainingLab -= deductDamage;
+    //     }
+    //     if (remainingLab > 0) {
+    //       const deductDefect = Math.min(labDefect, remainingLab);
+    //       labDefect -= deductDefect; remainingLab -= deductDefect;
+    //     }
+
+    //     await updateDoc(labRoomItemRef, {
+    //       quantity: updatedLabQtyArray,
+    //       'condition.Good': labGood,
+    //       'condition.Damage': labDamage,
+    //       'condition.Defect': labDefect
+    //     });
+
+    //     console.log(`✅ Updated Glassware item ${itemId} in ${labRoomId}`);
+    //   }
+    if (category.toLowerCase() === "glasswares") {
+  // Glasswares: handle quantity + volume arrays
+  const quantityArray = Array.isArray(item.quantity)
+    ? item.quantity.map(qEntry => ({
+        qty: Number(qEntry.qty) || 0,
+        volume: Number(qEntry.volume) || 0
+      }))
+    : [{
+        qty: Number(item.quantity) || 0,
+        volume: Number(item.volume) || 0
+      }];
+
+  for (const qEntry of quantityArray) {
+    const qty = qEntry.qty;
+    const volume = isNaN(qEntry.volume) || qEntry.volume < 0 ? 0 : qEntry.volume;
+
+    if (isNaN(qty) || qty <= 0) {
+      console.warn(`⛔ Skipping invalid qty (${qty}) for inventoryId ${inventoryId}`);
+      continue;
+    }
+
+    // Deduct from main inventory quantity (data.quantity)
+    let updatedQuantityArray = [];
+    let remainingQtyToDeduct = qty;
+
+    const sortedEntries = [...data.quantity].sort((a, b) => {
+      const volA = Number(a.volume) || 0;
+      const volB = Number(b.volume) || 0;
+      if (volA === volume && volB !== volume) return -1;
+      if (volB === volume && volA !== volume) return 1;
+      return 0;
+    });
+
+    for (const entry of sortedEntries) {
+      const entryQty = Number(entry.qty) || 0;
+      const entryVolume = Number(entry.volume) || 0;
+
+      if (remainingQtyToDeduct === 0) {
+        updatedQuantityArray.push(entry);
+        continue;
       }
+
+      if (entryVolume === volume || remainingQtyToDeduct > 0) {
+        const deduct = Math.min(entryQty, remainingQtyToDeduct);
+        const newEntryQty = entryQty - deduct;
+
+        if (newEntryQty > 0) {
+          updatedQuantityArray.push({ qty: newEntryQty, volume: entryVolume });
+        }
+
+        remainingQtyToDeduct -= deduct;
+      } else {
+        updatedQuantityArray.push(entry);
+      }
+    }
+
+    // Deduct from condition fields in main inventory
+    let remaining = qty;
+    let newGood = data.condition?.Good ?? 0;
+    let newDamage = data.condition?.Damage ?? 0;
+    let newDefect = data.condition?.Defect ?? 0;
+
+    if (remaining > 0) {
+      const deductGood = Math.min(newGood, remaining);
+      newGood -= deductGood; remaining -= deductGood;
+    }
+    if (remaining > 0) {
+      const deductDamage = Math.min(newDamage, remaining);
+      newDamage -= deductDamage; remaining -= deductDamage;
+    }
+    if (remaining > 0) {
+      const deductDefect = Math.min(newDefect, remaining);
+      newDefect -= deductDefect; remaining -= deductDefect;
+    }
+
+    await updateDoc(inventoryRef, {
+      quantity: updatedQuantityArray,
+      'condition.Good': newGood,
+      'condition.Damage': newDamage,
+      'condition.Defect': newDefect
+    });
+
+    // Deduct from lab room quantity (labData.quantity)
+    let updatedLabQtyArray = [];
+    let remainingQtyToDeductLab = qty;
+
+    const sortedLabEntries = [...labData.quantity].sort((a, b) => {
+      const volA = Number(a.volume) || 0;
+      const volB = Number(b.volume) || 0;
+      if (volA === volume && volB !== volume) return -1;
+      if (volB === volume && volA !== volume) return 1;
+      return 0;
+    });
+
+    for (const entry of sortedLabEntries) {
+      const entryQty = Number(entry.qty) || 0;
+      const entryVolume = Number(entry.volume) || 0;
+
+      if (remainingQtyToDeductLab === 0) {
+        updatedLabQtyArray.push(entry);
+        continue;
+      }
+
+      if (entryVolume === volume || remainingQtyToDeductLab > 0) {
+        const deduct = Math.min(entryQty, remainingQtyToDeductLab);
+        const newEntryQty = entryQty - deduct;
+
+        if (newEntryQty > 0) {
+          updatedLabQtyArray.push({ qty: newEntryQty, volume: entryVolume });
+        }
+
+        remainingQtyToDeductLab -= deduct;
+      } else {
+        updatedLabQtyArray.push(entry);
+      }
+    }
+
+    // Deduct from condition fields in lab inventory
+    let remainingLab = qty;
+    let labGood = labData.condition?.Good ?? 0;
+    let labDamage = labData.condition?.Damage ?? 0;
+    let labDefect = labData.condition?.Defect ?? 0;
+
+    if (remainingLab > 0) {
+      const deductGood = Math.min(labGood, remainingLab);
+      labGood -= deductGood; remainingLab -= deductGood;
+    }
+    if (remainingLab > 0) {
+      const deductDamage = Math.min(labDamage, remainingLab);
+      labDamage -= deductDamage; remainingLab -= deductDamage;
+    }
+    if (remainingLab > 0) {
+      const deductDefect = Math.min(labDefect, remainingLab);
+      labDefect -= deductDefect; remainingLab -= deductDefect;
+    }
+
+    await updateDoc(labRoomItemRef, {
+      quantity: updatedLabQtyArray,
+      'condition.Good': labGood,
+      'condition.Damage': labDamage,
+      'condition.Defect': labDefect
+    });
+
+    console.log(`✅ Updated Glassware item ${itemId} in ${labRoomId}`);
+  }
+
+    } else {
+      // Other categories: just simple quantity deduction
+      const requestedQty = Number(item.quantity);
+      if (isNaN(requestedQty) || requestedQty <= 0) {
+        console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+        continue;
+      }
+
+      const currentQty = Number(data.quantity) || 0;
+      const newQty = Math.max(currentQty - requestedQty, 0);
+
+      let remaining = requestedQty;
+      let newGood = data.condition?.Good ?? 0;
+      let newDamage = data.condition?.Damage ?? 0;
+      let newDefect = data.condition?.Defect ?? 0;
+
+      if (remaining > 0) {
+        const deductGood = Math.min(newGood, remaining);
+        newGood -= deductGood; remaining -= deductGood;
+      }
+      if (remaining > 0) {
+        const deductDamage = Math.min(newDamage, remaining);
+        newDamage -= deductDamage; remaining -= deductDamage;
+      }
+      if (remaining > 0) {
+        const deductDefect = Math.min(newDefect, remaining);
+        newDefect -= deductDefect; remaining -= deductDefect;
+      }
+
+      await updateDoc(inventoryRef, {
+        quantity: newQty,
+        'condition.Good': newGood,
+        'condition.Damage': newDamage,
+        'condition.Defect': newDefect
+      });
+
+      // Lab room update
+      const labQty = Number(labData.quantity) || 0;
+      const newLabQty = Math.max(labQty - requestedQty, 0);
+
+      let labGood = labData.condition?.Good ?? 0;
+      let labDamage = labData.condition?.Damage ?? 0;
+      let labDefect = labData.condition?.Defect ?? 0;
+
+      let remainingLab = requestedQty;
+      if (remainingLab > 0) {
+        const deductGood = Math.min(labGood, remainingLab);
+        labGood -= deductGood; remainingLab -= deductGood;
+      }
+      if (remainingLab > 0) {
+        const deductDamage = Math.min(labDamage, remainingLab);
+        labDamage -= deductDamage; remainingLab -= deductDamage;
+      }
+      if (remainingLab > 0) {
+        const deductDefect = Math.min(labDefect, remainingLab);
+        labDefect -= deductDefect; remainingLab -= deductDefect;
+      }
+
+      await updateDoc(labRoomItemRef, {
+        quantity: newLabQty,
+        'condition.Good': labGood,
+        'condition.Damage': labDamage,
+        'condition.Defect': labDefect
+      });
+
+      console.log(`✅ Updated non-glassware item ${itemId} in ${labRoomId}`);
+    }
+  }
+} catch (err) {
+  console.error("💥 Failed updating inventory or labRoom items:", err.message);
+}
+
+
 
     try {
       // Add to requestlog for approval
@@ -1718,64 +4924,132 @@ const PendingRequest = () => {
 
       // Proceed with borrow catalog logic for approved items
       // Filter to get all "Fixed" items
-      const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+      // const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
 
-      if (fixedItems.length > 0) {
-        console.log('Fixed items to be grouped:', fixedItems); // Debugging log to see all fixed items
+      // if (fixedItems.length > 0) {
+      //   console.log('Fixed items to be grouped:', fixedItems); // Debugging log to see all fixed items
 
-        // Create an array of items with the necessary fields for Firestore
-        const formattedItems = fixedItems.map(item => ({
-          category: item.category || "N/A",  // Category (e.g., Equipment)
-          condition: item.condition || "N/A",  // Condition (e.g., Good)
-          department: item.department || "N/A",  // Department (e.g., DENT)
-          itemName: item.itemName || "N/A",  // Item name (e.g., Centrifuge)
-          quantity: item.quantity || "1",  // Quantity requested
-          selectedItemId: item.selectedItemId || "N/A",  // Item ID from Firestore
-          status: item.status || "Available",  // Status (e.g., Available)
-          program: item.program || "N/A",  // Program associated with the request
-          course: item.course || "N/A",
-          reason: item.reason || "No reason provided",  // Reason for the request
-          labRoom: item.labRoom || "N/A",  // Lab room (e.g., 1224)
-          timeFrom: item.timeFrom || "N/A",  // Time From
-          timeTo: item.timeTo || "N/A",  // Time To
-          usageType: item.usageType || "N/A",  // Usage type (e.g., Community Extension)
-          scannedCount: 0,
-        }));
+      //   // Create an array of items with the necessary fields for Firestore
+      //   const formattedItems = fixedItems.map(item => ({
+      //     category: item.category || "N/A",  // Category (e.g., Equipment)
+      //     condition: item.condition || "N/A",  // Condition (e.g., Good)
+      //     department: item.department || "N/A",  // Department (e.g., DENT)
+      //     itemName: item.itemName || "N/A",  // Item name (e.g., Centrifuge)
+      //     quantity: item.quantity || "1",  // Quantity requested
+      //     selectedItemId: item.selectedItemId || "N/A",  // Item ID from Firestore
+      //     status: item.status || "Available",  // Status (e.g., Available)
+      //     program: item.program || "N/A",  // Program associated with the request
+      //     course: item.course || "N/A",
+      //     reason: item.reason || "No reason provided",  // Reason for the request
+      //     labRoom: item.labRoom || "N/A",  // Lab room (e.g., 1224)
+      //     timeFrom: item.timeFrom || "N/A",  // Time From
+      //     timeTo: item.timeTo || "N/A",  // Time To
+      //     usageType: item.usageType || "N/A",  // Usage type (e.g., Community Extension)
+      //     scannedCount: 0,
+      //   }));
 
-        // Create a borrow catalog entry with the formatted fixed items
-        const borrowCatalogEntry = {
-          accountId: selectedRequest.accountId || "N/A",
-          userName: selectedRequest.userName || "N/A",
-          room: selectedRequest.room || "N/A",
-          course: selectedRequest.course || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired || "N/A",
-          timeFrom: selectedRequest.timeFrom || "N/A",  // Add timeFrom
-          timeTo: selectedRequest.timeTo || "N/A",  
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-          requestList: formattedItems,  // Add all selected "Fixed" items together
-          status: "Borrowed",  // Status as "Borrowed"
-          approvedBy: userName,
-          reason: selectedRequest.reason || "No reason provided",
-          program: selectedRequest.program,
-        };
+      //   // Create a borrow catalog entry with the formatted fixed items
+      //   const borrowCatalogEntry = {
+      //     accountId: selectedRequest.accountId || "N/A",
+      //     userName: selectedRequest.userName || "N/A",
+      //     room: selectedRequest.room || "N/A",
+      //     course: selectedRequest.course || "N/A",
+      //     courseDescription: selectedRequest.courseDescription || "N/A",
+      //     dateRequired: selectedRequest.dateRequired || "N/A",
+      //     timeFrom: selectedRequest.timeFrom || "N/A",  // Add timeFrom
+      //     timeTo: selectedRequest.timeTo || "N/A",  
+      //     timestamp: selectedRequest.timestamp || "N/A",
+      //     rawTimestamp: new Date(),
+      //     requestList: formattedItems,  // Add all selected "Fixed" items together
+      //     status: "Borrowed",  // Status as "Borrowed"
+      //     approvedBy: userName,
+      //     reason: selectedRequest.reason || "No reason provided",
+      //     program: selectedRequest.program,
+      //   };
 
-        // Add to userrequestlog subcollection for the requestor's account
-        const userRequestLogEntry = {
-          ...requestLogEntry,
-          status: "Approved", 
-          approvedBy: userName,
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-        };
+      //   // Add to userrequestlog subcollection for the requestor's account
+      //   const userRequestLogEntry = {
+      //     ...requestLogEntry,
+      //     status: "Approved", 
+      //     approvedBy: userName,
+      //     timestamp: selectedRequest.timestamp || "N/A",
+      //     rawTimestamp: new Date(),
+      //   };
 
-        // Add the borrow catalog entry to Firestore
-        await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+      //   // Add the borrow catalog entry to Firestore
+      //   await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
 
-        // Add to the user's 'userrequestlog' subcollection
-        await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
-      }
+      //   // Add to the user's 'userrequestlog' subcollection
+      //   await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+      // }
+
+           // Process Borrow Catalog
+const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+
+if (fixedItems.length > 0) {
+  const formattedItems = fixedItems.map(item => {
+let volume = "N/A";
+
+if (item.category === "Glasswares") {
+  if (Array.isArray(item.quantity) && item.quantity.length > 0) {
+    volume = item.quantity.map(q => `${q.volume ?? "N/A"} ML`).join(", ");
+  } else if (typeof item.quantity === "object" && item.quantity !== null) {
+    volume = `${item.quantity.volume ?? "N/A"} ML`;
+  } else if (item.volume) {
+    // <- This is the case in your data
+    volume = `${item.volume} ML`;
+  }
+}
+
+    return {
+      category: item.category || "N/A",
+      condition: item.condition || "N/A",
+      department: item.department || "N/A",
+      itemName: item.itemName || "N/A",
+      quantity: item.quantity || "1",
+      volume: volume,
+      selectedItemId: item.selectedItemId || "N/A",
+      status: item.status || "Available",
+      program: item.program || "N/A",
+      course: item.course || "N/A",
+      reason: item.reason || "No reason provided",
+      labRoom: item.labRoom || "N/A",
+      timeFrom: item.timeFrom || "N/A",
+      timeTo: item.timeTo || "N/A",
+      usageType: item.usageType || "N/A",
+      scannedCount: 0,
+    };
+  });
+
+  const borrowCatalogEntry = {
+    accountId: selectedRequest.accountId || "N/A",
+    userName: selectedRequest.userName || "N/A",
+    room: selectedRequest.room || "N/A",
+    course: selectedRequest.course || "N/A",
+    courseDescription: selectedRequest.courseDescription || "N/A",
+    dateRequired: selectedRequest.dateRequired || "N/A",
+    timeFrom: selectedRequest.timeFrom || "N/A",
+    timeTo: selectedRequest.timeTo || "N/A",
+    timestamp: selectedRequest.timestamp || "N/A",
+    rawTimestamp: new Date(),
+    requestList: formattedItems,
+    status: "Borrowed",
+    approvedBy: userName,
+    reason: selectedRequest.reason || "No reason provided",
+    program: selectedRequest.program,
+  };
+
+  const userRequestLogEntry = {
+    ...requestLogEntry,
+    status: "Approved",
+    approvedBy: userName,
+    timestamp: selectedRequest.timestamp || "N/A",
+    rawTimestamp: new Date(),
+  };
+
+  await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+}
 
         await deleteDoc(doc(db, "userrequests", selectedRequest.id));
 
@@ -2022,6 +5296,51 @@ const PendingRequest = () => {
     },
   ];  
 
+  // const columns = [
+  //   {
+  //     title: "Check",
+  //     dataIndex: "check",
+  //     render: (_, record, index) => (
+  //       <input
+  //         type="checkbox"
+  //         checked={checkedItems[`${selectedRequest?.id}-${index}`] || false}
+  //         onChange={(e) =>
+  //           setCheckedItems({
+  //             ...checkedItems,
+  //             [`${selectedRequest?.id}-${index}`]: e.target.checked,
+  //           })
+  //         }         
+  //       />
+  //     ),
+  //     width: 50,
+  //   },
+  //   {
+  //     title: "Item ID",
+  //     dataIndex: "itemIdFromInventory", 
+  //     render: (text) => text || "N/A",  
+  //   },   
+  //   {
+  //     title: "Item Name",
+  //     dataIndex: "itemName",
+  //   },
+  //   {
+  //     title: "Quantity",
+  //     dataIndex: "quantity",
+  //   },
+  //   {
+  //     title: "Category",
+  //     dataIndex: "category",
+  //   },
+  // ];
+
+  const hasGlasswares =
+    Array.isArray(selectedRequest?.requestList) &&
+    selectedRequest.requestList.some(
+      (item) =>
+        typeof item.category === "string" &&
+        item.category.trim().toLowerCase() === "glasswares"
+  );
+
   const columns = [
     {
       title: "Check",
@@ -2035,7 +5354,7 @@ const PendingRequest = () => {
               ...checkedItems,
               [`${selectedRequest?.id}-${index}`]: e.target.checked,
             })
-          }         
+          }
         />
       ),
       width: 50,
@@ -2057,10 +5376,15 @@ const PendingRequest = () => {
       title: "Category",
       dataIndex: "category",
     },
-    // {
-    //   title: "Item Condition",
-    //   dataIndex: "condition",
-    // },
+    ...(hasGlasswares
+      ? [
+          {
+            title: "Volume",
+            dataIndex: "volume",
+            render: (volume) => (volume ? `${volume} mL` : "N/A"),
+          },
+        ]
+      : []),
   ];
 
   const formatDate = (timestamp) => {

@@ -75,6 +75,7 @@ const Requisition = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [showPolicies, setShowPolicies] = useState(false)
   const [mergedData, setMergedData] = useState([]);
+  const [volumeOptions, setVolumeOptions] = useState([]);
   const location = useLocation();
   const navigate = useNavigate();
   const auth = getAuth();
@@ -113,6 +114,33 @@ const Requisition = () => {
       setRequestList(storedRequestList);
     }
   }, []);
+
+  useEffect(() => {
+    async function fetchVolumeOptions() {
+      const inventoryRef = collection(db, "inventory");
+      const snapshot = await getDocs(inventoryRef);
+
+      // Extract volumes from all glasswares' quantity arrays
+      const volumesSet = new Set();
+
+      snapshot.docs.forEach((doc) => {
+        const data = doc.data();
+        if (data.category === "Glasswares" && Array.isArray(data.quantity)) {
+          data.quantity.forEach(qtyObj => {
+            // qtyObj.volume may be string or number, convert to number for consistency
+            const vol = Number(qtyObj.volume);
+            if (!isNaN(vol)) volumesSet.add(vol);
+          });
+        }
+      });
+
+      // Convert Set to sorted array
+      const sortedVolumes = Array.from(volumesSet).sort((a, b) => a - b);
+      setVolumeOptions(sortedVolumes);
+    }
+
+    fetchVolumeOptions();
+  }, [db]);
 
   // useEffect(() => {
   //   const fetchRequestList = async () => {
@@ -345,7 +373,203 @@ const Requisition = () => {
     });
   };  
   
-  const finalizeRequest = async () => {
+  // const finalizeRequest = async () => {
+  //   let isValid = true;
+  //   let idsToRemove = [];
+  
+  //   if (!dateRequired) {
+  //     setNotificationMessage("Please select a date!.");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+  
+  //   if (!program) {
+  //     setProgramError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setProgramError(false);
+  //   }
+
+  //   if (!course) {
+  //     setCourseError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setCourseError(false);
+  //   }
+
+  //   if (!usageType) {
+  //     setUsageError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setUsageError(false);
+  //   }
+  
+  //   if (!room) {
+  //     setRoomError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setRoomError(false);
+  //   }
+
+  //   if (usageType === "Others" && !customUsageType.trim()) {
+  //     setNotificationMessage("Please specify the usage type.");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+
+  //   if (!timeFrom || !timeTo) {
+  //     setNotificationMessage("Please select both 'Time From' and 'Time To'!");
+  //     setIsNotificationVisible(true);
+
+  //     isValid = false;
+
+  //   } else if (new Date(`1970-01-01T${timeFrom}`) >= new Date(`1970-01-01T${timeTo}`)) {
+  //     setNotificationMessage("'Time From' must be earlier than 'Time To'!");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+    
+  //   if (mergedData.length === 0) {
+  //     setNotificationMessage("Please add items to the request list!");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+
+  //   console.log("Original mergedData:", mergedData);
+  //   // Filter out incomplete items from mergedData
+  //   const filteredMergedData = mergedData.filter(item =>
+  //     item.itemName && item.category && item.quantity && item.labRoom &&
+  //     item.status && item.condition && item.department
+  //   );
+
+  //   // Show a warning if all items are incomplete
+  //   if (filteredMergedData.length === 0) {
+  //     setNotificationMessage("Please complete all required item fields before finalizing.");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+  //   console.log("Filtered mergedData:", filteredMergedData);
+
+  //   if (isValid) {
+  //     try {
+  //       const userId = localStorage.getItem("userId");
+  
+  //       if (userId) {
+  //         // Fetch the user's name from the accounts collection
+  //         const userDocRef = doc(db, "accounts", userId);
+  //         const userDocSnapshot = await getDoc(userDocRef);
+  
+  //         if (!userDocSnapshot.exists()) {
+  //           message.error("User not found.");
+  //           return;
+  //         }
+  
+  //         const userName = userDocSnapshot.data().name;
+
+  //         const finalUsageType = usageType === "Others" ? customUsageType : usageType;
+  
+  //         // Add data to the user's requests collection
+  //         const userRequestRef = collection(db, "accounts", userId, "userRequests");
+  //         const requestData = {
+  //           dateRequired,
+  //           timeFrom,
+  //           timeTo,
+  //           program,
+  //           course,
+  //           usageType: finalUsageType,
+  //           room,
+  //           reason,
+  //           filteredMergedData,
+  //           userName,
+  //           timestamp: Timestamp.now(),
+  //         };
+  
+  //         await addDoc(userRequestRef, requestData);
+  
+  //         // Add to root userrequests collection
+  //         const userRequestsRootRef = collection(db, "userrequests");
+  //         const newUserRequestRef = doc(userRequestsRootRef);
+  //         await setDoc(newUserRequestRef, {
+  //           ...requestData,
+  //           accountId: userId,
+  //         });
+
+  //         await logRequestOrReturn(userId, userName, "Requested Items", filteredMergedData); 
+  
+  //         const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+  //         const querySnapshot = await getDocs(tempRequestRef);
+  
+  //         const deletionPromises = [];
+  
+  //         querySnapshot.forEach((docSnapshot) => {
+  //           const itemData = docSnapshot.data();
+  //           idsToRemove.push(itemData.id);
+  
+  //           const pendingRequestRef = collection(db, "accounts", userId, "pendingrequest");
+  
+  //           deletionPromises.push(
+  //             (async () => {
+  //               // Add to pending requests
+  //               await addDoc(pendingRequestRef, itemData);
+  
+  //               // Delete from temporaryRequests
+  //               await deleteDoc(doc(db, "accounts", userId, "temporaryRequests", docSnapshot.id));
+  
+  //               // Delete from pendingRequest if already exists
+  //               const pendingRequestDocs = await getDocs(pendingRequestRef);
+  //               pendingRequestDocs.forEach((pendingDoc) => {
+  //                 if (pendingDoc.data().id === itemData.id) {
+  //                   deletionPromises.push(deleteDoc(doc(db, "accounts", userId, "pendingrequest", pendingDoc.id)));
+  //                 }
+  //               });
+  //             })()
+  //           );
+  //         });
+  
+  //         await Promise.all(deletionPromises);
+  
+  //         // Filter out removed items from requestList
+  //         const updatedRequestList = mergedData.filter((item) => !idsToRemove.includes(item.id));
+  //         setRequestList(updatedRequestList);
+  //         localStorage.setItem('requestList', JSON.stringify(updatedRequestList));
+  
+  //         setNotificationMessage("Requisition sent successfully!");
+  //         setIsNotificationVisible(true);
+  //         setIsFinalizeVisible(false);
+  
+  //         clearTableData();
+  //         setDateRequired(null);
+  //         setTimeFrom(null);
+  //         setTimeTo(null);
+  //         setProgram("");
+  //         setCourse("");
+  //         setUsageType("");
+  //         setRoom("");
+  //         setReason("");
+  //         setRequestList([]);
+  //         setMergedData([]);
+  //         setTableData([]); 
+  //         console.log("MergedData after finalize:", mergedData);
+  //         console.log("TableData after finalize:", tableData);
+
+  //         localStorage.removeItem('requestList');
+
+  //       } else {
+  //         message.error("User is not logged in.");
+  //       }
+  
+  //     } catch (error) {
+  //       console.error("Error finalizing the requisition:", error);
+  //       message.error("Failed to send requisition. Please try again.");
+  //     }
+  //   }
+  // };  
+
+   const finalizeRequest = async () => {
     let isValid = true;
     let idsToRemove = [];
   
@@ -426,6 +650,18 @@ const Requisition = () => {
     }
     console.log("Filtered mergedData:", filteredMergedData);
 
+  for (const item of filteredMergedData) {
+    if (item.category.toLowerCase() === "glasswares") {
+      // Assuming volume property is named "volume" and must be > 0
+      if (!item.volume || Number(item.volume) <= 0) {
+        setNotificationMessage(`Please specify a valid volume for glassware item "${item.itemName}".`);
+        setIsNotificationVisible(true);
+        isValid = false;
+        break; // no need to check further once invalid
+      }
+    }
+  }
+
     if (isValid) {
       try {
         const userId = localStorage.getItem("userId");
@@ -452,6 +688,7 @@ const Requisition = () => {
             timeTo,
             program,
             course,
+            // usageType,
             usageType: finalUsageType,
             room,
             reason,
@@ -591,28 +828,96 @@ const Requisition = () => {
     }
   };  
 
-  const updateQuantity = (id, value) => {
-    // Update the quantity in the requestList
-    const updatedRequestList = requestList.map((item) =>
-      item.id === id ? { ...item, quantity: value } : item
-    );
-    setRequestList(updatedRequestList);
-    localStorage.setItem('requestList', JSON.stringify(updatedRequestList)); 
+  // const handleItemSelect = async (selected, index) => {
+  //   const { value: itemId } = selected;
+  //   const selectedItem = JSON.parse(JSON.stringify(items.find(item => item.id === itemId)));
   
-    // Update the quantity in tableData as well to keep the table consistent
-    const updatedTableData = tableData.map((item) =>
-      item.id === id ? { ...item, quantity: value } : item
-    );
-    setTableData(updatedTableData);
-  };  
+  //   const previousItemId = tableData[index]?.selectedItemId;
+  
+  //   // Build new row object
+  //   const newRow = {
+  //     selectedItem: {
+  //       value: itemId,
+  //       label: selectedItem.itemName,
+  //     },
+  //     selectedItemId: itemId,
+  //     itemName: selectedItem.itemName,
+  //     category: selectedItem.category,
+  //     quantity: tableData[index]?.quantity || 1,
+  //     labRoom: selectedItem.labRoom,
+  //     status: selectedItem.status,
+  //     condition: selectedItem.condition,
+  //     department: selectedItem.department,
+  //   };
+  
+  //   // Update tableData
+  //   let updatedData = [...tableData];
+  //   if (updatedData[index]) {
+  //     updatedData[index] = newRow;
+
+  //   } else {
+  //     updatedData.push(newRow); // Add to the end if it's a new item
+  //   }
+    
+  //   setTableData(updatedData);
+  //   localStorage.setItem("tableData", JSON.stringify(updatedData)); // Save updated table data
+  
+  //   // Update requestList
+  //   let updatedRequestList = [...requestList];
+  //   if (updatedRequestList[index]) {
+  //     updatedRequestList[index] = newRow;
+
+  //   } else {
+  //     updatedRequestList.push(newRow); // Add to the end if it's a new item
+  //   }
+  //   setRequestList(updatedRequestList);
+  //   localStorage.setItem("requestList", JSON.stringify(updatedRequestList)); // Save updated request list
+  
+  //   mergeData();
+  
+  //   const userId = localStorage.getItem("userId");
+  
+  //   if (userId) {
+  //     try {
+  //       const tempRequestRef = doc(db, "accounts", userId, "temporaryRequests", itemId);
+  
+  //       // Delete the previous item from Firestore if it's different from the new one
+  //       if (previousItemId && previousItemId !== itemId) {
+  //         const previousRef = doc(db, "accounts", userId, "temporaryRequests", previousItemId);
+  //         await deleteDoc(previousRef);
+  //       }
+  
+  //       // Add or update the new item
+  //       await setDoc(tempRequestRef, {
+  //         ...selectedItem,
+  //         id: itemId,
+  //         selectedItemId: itemId,
+  //         selectedItemLabel: selectedItem.itemName,
+  //         quantity: newRow.quantity,
+  //         timestamp: Timestamp.fromDate(new Date()),
+  //       });
+  
+  //       setNotificationMessage("Item updated in temporary list.");
+  //       setIsNotificationVisible(true);
+  
+  //     } catch (error) {
+  //       console.error("Error updating item in temporary list:", error);
+  //       setNotificationMessage("Failed to update item in temporary list.");
+  //       setIsNotificationVisible(true);
+  //     }
+  //   }
+  // };  
 
   const handleItemSelect = async (selected, index) => {
     const { value: itemId } = selected;
     const selectedItem = JSON.parse(JSON.stringify(items.find(item => item.id === itemId)));
-  
+
     const previousItemId = tableData[index]?.selectedItemId;
-  
-    // Build new row object
+
+    // Get volume if it exists in current row (tableData)
+    const volume = tableData[index]?.volume || selectedItem.volume || null;
+
+    // Build new row object including volume
     const newRow = {
       selectedItem: {
         value: itemId,
@@ -622,69 +927,68 @@ const Requisition = () => {
       itemName: selectedItem.itemName,
       category: selectedItem.category,
       quantity: tableData[index]?.quantity || 1,
+      volume,  // <-- include volume here
       labRoom: selectedItem.labRoom,
       status: selectedItem.status,
       condition: selectedItem.condition,
       department: selectedItem.department,
     };
-  
+
     // Update tableData
     let updatedData = [...tableData];
     if (updatedData[index]) {
       updatedData[index] = newRow;
-
     } else {
-      updatedData.push(newRow); // Add to the end if it's a new item
+      updatedData.push(newRow); // Add new item
     }
-    
+
     setTableData(updatedData);
-    localStorage.setItem("tableData", JSON.stringify(updatedData)); // Save updated table data
-  
+    localStorage.setItem("tableData", JSON.stringify(updatedData));
+
     // Update requestList
     let updatedRequestList = [...requestList];
     if (updatedRequestList[index]) {
       updatedRequestList[index] = newRow;
-
     } else {
-      updatedRequestList.push(newRow); // Add to the end if it's a new item
+      updatedRequestList.push(newRow);
     }
     setRequestList(updatedRequestList);
-    localStorage.setItem("requestList", JSON.stringify(updatedRequestList)); // Save updated request list
-  
+    localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
+
     mergeData();
-  
+
     const userId = localStorage.getItem("userId");
-  
+
     if (userId) {
       try {
         const tempRequestRef = doc(db, "accounts", userId, "temporaryRequests", itemId);
-  
-        // Delete the previous item from Firestore if it's different from the new one
+
         if (previousItemId && previousItemId !== itemId) {
           const previousRef = doc(db, "accounts", userId, "temporaryRequests", previousItemId);
           await deleteDoc(previousRef);
         }
-  
-        // Add or update the new item
+
+        // Save including volume
         await setDoc(tempRequestRef, {
           ...selectedItem,
           id: itemId,
           selectedItemId: itemId,
           selectedItemLabel: selectedItem.itemName,
           quantity: newRow.quantity,
+          volume: newRow.volume, // <-- explicitly save volume here
           timestamp: Timestamp.fromDate(new Date()),
         });
-  
+
         setNotificationMessage("Item updated in temporary list.");
         setIsNotificationVisible(true);
-  
+
       } catch (error) {
         console.error("Error updating item in temporary list:", error);
         setNotificationMessage("Failed to update item in temporary list.");
         setIsNotificationVisible(true);
       }
     }
-  };  
+  };
 
   const clearTableData = () => {
     setTableData([]); // Clear tableData
@@ -697,6 +1001,152 @@ const Requisition = () => {
     mergeData();
   }, [requestList, tableData]);
   
+  // const columns = [
+  //   {
+  //     title: "Item Name",
+  //     dataIndex: "selectedItemId",
+  //     key: "selectedItemId",
+  //     render: (value, record, index) => {
+  //       // Get all selected item IDs except the current row
+  //       const selectedIds = mergedData
+  //         .filter((_, i) => i !== index)
+  //         .map((row) => row.selectedItemId);
+  
+  //       return (
+  //         <Select
+  //           showSearch
+  //           placeholder="Select item"
+  //           style={{ width: 100 }}
+  //           dropdownStyle={{ width: 700 }}
+  //           optionFilterProp="label"
+  //           labelInValue
+  //           value={record.selectedItem || undefined}
+  //           onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
+  //           filterOption={(input, option) =>
+  //             option?.label?.toLowerCase().includes(input.toLowerCase())
+  //           }
+  //         >
+  //           {/* Map through filtered items instead of the entire items list */}
+  //           {filteredItems.map((item) => {
+  //             // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+  //             // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
+  //             const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+  //             const isDisabled = selectedIds.includes(item.id);
+  
+  //             return (
+  //               <Select.Option
+  //                 key={item.id}
+  //                 value={item.id}
+  //                 label={item.itemName}
+  //                 disabled={isDisabled}
+  //               >
+  //                 {label}
+  //               </Select.Option>
+  //             );
+  //           })}
+  //         </Select>
+  //       );
+  //     },
+  //   },
+  //   {
+  //     title: "Category",
+  //     dataIndex: "category",
+  //     key: "category",
+  //   },
+  //   {
+  //     title: "Quantity",
+  //     dataIndex: "quantity",
+  //     key: "quantity",
+  //     render: (value, record) => (
+  //       <Input
+  //         type="number"
+  //         min={1}
+  //         value={record.quantity}
+  //         onChange={async (e) => {
+  //           const newQuantity = Number(e.target.value);
+
+  //           // Fetch inventory details to validate the quantity
+  //           const inventoryRef = collection(db, "inventory");
+  //           const inventorySnapshot = await getDocs(inventoryRef);
+  //           const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
+
+  //           // Check if inventory item exists and compare the quantity
+  //           if (inventoryItem) {
+  //             const availableQuantity = inventoryItem.data().quantity; // Assuming the quantity field exists in inventory
+
+  //             if (newQuantity <= availableQuantity) {
+  //               // Update local tableData if valid
+  //               const updated = tableData.map((row) =>
+  //                 row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
+  //               );
+                
+  //               setTableData(updated);
+
+  //               // Update requestList too
+  //               const updatedRequestList = requestList.map((row) =>
+  //                 row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
+  //               );
+
+  //               setRequestList(updatedRequestList);
+  //               localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
+
+  //               // Update Firestore
+  //               const userId = localStorage.getItem("userId");
+  //               if (userId) {
+  //                 const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+
+  //                 // Find the doc with this item's ID
+  //                 const snapshot = await getDocs(tempRequestRef);
+  //                 const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
+
+  //                 if (docToUpdate) {
+  //                   await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
+  //                     quantity: newQuantity,
+  //                   });
+  //                 }
+  //               }
+
+  //             } else {
+  //               // Use the custom notification modal
+  //               handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
+  //             }
+
+  //           } else {
+  //             console.error("Inventory item not found.");
+  //           }
+  //         }}
+  //       />
+  //     ),
+  //   },
+  //   {
+  //     title: "Lab Room",
+  //     dataIndex: "labRoom",
+  //     key: "labRoom",
+  //   },
+  //   {
+  //     title: "Status",
+  //     dataIndex: "status",
+  //     key: "status",
+  //   },
+  //   {
+  //     title: "Department",
+  //     dataIndex: "department",
+  //     key: "department",
+  //   },
+  //   {
+  //     title: "Action",
+  //     key: "action",
+  //     render: (_, record) => (
+  //       <Button
+  //         type="text"
+  //         danger
+  //         icon={<DeleteOutlined />}
+  //         onClick={() => removeFromList(record.selectedItemId)}
+  //       />
+  //     ),
+  //   },
+  // ];
+
   const columns = [
     {
       title: "Item Name",
@@ -726,7 +1176,13 @@ const Requisition = () => {
             {filteredItems.map((item) => {
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
-              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+const quantityLabel = Array.isArray(item.quantity) && item.category === "Glasswares"
+  ? item.quantity.map(({ qty, volume }) => `${qty} pcs${volume ? ` / ${volume} ML` : ""}`).join(", ")
+  : `${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}`;
+
+const label = `${item.itemName} | ${item.category} | Qty: ${quantityLabel} | ${item.status} | ${item.department}`;
+
               const isDisabled = selectedIds.includes(item.id);
   
               return (
@@ -749,71 +1205,164 @@ const Requisition = () => {
       dataIndex: "category",
       key: "category",
     },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-      render: (value, record) => (
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   key: "quantity",
+    //   render: (value, record) => (
+    //     <Input
+    //       type="number"
+    //       min={1}
+    //       value={record.quantity}
+    //       onChange={async (e) => {
+    //         const newQuantity = Number(e.target.value);
+
+    //         // Fetch inventory details to validate the quantity
+    //         const inventoryRef = collection(db, "inventory");
+    //         const inventorySnapshot = await getDocs(inventoryRef);
+    //         const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
+
+    //         // Check if inventory item exists and compare the quantity
+    //         if (inventoryItem) {
+    //           const availableQuantity = inventoryItem.data().quantity; // Assuming the quantity field exists in inventory
+
+    //           if (newQuantity <= availableQuantity) {
+    //             // Update local tableData if valid
+    //             const updated = tableData.map((row) =>
+    //               row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
+    //             );
+
+    //             setTableData(updated);
+
+    //             // Update requestList too
+    //             const updatedRequestList = requestList.map((row) =>
+    //               row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
+    //             );
+                
+    //             setRequestList(updatedRequestList);
+    //             localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
+
+    //             // Update Firestore
+    //             const userId = localStorage.getItem("userId");
+    //             if (userId) {
+    //               const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+
+    //               // Find the doc with this item's ID
+    //               const snapshot = await getDocs(tempRequestRef);
+    //               const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
+
+    //               if (docToUpdate) {
+    //                 await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
+    //                   quantity: newQuantity,
+    //                 });
+    //               }
+    //             }
+
+    //           } else {
+    //             // Use the custom notification modal
+    //             handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
+    //           }
+
+    //         } else {
+    //           console.error("Inventory item not found.");
+    //         }
+    //       }}
+    //     />
+    //   ),
+    // },
+{
+  title: "Quantity",
+  dataIndex: "quantity",
+  key: "quantity",
+  render: (value, record) => {
+    // List of volume options for Glasswares (example - update as needed)
+
+    // Function to update Firestore and local state for quantity or volume
+    const handleUpdate = async (field, newValue) => {
+      if (field === "quantity") {
+        // Fetch inventory details to validate the quantity
+        const inventoryRef = collection(db, "inventory");
+        const inventorySnapshot = await getDocs(inventoryRef);
+        const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
+
+        if (inventoryItem) {
+          const availableQuantity = inventoryItem.data().quantity; 
+
+          if (newValue > availableQuantity) {
+            return handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
+          }
+        } else {
+          console.error("Inventory item not found.");
+          return;
+        }
+      }
+
+      // Update local tableData
+      const updated = tableData.map((row) =>
+        row.selectedItemId === record.selectedItemId ? { ...row, [field]: newValue } : row
+      );
+      setTableData(updated);
+
+      // Update requestList
+      const updatedRequestList = requestList.map((row) =>
+        row.selectedItemId === record.selectedItemId ? { ...row, [field]: newValue } : row
+      );
+      setRequestList(updatedRequestList);
+      localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
+
+      // Update Firestore
+      const userId = localStorage.getItem("userId");
+      if (userId) {
+        const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+
+        const snapshot = await getDocs(tempRequestRef);
+        const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
+
+        if (docToUpdate) {
+          await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
+            [field]: newValue,
+          });
+        }
+      }
+    };
+
+    return (
+      <>
+        {/* Quantity Input */}
         <Input
           type="number"
           min={1}
           value={record.quantity}
           onChange={async (e) => {
             const newQuantity = Number(e.target.value);
-
-            // Fetch inventory details to validate the quantity
-            const inventoryRef = collection(db, "inventory");
-            const inventorySnapshot = await getDocs(inventoryRef);
-            const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
-
-            // Check if inventory item exists and compare the quantity
-            if (inventoryItem) {
-              const availableQuantity = inventoryItem.data().quantity; // Assuming the quantity field exists in inventory
-
-              if (newQuantity <= availableQuantity) {
-                // Update local tableData if valid
-                const updated = tableData.map((row) =>
-                  row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
-                );
-                
-                setTableData(updated);
-
-                // Update requestList too
-                const updatedRequestList = requestList.map((row) =>
-                  row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
-                );
-
-                setRequestList(updatedRequestList);
-                localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
-
-                // Update Firestore
-                const userId = localStorage.getItem("userId");
-                if (userId) {
-                  const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-
-                  // Find the doc with this item's ID
-                  const snapshot = await getDocs(tempRequestRef);
-                  const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
-
-                  if (docToUpdate) {
-                    await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
-                      quantity: newQuantity,
-                    });
-                  }
-                }
-
-              } else {
-                // Use the custom notification modal
-                handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
-              }
-
-            } else {
-              console.error("Inventory item not found.");
-            }
+            await handleUpdate("quantity", newQuantity);
           }}
+          style={{ width: record.category === "Glasswares" ? "45%" : "100%", marginRight: record.category === "Glasswares" ? 8 : 0 }}
         />
-      ),
-    },
+
+        {/* Volume dropdown only for Glasswares */}
+        {record.category === "Glasswares" && (
+<select
+  value={record.volume || ""}
+  onChange={async (e) => {
+    const newVolume = Number(e.target.value);
+    await handleUpdate("volume", newVolume);
+  }}
+  style={{ width: "45%" }}
+>
+  <option value="">Select Volume (ML)</option>
+  {volumeOptions.map((vol) => (
+    <option key={vol} value={vol}>
+      {vol} ML
+    </option>
+  ))}
+</select>
+
+        )}
+      </>
+    );
+  },
+},
     {
       title: "Lab Room",
       dataIndex: "labRoom",
@@ -952,10 +1501,10 @@ const Requisition = () => {
                     </div>
 
                     {timeFrom && timeTo && (
-  <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
-    Time Needed: {dayjs(timeFrom, "HH:mm").format("h:mm A")} - {dayjs(timeTo, "HH:mm").format("h:mm A")}
-  </p>
-)}
+                      <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
+                        Time Needed: {dayjs(timeFrom, "HH:mm").format("h:mm A")} - {dayjs(timeTo, "HH:mm").format("h:mm A")}
+                      </p>
+                    )}
                   </div>
                 </div>
 

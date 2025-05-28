@@ -496,12 +496,101 @@ const LabRoomQR = () => {
   const [confirmRoomId, setConfirmRoomId] = useState(null);
   const qrRefs = useRef({});
 
-  useEffect(() => {
+  // useEffect(() => {
+  //   const unsubscribeFunctions = [];
+
+  //   const fetchLabRoomsWithItems = async () => {
+  //     try {
+  //       const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
+  //       const rooms = labRoomSnapshot.docs.map(doc => {
+  //         const data = doc.data();
+  //         return {
+  //           id: doc.id,
+  //           name: data.name || "N/A",
+  //           roomNumber: data.roomNumber || "N/A", // 🟢 get roomNumber here
+  //           qrCode: data.qrCode || "",
+  //           items: [],
+  //         };
+  //       });
+
+
+  //         // Set initial rooms (empty items for now)
+  //         setLabRooms(rooms);
+
+  //         const originalNumbers = {};
+  //         rooms.forEach(room => {
+  //           originalNumbers[room.id] = room.roomNumber;
+  //         });
+  //         setOriginalRoomNumbers(originalNumbers);
+
+  //         // Set up item listeners per room
+  //         labRoomSnapshot.docs.forEach((roomDoc) => {
+  //           const roomId = roomDoc.id;
+  //           const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
+
+  //           const unsub = onSnapshot(itemsCollectionRef, (itemsSnapshot) => {
+  //             const updatedItems = itemsSnapshot.docs.map(itemDoc => {
+  //               const itemData = itemDoc.data();
+  //               return {
+  //                 id: itemDoc.id,
+  //                 category: itemData.category || "N/A",
+  //                 condition: itemData.condition
+  //                   ? `Good: ${itemData.condition.Good ?? 0}, Defect: ${itemData.condition.Defect ?? 0}, Damage: ${itemData.condition.Damage ?? 0}`
+  //                   : "N/A",
+  //                 department: itemData.department || "N/A",
+  //                 entryCurrentDate: itemData.entryCurrentDate || "N/A",
+  //                 expiryDate: itemData.expiryDate || null,
+  //                 itemId: itemData.itemId || "N/A",
+  //                 itemName: itemData.itemName || "N/A",
+  //                 labRoom: itemData.labRoom || "N/A",
+  //                 quantity: itemData.quantity || 0,
+  //                 status: itemData.status || "N/A",
+  //                 type: itemData.type || "N/A",
+  //                 rawTimestamp: itemData.rawTimestamp || "N/A",
+  //                 timestamp: itemData.timestamp || "N/A",
+  //                 unit: itemData.unit || "N/A",
+  //                 volume: itemData.volume || "N/A",
+  //               };
+  //             });
+
+  //             setLabRooms(prevRooms =>
+  //               prevRooms.map(room =>
+  //                 room.id === roomId ? { ...room, items: updatedItems } : room
+  //               )
+  //             );
+  //           });
+
+  //           unsubscribeFunctions.push(unsub);
+  //         });
+  //       });
+
+  //       unsubscribeFunctions.push(labRoomUnsub);
+
+  //     } catch (error) {
+  //       console.error("Error setting up real-time listeners:", error);
+  //     }
+  //   };
+
+  //   fetchLabRoomsWithItems();
+
+  //   return () => {
+  //     unsubscribeFunctions.forEach(unsub => unsub());
+  //   };
+  // }, []);
+
+   useEffect(() => {
     const unsubscribeFunctions = [];
 
     const fetchLabRoomsWithItems = async () => {
       try {
         const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
+          // const rooms = labRoomSnapshot.docs.map(doc => ({
+          //   id: doc.id,
+          //   name: doc.data().name || "N/A",
+          //   qrCode: doc.data().qrCode || "",
+          //   items: [],
+          // }));
+
         const rooms = labRoomSnapshot.docs.map(doc => {
           const data = doc.data();
           return {
@@ -543,8 +632,12 @@ const LabRoomQR = () => {
                   itemId: itemData.itemId || "N/A",
                   itemName: itemData.itemName || "N/A",
                   labRoom: itemData.labRoom || "N/A",
-                  quantity: itemData.quantity || 0,
-                  status: itemData.status || "N/A",
+                  // quantity: itemData.quantity || 0,
+                  // quantity: itemData.quantity ?? (itemData.category === "Glasswares" ? [] : 0),
+                  quantity: itemData.category === "Glasswares"
+                    ? itemData.quantity ?? []
+                    : itemData.quantity ?? 0,
+                  status: itemData.status || "N/A", 
                   type: itemData.type || "N/A",
                   rawTimestamp: itemData.rawTimestamp || "N/A",
                   timestamp: itemData.timestamp || "N/A",
@@ -736,11 +829,29 @@ const LabRoomQR = () => {
                       <td>{item.category}</td>
                       <td>{["Chemical", "Reagent"].includes(item.category) ? "N/A" : item.condition}</td>
                       <td>{item.department}</td>
-                      <td>
+                      {/* <td>
                         {item.quantity}
                         {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
                         {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
                         {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
+                      </td> */}
+                      <td>
+                        {Array.isArray(item.quantity) && item.category === "Glasswares" ? (
+                          item.quantity
+                            .map(({ qty, volume }) => `${qty} pcs${volume ? ` / ${volume} ML` : ""}`)
+                            .join(", ")
+                        ) : typeof item.quantity === "object" &&
+                          item.quantity !== null &&
+                          item.category === "Glasswares" ? (
+                          `${item.quantity.qty} pcs${item.quantity.volume ? ` / ${item.quantity.volume} ML` : ""}`
+                        ) : (
+                          <>
+                            {item.quantity}
+                            {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
+                            {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
+                            {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
+                          </>
+                        )}
                       </td>
                       <td>{item.status}</td>
                       <td>{item.type}</td>
