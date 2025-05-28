@@ -75,7 +75,7 @@ export default function InventoryStocks({ navigation }) {
     const handleColor =(item)=>{
       if(item.category === 'Equipment') return '#026A5D';
       if(item.category === 'Chemical') return '#631990';
-      if(item.category === 'Materials') return '#395A7F';
+      if(item.category === 'Materials') return '#c4610e';
       if(item.category === 'Reagent') return '#235284';
       if(item.category === 'Glasswares') return '#d09902';
     }
@@ -83,7 +83,7 @@ export default function InventoryStocks({ navigation }) {
     const handleBG =(item)=>{
       if(item.category === 'Equipment') return '#C8E6C9';
       if(item.category === 'Chemical') return '#E4D6EC';
-      if(item.category === 'Materials') return '#A3CAE9'; 
+      if(item.category === 'Materials') return '#f7d4b7'; 
       if(item.category === 'Reagent') return '#b8e2f4';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
