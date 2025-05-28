@@ -26,6 +26,8 @@ import "./styles/Dashboard.css";
    const [expiredItems, setExpiredItems] = useState([]);
    const [expiringSoonItems, setExpiringSoonItems] = useState([]);
    const [damagedItems, setDamagedItems] = useState([]);
+   const [criticalStockList, setCriticalStockList] = useState([]);
+
 
 
 
@@ -63,6 +65,73 @@ import "./styles/Dashboard.css";
     key: "expiryDate",
   },
 ];
+
+const criticalColumns = [
+  {
+    title: 'Item ID',
+    dataIndex: 'itemId',
+    key: 'itemId',
+  },
+  {
+    title: 'Item Name',
+    dataIndex: 'itemName',
+    key: 'itemName',
+  },
+  // {
+  //   title: 'Category',
+  //   dataIndex: 'category',
+  //   key: 'category',
+  // },
+  // {
+  //   title: 'Department',
+  //   dataIndex: 'department',
+  //   key: 'department',
+  // },
+  // {
+  //   title: 'Good Stock',
+  //   dataIndex: ['condition', 'Good'],
+  //   key: 'goodStock',
+  //   render: (text, record) => record.condition?.Good ?? 0,
+  // },
+  {
+    title: 'Critical Level',
+    dataIndex: 'criticalLevel',
+    key: 'criticalLevel',
+    render: (text) => text ?? 0,
+  },
+];
+
+
+//critical stock
+const getCriticalStockItems = (inventoryItems) => {
+  if (!inventoryItems || inventoryItems.length === 0) return [];
+
+  return inventoryItems.filter(item => {
+    const criticalLevel = item.criticalLevel ?? 0; // fallback to 0
+    const goodCount = item.condition?.Good ?? 0;
+
+    return goodCount <= criticalLevel;
+  });
+};
+
+
+// critical stock 
+useEffect(() => {
+  const inventoryRef = collection(db, "inventory");
+
+  const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
+    const items = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    const criticalItems = getCriticalStockItems(items);
+    setCriticalStockList(criticalItems);
+  });
+
+  return () => unsubscribe();
+}, []);
+
 
 
    //expiry
@@ -405,17 +474,12 @@ import "./styles/Dashboard.css";
 
               <Col xs={24} md={8}>
                 <Card title="Critical Stocks">
-                  <List
-                    dataSource={productTrends}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
-                          <span>{item.title}</span>
-                          <span>{item.salesTrend}</span> {/* Display trend data */}
-                        </div>
-                      </List.Item>
-                    )}
-                  />
+                 <Table
+                  dataSource={criticalStockList}
+                  columns={criticalColumns}
+                  rowKey="id"
+                  pagination={false}
+                />
                 </Card>
               </Col>
               <Col xs={24} md={8}>
