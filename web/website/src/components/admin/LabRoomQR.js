@@ -671,8 +671,77 @@ const LabRoomQR = () => {
     };
   }, []);
 
-  const updateRoomNumber = async (roomId, oldRoomNumber, newRoomNumber) => {
+  // const updateRoomNumber = async (roomId, oldRoomNumber, newRoomNumber) => {
+  //   try {
+  //     const roomRef = doc(db, "labRoom", roomId);
+  //     await updateDoc(roomRef, {
+  //       roomNumber: newRoomNumber,
+  //     });
+
+  //     const batch = writeBatch(db);
+
+  //     // 🔁 Update labRoom field in labRoom/{roomId}/items
+  //     const itemsRef = collection(db, "labRoom", roomId, "items");
+  //     const itemsSnapshot = await getDocs(itemsRef);
+
+  //     itemsSnapshot.forEach((itemDoc) => {
+  //       const itemRef = doc(db, "labRoom", roomId, "items", itemDoc.id);
+  //       batch.update(itemRef, {
+  //         labRoom: newRoomNumber,
+  //       });
+  //     });
+
+  //     // ✅ Fix: Ensure oldRoomNumber is trimmed and matched exactly
+  //     const inventoryRef = collection(db, "inventory");
+  //     const inventoryQuery = query(
+  //       inventoryRef,
+  //       where("labRoom", "==", oldRoomNumber.trim())
+  //     );
+      
+  //     const inventorySnapshot = await getDocs(inventoryQuery);
+
+  //     console.log(`Matching inventory docs for labRoom = "${oldRoomNumber}":`, inventorySnapshot.size);
+
+  //     inventorySnapshot.forEach((invDoc) => {
+  //       const invRef = doc(db, "inventory", invDoc.id);
+  //       batch.update(invRef, {
+  //         labRoom: newRoomNumber,
+  //       });
+  //     });
+
+  //     await batch.commit();
+
+  //     // ✅ Also update UI state
+  //     setOriginalRoomNumbers((prev) => ({
+  //       ...prev,
+  //       [roomId]: newRoomNumber,
+  //     }));
+
+  //     console.log(`✅ Updated labRoom ${roomId} to ${newRoomNumber} and synced all items/inventory.`);
+
+  //   } catch (error) {
+  //     console.error("❌ Error updating lab room and related data:", error);
+  //   }
+  // };
+
+    const updateRoomNumber = async (roomId, oldRoomNumber, newRoomNumber) => {
     try {
+      // 🔍 Step 1: Check if the new room number already exists (excluding the current roomId)
+      const labRoomRef = collection(db, "labRoom");
+      const existingRoomQuery = query(
+        labRoomRef,
+        where("roomNumber", "==", newRoomNumber)
+      );
+      const existingRoomSnapshot = await getDocs(existingRoomQuery);
+
+      const isRoomNumberTaken = existingRoomSnapshot.docs.some(doc => doc.id !== roomId);
+
+      if (isRoomNumberTaken) {
+        alert(`❌ Room number "${newRoomNumber}" already exists.`);
+        return;
+      }
+
+      // ✅ Step 2: Proceed with update
       const roomRef = doc(db, "labRoom", roomId);
       await updateDoc(roomRef, {
         roomNumber: newRoomNumber,
@@ -691,16 +760,14 @@ const LabRoomQR = () => {
         });
       });
 
-      // ✅ Fix: Ensure oldRoomNumber is trimmed and matched exactly
+      // 🔁 Update labRoom field in inventory
       const inventoryRef = collection(db, "inventory");
       const inventoryQuery = query(
         inventoryRef,
         where("labRoom", "==", oldRoomNumber.trim())
       );
-      
-      const inventorySnapshot = await getDocs(inventoryQuery);
 
-      console.log(`Matching inventory docs for labRoom = "${oldRoomNumber}":`, inventorySnapshot.size);
+      const inventorySnapshot = await getDocs(inventoryQuery);
 
       inventorySnapshot.forEach((invDoc) => {
         const invRef = doc(db, "inventory", invDoc.id);
@@ -711,14 +778,14 @@ const LabRoomQR = () => {
 
       await batch.commit();
 
-      // ✅ Also update UI state
+      // ✅ Update UI state
       setOriginalRoomNumbers((prev) => ({
         ...prev,
         [roomId]: newRoomNumber,
       }));
 
       console.log(`✅ Updated labRoom ${roomId} to ${newRoomNumber} and synced all items/inventory.`);
-
+      
     } catch (error) {
       console.error("❌ Error updating lab room and related data:", error);
     }
