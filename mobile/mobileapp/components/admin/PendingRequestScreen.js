@@ -1,20 +1,17 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar,Image } from 'react-native';
 import { Card } from 'react-native-paper';
-import { collection, getDocs, doc, updateDoc, getDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, getDoc, collectionGroup, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/adminStyle/PendingRequestStyle';
 import Header from '../Header';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-
 export default function PendingRequestScreen() {
   const { user } = useAuth();
   const [pendingRequests, setPendingRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
-  const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
-  const [rejectReason, setRejectReason] = useState('');
   const [viewModalVisible, setViewModalVisible] = useState(false);
 
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -43,301 +40,193 @@ export default function PendingRequestScreen() {
     }, [])
   );
 
-  useEffect(() => {
-    fetchPendingRequests();
-  }, []);
 
-  const fetchPendingRequests = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, 'userrequests'));
-      const fetched = [];
-  
-      for (const docSnap of querySnapshot.docs) {
-        const data = docSnap.data();
-  
-        const enrichedItems = await Promise.all(
-          (data.filteredMergedData || []).map(async (item) => {
-            const inventoryId = item.selectedItemId || item.selectedItem?.value;
-            let itemId = 'N/A';
-  
-            if (inventoryId) {
-              try {
-                const invDoc = await getDoc(doc(db, 'inventory', inventoryId));
-                if (invDoc.exists()) {
-                  itemId = invDoc.data().itemId || 'N/A';
+useEffect(() => {
+  const unsubscribe = onSnapshot(collection(db, 'userrequests'), (querySnapshot) => {
+    const processRequests = async () => {
+      try {
+        const fetched = [];
+
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+          const userId = data.accountId;
+
+          const dateRequested = data.timestamp?.toDate?.() || new Date();
+
+          // Fetch user profile image
+          let profileImage = null;
+          try {
+            const userDoc = await getDoc(doc(db, 'accounts', userId));
+            if (userDoc.exists()) {
+              profileImage = userDoc.data().profileImage || null;
+              // console.log('Profile image URL:', profileImage);
+
+            }
+          } catch (e) {
+            console.error(`Error fetching profile for ${userId}`, e);
+          }
+
+          // Enrich inventory
+          const enrichedItems = await Promise.all(
+            (data.filteredMergedData || []).map(async (item) => {
+              const inventoryId = item.selectedItemId || item.selectedItem?.value;
+              let itemId = 'N/A';
+
+              if (inventoryId) {
+                try {
+                  const invDoc = await getDoc(doc(db, 'inventory', inventoryId));
+                  if (invDoc.exists()) {
+                    itemId = invDoc.data().itemId || 'N/A';
+                  }
+                } catch (err) {
+                  console.error(`Error fetching inventory item ${inventoryId}:`, err);
                 }
-              } catch (err) {
-                console.error(`Error fetching inventory item ${inventoryId}:`, err);
               }
-            }
-  
-            return {
-              ...item,
-              itemIdFromInventory: itemId,
-            };
-          })
-        );
-  
-        fetched.push({
-          id: docSnap.id,
-          ...data,
-          filteredMergedData: enrichedItems,
-        });
-      }
-  
-      setPendingRequests(fetched);
-    } catch (error) {
-      console.error('Error fetching pending requests:', error);
-    }
-  };
 
-  const handleApprove = async () => {
-    const isChecked = selectedRequest.filteredMergedData.some((item) => item.selected);
-  
-    if (!isChecked) {
-      Alert.alert('Error', 'No Items selected');
-      return;
-    }
-  
-    const filteredItems = selectedRequest.filteredMergedData.filter((item) => item.selected);
-  
-    if (filteredItems.length === 0) {
-      Alert.alert('Error', 'No Items selected');
-      return;
-    }
-  
-    const enrichedItems = await Promise.all(
-      filteredItems.map(async (item) => {
-        const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-        let itemType = "Unknown";
-  
-        if (selectedItemId) {
-          try {
-            const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-            if (inventoryDoc.exists()) {
-              itemType = inventoryDoc.data().type || "Unknown";
-            }
-          } catch (err) {
-            console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
-          }
+              return {
+                ...item,
+                itemIdFromInventory: itemId,
+              };
+            })
+          );
+
+          fetched.push({
+            id: docSnap.id,
+            ...data,
+            userId,
+            profileImage,
+            dateRequested,
+            filteredMergedData: enrichedItems,
+          });
         }
-  
-        return {
-          ...item,
-          selectedItemId,
-          itemType,
-        };
-      })
-    );
-  
-    const uncheckedItems = selectedRequest.filteredMergedData.filter((item) => !item.selected);
-  
-    const rejectedItems = await Promise.all(
-      uncheckedItems.map(async (item) => {
-        const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-        let itemType = "Unknown";
-  
-        if (selectedItemId) {
-          try {
-            const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-            if (inventoryDoc.exists()) {
-              itemType = inventoryDoc.data().type || "Unknown";
-            }
-          } catch (err) {
-            console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
-          }
-        }
-  
-        return {
-          ...item,
-          selectedItemId,
-          itemType,
-        };
-      })
-    );
-  
-    const userEmail = user.email;
-  
-    let userName = "Unknown";
-    try {
-      const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-      const userSnapshot = await getDocs(userQuery);
-  
-      if (!userSnapshot.empty) {
-        const userDoc = userSnapshot.docs[0];
-        const userData = userDoc.data();
-        userName = userData.name || "Unknown";
+
+        setPendingRequests(fetched);
+      } catch (err) {
+        console.error('Error processing requests:', err);
       }
-    } catch (error) {
-      console.error("Error fetching user name:", error);
-    }
-  
-    const requestLogEntry = {
-      accountId: selectedRequest.accountId || "N/A",
-      userName: selectedRequest.userName || "N/A",
-      room: selectedRequest.room || "N/A",
-      courseCode: selectedRequest.courseCode || "N/A",
-      courseDescription: selectedRequest.courseDescription || "N/A",
-      dateRequired: selectedRequest.dateRequired || "N/A",
-      timeFrom: selectedRequest.timeFrom || "N/A",
-      timeTo: selectedRequest.timeTo || "N/A",
-      timestamp: selectedRequest.timestamp || new Date(),
-      requestList: enrichedItems,
-      status: "Approved",
-      approvedBy: userName,
-      reason: selectedRequest.reason || "No reason provided",
-      program: selectedRequest.program,
     };
-  
-    const rejectLogEntry = {
-      accountId: selectedRequest.accountId || "N/A",
-      userName: selectedRequest.userName || "N/A",
-      room: selectedRequest.room || "N/A",
-      courseCode: selectedRequest.courseCode || "N/A",
-      courseDescription: selectedRequest.courseDescription || "N/A",
-      dateRequired: selectedRequest.dateRequired || "N/A",
-      timeFrom: selectedRequest.timeFrom || "N/A",
-      timeTo: selectedRequest.timeTo || "N/A",
-      timestamp: selectedRequest.timestamp || new Date(),
-      requestList: rejectedItems,
-      status: "Rejected",
-      rejectedBy: userName,
-      reason: "Item not selected for approval",
-      program: selectedRequest.program,
-    };
-  
-    try {
-      // Log approved items in historylog subcollection
-      await addDoc(collection(db, `accounts/${selectedRequest.accountId}/historylog`), {
-        action: "Request Approved",
-        userName,
-        timestamp: serverTimestamp(),
-        requestList: enrichedItems,
-        approvedBy: userName,
-        courseCode: selectedRequest.courseCode || "N/A",
-        courseDescription: selectedRequest.courseDescription || "N/A",
-        dateRequired: selectedRequest.dateRequired,
-        reason: selectedRequest.reason,
-        room: selectedRequest.room,
-        program: selectedRequest.program,
-        timeFrom: selectedRequest.timeFrom || "N/A",
-        timeTo: selectedRequest.timeTo || "N/A",
-      });
-  
-      // Log rejected items in historylog subcollection
-      if (rejectedItems.length > 0) {
-        await addDoc(collection(db, `accounts/${selectedRequest.accountId}/historylog`), {
-          action: "Request Rejected",
-          userName,
-          timestamp: serverTimestamp(),
-          requestList: rejectedItems,
-          rejectedBy: userName,
-          reason: "Item not selected for approval",
-          courseCode: selectedRequest.courseCode || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired,
-          room: selectedRequest.room,
-          program: selectedRequest.program,
-          timeFrom: selectedRequest.timeFrom || "N/A",
-          timeTo: selectedRequest.timeTo || "N/A",
-        });
-      }
-  
-      // Add to requestlog for approval
-      await addDoc(collection(db, "requestlog"), requestLogEntry);
-  
-      // Add to requestlog for rejection
-      if (rejectedItems.length > 0) {
-        await addDoc(collection(db, "requestlog"), rejectLogEntry);
-      }
-  
-      // Handle fixed items and borrowing catalog logic
-      const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
-      if (fixedItems.length > 0) {
-        await Promise.all(
-          fixedItems.map(async (item) => {
-            const borrowCatalogEntry = {
-              accountId: selectedRequest.accountId || "N/A",
-              userName: selectedRequest.userName || "N/A",
-              room: selectedRequest.room || "N/A",
-              courseCode: selectedRequest.courseCode || "N/A",
-              courseDescription: selectedRequest.courseDescription || "N/A",
-              dateRequired: selectedRequest.dateRequired || "N/A",
-              timeFrom: selectedRequest.timeFrom || "N/A",
-              timeTo: selectedRequest.timeTo || "N/A",
-              timestamp: selectedRequest.timestamp || new Date(),
-              requestList: [item],
-              status: "Borrowed",
-              approvedBy: userName,
-              reason: selectedRequest.reason || "No reason provided",
-              program: selectedRequest.program,
-            };
-  
-            // Add to borrowcatalog collection
-            await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
-          })
-        );
-      }
-  
-      // Cleanup request and subcollections
-      await deleteDoc(doc(db, "userrequests", selectedRequest.id));
-  
-      // Update state and show success notification
-      setPendingRequests(pendingRequests.filter((req) => req.id !== selectedRequest.id));
-      setSelectedRequest(null);
-      Alert.alert("Success", "Request approved and logged.");
-  
-    } catch (error) {
-      console.error("Error in approval:", error);
-      Alert.alert("Error", "There was an error with the approval process.");
-    }
-  };  
 
-  const handleReject = (request) => {
-    setSelectedRequest(request);
-    setIsRejectModalVisible(true);
-  };
+    processRequests();
+  });
 
-  const handleRejectSubmit = async () => {
-    if (!rejectReason.trim()) {
-      Alert.alert('Error', 'Please provide a reason.');
-      return;
-    }
+  return () => unsubscribe();
+}, []);
 
-    try {
-      const requestRef = doc(db, 'userrequests', selectedRequest.id);
-      await updateDoc(requestRef, {
-        status: 'Rejected',
-        reason: rejectReason,
-      });
-      setIsRejectModalVisible(false);
-      setRejectReason('');
-      setSelectedRequest(null);
-      Alert.alert('Rejected', 'Request has been rejected.');
-      fetchPendingRequests();
 
-    } catch (error) {
-      console.error('Error rejecting request:', error);
-    }
-  };
+
+const getInitials = (usage) => {
+  if (!usage) return '';
+
+  const officialUsages = ['Laboratory Experiment', 'Research', 'Community Extension'];
+
+  // If it's not one of the official usage types, treat it as "Others"
+  const normalized = officialUsages.includes(usage) ? usage : 'Others';
+
+  const words = normalized.trim().split(' ');
+  return words.length === 1
+    ? (words[0][0].toUpperCase() + words[0][1])?.toUpperCase()
+    : (words[0][0] + words[1][0]).toUpperCase();
+};
+
+
+  const usageBG = (item) => {
+    if(item.usageType === 'Laboratory Experiment') return 'orange'
+    if(item.usageType === 'Research') return '#70c247'
+    if(item.usageType === 'Community Extension') return '#395a7f'
+    else{return '#b66ee8'}
+  }
+  
+
+const capitalizeName = (name) => {
+  return name.replace(/\b\w/g, char => char.toUpperCase());
+};
 
   const renderItem = ({ item, index }) => (
-    <Card style={styles.card}>
-      <TouchableOpacity onPress={() => { setSelectedRequest(item); setViewModalVisible(true); }}>
-        <Card.Content>
-          <Text style={styles.name}>{index + 1}. Requestor: {item.userName || 'N/A'}</Text>
-          <Text style={styles.request}>Room: {item.room}</Text>
-          <Text style={styles.reason}>Course Code: {item.course}</Text>
-          <Text style={styles.reason}>Course Description: {item.courseDescription}</Text>
-          {/* <Text style={styles.date}>
-            Requisition Date: {item.timestamp ? item.timestamp.toDate().toLocaleString() : 'N/A'}
-          </Text>
-          <Text style={styles.date}>Required Date: {item.dateRequired}</Text> */}
-          <Text style={[styles[item.status?.toLowerCase() || 'pending']]}>{item.status || 'Pending'}</Text>
-        </Card.Content>
+    
+
+      <TouchableOpacity key={index} onPress={() => { setSelectedRequest(item), setViewModalVisible(true)}} style={styles.pendingCard}>
+              <View style={styles.usageContainer}>
+              <Text style={[styles.usage, {backgroundColor: usageBG(item)}]}>{getInitials(item.usageType)}</Text>
+              </View>
+
+              <View style={styles.detailsContainer}>
+                <View style={{justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center', width: '100%'}}>
+                <Text style={styles.name}>{capitalizeName(item.userName) || 'N/A'}</Text>
+                <Text style={{color: 'gray', fontSize: 12, fontWeight: 300}}>{item.dateRequested.toLocaleDateString()}</Text>
+                </View>
+
+
+               {/* {item.profileImage ? (
+                <Image
+                  source={{ uri: item.profileImage }}
+                  style={{ width: 50, height: 50, borderRadius: 25 }}
+                />
+              ) : (
+                <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: '#ccc' }} />
+              )} */}
+
+              
+
+                <Text style={styles.reason}>{item.course}</Text>
+                <Text style={[styles.reason,{marginTop: 5}]}>{item.usageType}</Text>
+                <Text style={[styles.reason]}>Room {item.room}</Text>
+              </View>
       </TouchableOpacity>
-    </Card>
   );
+
+const groupByDueDateCategory = (requests) => {
+  const now = new Date();
+
+  const startOfWeek = new Date(now);
+  startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const startOfNextWeek = new Date(endOfWeek);
+  startOfNextWeek.setDate(endOfWeek.getDate() + 1);
+  startOfNextWeek.setHours(0, 0, 0, 0);
+
+  const endOfNextWeek = new Date(startOfNextWeek);
+  endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
+  endOfNextWeek.setHours(23, 59, 59, 999);
+
+  const thisWeek = [];
+  const nextWeek = [];
+  const later = [];
+
+  requests.forEach((item) => {
+    const dueDate = new Date(item.dateRequired);
+
+    if (dueDate >= startOfWeek && dueDate <= endOfWeek) {
+      thisWeek.push(item);
+    } else if (dueDate >= startOfNextWeek && dueDate <= endOfNextWeek) {
+      nextWeek.push(item);
+    } else if (dueDate > endOfNextWeek) {
+      later.push(item);
+    }
+  });
+
+  return {
+    'Required This Week': thisWeek,
+    'Next Week': nextWeek,
+    'Further Ahead': later,
+  };
+};
+
+const categorizedRequests = groupByDueDateCategory(pendingRequests);
+
+const sections = Object.entries(categorizedRequests)
+  .map(([title, data]) => ({
+    title,
+    data,
+  }))
+  .filter(section => section.data.length > 0); // ✅ Remove empty categories
+
+
+
 
 
 
@@ -373,13 +262,23 @@ export default function PendingRequestScreen() {
               </Text>
             </TouchableOpacity>
 
-      <View style={{marginTop: headerHeight, flex: 1, backgroundColor: '#fff', padding: 10}}>
-        <FlatList
-        data={pendingRequests}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-      />
-      </View>
+            <View>
+              <TouchableOpacity/>
+            </View>
+
+      <ScrollView style={{marginTop: headerHeight, flex: 1, backgroundColor: '#e9ecee', paddingHorizontal: 7, paddingTop: 5,}}
+      contentContainerStyle={styles.pendingFlat}>
+        {Object.entries(categorizedRequests)
+          .filter(([_, items]) => items.length > 0)
+          .map(([category, items]) => (
+            <View key={category} style={{ gap: 5, justifyContent: 'flex-start', flex: 1 }}>
+              <Text style={styles.categoryHeader}>{category}</Text>
+              <View style={{ gap: 3 }}>
+                {items.map((item, index) => renderItem({ item, index }))}
+              </View>
+            </View>
+          ))}
+      </ScrollView>
       
 
       <Modal
