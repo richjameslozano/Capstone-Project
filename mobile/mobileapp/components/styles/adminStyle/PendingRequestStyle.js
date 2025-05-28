@@ -44,7 +44,7 @@ export default StyleSheet.create({
   paddingHorizontal: 15,
   borderRadius: 5,
   paddingVertical: 10,
-  borderColor: '#acacac',
+  borderColor: '#dcdcdc',
   borderWidth: 1,
   alignSelf: 'flex-start',
   marginTop: 10, 
@@ -90,7 +90,7 @@ export default StyleSheet.create({
   paddingHorizontal: 15,
   paddingVertical: 8,
   borderRadius: 20,
-  backgroundColor: '#e0e0e0',
+  backgroundColor: '#efefef',
   marginRight: 10,
 },
 
@@ -99,6 +99,7 @@ selectedFilterBtn: {
 },
 
 filtername: {
+  fontSize: 13,
   color: '#303030',
 },
 

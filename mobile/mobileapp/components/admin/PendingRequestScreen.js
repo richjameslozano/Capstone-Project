@@ -279,7 +279,7 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
 
         <View style={{height: 'auto', marginTop: headerHeight, }}>
           <ScrollView
-            style={{borderColor: '#dcdcdc', borderWidth: 1, height: 'auto', alignSelf: 'flex-start',  height: '9%'
+            style={{borderColor: '#dcdcdc', borderBottomWidth: 1, height: 'auto', alignSelf: 'flex-start',  height: '8%'
             }}
             horizontal={true}
             showsHorizontalScrollIndicator={false}
