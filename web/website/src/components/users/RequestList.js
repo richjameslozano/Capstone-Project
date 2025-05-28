@@ -119,45 +119,128 @@ const RequestList = () => {
   //   }
   // };
 
+  // const fetchRequests = () => {
+  //   setLoading(true);
+  //   try {
+  //     const userId = localStorage.getItem("userId");
+  //     if (!userId) throw new Error("User ID not found in localStorage.");
+  
+  //     const userRequestsRef = collection(db, `accounts/${userId}/userRequests`);
+  
+  //     // Real-time listener
+  //     const unsubscribe = onSnapshot(userRequestsRef, async (querySnapshot) => {
+  //       const fetched = [];
+  
+  //       for (const docSnap of querySnapshot.docs) {
+  //         const data = docSnap.data();
+          
+  //         const enrichedItems = await Promise.all(
+  //           (data.filteredMergedData || []).map(async (item) => {
+  //             const inventoryId = item.selectedItemId || item.selectedItem?.value;
+  //             let itemId = "N/A";
+  
+  //             if (inventoryId) {
+  //               try {
+  //                 const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
+  //                 if (invDoc.exists()) {
+  //                   itemId = invDoc.data().itemId || "N/A";
+  //                 }
+  
+  //               } catch (err) {
+  //                 console.error(`Error fetching inventory item ${inventoryId}:`, err);
+  //               }
+  //             }
+  
+  //             return {
+  //               ...item,
+  //               itemIdFromInventory: itemId,
+  //             };
+  //           })
+  //         );
+  
+  //         fetched.push({
+  //           id: docSnap.id,
+  //           dateRequested: data.timestamp
+  //             ? new Date(data.timestamp.seconds * 1000).toLocaleDateString()
+  //             : "N/A",
+  //           dateRequired: data.dateRequired || "N/A",
+  //           requester: data.userName || "Unknown",
+  //           room: data.room || "N/A",
+  //           timeNeeded: `${data.timeFrom || "N/A"} - ${data.timeTo || "N/A"}`,
+  //           courseCode: data.program || "N/A",
+  //           courseDescription: data.reason || "N/A",
+  //           items: enrichedItems,
+  //           status: "PENDING",
+  //           message: data.reason || "",
+  //           usageType: data.usageType || "",
+  //         });
+  //       }
+  
+  //       // Sort fetched data by request date
+  //       const sortedByDate = fetched.sort((a, b) => {
+  //         const dateA = new Date(a.dateRequested);
+  //         const dateB = new Date(b.dateRequested);
+  //         return dateB - dateA;
+  //       });
+  
+  //       setRequests(sortedByDate);
+  
+  //     }, (error) => {
+  //       console.error("Error fetching user requests in real-time: ", error);
+  //       setNotificationMessage("Failed to fetch user requests.");
+  //       setNotificationVisible(true);
+  //     });
+  
+  //     // Cleanup listener on unmount
+  //     return () => unsubscribe();
+  //   } catch (err) {
+  //     console.error("Error fetching requests:", err);
+  //     setNotificationMessage("Failed to fetch user requests.");
+  //     setNotificationVisible(true);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const fetchRequests = () => {
     setLoading(true);
     try {
       const userId = localStorage.getItem("userId");
       if (!userId) throw new Error("User ID not found in localStorage.");
-  
+
       const userRequestsRef = collection(db, `accounts/${userId}/userRequests`);
-  
+
       // Real-time listener
       const unsubscribe = onSnapshot(userRequestsRef, async (querySnapshot) => {
         const fetched = [];
-  
+
         for (const docSnap of querySnapshot.docs) {
           const data = docSnap.data();
-          
+
           const enrichedItems = await Promise.all(
             (data.filteredMergedData || []).map(async (item) => {
               const inventoryId = item.selectedItemId || item.selectedItem?.value;
               let itemId = "N/A";
-  
+
               if (inventoryId) {
                 try {
                   const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
                   if (invDoc.exists()) {
                     itemId = invDoc.data().itemId || "N/A";
                   }
-  
                 } catch (err) {
                   console.error(`Error fetching inventory item ${inventoryId}:`, err);
                 }
               }
-  
+
               return {
                 ...item,
                 itemIdFromInventory: itemId,
+                volume: item.volume ?? "N/A",   // <-- Get volume from userRequests data here
               };
             })
           );
-  
+
           fetched.push({
             id: docSnap.id,
             dateRequested: data.timestamp
@@ -175,28 +258,29 @@ const RequestList = () => {
             usageType: data.usageType || "",
           });
         }
-  
+
         // Sort fetched data by request date
         const sortedByDate = fetched.sort((a, b) => {
           const dateA = new Date(a.dateRequested);
           const dateB = new Date(b.dateRequested);
           return dateB - dateA;
         });
-  
+
         setRequests(sortedByDate);
-  
       }, (error) => {
         console.error("Error fetching user requests in real-time: ", error);
         setNotificationMessage("Failed to fetch user requests.");
         setNotificationVisible(true);
       });
-  
+
       // Cleanup listener on unmount
       return () => unsubscribe();
+      
     } catch (err) {
       console.error("Error fetching requests:", err);
       setNotificationMessage("Failed to fetch user requests.");
       setNotificationVisible(true);
+
     } finally {
       setLoading(false);
     }
@@ -311,6 +395,50 @@ const RequestList = () => {
     },
   ];
 
+  // const itemColumns = [
+  //   {
+  //     title: "Item #",
+  //     key: "index",
+  //     render: (_, __, index) => <span>{index + 1}</span>,
+  //   },
+  //   {
+  //     title: "Item Name",
+  //     dataIndex: "itemName",
+  //     key: "itemName",
+  //   },
+  //   {
+  //     title: "Item ID",
+  //     dataIndex: "itemIdFromInventory",
+  //     key: "itemIdFromInventory",
+  //   },
+  //   {
+  //     title: "Qty",
+  //     dataIndex: "quantity",
+  //     key: "quantity",
+  //   },
+  //   {
+  //     title: "Department",
+  //     dataIndex: "department",
+  //     key: "department",
+  //     render: (department) => (
+  //       <span
+  //         style={{
+  //           color: department === "MEDTECH" ? "magenta" : "orange",
+  //           fontWeight: "bold",
+  //         }}
+  //       >
+  //         {department}
+  //       </span>
+  //     ),
+  //   },
+  // ];
+
+  const hasGlassware = Array.isArray(selectedRequest?.items)
+  ? selectedRequest.items.some(
+      (item) => item.category?.toLowerCase() === "glasswares"
+    )
+  : false;
+
   const itemColumns = [
     {
       title: "Item #",
@@ -347,7 +475,20 @@ const RequestList = () => {
         </span>
       ),
     },
+    
   ];
+
+  if (hasGlassware) {
+    itemColumns.push({
+      title: "Volume",
+      dataIndex: "volume",  
+      key: "volume",
+      render: (volume, record) =>
+        record.category?.toLowerCase() === "glasswares" ? volume || "N/A" : "",
+    });
+  }
+  console.log("Items in selectedRequest:", selectedRequest?.items);
+  console.log("Columns:", itemColumns);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -430,13 +571,23 @@ const RequestList = () => {
                 
                 <div className="details-table">
                   <Title level={5}>Requested Items:</Title>
-                  <Table
+
+                  {/* <Table
                     columns={itemColumns}
                     dataSource={selectedRequest.items}
                     rowKey={(_, index) => index}
                     size="small"
                     pagination={false}
+                  /> */}
+
+                  <Table
+                    columns={itemColumns}
+                    dataSource={Array.isArray(selectedRequest?.items) ? selectedRequest.items : []}
+                    rowKey={(_, index) => index}
+                    size="small"
+                    pagination={false}
                   />
+
                   <br></br>
                   <p style={{marginBottom: '30px'}}><strong>Note:</strong> {selectedRequest.message || "No message provided."}</p>
                 </div>
