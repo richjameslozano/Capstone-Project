@@ -840,7 +840,8 @@ const LabRoomQR = () => {
                   Save
                 </button> */}
 
-                <button
+                <Button
+                  type="primary"
                   onClick={() => {
                     setConfirmRoomId(room.id);
                     setIsConfirmModalVisible(true);
@@ -848,7 +849,7 @@ const LabRoomQR = () => {
                   style={{ marginLeft: "10px" }}
                 >
                   Save
-                </button>
+                </Button>
               </h3>
 
               <table className="labroom-table">
