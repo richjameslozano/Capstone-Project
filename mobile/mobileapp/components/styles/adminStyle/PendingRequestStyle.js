@@ -4,7 +4,6 @@ export default StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#e9ecee',
-    paddingBottom: 7,
   },
 
   title: {
@@ -32,6 +31,20 @@ export default StyleSheet.create({
              zIndex: 999
       },
 
+  categoryHeader:{
+  fontSize: 15,
+  fontWeight: 500,
+  paddingHorizontal: 15,
+  paddingVertical: 10,
+  borderRadius: 5,
+  borderColor: '#acacac',
+  borderWidth: 1,
+  alignSelf: 'flex-start',
+  marginTop: 10,
+  backgroundColor: '#fff',
+  color: '#6e9fc1'
+  },
+
   note:{
     backgroundColor: '#6e9fc1', 
     width: '100%', 
@@ -41,32 +54,44 @@ export default StyleSheet.create({
 
   },
 
-  card: {
-    marginBottom: 20,
-    padding: 20,
-    borderRadius: 15,
-    backgroundColor: 'white',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 5,
+    pendingFlat:{
+    flexGrow: 1,
+    paddingHorizontal: 5,
+    gap: 5,
+    paddingBottom: 20
   },
 
+  pendingCard:{
+    backgroundColor: '#fff',
+    flexDirection: 'row',
+    borderRadius: 10,
+    borderColor: '#dcdcdc',
+    borderWidth: 1,
+    paddingVertical: 5,
+  },
+
+  usage:{fontSize: 15, padding: 10, backgroundColor: 'orange', borderRadius: 5, color: 'white', width: '100%'},
+  usageContainer:{justifyContent: 'flex-start', alignItems: 'center', padding: 10, paddingLeft: 15},
+
+  detailsContainer:{
+    flex: 1,
+    padding: 10,
+    paddingLeft: 5,
+    paddingVertical: 5,
+  },
+      
   name: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
+    fontSize: 17,
+    color: '#000',
   },
 
   request: {
     fontSize: 16,
-    marginBottom: 10,
     color: '#555',
   },
 
   reason: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#777',
   },
 
