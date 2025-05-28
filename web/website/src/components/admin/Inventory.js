@@ -1643,27 +1643,6 @@ const printPdf = () => {
 
                 <Col span={8}>
                   <Form.Item
-                    name="quantity"
-                    label="Quantity"
-                    rules={[{ required: true, message: "Please enter Quantity!" }]}
-                  >
-                    <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="Critical Level"
-                    label="criticalLevel"
-                    rules={[{ required: true, message: "Please enter desired Critical Stock!" }]}
-                  >
-                    <InputNumber min={1} placeholder="Enter Critical Stock" style={{ width: "100%" }} />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
                     name="category"
                     label="Category"
                     rules={[{ required: true, message: "Please select a category!" }]}
@@ -1725,6 +1704,40 @@ const printPdf = () => {
                     )}
                   </Form.List>
                 )}
+
+                  {selectedCategory !== "Glasswares" && (
+                    <Col span={8}>
+                      <Form.Item
+                        name="quantity"
+                        label="Quantity"
+                        rules={[{ required: true, message: "Please enter Quantity!" }]}
+                      >
+                        <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
+                      </Form.Item>
+                    </Col>
+                  )}
+              </Row>
+
+              <Row gutter={16}>                
+                {/* <Col span={8}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    rules={[{ required: true, message: "Please enter Quantity!" }]}
+                  >
+                    <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col> */}
+                
+                <Col span={8}>
+                  <Form.Item
+                    name="Critical Level"
+                    label="criticalLevel"
+                    rules={[{ required: true, message: "Please enter desired Critical Stock!" }]}
+                  >
+                    <InputNumber min={1} placeholder="Enter Critical Stock" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
 
                 <Col span={8}>
                   <Form.Item name="entryDate" label="Date of Entry" disabled>
