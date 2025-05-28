@@ -434,10 +434,11 @@ const RequestList = () => {
   // ];
 
   const hasGlassware = Array.isArray(selectedRequest?.items)
-  ? selectedRequest.items.some(
-      (item) => item.category?.toLowerCase() === "glasswares"
-    )
-  : false;
+    ? selectedRequest.items.some(
+        (item) => item.category?.toLowerCase() === "glasswares"
+      )
+    : false;
+
 
   const itemColumns = [
     {
@@ -481,7 +482,7 @@ const RequestList = () => {
   if (hasGlassware) {
     itemColumns.push({
       title: "Volume",
-      dataIndex: "volume",  
+      dataIndex: "volume",  // access volume field from item data
       key: "volume",
       render: (volume, record) =>
         record.category?.toLowerCase() === "glasswares" ? volume || "N/A" : "",
@@ -489,7 +490,7 @@ const RequestList = () => {
   }
   console.log("Items in selectedRequest:", selectedRequest?.items);
   console.log("Columns:", itemColumns);
-
+  
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout className="site-layout">

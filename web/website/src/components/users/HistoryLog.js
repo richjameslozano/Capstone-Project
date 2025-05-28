@@ -49,9 +49,7 @@ const HistoryLog = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [actionFilter, setActionFilter] = useState("ALL");
-
-
-    const [requests, setRequests] = useState([]);
+  const [requests, setRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isCancelVisible, setIsCancelVisible] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -103,6 +101,7 @@ const HistoryLog = () => {
               return {
                 ...item,
                 itemIdFromInventory: itemId,
+                volume: item.volume ?? "N/A", 
               };
             })
           );
@@ -262,44 +261,6 @@ const HistoryLog = () => {
     },
   ];
 
-  const itemColumns = [
-    {
-      title: "Item #",
-      key: "index",
-      render: (_, __, index) => <span>{index + 1}</span>,
-    },
-    {
-      title: "Item Name",
-      dataIndex: "itemName",
-      key: "itemName",
-    },
-    {
-      title: "Item ID",
-      dataIndex: "itemIdFromInventory",
-      key: "itemIdFromInventory",
-    },
-    {
-      title: "Qty",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
-      render: (department) => (
-        <span
-          style={{
-            color: department === "MEDTECH" ? "magenta" : "orange",
-            fontWeight: "bold",
-          }}
-        >
-          {department}
-        </span>
-      ),
-    },
-  ];
-
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
@@ -378,6 +339,64 @@ const HistoryLog = () => {
     setSelectedLog(record.fullData);
     setModalVisible(true);
   };
+
+    const hasGlassware = Array.isArray(selectedRequest?.items)
+    ? selectedRequest.items.some(
+        (item) => item.category?.toLowerCase() === "glasswares"
+      )
+    : false;
+
+
+  const itemColumns = [
+    {
+      title: "Item #",
+      key: "index",
+      render: (_, __, index) => <span>{index + 1}</span>,
+    },
+    {
+      title: "Item Name",
+      dataIndex: "itemName",
+      key: "itemName",
+    },
+    {
+      title: "Item ID",
+      dataIndex: "itemIdFromInventory",
+      key: "itemIdFromInventory",
+    },
+    {
+      title: "Qty",
+      dataIndex: "quantity",
+      key: "quantity",
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
+      render: (department) => (
+        <span
+          style={{
+            color: department === "MEDTECH" ? "magenta" : "orange",
+            fontWeight: "bold",
+          }}
+        >
+          {department}
+        </span>
+      ),
+    },
+    
+  ];
+
+  if (hasGlassware) {
+    itemColumns.push({
+      title: "Volume",
+      dataIndex: "volume",  // access volume field from item data
+      key: "volume",
+      render: (volume, record) =>
+        record.category?.toLowerCase() === "glasswares" ? volume || "N/A" : "",
+    });
+  }
+  console.log("Items in selectedRequest:", selectedRequest?.items);
+  console.log("Columns:", itemColumns);
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
