@@ -16,6 +16,8 @@ export default function PendingRequestScreen() {
 
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isNote, setIsNote] = useState(true)
+  const [selectedFilter, setSelectedFilter] = useState('All'); // or 'All' if you want a default
+
 
   const navigation = useNavigation()
 
@@ -32,6 +34,7 @@ export default function PendingRequestScreen() {
       setIsNote(false)
     }
   }
+
   useFocusEffect(
     useCallback(() => {
       StatusBar.setBarStyle('dark-content');
@@ -40,6 +43,7 @@ export default function PendingRequestScreen() {
     }, [])
   );
 
+  const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
 
 useEffect(() => {
   const unsubscribe = onSnapshot(collection(db, 'userrequests'), (querySnapshot) => {
@@ -132,7 +136,7 @@ const getInitials = (usage) => {
   const usageBG = (item) => {
     if(item.usageType === 'Laboratory Experiment') return 'orange'
     if(item.usageType === 'Research') return '#70c247'
-    if(item.usageType === 'Community Extension') return '#395a7f'
+    if(item.usageType === 'Community Extension') return '#6e9fc1'
     else{return '#b66ee8'}
   }
   
@@ -216,15 +220,26 @@ const groupByDueDateCategory = (requests) => {
   };
 };
 
-const categorizedRequests = groupByDueDateCategory(pendingRequests);
+const getFilteredRequests = () => {
+  if (selectedFilter === 'All') return pendingRequests;
 
-const sections = Object.entries(categorizedRequests)
-  .map(([title, data]) => ({
-    title,
-    data,
-  }))
-  .filter(section => section.data.length > 0); // ✅ Remove empty categories
+  return pendingRequests.filter((item) => {
+    const usage = item.usageType?.trim().toLowerCase();
+    if (!usage) return false;
 
+    const normalized = usage.replace(/\s+/g, ' ').toLowerCase();
+    const isKnownType = ['laboratory experiment', 'research', 'community extension'];
+
+    if (isKnownType.includes(normalized)) {
+      return normalized === selectedFilter.toLowerCase();
+    } else {
+      return selectedFilter === 'Others';
+    }
+  });
+};
+
+const filteredRequests = getFilteredRequests();
+const categorizedRequests = groupByDueDateCategory(filteredRequests);
 
 
 
@@ -262,19 +277,64 @@ const sections = Object.entries(categorizedRequests)
               </Text>
             </TouchableOpacity>
 
-            <View>
-              <TouchableOpacity/>
-            </View>
+        <View style={{height: 'auto', marginTop: headerHeight, }}>
+          <ScrollView
+            style={{borderColor: '#dcdcdc', borderWidth: 1, height: 'auto', alignSelf: 'flex-start',  height: '9%'
+            }}
+            horizontal={true}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{
+              backgroundColor: '#fff',
+              padding: 10,
+              flexDirection: 'row',
+              alignItems: 'center',
+            }}
+          >
+            {usageTypes.map((type) => (
+              <TouchableOpacity
+                key={type}
+                style={[
+                  styles.filterbtn,
+                  selectedFilter === type && styles.selectedFilterBtn
+                ]}
+                onPress={() => setSelectedFilter(type)}
+              >
+                <Text
+                  style={[
+                    styles.filtername,
+                    selectedFilter === type && styles.selectedFilterText
+                  ]}
+                >
+                  {type}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+</View>
+          
 
-      <ScrollView style={{marginTop: headerHeight, flex: 1, backgroundColor: '#e9ecee', paddingHorizontal: 7, paddingTop: 5,}}
+      <ScrollView style={{ backgroundColor: '#e9ecee', paddingHorizontal: 7, paddingTop: 5, flex: 1}}
       contentContainerStyle={styles.pendingFlat}>
         {Object.entries(categorizedRequests)
           .filter(([_, items]) => items.length > 0)
           .map(([category, items]) => (
             <View key={category} style={{ gap: 5, justifyContent: 'flex-start', flex: 1 }}>
-              <Text style={styles.categoryHeader}>{category}</Text>
+              <View style={styles.categoryContainer}>
+              <Text style={styles.categoryHeader}>{category} </Text>
+              <Text style={styles.number}> {items.length}</Text>
+              </View>
               <View style={{ gap: 3 }}>
-                {items.map((item, index) => renderItem({ item, index }))}
+                {items
+  .filter(item => {
+    if (selectedFilter === 'All' || !selectedFilter) return true;
+
+    const normalized = item.usageType?.toLowerCase();
+    return selectedFilter === 'Others'
+      ? !['laboratory experiment', 'research', 'community extension'].includes(normalized)
+      : normalized === selectedFilter.toLowerCase();
+  })
+  .map((item, index) => renderItem({ item, index }))
+}
               </View>
             </View>
           ))}
