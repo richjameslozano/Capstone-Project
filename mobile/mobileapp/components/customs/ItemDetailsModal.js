@@ -11,6 +11,7 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
     department,
     quantity,
     labRoom,
+    volume = null,
     borrowedCount,
     deployedCount,
     condition,
@@ -26,6 +27,8 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
     }
     return cond.toString();
   };
+
+  console.log("Quantity value type:", typeof quantity, quantity);
 
   return (
     <Modal transparent visible={visible} animationType="fade">
@@ -49,9 +52,34 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
             Department: <Text style={styles.value}>{department}</Text>
           </Text>
 
-          <Text style={styles.label}>
+          {/* <Text style={styles.label}>
             Quantity Available: <Text style={styles.value}>{quantity}</Text>
+          </Text> */}
+
+          {/* <Text style={styles.label}>
+            Quantity: <Text style={styles.value}>{quantity}</Text>
+          </Text> */}
+          <Text style={styles.label}>
+            Quantity:{" "}
+            <Text style={styles.value}>
+              {Array.isArray(quantity)
+                ? quantity.map((q, i) => `• Qty: ${q.qty}, Volume: ${q.volume}ml`).join(" | ")
+                : typeof quantity === "object"
+                ? Object.entries(quantity).map(([key, val]) => `${key}: ${val}`).join(", ")
+                : quantity}
+            </Text>
           </Text>
+
+          {category === "Glasswares" && volume != null && (
+            <Text style={styles.label}>
+              Volume:{" "}
+              <Text style={styles.value}>
+                {typeof volume === "object"
+                  ? Object.entries(volume).map(([key, val]) => `${key}: ${val}`).join(", ")
+                  : `${volume} ML`}
+              </Text>
+            </Text>
+          )}
 
           <Text style={styles.label}>
             Location: <Text style={styles.value}>{labRoom}</Text>

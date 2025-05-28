@@ -12,24 +12,6 @@ const ItemListScreen = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // useEffect(() => {
-  //   const fetchItems = async () => {
-  //     try {
-  //       const snapshot = await getDocs(collection(db, "inventory"));
-  //       const fetchedItems = snapshot.docs.map(doc => ({
-  //         id: doc.id,
-  //         ...doc.data()
-  //       }));
-  //       setItems(fetchedItems);
-  //     } catch (error) {
-  //       console.error("Error fetching items:", error);
-  //     } finally {
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchItems();
-  // }, []);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -56,16 +38,35 @@ const ItemListScreen = () => {
     navigation.navigate("CameraUpdateItems", { selectedItem: item });
   };
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity style={styles.itemCard} onPress={() => handleItemPress(item)}>
-      <Text style={styles.itemName}>{item.itemName}</Text>
-      <Text style={styles.details}>Qty: {item.quantity} </Text>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    let quantityText = "";
 
-  if (loading) {
-    return <ActivityIndicator size="large" color="#007bff" style={{ flex: 1, justifyContent: "center" }} />;
-  }
+    if (item.category === "Glasswares" && Array.isArray(item.quantity)) {
+      // For each object in quantity array, extract qty and volume
+      quantityText = item.quantity
+        .map(q => `Qty: ${q.qty ?? "N/A"} Volume: ${q.volume ?? "N/A"} `)
+        .join(", ");
+        
+    } else {
+      if (item.quantity) {
+        if (typeof item.quantity === "object") {
+          quantityText = `Qty: ${item.quantity.qty ?? "N/A"}`;
+
+        } else {
+          quantityText = `Qty: ${item.quantity}`;
+        }
+      } else {
+        quantityText = `Qty: N/A`;
+      }
+    }
+
+    return (
+      <TouchableOpacity style={styles.itemCard} onPress={() => handleItemPress(item)}>
+        <Text style={styles.itemName}>{item.itemName}</Text>
+        <Text style={styles.details}>{quantityText}</Text>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
