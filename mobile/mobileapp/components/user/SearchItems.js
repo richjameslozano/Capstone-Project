@@ -96,7 +96,20 @@ export default function SearchItemsScreen({ navigation }) {
         </Text>
       </View>
       <View style={{ flex: 1 }}>
-        <Text style={styles.cellText}>{item.quantity}</Text>
+        {/* <Text style={styles.cellText}>{item.quantity}</Text> */}
+        {item.category === "Glasswares" ? (
+          <Text style={styles.cellText}>
+            {Object.values(item.quantity)
+              .map((entry) => `${entry.qty} pcs / ${entry.volume} ML`)
+              .join('\n')}
+          </Text>
+        ) : (
+          <Text style={styles.cellText}>
+            {item.quantity}
+            {["Chemical", "Reagent"].includes(item.category) && ' pcs'}
+            {["Chemical", "Reagent"].includes(item.category) && item.unit && ` / ${item.unit} ML`}
+          </Text>
+        )}
       </View>
       <View style={{ flex: 2 }}>
         <Text
@@ -111,9 +124,9 @@ export default function SearchItemsScreen({ navigation }) {
         </Text>
       </View>
 
-      <View style={{ flex: 2 }}>
+      {/* <View style={{ flex: 2 }}>
         <Text style={styles.cellText}>{item.category}</Text>
-      </View>
+      </View> */}
 
       {/* <View style={{ flex: 2 }}>
        <Text style={styles.cellText}>
@@ -145,10 +158,10 @@ export default function SearchItemsScreen({ navigation }) {
       {/* Table Header */}
       <View style={styles.tableContainer}>
         <View style={[styles.row, styles.headerRow]}>
-          <Text style={[styles.tableHeaderText, { flex: 1.1, }]}>Description </Text>
+          <Text style={[styles.tableHeaderText, { flex: 1.1, }]}>Item Name </Text>
           <Text style={[styles.tableHeaderText, { flex: .6 }]}>Qty </Text>
           <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Status</Text>
-          <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Category</Text>
+          {/* <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Category</Text> */}
           {/* <Text style={[styles.tableHeaderText, { flex: 1.1 }]}>Condition</Text> */}
         </View>
 
@@ -210,12 +223,30 @@ export default function SearchItemsScreen({ navigation }) {
               {hoveredItem && (
                 <View>
                   <Text style={styles.modalTitle}>{hoveredItem.itemName}</Text>
-                  <Text>
+                  {/* <Text>
                     Quantity: {hoveredItem.quantity}
                     {["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && " pcs"}
                     {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
                     {hoveredItem.category === "Glasswares" && hoveredItem.volume && ` / ${hoveredItem.volume} ML`}
-                  </Text>
+                  </Text> */}
+                  {hoveredItem.category === "Glasswares" && hoveredItem.quantity && (
+                    Object.entries(hoveredItem.quantity).map(([key, value], index) => (
+                      <Text key={index}>
+                        Quantity: {value.qty} pcs / {value.volume} ML
+                      </Text>
+                    ))
+                  )}
+
+                  {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.quantity && (
+                    <Text>
+                      Quantity: {hoveredItem.quantity} pcs
+                      {hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
+                    </Text>
+                  )}
+
+                  {!["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && (
+                    <Text>Quantity: {hoveredItem.quantity}</Text>
+                  )}
                   <Text>Status: {hoveredItem.status}</Text>
                   <Text>Category: {hoveredItem.category}</Text>
                   <Text>Location: {hoveredItem.labRoom}</Text>

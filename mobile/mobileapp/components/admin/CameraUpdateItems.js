@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
+import { View, Text, TouchableOpacity, Animated, Dimensions, Alert, Modal, FlatList } from "react-native";
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js";
@@ -21,15 +21,17 @@ const CameraUpdateItems = ({ onClose }) => {
   const [scanned, setScanned] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [currentItem, setCurrentItem] = useState(null);
-  const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef(null);
   const scanLinePosition = useRef(new Animated.Value(0)).current;
   const navigation = useNavigation();
   const route = useRoute();
   const selectedItem = route.params?.selectedItem;
+  const [permission, requestPermission] = useCameraPermissions();
+  const [selectedVolumeIndex, setSelectedVolumeIndex] = useState(null);
+  const [volumeModalVisible, setVolumeModalVisible] = useState(false);
 
   useEffect(() => {
-    if (!permission) {
+    if (permission?.status !== 'granted') {
       requestPermission();
     }
   }, [permission]);
@@ -94,6 +96,12 @@ const CameraUpdateItems = ({ onClose }) => {
         }
     };
 
+    const handleVolumeSelect = (index) => {
+      setSelectedVolumeIndex(index);
+      setVolumeModalVisible(false);
+      setModalVisible(true); // now show quantity input modal
+    };
+
   //   const handleBarCodeScanned = async ({ data }) => {
   //   if (scanned) return;
   //   setScanned(true);
@@ -140,6 +148,31 @@ const CameraUpdateItems = ({ onClose }) => {
   //     setScanned(false);
   //   }
   // };
+
+  const VolumeSelectionModal = ({ visible, volumes, onSelect, onClose }) => (
+    <Modal visible={visible} transparent animationType="slide">
+      <View style={{ flex: 1, justifyContent: "center", backgroundColor: "#00000099" }}>
+        <View style={{ backgroundColor: "white", margin: 20, borderRadius: 8, padding: 16 }}>
+          <Text style={{ fontSize: 18, fontWeight: "bold", marginBottom: 12 }}>Select Volume</Text>
+          <FlatList
+            data={volumes}
+            keyExtractor={(_, index) => index.toString()}
+            renderItem={({ item, index }) => (
+              <TouchableOpacity
+                style={{ padding: 12, borderBottomWidth: 1, borderColor: "#ccc" }}
+                onPress={() => onSelect(index)}
+              >
+                <Text>Volume: {item.volume} ml, Quantity: {item.qty}</Text>
+              </TouchableOpacity>
+            )}
+          />
+          <TouchableOpacity onPress={onClose} style={{ marginTop: 10, alignSelf: "center" }}>
+            <Text style={{ color: "red" }}>Cancel</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
 
   const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
@@ -192,7 +225,16 @@ const CameraUpdateItems = ({ onClose }) => {
       console.log("✅ Scanned Item:", fullItem);
 
       setCurrentItem(fullItem);
-      setModalVisible(true);
+
+      // setModalVisible(true);
+
+      if (fullItem.category === "Glasswares" && Array.isArray(fullItem.quantity)) {
+      setSelectedVolumeIndex(null);
+      setVolumeModalVisible(true);  
+      // new state variable for volume modal visibility
+    } else {
+      setModalVisible(true); // fallback to quantity modal directly
+    }
       
     } catch (err) {
       console.error("QR Scan Error:", err);
@@ -291,8 +333,225 @@ const CameraUpdateItems = ({ onClose }) => {
   //   }
   // };
 
-  const handleAddQuantity = async (addedQuantity) => {
-    const { itemId, itemName, labRoom: roomNumber } = currentItem;
+  // const handleAddQuantity = async (addedQuantity) => {
+  //   const { itemId, itemName, labRoom: roomNumber } = currentItem;
+
+  //   try {
+  //     console.log("roomNumber:", roomNumber); // Should be '0930'
+  //     console.log("itemId:", itemId);         // Should be 'DENT02'
+
+  //     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+  //     const snapshot = await getDocs(inventoryQuery);
+
+  //       snapshot.forEach(async docSnap => {
+  //         const ref = doc(db, 'inventory', docSnap.id);
+  //         const existing = docSnap.data();
+
+  //         const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //         const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+
+  //         await updateDoc(ref, {
+  //           quantity: newQty,
+  //           'condition.Good': newGood
+  //         });
+
+  //         console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+  //       });
+
+
+  //     // ✅ STEP 1: Get the labRoom doc ID using roomNumber
+  //     const labRoomQuery = query(
+  //       collection(db, 'labRoom'),
+  //       where('roomNumber', '==', roomNumber)
+  //     );
+  //     const labRoomSnap = await getDocs(labRoomQuery);
+
+  //     if (labRoomSnap.empty) {
+  //       Alert.alert("Error", `Lab room ${roomNumber} not found.`);
+  //       return;
+  //     }
+
+  //     const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
+
+  //     // ✅ STEP 2: Get item in subcollection
+  //     const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
+  //     const itemDocSnap = await getDoc(itemDocRef);
+
+  //     if (!itemDocSnap.exists()) {
+  //       Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
+  //       return;
+  //     }
+
+  //     // ✅ STEP 3: Update quantity and condition
+  //     const existing = itemDocSnap.data();
+  //     const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //     const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+  //     await updateDoc(itemDocRef, {
+  //       quantity: newQty,
+  //       'condition.Good': newGood,
+  //     });
+
+  //     console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+  //     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+
+  //   } catch (err) {
+  //     console.error("Quantity update error:", err);
+  //     Alert.alert("Error", "Failed to update quantity.");
+
+  //   } finally {
+  //     setModalVisible(false);
+  //     setScanned(false);
+  //   }
+  // };
+
+//   const handleAddQuantity = async (addedQuantity, selectedVolume = null) => {
+//   const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
+
+//   try {
+//     console.log("roomNumber:", roomNumber); // Should be '0930'
+//     console.log("itemId:", itemId);         // Should be 'DENT02'
+
+//     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+//     const snapshot = await getDocs(inventoryQuery);
+
+//     snapshot.forEach(async docSnap => {
+//       const ref = doc(db, 'inventory', docSnap.id);
+//       const existing = docSnap.data();
+
+//      if (category.toLowerCase() === 'glasswares' && selectedVolume != null) {
+//   // Find the volume entry in the quantity array
+//   let quantityArray = existing.quantity || [];
+
+//   // Find index of volume entry
+//   const volumeIndex = quantityArray.findIndex(q => q.volume === selectedVolume);
+
+//   if (volumeIndex !== -1) {
+//     // Update existing volume qty
+//     quantityArray[volumeIndex].qty = (Number(quantityArray[volumeIndex].qty) || 0) + addedQuantity;
+//   } else {
+//     // If volume entry doesn't exist, add new
+//     quantityArray.push({ volume: selectedVolume, qty: addedQuantity });
+//   }
+
+//   // Calculate new total qty = sum of all qty in the array
+//   const newTotalQty = quantityArray.reduce((sum, q) => sum + Number(q.qty), 0);
+
+//   // Update condition.Good by addedQuantity
+//   const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+//   // Update Firestore document with new quantity array, total quantity, and condition
+//   // await updateDoc(ref, {
+//   //   quantity: quantityArray,
+//   //   quantityTotal: newTotalQty,  // Optional: if you want to store total separately
+//   //   'condition.Good': newGood
+//   // });
+
+//    await updateDoc(ref, {
+//           quantity: quantityArray,
+//           'condition.Good': newGood
+//         });
+
+//   console.log(`✅ Inventory updated for volume ${selectedVolume}: qty → ${quantityArray[volumeIndex]?.qty}, total quantity → ${newTotalQty}, condition.Good → ${newGood}`);
+// } else {
+//         // For other categories, update quantity normally
+//         const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+//         const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+//         await updateDoc(ref, {
+//           quantity: newQty,
+//           'condition.Good': newGood
+//         });
+
+//         console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+//       }
+//     });
+
+
+//     // ✅ STEP 1: Get the labRoom doc ID using roomNumber
+//     const labRoomQuery = query(
+//       collection(db, 'labRoom'),
+//       where('roomNumber', '==', roomNumber)
+//     );
+//     const labRoomSnap = await getDocs(labRoomQuery);
+
+//     if (labRoomSnap.empty) {
+//       Alert.alert("Error", `Lab room ${roomNumber} not found.`);
+//       return;
+//     }
+
+//     const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
+
+//     // ✅ STEP 2: Get item in subcollection
+//     const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
+//     const itemDocSnap = await getDoc(itemDocRef);
+
+//     if (!itemDocSnap.exists()) {
+//       Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
+//       return;
+//     }
+
+//     // ✅ STEP 3: Update quantity and condition for labRoom subcollection
+//     const existing = itemDocSnap.data();
+
+// if (category === 'glasswares' && selectedVolume) {
+//   let quantityArray = existing.quantity || [];
+//   const volumeIndex = quantityArray.findIndex(q => q.volume === selectedVolume);
+
+//   if (volumeIndex !== -1) {
+//     quantityArray[volumeIndex].qty = (Number(quantityArray[volumeIndex].qty) || 0) + addedQuantity;
+//   } else {
+//     quantityArray.push({ volume: selectedVolume, qty: addedQuantity });
+//   }
+
+//   const newTotalQty = quantityArray.reduce((sum, q) => sum + Number(q.qty), 0);
+//   const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+//   // await updateDoc(itemDocRef, {
+//   //   quantity: quantityArray,
+//   //   quantityTotal: newTotalQty,
+//   //   'condition.Good': newGood,
+//   // });
+
+//       await updateDoc(itemDocRef, {
+//         quantity: quantityArray,
+//         'condition.Good': newGood
+//       });
+
+//   console.log(`✅ labRoom updated for volume ${selectedVolume}: qty → ${quantityArray[volumeIndex]?.qty}, total quantity → ${newTotalQty}, condition.Good → ${newGood}`);
+// } else {
+//       // Normal update for other categories
+//       const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+//       const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+//       await updateDoc(itemDocRef, {
+//         quantity: newQty,
+//         'condition.Good': newGood,
+//       });
+
+//       console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+//     }
+
+//     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"${selectedVolume ? ` (Volume: ${selectedVolume})` : ''}`);
+
+//   } catch (err) {
+//     console.error("Quantity update error:", err);
+//     Alert.alert("Error", "Failed to update quantity.");
+
+//   } finally {
+//     setModalVisible(false);
+//     setScanned(false);
+//   }
+// };
+
+  const handleAddQuantity = async (addedQuantity, selectedVolume = null) => { 
+    const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
+
+  if (category.toLowerCase() === 'glasswares' && !selectedVolume) {
+    Alert.alert("Missing Volume", "Please select a volume for glasswares before proceeding.");
+    return;
+  }
 
     try {
       console.log("roomNumber:", roomNumber); // Should be '0930'
@@ -301,28 +560,63 @@ const CameraUpdateItems = ({ onClose }) => {
       const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
       const snapshot = await getDocs(inventoryQuery);
 
-        snapshot.forEach(async docSnap => {
-          const ref = doc(db, 'inventory', docSnap.id);
-          const existing = docSnap.data();
+      snapshot.forEach(async docSnap => {
+        const ref = doc(db, 'inventory', docSnap.id);
+        const invData = docSnap.data();
 
-          const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-          const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+        if (category.toLowerCase() === 'glasswares' && selectedVolume != null) {
+          let quantityArray = invData.quantity || [];
 
+          const volumeIndex = quantityArray.findIndex(q => q.volume === selectedVolume);
+
+          if (volumeIndex !== -1) {
+            quantityArray[volumeIndex].qty = (Number(quantityArray[volumeIndex].qty) || 0) + addedQuantity;
+          } else {
+            quantityArray.push({ volume: selectedVolume, qty: addedQuantity });
+          }
+
+          const newTotalQty = quantityArray.reduce((sum, q) => sum + Number(q.qty), 0);
+          const newGood = (Number(invData.condition?.Good) || 0) + addedQuantity;
 
           await updateDoc(ref, {
-            quantity: newQty,
+            quantity: quantityArray,
             'condition.Good': newGood
           });
 
-          console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-        });
+          console.log(`✅ Inventory updated for volume ${selectedVolume}: qty → ${quantityArray[volumeIndex]?.qty}, total quantity → ${newTotalQty}, condition.Good → ${newGood}`);
+        
+        } else {
+          // const newQty = (Number(invData.quantity) || 0) + addedQuantity;
+          // const newGood = (Number(invData.condition?.Good) || 0) + addedQuantity;
 
+          // await updateDoc(ref, {
+          //   quantity: newQty,
+          //   'condition.Good': newGood
+          // });
+
+            if (Array.isArray(invData.quantity)) {
+              const newGood = (Number(invData.condition?.Good) || 0) + addedQuantity;
+
+              await updateDoc(ref, {
+                'condition.Good': newGood
+              });
+
+              console.warn("⚠️ No volume selected for glassware. Skipped array update. Only updated condition.Good.");
+            } else {
+              const newQty = (Number(invData.quantity) || 0) + addedQuantity;
+              const newGood = (Number(invData.condition?.Good) || 0) + addedQuantity;
+
+              await updateDoc(ref, {
+                quantity: newQty,
+                'condition.Good': newGood
+              });
+            }
+          console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+        }
+      });
 
       // ✅ STEP 1: Get the labRoom doc ID using roomNumber
-      const labRoomQuery = query(
-        collection(db, 'labRoom'),
-        where('roomNumber', '==', roomNumber)
-      );
+      const labRoomQuery = query(collection(db, 'labRoom'), where('roomNumber', '==', roomNumber));
       const labRoomSnap = await getDocs(labRoomQuery);
 
       if (labRoomSnap.empty) {
@@ -330,7 +624,7 @@ const CameraUpdateItems = ({ onClose }) => {
         return;
       }
 
-      const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
+      const labRoomDocId = labRoomSnap.docs[0].id;
 
       // ✅ STEP 2: Get item in subcollection
       const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
@@ -341,10 +635,47 @@ const CameraUpdateItems = ({ onClose }) => {
         return;
       }
 
-      // ✅ STEP 3: Update quantity and condition
-      const existing = itemDocSnap.data();
-      const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-      const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+      const labItemData = itemDocSnap.data();
+
+      if (category.toLowerCase() === 'glasswares' && selectedVolume) {
+        let quantityArray = labItemData.quantity || [];
+        const volumeIndex = quantityArray.findIndex(q => q.volume === selectedVolume);
+
+        if (volumeIndex !== -1) {
+          quantityArray[volumeIndex].qty = (Number(quantityArray[volumeIndex].qty) || 0) + addedQuantity;
+        } else {
+          quantityArray.push({ volume: selectedVolume, qty: addedQuantity });
+        }
+
+        const newTotalQty = quantityArray.reduce((sum, q) => sum + Number(q.qty), 0);
+        const newGood = (Number(labItemData.condition?.Good) || 0) + addedQuantity;
+
+        await updateDoc(itemDocRef, {
+          quantity: quantityArray,
+          'condition.Good': newGood
+        });
+
+        console.log(`✅ labRoom updated for volume ${selectedVolume}: qty → ${quantityArray[volumeIndex]?.qty}, total quantity → ${newTotalQty}, condition.Good → ${newGood}`);
+      } else {
+        // const newQty = (Number(labItemData.quantity) || 0) + addedQuantity;
+        // const newGood = (Number(labItemData.condition?.Good) || 0) + addedQuantity;
+
+        // await updateDoc(itemDocRef, {
+        //   quantity: newQty,
+        //   'condition.Good': newGood,
+        // });
+
+    if (Array.isArray(labItemData.quantity)) {
+      const newGood = (Number(labItemData.condition?.Good) || 0) + addedQuantity;
+
+      await updateDoc(itemDocRef, {
+        'condition.Good': newGood
+      });
+
+      console.warn("⚠️ labRoom: Skipped quantity update (array detected, no volume selected). Only updated condition.Good.");
+    } else {
+      const newQty = (Number(labItemData.quantity) || 0) + addedQuantity;
+      const newGood = (Number(labItemData.condition?.Good) || 0) + addedQuantity;
 
       await updateDoc(itemDocRef, {
         quantity: newQty,
@@ -352,12 +683,15 @@ const CameraUpdateItems = ({ onClose }) => {
       });
 
       console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-      Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+    }
+      }
+
+      Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"${selectedVolume ? ` (Volume: ${selectedVolume})` : ''}`);
 
     } catch (err) {
       console.error("Quantity update error:", err);
       Alert.alert("Error", "Failed to update quantity.");
-
+      
     } finally {
       setModalVisible(false);
       setScanned(false);
@@ -406,7 +740,7 @@ const CameraUpdateItems = ({ onClose }) => {
         </View>
       </CameraView>
 
-      <QuantityModal
+      {/* <QuantityModal
         visible={modalVisible}
         itemName={currentItem?.itemName}
         onClose={() => {
@@ -414,7 +748,50 @@ const CameraUpdateItems = ({ onClose }) => {
           setScanned(false);
         }}
         onSubmit={handleAddQuantity}
+      /> */}
+
+      <VolumeSelectionModal
+        visible={volumeModalVisible}
+        volumes={currentItem?.quantity || []}
+        onSelect={handleVolumeSelect}
+        onClose={() => setVolumeModalVisible(false)}
       />
+
+      {/* <QuantityModal
+        visible={modalVisible}
+        itemName={
+          selectedVolumeIndex !== null && currentItem?.quantity?.[selectedVolumeIndex]
+            ? `${currentItem.itemName} (Volume: ${currentItem.quantity[selectedVolumeIndex].volume} ml)`
+            : currentItem?.itemName
+        }
+        onClose={() => {
+          setModalVisible(false);
+          setScanned(false);
+        }}
+        onSubmit={handleAddQuantity}
+      /> */}
+
+      <QuantityModal
+        visible={modalVisible}
+        itemName={
+          selectedVolumeIndex !== null && currentItem?.quantity?.[selectedVolumeIndex]
+            ? `${currentItem.itemName} (Volume: ${currentItem.quantity[selectedVolumeIndex].volume} ml)`
+            : currentItem?.itemName
+        }
+        onClose={() => {
+          setModalVisible(false);
+          setScanned(false);
+        }}
+        onSubmit={(addedQuantity) => {
+          // Pass the selected volume string (e.g. "250")
+          const selectedVolume = selectedVolumeIndex !== null 
+            ? currentItem.quantity[selectedVolumeIndex].volume 
+            : null;
+
+          handleAddQuantity(addedQuantity, selectedVolume);
+        }}
+      />
+
     </View>
   );
 };

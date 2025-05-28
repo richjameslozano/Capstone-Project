@@ -155,7 +155,7 @@ const LogScreen = () => {
         <ScrollView horizontal>
           <View style={styles.table}>
             <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>Timestamp</Text>
+              <Text style={styles.tableHeader}>Date</Text>
               <Text style={styles.tableHeader}>Status</Text>
               <Text style={styles.tableHeader}>Requestor</Text>
               <Text style={styles.tableHeader}>Action</Text>

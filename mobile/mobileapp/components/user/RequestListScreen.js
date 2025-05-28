@@ -419,6 +419,10 @@ const RequestListScreen = ({navigation}) => {
                 />
 
                 <Text style={styles.modalDetail}>
+                  <Text style={styles.bold}>Volume:</Text> {selectedItem.volume}
+                </Text>
+
+                <Text style={styles.modalDetail}>
                   <Text style={styles.bold}>Category:</Text> {selectedItem.category}
                 </Text>
 
@@ -480,6 +484,9 @@ const RequestListScreen = ({navigation}) => {
                       <View style={styles.tableRowHeader}>
                         <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Name</Text>
                         <Text style={[styles.tableCellHeader, { width: 100 }]}>Qty</Text>
+                        {requestList.some(item => item.category === "Glasswares") && (
+                          <Text style={[styles.tableCellHeader, { width: 120 }]}>Volume</Text>
+                        )}
                         <Text style={[styles.tableCellHeader, { width: 120 }]}>Category</Text>
                         <Text style={[styles.tableCellHeader, { width: 120 }]}>Status</Text>
                       </View>
@@ -489,6 +496,11 @@ const RequestListScreen = ({navigation}) => {
                         <View key={item.id} style={styles.tableRow}>
                           <Text style={[styles.tableCell, { width: 150 }]}>{item.selectedItem?.label}</Text>
                           <Text style={[styles.tableCell, { width: 100 }]}>{item.quantity}</Text>
+                          {item.category === "Glasswares" && (
+                            <Text style={[styles.tableCell, { width: 120 }]}>
+                              {item.volume ? `${item.volume} ML` : '—'}
+                            </Text>
+                          )}
                           <Text style={[styles.tableCell, { width: 120 }]}>{item.category}</Text>
                           <Text style={[styles.tableCell, { width: 120 }]}>{item.status}</Text>
                         </View>

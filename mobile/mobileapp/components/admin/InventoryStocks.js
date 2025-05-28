@@ -27,20 +27,15 @@ export default function InventoryStocks({ navigation }) {
   };
 
   useEffect(() => {
-  if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-  }
-}, []);
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
 
-
-
-
-const handleOpen = (id) => {
-  LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-  setIsOpen(prev => (prev === id ? null : id));
-};
-
-
+  const handleOpen = (id) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setIsOpen(prev => (prev === id ? null : id));
+  };
 
   useEffect(() => {
     const fetchInventory = () => {
@@ -217,7 +212,26 @@ const formatCondition = (cond) => {
             <View style={{marginTop:5}}>
               <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>Inventory Balance:</Text>
-              <Text style={styles.cardValueNum}>{item.quantity}</Text>
+              {/* <Text style={styles.cardValueNum}>{item.quantity}</Text> */}
+              {/* Simple quantity display for other cases */}
+              {/* <Text style={styles.cardValueNum}>
+                {typeof item.quantity === "number" ? item.quantity : JSON.stringify(item.quantity)}
+              </Text> */}
+              <Text style={styles.cardValueNum}>
+                {item.category === "Glasswares" && Array.isArray(item.quantity) && item.quantity.length > 0 ? (
+                  item.quantity.map((entry, index) => (
+                    <Text key={index}>
+                      {entry.qty} pcs / {entry.volume} ML{index < item.quantity.length - 1 ? ", " : ""}
+                    </Text>
+                  ))
+                ) : ["Chemical", "Reagent"].includes(item.category) && typeof item.quantity === "number" ? (
+                  <>
+                    {item.quantity} pcs{item.unit ? ` / ${item.unit} ML` : ""}
+                  </>
+                ) : (
+                  item.quantity
+                )}
+              </Text>
              </View>
 
              <View style={styles.cardRow}>
@@ -256,11 +270,27 @@ const formatCondition = (cond) => {
                   {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}
                   {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
                 </Text> */}
-                <Text style={styles.cardValueNum}>
+                {/* <Text style={styles.cardValueNum}>
                   {item.quantity}
                   {["Glasswares", "Chemical", "Reagent"].includes(item.category) && " pcs"}
                   {["Chemical", "Reagent"].includes(item.category) && item.unit && ` / ${item.unit} ML`}
                   {item.category === "Glasswares" && item.volume && ` / ${item.volume} ML`}
+                </Text> */}
+                {/* Card Value Number */}
+                <Text style={styles.cardValueNum}>
+                  {item.category === "Glasswares" && Array.isArray(item.quantity) && item.quantity.length > 0 ? (
+                    item.quantity.map((entry, index) => (
+                      <Text key={index}>
+                        {entry.qty} pcs / {entry.volume} ML{index < item.quantity.length - 1 ? ", " : ""}
+                      </Text>
+                    ))
+                  ) : ["Chemical", "Reagent"].includes(item.category) && typeof item.quantity === "number" ? (
+                    <>
+                      {item.quantity} pcs{item.unit ? ` / ${item.unit} ML` : ""}
+                    </>
+                  ) : (
+                    item.quantity
+                  )}
                 </Text>
                 </View>
 
@@ -336,17 +366,37 @@ const formatCondition = (cond) => {
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Expire Date:</Text> {selectedItem.expireDate || 'N/A'}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Type:</Text> {selectedItem.type}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}</Text> */}
-                <Text style={styles.modalText}>
+                {/* <Text style={styles.modalText}>
                 <Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}
                   {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
                   {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
+                </Text> */}
+
+                {/* Modal Inventory Stock */}
+                <Text style={styles.modalText}>
+                  <Text style={styles.modalLabel}>Inventory Stock:</Text>{" "}
+                  {selectedItem.category === "Glasswares" && Array.isArray(selectedItem.quantity) && selectedItem.quantity.length > 0 ? (
+                    selectedItem.quantity.map((entry, index) => (
+                      <Text key={index}>
+                        {entry.qty} pcs / {entry.volume} ML{index < selectedItem.quantity.length - 1 ? ", " : ""}
+                      </Text>
+                    ))
+                  ) : ["Chemical", "Reagent"].includes(selectedItem.category) && typeof selectedItem.quantity === "number" ? (
+                    <>
+                      {selectedItem.quantity} pcs{selectedItem.unit ? ` / ${selectedItem.unit} ML` : ""}
+                    </>
+                  ) : (
+                    selectedItem.quantity
+                  )}
                 </Text>
+
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Category:</Text> {selectedItem.category || 'N/A'}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Condition:</Text> {selectedItem.condition || 'N/A'}</Text> */}
                 <Text style={styles.modalText}>
                 <Text style={styles.modalLabel}>Condition:</Text>{' '}
                   {formatCondition(selectedItem.condition)}
                 </Text>
+
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Lab Room:</Text> {selectedItem.labRoom || 'N/A'}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Status:</Text> {selectedItem.status || 'N/A'}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Usage Type:</Text> {selectedItem.usageType || 'N/A'}</Text> */}

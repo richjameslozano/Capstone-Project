@@ -28,11 +28,16 @@ const ApprovedRequestModal = ({ isVisible, onClose, request, formatDate }) => {
     itemId,
   } = request;
 
+  const hasGlasswares = (request.requestList || []).some(
+    (item) => item.category === "Glasswares"
+  );
+
   const renderTableHeader = () => (
     <View style={[styles.tableRow, styles.tableHeader]}>
       <Text style={styles.tableCellHeader}>Item Name</Text>
       <Text style={styles.tableCellHeader}>ID</Text>
       <Text style={styles.tableCellHeader}>Qty</Text>
+      {hasGlasswares && <Text style={styles.tableCellHeader}>Volume (ML)</Text>}
       <Text style={styles.tableCellHeader}>Dept</Text>
       <Text style={styles.tableCellHeader}>Category</Text>
       {/* <Text style={styles.tableCellHeader}>Condition</Text> */}
@@ -50,6 +55,11 @@ const ApprovedRequestModal = ({ isVisible, onClose, request, formatDate }) => {
       <Text style={styles.tableCell}>{item.itemName}</Text>
       <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
       <Text style={styles.tableCell}>{item.quantity}</Text>
+      {hasGlasswares && (
+        <Text style={styles.tableCell}>
+          {item.category === "Glasswares" ? item.volume ?? "-" : "-"}
+        </Text>
+      )}
       <Text style={styles.tableCell}>{item.department}</Text>
       <Text style={styles.tableCell}>{item.category}</Text>
       {/* <Text style={styles.tableCell}>{item.condition}</Text> */}

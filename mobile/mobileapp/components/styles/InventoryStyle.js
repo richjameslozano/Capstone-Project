@@ -617,6 +617,4 @@ timeBtn:{
     paddingBottom: 50,
 
   },
-
-  
 });

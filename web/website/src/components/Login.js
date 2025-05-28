@@ -319,6 +319,7 @@ const Login = () => {
           //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
           // }
           setError(`Invalid password.`);
+          setIsLoading(false);
         }
       }
   
@@ -395,15 +396,18 @@ const Login = () => {
   
       } else {
         setError("User record not found in Firestore.");
+        setIsLoading(false);
       }
   
     } catch (error) {
       console.error("Error setting password and UID:", error.message);
       if (error.code === "auth/email-already-in-use") {
         setError("Email already in use. Try logging in instead.");
+        setIsLoading(false);
 
       } else {
         setError("Failed to set password. Try again.");
+        setIsLoading(false);
       }
 
     } finally {
@@ -418,6 +422,7 @@ const Login = () => {
 
     if (!termsChecked) {
       setError("You must accept the terms and conditions before signing up.");
+      setIsLoading(false);
       return;
     }
 
@@ -425,6 +430,7 @@ const Login = () => {
     const employeeIdPattern = /^\d{2}-\d{4}$/;
     if (!employeeIdPattern.test(employeeId.trim())) {
       setError("Invalid employee ID format. Please use the format ##-#### (e.g., 12-3456).");
+      setIsLoading(false);
       return;
     }
   
@@ -434,12 +440,14 @@ const Login = () => {
   
     if (!validDomains.includes(emailDomain)) {
       setError("Invalid email domain. Only @nu-moa.edu.ph and @students.nu-moa.edu.ph are allowed.");
+      setIsLoading(false);
       return;
     }
   
     // Step 2: Ensure passwords match
     if (password !== confirmPassword) {
       setError("Passwords do not match.");
+      setIsLoading(false);
       return;
     }
   
@@ -478,11 +486,13 @@ const Login = () => {
   
       if (!employeeSnapshotPending.empty || !employeeSnapshotAccounts.empty) {
         setError("This employee ID is already registered.");
+        setIsLoading(false);
         return;
       }
   
       if (!emailSnapshotPending.empty || !emailSnapshotAccounts.empty) {
         setError("This email is already registered.");
+        setIsLoading(false);
         return;
       }
   
@@ -550,9 +560,11 @@ const Login = () => {
 
       if (error.code === "auth/email-already-in-use") {
         setError("Email already in use.");
+        setIsLoading(false);
 
       } else {
         setError("Failed to create account. Try again.");
+        setIsLoading(false);
       }
       
     } finally{
@@ -653,7 +665,7 @@ const Login = () => {
                     />
                   </div>
   
-                  <div className="form-group">
+                  {/* <div className="form-group">
                     <label>Employee ID</label>
                     <input
                       type="text"
@@ -663,6 +675,28 @@ const Login = () => {
                         if (/^[0-9-]{0,7}$/.test(rawValue)) {
                           setSignUpData({ ...signUpData, employeeId: rawValue });
                         }
+                      }}
+                      placeholder="e.g., 12-3456"
+                      required
+                    />
+                  </div> */}
+
+                  <div className="form-group">
+                    <label>Employee ID</label>
+                    <input
+                      type="text"
+                      value={signUpData.employeeId}
+                      onChange={(e) => {
+                        let rawValue = e.target.value.replace(/\D/g, ''); // Remove all non-digits
+                        if (rawValue.length > 6) rawValue = rawValue.slice(0, 6); // Limit to 6 digits
+
+                        // Insert dash after the second digit
+                        let formattedValue = rawValue;
+                        if (rawValue.length > 2) {
+                          formattedValue = rawValue.slice(0, 2) + '-' + rawValue.slice(2);
+                        }
+
+                        setSignUpData({ ...signUpData, employeeId: formattedValue });
                       }}
                       placeholder="e.g., 12-3456"
                       required
@@ -761,6 +795,8 @@ const Login = () => {
                         Terms and Conditions
                       </span>
                     </label>
+
+                    {error && <p className="error-message">{error}</p>}
                   </div>
                 </>
               ) : (
