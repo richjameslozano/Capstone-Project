@@ -303,6 +303,7 @@ const printPdf = () => {
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
     const inventoryRef = collection(db, "inventory");
     const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
+    const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
     // const departmentCount = deptQuerySnapshot.size + 1;
     // const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
 
@@ -326,6 +327,7 @@ const printPdf = () => {
 
     setItemId(generatedItemId); 
 
+  
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
     const expiryDate = values.type === "Fixed" 
       ? null 
@@ -385,20 +387,18 @@ const printPdf = () => {
         Damage: 0,
       },
       unit: values.unit || null,
-      volume: values.category === "Glasswares" ? null : values.volume, // only used if single volume (non-glassware)
+      volume: values.category === "Glasswares" ? values.volume: null, // only used if single volume (non-glassware)
       rawTimestamp: new Date(),
+      criticalLevel: criticalLevel,
     };
 
-    if (values.category === "Glasswares") {
-      // Store array of { qty, volume }
-      inventoryItem.quantity = values.quantities; 
-      // Initialize condition Good counts by summing quantities maybe
+      if (values.category === "Glasswares") {
+      inventoryItem.quantity = values.quantities;
       inventoryItem.condition.Good = values.quantities.reduce((acc, qv) => acc + qv.qty, 0);
-
-    } else {
+      } else {
       inventoryItem.quantity = Number(values.quantity);
       inventoryItem.condition.Good = Number(values.quantity);
-    }
+      }
 
     const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(inventoryItem),
@@ -1471,6 +1471,15 @@ const printPdf = () => {
                     <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
+                <Col span={8}>
+                  <Form.Item
+                    name="Critical Level"
+                    label="criticalLevel"
+                    rules={[{ required: true, message: "Please enter desired Critical Stock!" }]}
+                  >
+                    <InputNumber min={1} placeholder="Enter Critical Stock" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
               </Row>
 
               <Row gutter={16}>
@@ -1636,6 +1645,7 @@ const printPdf = () => {
                     selectedRow.unit &&
                     ` / ${selectedRow.unit} ML`}
                 </p>
+                <p><strong>Critical Level:</strong> {selectedRow.criticalLevel}</p>
                 <p><strong>Category:</strong> {selectedRow.category}</p>
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
