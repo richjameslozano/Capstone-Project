@@ -238,16 +238,38 @@ const generatePdfFromSlip = (slipData) => {
   doc.text(`${slipData.timeFrom || "N/A"} - ${slipData.timeTo || "N/A"}`, 440, y);
   y += 20;
 
-  // Table
-  const headers = [["Item ID", "Item Description", "Quantity"]];
-  const data = (slipData.raw?.requestList || []).map((item) => [
-    item.itemIdFromInventory || "",
-    item.itemName || "",
-    String(item.quantity || ""),
-  ]);
+  const hasGlasswares = (slipData.raw?.requestList || []).some(
+    item => item.category === "Glasswares"
+  );
+
+ const isRejected = slipData.raw?.status === "Rejected";
+
+  // Build dynamic headers
+  let headers = ["Item ID", "Item Description", "Quantity"];
+  if (hasGlasswares) headers.push("Volume (ML)");
+  if (isRejected) headers.push("Reason of Rejection");
+
+  // Convert headers to required format for autoTable (array of arrays)
+  const tableHeaders = [headers];
+
+  // Build dynamic data rows
+  const data = (slipData.raw?.requestList || []).map((item) => {
+    const row = [
+      item.itemIdFromInventory || "",
+      item.itemName || "",
+      String(item.quantity || ""),
+    ];
+    if (hasGlasswares) {
+      row.push(item.volume ? String(item.volume) : "");
+    }
+    if (isRejected) {
+       row.push(item.rejectionReason || item.reason || "");
+    }
+    return row;
+  });
 
   doc.autoTable({
-    head: headers,
+    head: tableHeaders,
     body: data,
     startY: y + 10,
     margin: { left: margin, right: margin },
