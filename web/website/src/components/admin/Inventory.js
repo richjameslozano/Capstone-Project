@@ -172,8 +172,42 @@ const Inventory = () => {
   const showModal = () => setIsModalVisible(true);
   const handleCancel = () => setIsModalVisible(false);
 
+  // const exportToExcel = () => {
+  //   const worksheet = XLSX.utils.json_to_sheet(filteredData);
+  //   const workbook = XLSX.utils.book_new();
+
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
+
+  //   const excelBuffer = XLSX.write(workbook, {
+  //     bookType: "xlsx",
+  //     type: "array",
+  //   });
+
+  //   const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+  //   saveAs(data, "Filtered_Inventory.xlsx");
+  // };
+
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+    const flattenedData = filteredData.map((item) => ({
+      ItemID: item.itemId || "",
+      ItemName: item.itemName || "",
+      Category: item.category || "",
+      Department: item.department || "",
+      Quantity:
+        item.category === "Glasswares"
+          ? (
+              Array.isArray(item.quantity)
+                ? item.quantity.map(entry => `${entry.volume}ml: ${entry.qty} pcs`).join(", ")
+                : (item.quantity?.qty ? `${item.quantity.volume}ml: ${item.quantity.qty} pcs` : "0")
+            )
+          : (item.quantity?.toString() || "0"),
+      Status: item.status || "",
+      Condition: item.condition
+        ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
+        : "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
@@ -186,6 +220,7 @@ const Inventory = () => {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Filtered_Inventory.xlsx");
   };
+
 
   const generatePdfFromFilteredData = () => {
   const doc = new jsPDF("p", "pt", "a4");
@@ -232,9 +267,17 @@ const Inventory = () => {
     item.itemName || "",
     item.category || "",
     item.department || "",
-    item.quantity?.toString() || "0",
+    item.category === "Glasswares"
+      ? (
+          Array.isArray(item.quantity)
+            ? item.quantity.map(entry => `${entry.volume}ml: ${entry.qty} pcs`).join(", ")
+            : (item.quantity?.qty ? `${item.quantity.volume}ml: ${item.quantity.qty} pcs` : "0")
+        )
+      : (item.quantity?.toString() || "0"),
     item.status || "",
-    item.condition || ""
+    item.condition
+      ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
+      : ""
   ]);
 
   doc.autoTable({
@@ -303,6 +346,7 @@ const printPdf = () => {
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
     const inventoryRef = collection(db, "inventory");
     const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
+    const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
     // const departmentCount = deptQuerySnapshot.size + 1;
     // const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
 
@@ -326,6 +370,7 @@ const printPdf = () => {
 
     setItemId(generatedItemId); 
 
+  
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
     const expiryDate = values.type === "Fixed" 
       ? null 
@@ -385,19 +430,23 @@ const printPdf = () => {
         Damage: 0,
       },
       unit: values.unit || null,
-      volume: values.category === "Glasswares" ? null : values.volume, // only used if single volume (non-glassware)
       rawTimestamp: new Date(),
+      criticalLevel:criticalLevel,
     };
 
+    // Add only relevant fields based on category
     if (values.category === "Glasswares") {
-      // Store array of { qty, volume }
-      inventoryItem.quantity = values.quantities; 
-      // Initialize condition Good counts by summing quantities maybe
+      inventoryItem.quantity = values.quantities;
       inventoryItem.condition.Good = values.quantities.reduce((acc, qv) => acc + qv.qty, 0);
-
+      
     } else {
       inventoryItem.quantity = Number(values.quantity);
       inventoryItem.condition.Good = Number(values.quantity);
+
+      // Only add volume if it exists and is valid
+      if (values.volume !== undefined) {
+        inventoryItem.volume = values.volume;
+      }
     }
 
     const encryptedData = CryptoJS.AES.encrypt(
@@ -773,10 +822,126 @@ const printPdf = () => {
   //   }
   // };
 
-  const updateItem = async (values) => {
+  // const updateItem = async (values) => {
+  //   console.log("✅ Raw incoming values:", values);
+
+  //   let totalQty = 0;
+
+  //   if (Array.isArray(values.quantity)) {
+  //     totalQty = values.quantity
+  //       .filter(entry => entry && typeof entry.qty !== 'undefined') // ✅ safe filtering
+  //       .reduce((sum, entry) => {
+  //         const qty = parseInt(entry.qty);
+  //         return sum + (isNaN(qty) ? 0 : qty);
+  //       }, 0);
+
+  //     values.condition = {
+  //       Good: totalQty,
+  //       Defect: 0,
+  //       Damage: 0,
+  //     };
+      
+  //   } else {
+  //     // fallback if quantity is not an array (maybe it's an object)
+  //     const qty = parseInt(values.quantity?.qty ?? 0);
+  //     totalQty = isNaN(qty) ? 0 : qty;
+
+  //     values.condition = {
+  //       Good: totalQty,
+  //       Defect: 0,
+  //       Damage: 0,
+  //     };
+  //   }
+
+  //   const safeValues = {
+  //     quantity: values.quantity ?? 0, // preserve full structure (array or object)
+  //     condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
+  //     ...(values.volume !== undefined && { volume: values.volume }),
+  //     ...(values.qty !== undefined && { qty: values.qty }),
+  //   };
+
+  //   try {
+  //     const snapshot = await getDocs(collection(db, "inventory"));
+
+  //     snapshot.forEach(async (docItem) => {
+  //       const data = docItem.data();
+
+  //       if (data.itemId === editingItem.itemId) {
+  //         const inventoryId = docItem.id;
+  //         const itemRef = doc(db, "inventory", inventoryId);
+
+  //         const existingLabRoom = data.labRoom;
+  //         if (!existingLabRoom) {
+  //           console.warn("❌ Existing item has no labRoom, cannot update labRoom items subcollection.");
+  //           return;
+  //         }
+
+  //         safeValues.labRoom = existingLabRoom;
+
+  //         await updateDoc(itemRef, safeValues);
+
+  //         setIsNotificationVisible(true);
+  //         setNotificationMessage("Item updated successfully!");
+
+  //         const updatedItem = {
+  //           ...editingItem,
+  //           ...safeValues,
+  //         };
+
+  //        // setDataSource((prevData) =>
+  //         //   prevData.map((item) =>
+  //         //     item.id === editingItem.id ? updatedItem : item
+  //         //   )
+  //         // );
+
+  //         setDataSource((prevData) =>
+  //           prevData.map((item) =>
+  //             item.itemId === editingItem.itemId ? { ...item, ...updatedItem } : item
+  //           )
+  //         );
+
+  //         const roomNumber = existingLabRoom.toString().padStart(4, '0');
+  //         const itemId = data.itemId;
+
+  //         const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
+  //         const labRoomSnapshot = await getDocs(labRoomQuery);
+
+  //         if (!labRoomSnapshot.empty) {
+  //           const labRoomDoc = labRoomSnapshot.docs[0];
+  //           const labRoomRef = labRoomDoc.ref;
+
+  //           const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
+  //           const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+  //           if (labRoomItemSnap.exists()) {
+  //             await updateDoc(labRoomItemRef, safeValues);
+  //             console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
+
+  //           } else {
+  //             console.warn(`⚠️ Item ${itemId} not found in labRoom`);
+  //           }
+
+  //         } else {
+  //           console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
+  //         }
+
+  //         setIsEditModalVisible(false);
+  //         setIsRowModalVisible(false);
+  //         setEditingItem(null);
+  //         form.resetFields();
+  //       }
+  //     });
+
+  //   } catch (error) {
+  //     console.error("🔥 Error updating document in Firestore:", error);
+  //   }
+  // };
+
+   const updateItem = async (values) => {
     console.log("✅ Raw incoming values:", values);
 
     let totalQty = 0;
+    const isGlassware = editingItem.category === 'Glasswares';
 
     if (Array.isArray(values.quantity)) {
       totalQty = values.quantity
@@ -786,27 +951,35 @@ const printPdf = () => {
           return sum + (isNaN(qty) ? 0 : qty);
         }, 0);
 
-      values.condition = {
-        Good: totalQty,
-        Defect: 0,
-        Damage: 0,
-      };
+      if (isGlassware) {
+        values.condition = {
+          Good: totalQty,
+          Defect: 0,
+          Damage: 0,
+        };
+      }
       
     } else {
       // fallback if quantity is not an array (maybe it's an object)
       const qty = parseInt(values.quantity?.qty ?? 0);
       totalQty = isNaN(qty) ? 0 : qty;
 
-      values.condition = {
-        Good: totalQty,
-        Defect: 0,
-        Damage: 0,
-      };
+      if (isGlassware) {
+        values.condition = {
+          Good: totalQty,
+          Defect: 0,
+          Damage: 0,
+        };
+      }
+    }
+
+    if (!isGlassware && !values.condition) {
+      values.condition = editingItem.condition ?? { Good: 0, Defect: 0, Damage: 0 };
     }
 
     const safeValues = {
-      quantity: values.quantity ?? 0, // preserve full structure (array or object)
-      condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
+      quantity: values.quantity ?? 0,
+      condition: values.condition,
       ...(values.volume !== undefined && { volume: values.volume }),
       ...(values.qty !== undefined && { qty: values.qty }),
     };
@@ -839,9 +1012,15 @@ const printPdf = () => {
             ...safeValues,
           };
 
+         // setDataSource((prevData) =>
+          //   prevData.map((item) =>
+          //     item.id === editingItem.id ? updatedItem : item
+          //   )
+          // );
+
           setDataSource((prevData) =>
             prevData.map((item) =>
-              item.id === editingItem.id ? updatedItem : item
+              item.itemId === editingItem.itemId ? { ...item, ...updatedItem } : item
             )
           );
 
@@ -1464,18 +1643,6 @@ const printPdf = () => {
 
                 <Col span={8}>
                   <Form.Item
-                    name="quantity"
-                    label="Quantity"
-                    rules={[{ required: true, message: "Please enter Quantity!" }]}
-                  >
-                    <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
                     name="category"
                     label="Category"
                     rules={[{ required: true, message: "Please select a category!" }]}
@@ -1537,6 +1704,40 @@ const printPdf = () => {
                     )}
                   </Form.List>
                 )}
+
+                  {selectedCategory !== "Glasswares" && (
+                    <Col span={8}>
+                      <Form.Item
+                        name="quantity"
+                        label="Quantity"
+                        rules={[{ required: true, message: "Please enter Quantity!" }]}
+                      >
+                        <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
+                      </Form.Item>
+                    </Col>
+                  )}
+              </Row>
+
+              <Row gutter={16}>                
+                {/* <Col span={8}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    rules={[{ required: true, message: "Please enter Quantity!" }]}
+                  >
+                    <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col> */}
+                
+                <Col span={8}>
+                  <Form.Item
+                    name="Critical Level"
+                    label="criticalLevel"
+                    rules={[{ required: true, message: "Please enter desired Critical Stock!" }]}
+                  >
+                    <InputNumber min={1} placeholder="Enter Critical Stock" style={{ width: "100%" }} />
+                  </Form.Item>
+                </Col>
 
                 <Col span={8}>
                   <Form.Item name="entryDate" label="Date of Entry" disabled>
@@ -1636,6 +1837,7 @@ const printPdf = () => {
                     selectedRow.unit &&
                     ` / ${selectedRow.unit} ML`}
                 </p>
+                <p><strong>Critical Level:</strong> {selectedRow.criticalLevel}</p>
                 <p><strong>Category:</strong> {selectedRow.category}</p>
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
