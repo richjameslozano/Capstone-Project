@@ -388,6 +388,7 @@ const printPdf = () => {
       },
       unit: values.unit || null,
       rawTimestamp: new Date(),
+      criticalLevel:criticalLevel,
     };
 
     // Add only relevant fields based on category
