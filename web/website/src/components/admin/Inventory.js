@@ -778,10 +778,126 @@ const printPdf = () => {
   //   }
   // };
 
-  const updateItem = async (values) => {
+  // const updateItem = async (values) => {
+  //   console.log("✅ Raw incoming values:", values);
+
+  //   let totalQty = 0;
+
+  //   if (Array.isArray(values.quantity)) {
+  //     totalQty = values.quantity
+  //       .filter(entry => entry && typeof entry.qty !== 'undefined') // ✅ safe filtering
+  //       .reduce((sum, entry) => {
+  //         const qty = parseInt(entry.qty);
+  //         return sum + (isNaN(qty) ? 0 : qty);
+  //       }, 0);
+
+  //     values.condition = {
+  //       Good: totalQty,
+  //       Defect: 0,
+  //       Damage: 0,
+  //     };
+      
+  //   } else {
+  //     // fallback if quantity is not an array (maybe it's an object)
+  //     const qty = parseInt(values.quantity?.qty ?? 0);
+  //     totalQty = isNaN(qty) ? 0 : qty;
+
+  //     values.condition = {
+  //       Good: totalQty,
+  //       Defect: 0,
+  //       Damage: 0,
+  //     };
+  //   }
+
+  //   const safeValues = {
+  //     quantity: values.quantity ?? 0, // preserve full structure (array or object)
+  //     condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
+  //     ...(values.volume !== undefined && { volume: values.volume }),
+  //     ...(values.qty !== undefined && { qty: values.qty }),
+  //   };
+
+  //   try {
+  //     const snapshot = await getDocs(collection(db, "inventory"));
+
+  //     snapshot.forEach(async (docItem) => {
+  //       const data = docItem.data();
+
+  //       if (data.itemId === editingItem.itemId) {
+  //         const inventoryId = docItem.id;
+  //         const itemRef = doc(db, "inventory", inventoryId);
+
+  //         const existingLabRoom = data.labRoom;
+  //         if (!existingLabRoom) {
+  //           console.warn("❌ Existing item has no labRoom, cannot update labRoom items subcollection.");
+  //           return;
+  //         }
+
+  //         safeValues.labRoom = existingLabRoom;
+
+  //         await updateDoc(itemRef, safeValues);
+
+  //         setIsNotificationVisible(true);
+  //         setNotificationMessage("Item updated successfully!");
+
+  //         const updatedItem = {
+  //           ...editingItem,
+  //           ...safeValues,
+  //         };
+
+  //        // setDataSource((prevData) =>
+  //         //   prevData.map((item) =>
+  //         //     item.id === editingItem.id ? updatedItem : item
+  //         //   )
+  //         // );
+
+  //         setDataSource((prevData) =>
+  //           prevData.map((item) =>
+  //             item.itemId === editingItem.itemId ? { ...item, ...updatedItem } : item
+  //           )
+  //         );
+
+  //         const roomNumber = existingLabRoom.toString().padStart(4, '0');
+  //         const itemId = data.itemId;
+
+  //         const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
+  //         const labRoomSnapshot = await getDocs(labRoomQuery);
+
+  //         if (!labRoomSnapshot.empty) {
+  //           const labRoomDoc = labRoomSnapshot.docs[0];
+  //           const labRoomRef = labRoomDoc.ref;
+
+  //           const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
+  //           const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+  //           if (labRoomItemSnap.exists()) {
+  //             await updateDoc(labRoomItemRef, safeValues);
+  //             console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
+
+  //           } else {
+  //             console.warn(`⚠️ Item ${itemId} not found in labRoom`);
+  //           }
+
+  //         } else {
+  //           console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
+  //         }
+
+  //         setIsEditModalVisible(false);
+  //         setIsRowModalVisible(false);
+  //         setEditingItem(null);
+  //         form.resetFields();
+  //       }
+  //     });
+
+  //   } catch (error) {
+  //     console.error("🔥 Error updating document in Firestore:", error);
+  //   }
+  // };
+
+   const updateItem = async (values) => {
     console.log("✅ Raw incoming values:", values);
 
     let totalQty = 0;
+    const isGlassware = editingItem.category === 'Glasswares';
 
     if (Array.isArray(values.quantity)) {
       totalQty = values.quantity
@@ -791,27 +907,35 @@ const printPdf = () => {
           return sum + (isNaN(qty) ? 0 : qty);
         }, 0);
 
-      values.condition = {
-        Good: totalQty,
-        Defect: 0,
-        Damage: 0,
-      };
+      if (isGlassware) {
+        values.condition = {
+          Good: totalQty,
+          Defect: 0,
+          Damage: 0,
+        };
+      }
       
     } else {
       // fallback if quantity is not an array (maybe it's an object)
       const qty = parseInt(values.quantity?.qty ?? 0);
       totalQty = isNaN(qty) ? 0 : qty;
 
-      values.condition = {
-        Good: totalQty,
-        Defect: 0,
-        Damage: 0,
-      };
+      if (isGlassware) {
+        values.condition = {
+          Good: totalQty,
+          Defect: 0,
+          Damage: 0,
+        };
+      }
+    }
+
+    if (!isGlassware && !values.condition) {
+      values.condition = editingItem.condition ?? { Good: 0, Defect: 0, Damage: 0 };
     }
 
     const safeValues = {
-      quantity: values.quantity ?? 0, // preserve full structure (array or object)
-      condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
+      quantity: values.quantity ?? 0,
+      condition: values.condition,
       ...(values.volume !== undefined && { volume: values.volume }),
       ...(values.qty !== undefined && { qty: values.qty }),
     };
@@ -844,9 +968,15 @@ const printPdf = () => {
             ...safeValues,
           };
 
+         // setDataSource((prevData) =>
+          //   prevData.map((item) =>
+          //     item.id === editingItem.id ? updatedItem : item
+          //   )
+          // );
+
           setDataSource((prevData) =>
             prevData.map((item) =>
-              item.id === editingItem.id ? updatedItem : item
+              item.itemId === editingItem.itemId ? { ...item, ...updatedItem } : item
             )
           );
 
