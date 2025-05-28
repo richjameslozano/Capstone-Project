@@ -172,8 +172,42 @@ const Inventory = () => {
   const showModal = () => setIsModalVisible(true);
   const handleCancel = () => setIsModalVisible(false);
 
+  // const exportToExcel = () => {
+  //   const worksheet = XLSX.utils.json_to_sheet(filteredData);
+  //   const workbook = XLSX.utils.book_new();
+
+  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
+
+  //   const excelBuffer = XLSX.write(workbook, {
+  //     bookType: "xlsx",
+  //     type: "array",
+  //   });
+
+  //   const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+  //   saveAs(data, "Filtered_Inventory.xlsx");
+  // };
+
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+    const flattenedData = filteredData.map((item) => ({
+      ItemID: item.itemId || "",
+      ItemName: item.itemName || "",
+      Category: item.category || "",
+      Department: item.department || "",
+      Quantity:
+        item.category === "Glasswares"
+          ? (
+              Array.isArray(item.quantity)
+                ? item.quantity.map(entry => `${entry.volume}ml: ${entry.qty} pcs`).join(", ")
+                : (item.quantity?.qty ? `${item.quantity.volume}ml: ${item.quantity.qty} pcs` : "0")
+            )
+          : (item.quantity?.toString() || "0"),
+      Status: item.status || "",
+      Condition: item.condition
+        ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
+        : "",
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
     const workbook = XLSX.utils.book_new();
 
     XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
@@ -186,6 +220,7 @@ const Inventory = () => {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Filtered_Inventory.xlsx");
   };
+
 
   const generatePdfFromFilteredData = () => {
   const doc = new jsPDF("p", "pt", "a4");
@@ -232,9 +267,17 @@ const Inventory = () => {
     item.itemName || "",
     item.category || "",
     item.department || "",
-    item.quantity?.toString() || "0",
+    item.category === "Glasswares"
+      ? (
+          Array.isArray(item.quantity)
+            ? item.quantity.map(entry => `${entry.volume}ml: ${entry.qty} pcs`).join(", ")
+            : (item.quantity?.qty ? `${item.quantity.volume}ml: ${item.quantity.qty} pcs` : "0")
+        )
+      : (item.quantity?.toString() || "0"),
     item.status || "",
-    item.condition || ""
+    item.condition
+      ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
+      : ""
   ]);
 
   doc.autoTable({
