@@ -34,16 +34,23 @@ export default StyleSheet.create({
   categoryHeader:{
   fontSize: 15,
   fontWeight: 500,
+  marginRight: 5,
+  color: '#395A7F'
+  },
+
+  categoryContainer:{
+  backgroundColor: '#fff',
+  flexDirection: 'row',
   paddingHorizontal: 15,
-  paddingVertical: 10,
   borderRadius: 5,
-  borderColor: '#acacac',
+  paddingVertical: 10,
+  borderColor: '#dcdcdc',
   borderWidth: 1,
   alignSelf: 'flex-start',
-  marginTop: 10,
-  backgroundColor: '#fff',
-  color: '#6e9fc1'
+  marginTop: 10, 
+  alignItems:'center'
   },
+  number:{paddingRight: 5,paddingLeft: 2, backgroundColor: '#395a7f', borderRadius: 3, textAlign: 'center', alignSelf: 'center', fontWeight: 'bold', fontSize: 13, color: '#fff'},
 
   note:{
     backgroundColor: '#6e9fc1', 
@@ -55,7 +62,6 @@ export default StyleSheet.create({
   },
 
     pendingFlat:{
-    flexGrow: 1,
     paddingHorizontal: 5,
     gap: 5,
     paddingBottom: 20
@@ -79,9 +85,31 @@ export default StyleSheet.create({
     paddingLeft: 5,
     paddingVertical: 5,
   },
+
+  filterbtn: {
+  paddingHorizontal: 15,
+  paddingVertical: 8,
+  borderRadius: 20,
+  backgroundColor: '#efefef',
+  marginRight: 10,
+},
+
+selectedFilterBtn: {
+  backgroundColor: '#395a7f', // or any highlight color
+},
+
+filtername: {
+  fontSize: 13,
+  color: '#303030',
+},
+
+selectedFilterText: {
+  color: '#fff',
+}
+,
       
   name: {
-    fontSize: 17,
+    fontSize: 16,
     color: '#000',
   },
 
