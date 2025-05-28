@@ -1261,6 +1261,14 @@ const printPdf = () => {
                 Export to Excel
               </Button>
 
+              <Button type="primary" onClick={saveAsPdf}>
+                Save as PDF
+              </Button>
+
+              <Button type="primary" onClick={printPdf}>
+                Print PDF
+              </Button>
+
             </Space>
           </div> 
 
