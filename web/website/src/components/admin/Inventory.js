@@ -387,18 +387,23 @@ const printPdf = () => {
         Damage: 0,
       },
       unit: values.unit || null,
-      volume: values.category === "Glasswares" ? values.volume: null, // only used if single volume (non-glassware)
       rawTimestamp: new Date(),
-      criticalLevel: criticalLevel,
     };
 
-      if (values.category === "Glasswares") {
+    // Add only relevant fields based on category
+    if (values.category === "Glasswares") {
       inventoryItem.quantity = values.quantities;
       inventoryItem.condition.Good = values.quantities.reduce((acc, qv) => acc + qv.qty, 0);
-      } else {
+      
+    } else {
       inventoryItem.quantity = Number(values.quantity);
       inventoryItem.condition.Good = Number(values.quantity);
+
+      // Only add volume if it exists and is valid
+      if (values.volume !== undefined) {
+        inventoryItem.volume = values.volume;
       }
+    }
 
     const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(inventoryItem),
