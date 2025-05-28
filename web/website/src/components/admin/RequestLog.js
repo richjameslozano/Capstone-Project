@@ -323,9 +323,6 @@ const printPdf = () => {
   }
 };
 
-
-
-
   const columns = [
     {
       title: "Process Date",
@@ -503,7 +500,7 @@ const printPdf = () => {
                 </Col>
               </Row>
 
-              <Table
+              {/* <Table
                 dataSource={(selectedRequest.raw?.requestList ?? []).map(
                   (item, index) => ({
                     key: index,
@@ -523,7 +520,7 @@ const printPdf = () => {
                     key: "itemId",
                   },
                   {
-                    title: "Item Description",
+                    title: "Item Name",
                     dataIndex: "itemDescription",
                     key: "itemDescription",
                   },
@@ -532,6 +529,73 @@ const printPdf = () => {
                     dataIndex: "quantity",
                     key: "quantity",
                   },
+                  ...(selectedRequest.raw?.status === "Rejected"
+                    ? [
+                        {
+                          title: "Reason of Rejection",
+                          dataIndex: "rejectionReason",
+                          key: "rejectionReason",
+                        },
+                      ]
+                    : []),
+                ]}
+                pagination={{ pageSize: 10 }}
+                style={{ marginTop: 10 }}
+                size="small"
+              /> */}
+
+              <Table
+                dataSource={(selectedRequest.raw?.requestList ?? []).map((item, index) => {
+                  const isGlassware = item.category?.toLowerCase() === "glasswares";
+
+                  const formattedQuantity = isGlassware
+                    ? `${item.quantity ?? 0} pcs` // quantity is a number
+                    : (item.quantity?.toString() || "0");
+
+                  const volumeColumnData = isGlassware
+                    ? (item.volume !== undefined && item.volume !== null)
+                      ? `${item.volume}ml`
+                      : "N/A"
+                    : "N/A";
+
+                  return {
+                    key: index,
+                    itemId: item.itemIdFromInventory,
+                    itemDescription: item.itemName,
+                    quantity: formattedQuantity,
+                    volume: volumeColumnData,
+                    rejectionReason:
+                      item.reason || item.rejectionReason ||
+                      selectedRequest.raw?.reason || selectedRequest.raw?.rejectionReason ||
+                      "N/A",
+                    category: item.category,
+                  };
+                })}
+                
+                columns={[
+                  {
+                    title: "Item ID",
+                    dataIndex: "itemId",
+                    key: "itemId",
+                  },
+                  {
+                    title: "Item Name",
+                    dataIndex: "itemDescription",
+                    key: "itemDescription",
+                  },
+                  {
+                    title: "Quantity",
+                    dataIndex: "quantity",
+                    key: "quantity",
+                  },
+                  // Only show Volume column if any item in the request is Glasswares
+                  ...(selectedRequest.raw?.requestList?.some(item => item.category === "Glasswares")
+                    ? [{
+                        title: "Volume",
+                        dataIndex: "volume",
+                        key: "volume",
+                      }]
+                    : []),
                   ...(selectedRequest.raw?.status === "Rejected"
                     ? [
                         {
