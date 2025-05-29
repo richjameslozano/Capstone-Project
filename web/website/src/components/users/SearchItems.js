@@ -80,49 +80,56 @@ const columns = [
     key: "description",
     sorter: (a, b) => a.description.localeCompare(b.description),
   },
+//   {
+//     title: "Stock Qty",
+//     dataIndex: "quantity",
+//     key: "quantity",
+//     // sorter: (a, b) => a.quantity - b.quantity,
+//     sorter: (a, b) => {
+//   const getQty = (q) =>
+//     Array.isArray(q)
+//       ? q.reduce((sum, item) => sum + (item.qty || 0), 0)
+//       : typeof q === "object" && q !== null && "qty" in q
+//       ? q.qty
+//       : typeof q === "number"
+//       ? q
+//       : 0;
+
+//   return getQty(a.quantity) - getQty(b.quantity);
+// },
+//     // render: (quantity) => <strong>{quantity}</strong>,
+//     render: (quantity) => {
+//   if (Array.isArray(quantity)) {
+//     return (
+//       <strong>
+//         {quantity
+//           .map((item) =>
+//             item && typeof item === "object" && "qty" in item
+//               ? `${item.qty} pcs${item.volume ? ` / ${item.volume} ML` : ""}`
+//               : "Invalid"
+//           )
+//           .join(", ")}
+//       </strong>
+//     );
+//   } else if (quantity && typeof quantity === "object" && "qty" in quantity) {
+//     return (
+//       <strong>
+//         {`${quantity.qty} pcs${quantity.volume ? ` / ${quantity.volume} ML` : ""}`}
+//       </strong>
+//     );
+//   } else if (typeof quantity === "number" || typeof quantity === "string") {
+//     return <strong>{quantity}</strong>;
+//   } else {
+//     return <strong>N/A</strong>;
+//   }
+// }
+//   },
   {
     title: "Stock Qty",
     dataIndex: "quantity",
     key: "quantity",
-    // sorter: (a, b) => a.quantity - b.quantity,
-    sorter: (a, b) => {
-  const getQty = (q) =>
-    Array.isArray(q)
-      ? q.reduce((sum, item) => sum + (item.qty || 0), 0)
-      : typeof q === "object" && q !== null && "qty" in q
-      ? q.qty
-      : typeof q === "number"
-      ? q
-      : 0;
-
-  return getQty(a.quantity) - getQty(b.quantity);
-},
-    // render: (quantity) => <strong>{quantity}</strong>,
-    render: (quantity) => {
-  if (Array.isArray(quantity)) {
-    return (
-      <strong>
-        {quantity
-          .map((item) =>
-            item && typeof item === "object" && "qty" in item
-              ? `${item.qty} pcs${item.volume ? ` / ${item.volume} ML` : ""}`
-              : "Invalid"
-          )
-          .join(", ")}
-      </strong>
-    );
-  } else if (quantity && typeof quantity === "object" && "qty" in quantity) {
-    return (
-      <strong>
-        {`${quantity.qty} pcs${quantity.volume ? ` / ${quantity.volume} ML` : ""}`}
-      </strong>
-    );
-  } else if (typeof quantity === "number" || typeof quantity === "string") {
-    return <strong>{quantity}</strong>;
-  } else {
-    return <strong>N/A</strong>;
-  }
-}
+    sorter: (a, b) => a.quantity - b.quantity,
+    render: (quantity) => <strong>{quantity}</strong>,
   },
   {
     title: "Status",
@@ -398,14 +405,14 @@ const SearchItems = () => {
                     {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                   </Descriptions.Item> */}
 
-                  {/* <Descriptions.Item label="Quantity">
+                  <Descriptions.Item label="Quantity">
                     {selectedItem.quantity}
                     {["Glasswares", "Chemical", "Reagent"].includes(selectedItem.category) ? " pcs" : ""}
                     {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                     {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` / ${selectedItem.unit} ML` : ""}
-                  </Descriptions.Item> */}
+                  </Descriptions.Item>
 
-                  <Descriptions.Item label="Quantity">
+                  {/* <Descriptions.Item label="Quantity">
                     {(() => {
                       const { quantity, category, volume, unit } = selectedItem;
 
@@ -446,7 +453,7 @@ const SearchItems = () => {
                         ? quantity
                         : "N/A";
                     })()}
-                  </Descriptions.Item>
+                  </Descriptions.Item> */}
 
                   <Descriptions.Item label="Status">
                     {selectedItem.status}

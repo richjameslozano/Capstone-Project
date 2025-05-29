@@ -386,18 +386,6 @@ const HistoryLog = () => {
     
   ];
 
-  if (hasGlassware) {
-    itemColumns.push({
-      title: "Volume",
-      dataIndex: "volume",  // access volume field from item data
-      key: "volume",
-      render: (volume, record) =>
-        record.category?.toLowerCase() === "glasswares" ? volume || "N/A" : "",
-    });
-  }
-  console.log("Items in selectedRequest:", selectedRequest?.items);
-  console.log("Columns:", itemColumns);
-
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout className="site-layout">

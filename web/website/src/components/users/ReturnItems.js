@@ -1001,7 +1001,7 @@ const ReturnItems = () => {
           itemId: item.itemIdFromInventory,
           itemDescription: item.itemName,
           unitIndex: idx + 1,
-          volume: item.volume || (typeof item.quantity === 'object' ? item.quantity.volume : undefined),
+          // volume: item.volume || (typeof item.quantity === 'object' ? item.quantity.volume : undefined),
         }))
       )
     : [];
@@ -1090,7 +1090,7 @@ const ReturnItems = () => {
                 </Col>
               </Row>
 
-              {/* <Table
+              <Table
                 dataSource={unitLevelData}
                 columns={[
                   {
@@ -1147,9 +1147,9 @@ const ReturnItems = () => {
                 ]}
                 pagination={{ pageSize: 10 }}
                 style={{ marginTop: 10 }}
-              /> */}
+              /> 
 
-                <Table
+                {/* <Table
                 dataSource={unitLevelData}
                 columns={[
                   {
@@ -1207,7 +1207,7 @@ const ReturnItems = () => {
                 ]}
                 pagination={{ pageSize: 10 }}
                 style={{ marginTop: 10 }}
-              />
+              /> */}
 
               <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
                 <Col span={12}>

@@ -350,8 +350,6 @@ console.log("requestList in Modal:", requestList);
     console.log("Raw timestamp value:", selectedApprovedRequest.timestamp);
   }
 
-  const hasGlasswares = requestList.some(item => item.category === "Glasswares");
-
   const approvedRequestColumns = [
     {
       title: "Item Name",
@@ -368,16 +366,6 @@ console.log("requestList in Modal:", requestList);
       dataIndex: "category",
       key: "category",
     },
-    ...(hasGlasswares
-      ? [
-          {
-            title: "Volume",
-            key: "volume",
-            render: (_, record) =>
-              record.category === "Glasswares" ? record.volume || "-" : "-",
-          },
-        ]
-      : []),
   ];
 
 // if (selectedApprovedRequest?.status === "Returned") {
@@ -897,162 +885,7 @@ function getConditionSummary(conditionsArray) {
   //   }
   // };  
 
-  // const handleApprove = async () => {
-  //   try {
-  //     const requisitionId = selectedApprovedRequest?.id;
-  //     if (!requisitionId) {
-  //       console.error("Missing requisition ID");
-  //       return;
-  //     }
-  
-  //     // Get current authenticated user
-  //     const auth = getAuth();
-  //     const currentUser = auth.currentUser;
-  //     const userEmail = currentUser?.email;
-  
-  //     let approverName = "Unknown";
-  //     if (userEmail) {
-  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-  //       const userSnapshot = await getDocs(userQuery);
-        
-  //       if (!userSnapshot.empty) {
-  //         approverName = userSnapshot.docs[0].data().name || "Unknown";
-  //       }
-  //     }
-
-  //     for (const item of selectedApprovedRequest.requestList || []) {
-  //       const inventoryId = item.selectedItemId || item.selectedItem?.value;
-  //       const returnedQty = Number(item.quantity);
-  //       const labRoomId = item.labRoom;
-  //       const conditionReturned = Array.isArray(item.conditions) && item.conditions[0]
-  //       ? item.conditions[0]
-  //       : "Good"; // default fallback
-
-  //       if (inventoryId && !isNaN(returnedQty)) {
-  //         const inventoryDocRef = doc(db, "inventory", inventoryId);
-  //         const inventoryDocSnap = await getDoc(inventoryDocRef);
-
-  //       if (inventoryDocSnap.exists()) {
-  //         const inventoryData = inventoryDocSnap.data();
-  //         const currentQty = Number(inventoryData.quantity || 0);
-  //         const currentCond = inventoryData.condition || {};
-  //         const currentCondQty = Number(currentCond[conditionReturned] || 0);
-
-
-  //           // Update inventory
-  //           await updateDoc(inventoryDocRef, {
-  //             quantity: currentQty + returnedQty,
-  //             [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
-  //           });
-
-
-  //            const labRoomNumber = item.labRoom;
-  //          // 🔍 STEP 1: Find labRoom document by roomNumber
-  //           const labRoomQuery = query(
-  //             collection(db, "labRoom"),
-  //             where("roomNumber", "==", labRoomNumber)
-  //           );
-  //           const labRoomSnapshot = await getDocs(labRoomQuery);
-
-  //           if (labRoomSnapshot.empty) {
-  //             console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomNumber}`);
-  //             continue;
-  //           }
-
-  //           const labRoomDoc = labRoomSnapshot.docs[0];
-  //           const labRoomId = labRoomDoc.id;
-
-  //           // 🔍 STEP 2: Find item in the labRoom/{labRoomId}/items by itemId field
-  //           const itemId = inventoryData.itemId;
-  //           const labItemsRef = collection(db, "labRoom", labRoomId, "items");
-  //           const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
-  //           const itemSnapshot = await getDocs(itemQuery);
-
-  //           if (itemSnapshot.empty) {
-  //             console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
-  //             continue;
-  //           }
-
-  //           const itemDoc = itemSnapshot.docs[0];
-  //           const labItemDocId = itemDoc.id;
-  //           const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
-
-  //           const labData = itemDoc.data();
-  //           const labQty = Number(labData.quantity || 0);
-  //           const labCond = labData.condition || {};
-  //           const labCondQty = Number(labCond[conditionReturned] || 0);
-
-  //           // ✅ Update labRoom item
-  //           await updateDoc(labItemRef, {
-  //             quantity: labQty + returnedQty,
-  //             [`condition.${conditionReturned}`]: labCondQty + returnedQty,
-  //           });
-
-  //           console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
-
-  //         } else {
-  //           console.warn(`⚠️ Inventory item not found for ID: ${inventoryId}`);
-  //         } 
-  //       }
-  //     }
-  
-  //     // ✅ Update borrowcatalog status
-  //     const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
-  //     await updateDoc(borrowDocRef, { status: "Return Approved" });
-  
-  //     // // ✅ Log request in requestlog
-  //     // const requestLogRef = collection(db, "requestlog");
-  //     // await addDoc(requestLogRef, {
-  //     //   requisitionId,
-  //     //   userName: selectedApprovedRequest.userName || "N/A",
-  //     //   timestamp: serverTimestamp(),
-  //     //   dateRequired: selectedApprovedRequest.dateRequired || "N/A",
-  //     //   timeFrom: selectedApprovedRequest.timeFrom || "N/A",
-  //     //   timeTo: selectedApprovedRequest.timeTo || "N/A",
-  //     //   reason: selectedApprovedRequest.reason || "N/A",
-  //     //   room: selectedApprovedRequest.room || "N/A",
-  //     //   course: selectedApprovedRequest.course || "N/A",
-  //     //   courseDescription: selectedApprovedRequest.courseDescription || "N/A",
-  //     //   program: selectedApprovedRequest.program || "N/A",
-  //     //   status: "Returned",
-  //     //   requestList: selectedApprovedRequest.requestList || [],
-  //     //   approvedBy: approverName,
-  //     // });
-
-  //      // Step 1: Find the matching requestlog document using a field (like accountId)
-  //     const requestLogQuery = query(
-  //       collection(db, "requestlog"),
-  //       where("accountId", "==", selectedApprovedRequest.accountId)
-  //     );
-
-  //     const requestLogSnapshot = await getDocs(requestLogQuery);
-
-  //     if (!requestLogSnapshot.empty) {
-  //       // Assuming only one match — update that document
-  //       const requestLogDoc = requestLogSnapshot.docs[0];
-  //       const requestLogDocRef = doc(db, "requestlog", requestLogDoc.id);
-
-  //       await updateDoc(requestLogDocRef, {
-  //         status: "Returned",
-  //         timestamp: serverTimestamp(),
-  //       });
-
-  //       console.log("✅ Requestlog status updated to 'Returned'");
-        
-  //     } else {
-  //       console.warn("⚠️ No matching requestlog document found for accountId:", selectedApprovedRequest.accountId);
-  //     }
-  
-  //     console.log("Return approved and inventory updated.");
-  //     setIsApprovedModalVisible(false);
-  //     setSelectedApprovedRequest(null);
-  
-  //   } catch (error) {
-  //     console.error("Error approving return and updating inventory:", error);
-  //   }
-  // };  
-
-   const handleApprove = async () => {
+  const handleApprove = async () => {
     try {
       const requisitionId = selectedApprovedRequest?.id;
       if (!requisitionId) {
@@ -1089,52 +922,17 @@ function getConditionSummary(conditionsArray) {
 
         if (inventoryDocSnap.exists()) {
           const inventoryData = inventoryDocSnap.data();
-          // const currentQty = Number(inventoryData.quantity || 0);
-          // const currentCond = inventoryData.condition || {};
-          // const currentCondQty = Number(currentCond[conditionReturned] || 0);
-
-
-          //   // Update inventory
-          //   await updateDoc(inventoryDocRef, {
-          //     quantity: currentQty + returnedQty,
-          //     [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
-          //   });
-
-          const isGlassware = item.category === "Glasswares";
+          const currentQty = Number(inventoryData.quantity || 0);
           const currentCond = inventoryData.condition || {};
           const currentCondQty = Number(currentCond[conditionReturned] || 0);
 
-          if (isGlassware && Array.isArray(inventoryData.quantity)) {
-            const updatedQuantities = [...inventoryData.quantity]; // deep copy
-            const matchedVolumeIndex = updatedQuantities.findIndex(
-              (q) => q.volume === item.volume
-            );
 
-            if (matchedVolumeIndex !== -1) {
-              // ✅ Update matched volume qty
-              updatedQuantities[matchedVolumeIndex].qty += Number(item.quantity);
-              
-            } else {
-              // ✅ If volume does not exist, add new entry
-              updatedQuantities.push({
-                qty: Number(item.quantity),
-                volume: item.volume,
-              });
-            }
-
-            await updateDoc(inventoryDocRef, {
-              quantity: updatedQuantities,
-              [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
-            });
-
-          } else {
-            // 🧪 Non-glassware logic (assume single quantity number)
-            const currentQty = Number(inventoryData.quantity || 0);
+            // Update inventory
             await updateDoc(inventoryDocRef, {
               quantity: currentQty + returnedQty,
               [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
             });
-          }
+
 
              const labRoomNumber = item.labRoom;
            // 🔍 STEP 1: Find labRoom document by roomNumber
@@ -1168,50 +966,15 @@ function getConditionSummary(conditionsArray) {
             const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
 
             const labData = itemDoc.data();
-            // const labQty = Number(labData.quantity || 0);
-            // const labCond = labData.condition || {};
-            // const labCondQty = Number(labCond[conditionReturned] || 0);
-
-            // // ✅ Update labRoom item
-            // await updateDoc(labItemRef, {
-            //   quantity: labQty + returnedQty,
-            //   [`condition.${conditionReturned}`]: labCondQty + returnedQty,
-            // });
-
+            const labQty = Number(labData.quantity || 0);
             const labCond = labData.condition || {};
             const labCondQty = Number(labCond[conditionReturned] || 0);
 
-            if (isGlassware && Array.isArray(labData.quantity)) {
-              const updatedLabQuantities = [...labData.quantity]; // deep copy
-              const matchedVolumeIndex = updatedLabQuantities.findIndex(
-                (q) => q.volume === item.volume
-              );
-
-              if (matchedVolumeIndex !== -1) {
-                // ✅ Update existing volume qty
-                updatedLabQuantities[matchedVolumeIndex].qty += Number(item.quantity);
-
-              } else {
-                // ✅ Add new volume entry
-                updatedLabQuantities.push({
-                  qty: Number(item.quantity),
-                  volume: item.volume,
-                });
-              }
-
-              await updateDoc(labItemRef, {
-                quantity: updatedLabQuantities,
-                [`condition.${conditionReturned}`]: labCondQty + returnedQty,
-              });
-
-            } else {
-              // 🧪 Non-glassware fallback
-              const labQty = Number(labData.quantity || 0);
-              await updateDoc(labItemRef, {
-                quantity: labQty + returnedQty,
-                [`condition.${conditionReturned}`]: labCondQty + returnedQty,
-              });
-            }
+            // ✅ Update labRoom item
+            await updateDoc(labItemRef, {
+              quantity: labQty + returnedQty,
+              [`condition.${conditionReturned}`]: labCondQty + returnedQty,
+            });
 
             console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
 
@@ -1225,7 +988,7 @@ function getConditionSummary(conditionsArray) {
       const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
       await updateDoc(borrowDocRef, { status: "Return Approved" });
   
-      // ✅ Log request in requestlog
+      // // ✅ Log request in requestlog
       // const requestLogRef = collection(db, "requestlog");
       // await addDoc(requestLogRef, {
       //   requisitionId,
@@ -1244,13 +1007,7 @@ function getConditionSummary(conditionsArray) {
       //   approvedBy: approverName,
       // });
 
-      // const requestLogDocRef = doc(db, "requestlog", requisitionId); 
-      // await updateDoc(requestLogDocRef, {
-      // status: "Returned",
-      // timestamp: serverTimestamp(), 
-      // });
-
-     // Step 1: Find the matching requestlog document using a field (like accountId)
+       // Step 1: Find the matching requestlog document using a field (like accountId)
       const requestLogQuery = query(
         collection(db, "requestlog"),
         where("accountId", "==", selectedApprovedRequest.accountId)
@@ -1273,7 +1030,7 @@ function getConditionSummary(conditionsArray) {
       } else {
         console.warn("⚠️ No matching requestlog document found for accountId:", selectedApprovedRequest.accountId);
       }
-
+  
       console.log("Return approved and inventory updated.");
       setIsApprovedModalVisible(false);
       setSelectedApprovedRequest(null);

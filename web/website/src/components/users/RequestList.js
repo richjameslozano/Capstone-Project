@@ -395,51 +395,6 @@ const RequestList = () => {
     },
   ];
 
-  // const itemColumns = [
-  //   {
-  //     title: "Item #",
-  //     key: "index",
-  //     render: (_, __, index) => <span>{index + 1}</span>,
-  //   },
-  //   {
-  //     title: "Item Name",
-  //     dataIndex: "itemName",
-  //     key: "itemName",
-  //   },
-  //   {
-  //     title: "Item ID",
-  //     dataIndex: "itemIdFromInventory",
-  //     key: "itemIdFromInventory",
-  //   },
-  //   {
-  //     title: "Qty",
-  //     dataIndex: "quantity",
-  //     key: "quantity",
-  //   },
-  //   {
-  //     title: "Department",
-  //     dataIndex: "department",
-  //     key: "department",
-  //     render: (department) => (
-  //       <span
-  //         style={{
-  //           color: department === "MEDTECH" ? "magenta" : "orange",
-  //           fontWeight: "bold",
-  //         }}
-  //       >
-  //         {department}
-  //       </span>
-  //     ),
-  //   },
-  // ];
-
-  const hasGlassware = Array.isArray(selectedRequest?.items)
-    ? selectedRequest.items.some(
-        (item) => item.category?.toLowerCase() === "glasswares"
-      )
-    : false;
-
-
   const itemColumns = [
     {
       title: "Item #",
@@ -476,20 +431,8 @@ const RequestList = () => {
         </span>
       ),
     },
-    
   ];
 
-  if (hasGlassware) {
-    itemColumns.push({
-      title: "Volume",
-      dataIndex: "volume",  // access volume field from item data
-      key: "volume",
-      render: (volume, record) =>
-        record.category?.toLowerCase() === "glasswares" ? volume || "N/A" : "",
-    });
-  }
-  console.log("Items in selectedRequest:", selectedRequest?.items);
-  console.log("Columns:", itemColumns);
   
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -573,21 +516,21 @@ const RequestList = () => {
                 <div className="details-table">
                   <Title level={5}>Requested Items:</Title>
 
-                  {/* <Table
+                  <Table
                     columns={itemColumns}
                     dataSource={selectedRequest.items}
                     rowKey={(_, index) => index}
                     size="small"
                     pagination={false}
-                  /> */}
+                  /> 
 
-                  <Table
+                  {/* <Table
                     columns={itemColumns}
                     dataSource={Array.isArray(selectedRequest?.items) ? selectedRequest.items : []}
                     rowKey={(_, index) => index}
                     size="small"
                     pagination={false}
-                  />
+                  /> */}
 
                   <br></br>
                   <p style={{marginBottom: '30px'}}><strong>Note:</strong> {selectedRequest.message || "No message provided."}</p>
