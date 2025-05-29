@@ -1452,19 +1452,17 @@ const Requisition = () => {
                         marginTop: "8px",
                       }}
                     >
-                      <option value="">Select a Program</option>
-                      <option value="SAM - BSMT">SAM - BSMT</option>
-                      <option value="SAH - BSN">SAH - BSN</option>
-                      <option value="MLSACHML">SHS</option> 
-                      <option value="MLSBIEPC">SHS</option>
-                      <option value="MLSAUBFC">SHS</option>
-                      <option value="MLSHEM2L">SHS</option>
-                      <option value="MLSHPATL">SHS</option>
-                      <option value="MLSIMHEL">SHS</option>
-                      <option value="MLSMOLBL">SHS</option>
-                      <option value="MLSMYVIL">SHS</option>
-                       <option value="MLSPARAL">SHS</option>
-                        <option value="MLSPML2L">SHS</option>
+                      <option value="">Select a Course Code</option>
+                      <option value="MLSACHML">MLSACHML</option> 
+                      <option value="MLSBIEPC">MLSBIEPC</option>
+                      <option value="MLSAUBFC">MLSAUBFC</option>
+                      <option value="MLSHEM2L">MLSHEM2L</option>
+                      <option value="MLSHPATL">MLSHPATL</option>
+                      <option value="MLSIMHEL">MLSIMHEL</option>
+                      <option value="MLSMOLBL">MLSMOLBL</option>
+                      <option value="MLSMYVIL">MLSMYVIL</option>
+                       <option value="MLSPARAL">MLSPARAL</option>
+                        <option value="MLSPML2L">MLSPML2L</option>
                       
 
                     </select>
