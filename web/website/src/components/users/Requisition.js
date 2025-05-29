@@ -1455,7 +1455,18 @@ const Requisition = () => {
                       <option value="">Select a Program</option>
                       <option value="SAM - BSMT">SAM - BSMT</option>
                       <option value="SAH - BSN">SAH - BSN</option>
-                      <option value="SHS">SHS</option>
+                      <option value="MLSACHML">SHS</option> 
+                      <option value="MLSBIEPC">SHS</option>
+                      <option value="MLSAUBFC">SHS</option>
+                      <option value="MLSHEM2L">SHS</option>
+                      <option value="MLSHPATL">SHS</option>
+                      <option value="MLSIMHEL">SHS</option>
+                      <option value="MLSMOLBL">SHS</option>
+                      <option value="MLSMYVIL">SHS</option>
+                       <option value="MLSPARAL">SHS</option>
+                        <option value="MLSPML2L">SHS</option>
+                      
+
                     </select>
 
                     {courseError && (
