@@ -634,9 +634,7 @@ const LabRoomQR = () => {
                   labRoom: itemData.labRoom || "N/A",
                   // quantity: itemData.quantity || 0,
                   // quantity: itemData.quantity ?? (itemData.category === "Glasswares" ? [] : 0),
-                  quantity: itemData.category === "Glasswares"
-                    ? itemData.quantity ?? []
-                    : itemData.quantity ?? 0,
+                  quantity: itemData.quantity || 0,
                   status: itemData.status || "N/A", 
                   type: itemData.type || "N/A",
                   rawTimestamp: itemData.rawTimestamp || "N/A",
@@ -904,22 +902,10 @@ const LabRoomQR = () => {
                         {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
                       </td> */}
                       <td>
-                        {Array.isArray(item.quantity) && item.category === "Glasswares" ? (
-                          item.quantity
-                            .map(({ qty, volume }) => `${qty} pcs${volume ? ` / ${volume} ML` : ""}`)
-                            .join(", ")
-                        ) : typeof item.quantity === "object" &&
-                          item.quantity !== null &&
-                          item.category === "Glasswares" ? (
-                          `${item.quantity.qty} pcs${item.quantity.volume ? ` / ${item.quantity.volume} ML` : ""}`
-                        ) : (
-                          <>
-                            {item.quantity}
-                            {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
-                            {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
-                            {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
-                          </>
-                        )}
+                        {item.quantity}
+                        {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
+                        {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
+                        {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
                       </td>
                       <td>{item.status}</td>
                       <td>{item.type}</td>

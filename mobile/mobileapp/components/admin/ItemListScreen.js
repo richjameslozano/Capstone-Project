@@ -38,35 +38,16 @@ const ItemListScreen = () => {
     navigation.navigate("CameraUpdateItems", { selectedItem: item });
   };
 
-  const renderItem = ({ item }) => {
-    let quantityText = "";
+const renderItem = ({ item }) => (
+    <TouchableOpacity style={styles.itemCard} onPress={() => handleItemPress(item)}>
+      <Text style={styles.itemName}>{item.itemName}</Text>
+      <Text style={styles.details}>Qty: {item.quantity} </Text>
+    </TouchableOpacity>
+  );
 
-    if (item.category === "Glasswares" && Array.isArray(item.quantity)) {
-      // For each object in quantity array, extract qty and volume
-      quantityText = item.quantity
-        .map(q => `Qty: ${q.qty ?? "N/A"} Volume: ${q.volume ?? "N/A"} `)
-        .join(", ");
-        
-    } else {
-      if (item.quantity) {
-        if (typeof item.quantity === "object") {
-          quantityText = `Qty: ${item.quantity.qty ?? "N/A"}`;
-
-        } else {
-          quantityText = `Qty: ${item.quantity}`;
-        }
-      } else {
-        quantityText = `Qty: N/A`;
-      }
-    }
-
-    return (
-      <TouchableOpacity style={styles.itemCard} onPress={() => handleItemPress(item)}>
-        <Text style={styles.itemName}>{item.itemName}</Text>
-        <Text style={styles.details}>{quantityText}</Text>
-      </TouchableOpacity>
-    );
-  };
+  if (loading) {
+    return <ActivityIndicator size="large" color="#007bff" style={{ flex: 1, justifyContent: "center" }} />;
+  }
 
   return (
     <View style={styles.container}>

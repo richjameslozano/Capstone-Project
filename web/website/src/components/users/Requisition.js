@@ -650,17 +650,17 @@ const Requisition = () => {
     }
     console.log("Filtered mergedData:", filteredMergedData);
 
-  for (const item of filteredMergedData) {
-    if (item.category.toLowerCase() === "glasswares") {
-      // Assuming volume property is named "volume" and must be > 0
-      if (!item.volume || Number(item.volume) <= 0) {
-        setNotificationMessage(`Please specify a valid volume for glassware item "${item.itemName}".`);
-        setIsNotificationVisible(true);
-        isValid = false;
-        break; // no need to check further once invalid
-      }
-    }
-  }
+  // for (const item of filteredMergedData) {
+  //   if (item.category.toLowerCase() === "glasswares") {
+  //     // Assuming volume property is named "volume" and must be > 0
+  //     if (!item.volume || Number(item.volume) <= 0) {
+  //       setNotificationMessage(`Please specify a valid volume for glassware item "${item.itemName}".`);
+  //       setIsNotificationVisible(true);
+  //       isValid = false;
+  //       break; // no need to check further once invalid
+  //     }
+  //   }
+  // }
 
     if (isValid) {
       try {
@@ -915,7 +915,7 @@ const Requisition = () => {
     const previousItemId = tableData[index]?.selectedItemId;
 
     // Get volume if it exists in current row (tableData)
-    const volume = tableData[index]?.volume || selectedItem.volume || null;
+    // const volume = tableData[index]?.volume || selectedItem.volume || null;
 
     // Build new row object including volume
     const newRow = {
@@ -927,7 +927,7 @@ const Requisition = () => {
       itemName: selectedItem.itemName,
       category: selectedItem.category,
       quantity: tableData[index]?.quantity || 1,
-      volume,  // <-- include volume here
+      // volume,  // <-- include volume here
       labRoom: selectedItem.labRoom,
       status: selectedItem.status,
       condition: selectedItem.condition,
@@ -938,6 +938,7 @@ const Requisition = () => {
     let updatedData = [...tableData];
     if (updatedData[index]) {
       updatedData[index] = newRow;
+
     } else {
       updatedData.push(newRow); // Add new item
     }
@@ -949,6 +950,7 @@ const Requisition = () => {
     let updatedRequestList = [...requestList];
     if (updatedRequestList[index]) {
       updatedRequestList[index] = newRow;
+
     } else {
       updatedRequestList.push(newRow);
     }
@@ -975,7 +977,7 @@ const Requisition = () => {
           selectedItemId: itemId,
           selectedItemLabel: selectedItem.itemName,
           quantity: newRow.quantity,
-          volume: newRow.volume, // <-- explicitly save volume here
+          // volume: newRow.volume, // <-- explicitly save volume here
           timestamp: Timestamp.fromDate(new Date()),
         });
 
@@ -1177,12 +1179,7 @@ const Requisition = () => {
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-const quantityLabel = Array.isArray(item.quantity) && item.category === "Glasswares"
-  ? item.quantity.map(({ qty, volume }) => `${qty} pcs${volume ? ` / ${volume} ML` : ""}`).join(", ")
-  : `${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}`;
-
-const label = `${item.itemName} | ${item.category} | Qty: ${quantityLabel} | ${item.status} | ${item.department}`;
-
+              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
               const isDisabled = selectedIds.includes(item.id);
   
               return (
@@ -1205,164 +1202,71 @@ const label = `${item.itemName} | ${item.category} | Qty: ${quantityLabel} | ${i
       dataIndex: "category",
       key: "category",
     },
-    // {
-    //   title: "Quantity",
-    //   dataIndex: "quantity",
-    //   key: "quantity",
-    //   render: (value, record) => (
-    //     <Input
-    //       type="number"
-    //       min={1}
-    //       value={record.quantity}
-    //       onChange={async (e) => {
-    //         const newQuantity = Number(e.target.value);
-
-    //         // Fetch inventory details to validate the quantity
-    //         const inventoryRef = collection(db, "inventory");
-    //         const inventorySnapshot = await getDocs(inventoryRef);
-    //         const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
-
-    //         // Check if inventory item exists and compare the quantity
-    //         if (inventoryItem) {
-    //           const availableQuantity = inventoryItem.data().quantity; // Assuming the quantity field exists in inventory
-
-    //           if (newQuantity <= availableQuantity) {
-    //             // Update local tableData if valid
-    //             const updated = tableData.map((row) =>
-    //               row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
-    //             );
-
-    //             setTableData(updated);
-
-    //             // Update requestList too
-    //             const updatedRequestList = requestList.map((row) =>
-    //               row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
-    //             );
-                
-    //             setRequestList(updatedRequestList);
-    //             localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
-
-    //             // Update Firestore
-    //             const userId = localStorage.getItem("userId");
-    //             if (userId) {
-    //               const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-
-    //               // Find the doc with this item's ID
-    //               const snapshot = await getDocs(tempRequestRef);
-    //               const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
-
-    //               if (docToUpdate) {
-    //                 await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
-    //                   quantity: newQuantity,
-    //                 });
-    //               }
-    //             }
-
-    //           } else {
-    //             // Use the custom notification modal
-    //             handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
-    //           }
-
-    //         } else {
-    //           console.error("Inventory item not found.");
-    //         }
-    //       }}
-    //     />
-    //   ),
-    // },
-{
-  title: "Quantity",
-  dataIndex: "quantity",
-  key: "quantity",
-  render: (value, record) => {
-    // List of volume options for Glasswares (example - update as needed)
-
-    // Function to update Firestore and local state for quantity or volume
-    const handleUpdate = async (field, newValue) => {
-      if (field === "quantity") {
-        // Fetch inventory details to validate the quantity
-        const inventoryRef = collection(db, "inventory");
-        const inventorySnapshot = await getDocs(inventoryRef);
-        const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
-
-        if (inventoryItem) {
-          const availableQuantity = inventoryItem.data().quantity; 
-
-          if (newValue > availableQuantity) {
-            return handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
-          }
-        } else {
-          console.error("Inventory item not found.");
-          return;
-        }
-      }
-
-      // Update local tableData
-      const updated = tableData.map((row) =>
-        row.selectedItemId === record.selectedItemId ? { ...row, [field]: newValue } : row
-      );
-      setTableData(updated);
-
-      // Update requestList
-      const updatedRequestList = requestList.map((row) =>
-        row.selectedItemId === record.selectedItemId ? { ...row, [field]: newValue } : row
-      );
-      setRequestList(updatedRequestList);
-      localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
-
-      // Update Firestore
-      const userId = localStorage.getItem("userId");
-      if (userId) {
-        const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-
-        const snapshot = await getDocs(tempRequestRef);
-        const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
-
-        if (docToUpdate) {
-          await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
-            [field]: newValue,
-          });
-        }
-      }
-    };
-
-    return (
-      <>
-        {/* Quantity Input */}
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      render: (value, record) => (
         <Input
           type="number"
           min={1}
           value={record.quantity}
           onChange={async (e) => {
             const newQuantity = Number(e.target.value);
-            await handleUpdate("quantity", newQuantity);
+
+            // Fetch inventory details to validate the quantity
+            const inventoryRef = collection(db, "inventory");
+            const inventorySnapshot = await getDocs(inventoryRef);
+            const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
+
+            // Check if inventory item exists and compare the quantity
+            if (inventoryItem) {
+              const availableQuantity = inventoryItem.data().quantity; // Assuming the quantity field exists in inventory
+
+              if (newQuantity <= availableQuantity) {
+                // Update local tableData if valid
+                const updated = tableData.map((row) =>
+                  row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
+                );
+
+                setTableData(updated);
+
+                // Update requestList too
+                const updatedRequestList = requestList.map((row) =>
+                  row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
+                );
+                
+                setRequestList(updatedRequestList);
+                localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
+
+                // Update Firestore
+                const userId = localStorage.getItem("userId");
+                if (userId) {
+                  const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+
+                  // Find the doc with this item's ID
+                  const snapshot = await getDocs(tempRequestRef);
+                  const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
+
+                  if (docToUpdate) {
+                    await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
+                      quantity: newQuantity,
+                    });
+                  }
+                }
+
+              } else {
+                // Use the custom notification modal
+                handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
+              }
+
+            } else {
+              console.error("Inventory item not found.");
+            }
           }}
-          style={{ width: record.category === "Glasswares" ? "45%" : "100%", marginRight: record.category === "Glasswares" ? 8 : 0 }}
         />
-
-        {/* Volume dropdown only for Glasswares */}
-        {record.category === "Glasswares" && (
-<select
-  value={record.volume || ""}
-  onChange={async (e) => {
-    const newVolume = Number(e.target.value);
-    await handleUpdate("volume", newVolume);
-  }}
-  style={{ width: "45%" }}
->
-  <option value="">Select Volume (ML)</option>
-  {volumeOptions.map((vol) => (
-    <option key={vol} value={vol}>
-      {vol} ML
-    </option>
-  ))}
-</select>
-
-        )}
-      </>
-    );
-  },
-},
+      ),
+    },
     {
       title: "Lab Room",
       dataIndex: "labRoom",

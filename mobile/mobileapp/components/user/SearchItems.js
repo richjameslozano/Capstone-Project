@@ -97,19 +97,11 @@ export default function SearchItemsScreen({ navigation }) {
       </View>
       <View style={{ flex: 1 }}>
         {/* <Text style={styles.cellText}>{item.quantity}</Text> */}
-        {item.category === "Glasswares" ? (
-          <Text style={styles.cellText}>
-            {Object.values(item.quantity)
-              .map((entry) => `${entry.qty} pcs / ${entry.volume} ML`)
-              .join('\n')}
-          </Text>
-        ) : (
           <Text style={styles.cellText}>
             {item.quantity}
-            {["Chemical", "Reagent"].includes(item.category) && ' pcs'}
-            {["Chemical", "Reagent"].includes(item.category) && item.unit && ` / ${item.unit} ML`}
+            {["Chemical", "Reagent", "Glasswares"].includes(item.category) && ' pcs'}
+            {["Chemical", "Reagent", "Glasswares"].includes(item.category) && item.unit && ` / ${item.unit} ML`}
           </Text>
-        )}
       </View>
       <View style={{ flex: 2 }}>
         <Text
@@ -229,24 +221,17 @@ export default function SearchItemsScreen({ navigation }) {
                     {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
                     {hoveredItem.category === "Glasswares" && hoveredItem.volume && ` / ${hoveredItem.volume} ML`}
                   </Text> */}
-                  {hoveredItem.category === "Glasswares" && hoveredItem.quantity && (
-                    Object.entries(hoveredItem.quantity).map(([key, value], index) => (
-                      <Text key={index}>
-                        Quantity: {value.qty} pcs / {value.volume} ML
-                      </Text>
-                    ))
-                  )}
-
-                  {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.quantity && (
-                    <Text>
-                      Quantity: {hoveredItem.quantity} pcs
-                      {hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
-                    </Text>
-                  )}
+                  <Text>
+                    Quantity: {hoveredItem.quantity}
+                    {["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && " pcs"}
+                    {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
+                    {hoveredItem.category === "Glasswares" && hoveredItem.volume && ` / ${hoveredItem.volume} ML`}
+                  </Text>
 
                   {!["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && (
                     <Text>Quantity: {hoveredItem.quantity}</Text>
                   )}
+                  
                   <Text>Status: {hoveredItem.status}</Text>
                   <Text>Category: {hoveredItem.category}</Text>
                   <Text>Location: {hoveredItem.labRoom}</Text>

@@ -187,20 +187,13 @@ const Inventory = () => {
   //   saveAs(data, "Filtered_Inventory.xlsx");
   // };
 
-  const exportToExcel = () => {
+    const exportToExcel = () => {
     const flattenedData = filteredData.map((item) => ({
       ItemID: item.itemId || "",
       ItemName: item.itemName || "",
       Category: item.category || "",
       Department: item.department || "",
-      Quantity:
-        item.category === "Glasswares"
-          ? (
-              Array.isArray(item.quantity)
-                ? item.quantity.map(entry => `${entry.volume}ml: ${entry.qty} pcs`).join(", ")
-                : (item.quantity?.qty ? `${item.quantity.volume}ml: ${item.quantity.qty} pcs` : "0")
-            )
-          : (item.quantity?.toString() || "0"),
+      Quantity: item.quantity?.toString() || "0", 
       Status: item.status || "",
       Condition: item.condition
         ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
@@ -220,7 +213,6 @@ const Inventory = () => {
     const data = new Blob([excelBuffer], { type: "application/octet-stream" });
     saveAs(data, "Filtered_Inventory.xlsx");
   };
-
 
   const generatePdfFromFilteredData = () => {
   const doc = new jsPDF("p", "pt", "a4");
@@ -267,13 +259,7 @@ const Inventory = () => {
     item.itemName || "",
     item.category || "",
     item.department || "",
-    item.category === "Glasswares"
-      ? (
-          Array.isArray(item.quantity)
-            ? item.quantity.map(entry => `${entry.volume}ml: ${entry.qty} pcs`).join(", ")
-            : (item.quantity?.qty ? `${item.quantity.volume}ml: ${item.quantity.qty} pcs` : "0")
-        )
-      : (item.quantity?.toString() || "0"),
+    item.quantity?.toString() || "0",
     item.status || "",
     item.condition
       ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
@@ -430,24 +416,17 @@ const printPdf = () => {
         Damage: 0,
       },
       unit: values.unit || null,
+      volume: values.category === "Glasswares" ? values.volume : null,
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
+      ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+        condition: {
+          Good: quantityNumber,
+          Defect: 0,
+          Damage: 0,
+        },
+      }),
     };
-
-    // Add only relevant fields based on category
-    if (values.category === "Glasswares") {
-      inventoryItem.quantity = values.quantities;
-      inventoryItem.condition.Good = values.quantities.reduce((acc, qv) => acc + qv.qty, 0);
-      
-    } else {
-      inventoryItem.quantity = Number(values.quantity);
-      inventoryItem.condition.Good = Number(values.quantity);
-
-      // Only add volume if it exists and is valid
-      if (values.volume !== undefined) {
-        inventoryItem.volume = values.volume;
-      }
-    }
 
     const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(inventoryItem),
@@ -570,48 +549,21 @@ const printPdf = () => {
       // 🔽 Fetch all items under this labRoom
       const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
       const allLabRoomItems = [];
-      // labRoomItemsSnap.forEach((docItem) => {
-      //   const itemData = docItem.data();
-      //   const quantityNumbers = Number(itemData.quantity);
-      //   allLabRoomItems.push({
-      //     itemId: itemData.itemId,
-      //     itemName: itemData.itemName,
-      //     quantity: itemData.quantity,
-      //     condition: {
-      //       Good: quantityNumbers,
-      //       Defect: 0,
-      //       Damage: 0,
-      //     },
-      //     status: itemData.status,
-      //   });
-      // });
-
       labRoomItemsSnap.forEach((docItem) => {
-      const itemData = docItem.data();
-
-      let goodCount = 0;
-
-      if (Array.isArray(itemData.quantity)) {
-        // For Glasswares: sum up qty values from the array
-        goodCount = itemData.quantity.reduce((acc, curr) => acc + (curr.qty || 0), 0);
-
-      } else {
-        // For others: convert to Number
-        goodCount = Number(itemData.quantity) || 0;
-      }
-
-      allLabRoomItems.push({
-        itemId: itemData.itemId,
-        itemName: itemData.itemName,
-        quantity: itemData.quantity, // keep array or number as-is
-        condition: {
-          Good: goodCount,
-          Defect: 0,
-          Damage: 0,
-        },
-        status: itemData.status,
+        const itemData = docItem.data();
+        const quantityNumbers = Number(itemData.quantity);
+        allLabRoomItems.push({
+          itemId: itemData.itemId,
+          itemName: itemData.itemName,
+          quantity: itemData.quantity,
+          condition: {
+            Good: quantityNumbers,
+            Defect: 0,
+            Damage: 0,
+          },
+          status: itemData.status,
+        });
       });
-    });
 
       // 🔽 Generate encrypted QR code with labRoom data
       const labRoomQRData = CryptoJS.AES.encrypt(
@@ -645,32 +597,18 @@ const printPdf = () => {
     setEditingItem(record);
     setSelectedCategory(record.category);
 
-    // editForm.setFieldsValue({
-    //   category: record.category,
-    //   labRoom: record.labRoom,
-    //   quantity: record.quantity,
-    //   status: record.status,
-    //   condition: {
-    //     Good: record.condition?.Good ?? 0,
-    //     Defect: record.condition?.Defect ?? 0,
-    //     Damage: record.condition?.Damage ?? 0,
-    //   },
-    //   // condition: record.condition, 
-    //   // usageType: record.usageType,
-    // });
-
     editForm.setFieldsValue({
-      // category: record.category,
-      // labRoom: record.labRoom,
+      category: record.category,
+      labRoom: record.labRoom,
       quantity: record.quantity,
-      // status: record.status,
+      status: record.status,
       condition: {
         Good: record.condition?.Good ?? 0,
         Defect: record.condition?.Defect ?? 0,
         Damage: record.condition?.Damage ?? 0,
       },
-      volume: record.volume || "", // 👈 added
-      qty: record.qty || "",       // 👈 added
+      // condition: record.condition, 
+      // usageType: record.usageType,
     });
 
     setIsEditModalVisible(true);
@@ -940,49 +878,69 @@ const printPdf = () => {
    const updateItem = async (values) => {
     console.log("✅ Raw incoming values:", values);
 
-    let totalQty = 0;
-    const isGlassware = editingItem.category === 'Glasswares';
-
-    if (Array.isArray(values.quantity)) {
-      totalQty = values.quantity
-        .filter(entry => entry && typeof entry.qty !== 'undefined') // ✅ safe filtering
-        .reduce((sum, entry) => {
-          const qty = parseInt(entry.qty);
-          return sum + (isNaN(qty) ? 0 : qty);
-        }, 0);
-
-      if (isGlassware) {
-        values.condition = {
-          Good: totalQty,
-          Defect: 0,
-          Damage: 0,
-        };
-      }
-      
-    } else {
-      // fallback if quantity is not an array (maybe it's an object)
-      const qty = parseInt(values.quantity?.qty ?? 0);
-      totalQty = isNaN(qty) ? 0 : qty;
-
-      if (isGlassware) {
-        values.condition = {
-          Good: totalQty,
-          Defect: 0,
-          Damage: 0,
-        };
-      }
-    }
-
-    if (!isGlassware && !values.condition) {
-      values.condition = editingItem.condition ?? { Good: 0, Defect: 0, Damage: 0 };
-    }
-
+    // Build safeValues but WITHOUT using values.labRoom (ignore it)
+    // We'll get labRoom from Firestore data directly below.
     const safeValues = {
+      // category: values.category ?? "",
+      // labRoom will be fetched from Firestore data, so omit here or set to empty string
+      // labRoom: "", 
       quantity: values.quantity ?? 0,
-      condition: values.condition,
-      ...(values.volume !== undefined && { volume: values.volume }),
-      ...(values.qty !== undefined && { qty: values.qty }),
+      // status: values.status ?? "Available",
+      condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
     };
+
+    // try {
+    //   const snapshot = await getDocs(collection(db, "inventory"));
+
+    //   snapshot.forEach(async (docItem) => {
+    //     const data = docItem.data();
+
+    //     if (data.itemId === editingItem.itemId) {
+    //       const inventoryId = docItem.id;
+    //       const itemRef = doc(db, "inventory", inventoryId);
+
+    //       await updateDoc(itemRef, safeValues);
+
+    //       setIsNotificationVisible(true);
+    //       setNotificationMessage("Item updated successfully!");
+
+    //       const updatedItem = {
+    //         ...editingItem,
+    //         ...safeValues,
+    //       };
+
+    //       setDataSource((prevData) =>
+    //         prevData.map((item) =>
+    //           item.id === editingItem.id ? updatedItem : item
+    //         )
+    //       );
+
+    //       const labRoomId = safeValues.labRoom;
+    //       const itemId = data.itemId;
+
+    //       if (labRoomId && itemId) {
+    //         const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+    //         const labRoomSnap = await getDoc(labRoomItemRef);
+
+    //         if (labRoomSnap.exists()) {
+    //           await updateDoc(labRoomItemRef, safeValues);
+    //           console.log(`🏫 labRoom/${labRoomId}/items/${itemId} updated successfully`);
+
+    //         } else {
+    //           console.warn(`⚠️ labRoom item not found for itemId: ${itemId} in labRoom: ${labRoomId}`);
+    //         }
+    //       }
+
+    //       setIsEditModalVisible(false);
+    //       setIsRowModalVisible(false)
+    //       setEditingItem(null);
+    //       form.resetFields();
+    //     }
+    //   });
+      
+    // } catch (error) {
+    //   console.error("Error updating document in Firestore:", error);
+    // }
 
     try {
       const snapshot = await getDocs(collection(db, "inventory"));
@@ -994,14 +952,17 @@ const printPdf = () => {
           const inventoryId = docItem.id;
           const itemRef = doc(db, "inventory", inventoryId);
 
+          // Use the labRoom from the existing Firestore document
           const existingLabRoom = data.labRoom;
           if (!existingLabRoom) {
             console.warn("❌ Existing item has no labRoom, cannot update labRoom items subcollection.");
             return;
           }
 
+          // Add labRoom to safeValues here from existing data
           safeValues.labRoom = existingLabRoom;
 
+          // Update inventory doc with safeValues (including labRoom from Firestore)
           await updateDoc(itemRef, safeValues);
 
           setIsNotificationVisible(true);
@@ -1012,21 +973,21 @@ const printPdf = () => {
             ...safeValues,
           };
 
-         // setDataSource((prevData) =>
-          //   prevData.map((item) =>
-          //     item.id === editingItem.id ? updatedItem : item
-          //   )
-          // );
-
           setDataSource((prevData) =>
             prevData.map((item) =>
-              item.itemId === editingItem.itemId ? { ...item, ...updatedItem } : item
+              item.id === editingItem.id ? updatedItem : item
             )
           );
 
+          // Now get the roomNumber string for query (padStart if needed)
           const roomNumber = existingLabRoom.toString().padStart(4, '0');
+
           const itemId = data.itemId;
 
+          console.log("🧪 Matching roomNumber:", roomNumber);
+          console.log("🆔 Matching itemId:", itemId);
+
+          // Query labRoom collection for the matching roomNumber
           const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
           const labRoomSnapshot = await getDocs(labRoomQuery);
 
@@ -1034,6 +995,7 @@ const printPdf = () => {
             const labRoomDoc = labRoomSnapshot.docs[0];
             const labRoomRef = labRoomDoc.ref;
 
+            // Reference to the item inside labRoom/items/itemId
             const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
             const labRoomItemSnap = await getDoc(labRoomItemRef);
 
@@ -1055,9 +1017,9 @@ const printPdf = () => {
           form.resetFields();
         }
       });
-
+      
     } catch (error) {
-      console.error("🔥 Error updating document in Firestore:", error);
+      console.error("Error updating document in Firestore:", error);
     }
   };
 
@@ -1084,51 +1046,21 @@ const printPdf = () => {
       sortDirections: ['ascend', 'descend'],
       defaultSortOrder: 'ascend', 
     },
-    // {
-    //   title: "Inventory Balance",
-    //   dataIndex: "quantity",
-    //   key: "quantity",
-    //   render: (text, record) => {
-    //     const { category, unit, volume } = record;
-    //     if (["Chemical", "Reagent"].includes(category)) {
-    //       return `${text} pcs / ${unit || ""} ML `;
-    //     }
-
-    //     if (category === "Glasswares" && volume) {
-    //       return `${text} pcs / ${volume} ML`;
-    //     }
-
-    //     return text;
-    //   },
-    // },
     {
       title: "Inventory Balance",
       dataIndex: "quantity",
       key: "quantity",
-      render: (quantity, record) => {
-        const { category } = record;
-
-        if (category === "Glasswares" && Array.isArray(quantity)) {
-          return quantity.map(({ qty, volume }, i) => (
-            <div key={i}>{qty} pcs / {volume} ML</div>
-          ));
-        }
-
+      render: (text, record) => {
+        const { category, unit, volume } = record;
         if (["Chemical", "Reagent"].includes(category)) {
-          return `${quantity} pcs / ${record.unit || ""} ML`;
+          return `${text} pcs / ${unit || ""} ML `;
         }
 
-        // ✅ Safely handle array case even for other categories
-        if (Array.isArray(quantity)) {
-          return quantity.map(({ qty, volume }, i) => (
-            <div key={i}>{qty} pcs / {volume} ML</div>
-          ));
+        if (category === "Glasswares" && volume) {
+          return `${text} pcs / ${volume} ML`;
         }
 
-        // ✅ Handle plain numbers
-        return typeof quantity === 'number' || typeof quantity === 'string'
-          ? quantity
-          : JSON.stringify(quantity); // fallback for safety
+        return text;
       },
     },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
@@ -1672,54 +1604,10 @@ const printPdf = () => {
                   </Col>
                 )}
 
-                {selectedCategory === "Glasswares" && (
-                  <Form.List name="quantities">
-                    {(fields, { add, remove }) => (
-                      <>
-                        {fields.map(({ key, name, ...restField }) => (
-                          <Space key={key} align="baseline">
-                            <Form.Item
-                              {...restField}
-                              name={[name, "qty"]}
-                              rules={[{ required: true, message: 'Please input quantity!' }]}
-                            >
-                              <InputNumber min={1} placeholder="Quantity" />
-                            </Form.Item>
-                            <Form.Item
-                              {...restField}
-                              name={[name, "volume"]}
-                              rules={[{ required: true, message: 'Please input volume!' }]}
-                            >
-                              <Input type="number" addonAfter="ML" placeholder="Volume" />
-                            </Form.Item>
-                            <MinusCircleOutlined onClick={() => remove(name)} />
-                          </Space>
-                        ))}
-                        <Form.Item>
-                          <Button type="dashed" onClick={() => add()} block icon={<PlusOutlined />}>
-                            Add Quantity & Volume
-                          </Button>
-                        </Form.Item>
-                      </>
-                    )}
-                  </Form.List>
-                )}
-
-                  {selectedCategory !== "Glasswares" && (
-                    <Col span={8}>
-                      <Form.Item
-                        name="quantity"
-                        label="Quantity"
-                        rules={[{ required: true, message: "Please enter Quantity!" }]}
-                      >
-                        <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
-                      </Form.Item>
-                    </Col>
-                  )}
               </Row>
 
               <Row gutter={16}>                
-                {/* <Col span={8}>
+                <Col span={8}>
                   <Form.Item
                     name="quantity"
                     label="Quantity"
@@ -1727,7 +1615,7 @@ const printPdf = () => {
                   >
                     <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
                   </Form.Item>
-                </Col> */}
+                </Col>
                 
                 <Col span={8}>
                   <Form.Item
@@ -1819,24 +1707,15 @@ const printPdf = () => {
                 <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
                 <p>
                   <strong>Inventory Balance:</strong>{" "}
-                  {Array.isArray(selectedRow.quantity) ? (
-                    selectedRow.quantity.map((qv, i) => (
-                      <span key={i}>
-                        {qv.qty} pcs / {qv.volume} ML
-                        {i < selectedRow.quantity.length - 1 ? ", " : ""}
-                      </span>
-                    ))
-                  ) : selectedRow.quantity && typeof selectedRow.quantity === "object" ? (
-                    <span>
-                      {selectedRow.quantity.qty} pcs / {selectedRow.quantity.volume} ML
-                    </span>
-                  ) : (
-                    `${selectedRow.quantity} pcs`
-                  )}
-                  {["Chemical", "Reagent"].includes(selectedRow.category) &&
-                    selectedRow.unit &&
-                    ` / ${selectedRow.unit} ML`}
+                  {selectedRow.quantity}
+                  {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
                 </p>
+                {selectedRow.category === "Glasswares" && selectedRow.volume && (
+                  <p>
+                    <strong>Volume:</strong> {selectedRow.volume} ML
+                  </p>
+                )}
                 <p><strong>Critical Level:</strong> {selectedRow.criticalLevel}</p>
                 <p><strong>Category:</strong> {selectedRow.category}</p>
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
@@ -1903,169 +1782,177 @@ const printPdf = () => {
             )}
           </Modal>
 
-          <Modal 
+          <Modal
             title="Update Inventory Balance"
             visible={isEditModalVisible}
             onCancel={() => setIsEditModalVisible(false)}
             onOk={() => editForm.submit()}
             zIndex={1020}
           >
-            <Form
-              layout="vertical" 
+            <Form layout="vertical" 
               form={editForm} 
               onFinish={updateItem}
-          
               onValuesChange={(changedValues, allValues) => {
-            if (selectedCategory === "Glasswares" && Array.isArray(allValues.quantity)) {
-              const totalQty = allValues.quantity.reduce((sum, entry) => {
-                return sum + (parseInt(entry.qty) || 0);
-              }, 0);
+                if ('quantity' in changedValues) {
+                  const newQuantity = parseInt(changedValues.quantity || 0);
 
-              setTimeout(() => {
-                editForm.setFieldsValue({
-                  condition: {
-                    Good: totalQty,
-                    Defect: 0,
-                    Damage: 0,
-                  },
-                });
-              }, 0);
-            }
-
-            if (selectedCategory !== "Glasswares" && 'quantity' in changedValues && typeof changedValues.quantity === 'number') {
-              const newQuantity = parseInt(changedValues.quantity || 0);
-              setTimeout(() => {
-                editForm.setFieldsValue({
-                  condition: {
-                    Good: newQuantity,
-                    Defect: 0,
-                    Damage: 0,
-                  },
-                });
-              }, 0);
-            }
-          }}
-
+                  // Delay to ensure it runs after React updates internal state
+                  setTimeout(() => {
+                    editForm.setFieldsValue({
+                      condition: {
+                        Good: newQuantity,
+                        Defect: 0,
+                        Damage: 0,
+                      },
+                    });
+                  }, 0);
+                }
+              }}
             >
-              {selectedCategory === "Glasswares" ? (
-          <Form.List name="quantity">
-            {(fields, { add, remove }) => (
-              <>
-                {fields.map(({ key, name, ...restField }) => (
-                  <Row key={key} gutter={16} align="middle">
-                    <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'qty']}
-                        label="Quantity"
-                        rules={[{ required: true, message: 'Please enter quantity' }]}
-                      >
-                        <Input type="number" min={0} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={8}>
-                      <Form.Item
-                        {...restField}
-                        name={[name, 'volume']}
-                        label="Volume (ML)"
-                        rules={[{ required: true, message: 'Please enter volume' }]}
-                      >
-                        <Input type="number" min={0} />
-                      </Form.Item>
-                    </Col>
-                    <Col span={4}>
-                      <MinusCircleOutlined
-                        onClick={() => remove(name)}
-                        style={{ fontSize: '24px', color: 'red', marginTop: 30 }}
-                      />
-                    </Col>
-                  </Row>
-                ))}
-                <Form.Item>
-                  <Button
-                    type="dashed"
-                    onClick={() => add({ qty: 0, volume: 0 })} // ✅ Provide default values
-                    block
-                    icon={<PlusOutlined />}
+              <Row gutter={16}>
+                {/* <Col span={12}>
+                  <Form.Item
+                    name="category"
+                    label="Category"
+                    rules={[
+                      { required: true, message: "Please select a category!" },
+                    ]}
                   >
-                    Add Quantity & Volume
-                  </Button>
-                </Form.Item>
-              </>
-            )}
-          </Form.List>
+                    <Select placeholder="Select Category">
+                      <Option value="Chemical">Chemical</Option>
+                      <Option value="Reagent">Reagent</Option>
+                      <Option value="Materials">Materials</Option>
+                      <Option value="Equipment">Equipment</Option>
+                      <Option value="Glasswares">Glasswares</Option>
+                    </Select>
+                  </Form.Item>
+                </Col> */}
 
-              ) : (
-                <>
-                  <Row gutter={16}>
-                    <Col span={12}>
-                      <Form.Item
-                        name="quantity"
-                        label="Quantity"
-                        dependencies={[['condition']]} // watch for changes in condition
-                        rules={[
-                          { required: true, message: "Please enter quantity" },
-                          ({ getFieldValue }) => ({
-                            validator(_, value) {
-                              const condition = getFieldValue('condition') || {};
-                              const totalCondition =
-                                (parseInt(condition.Good) || 0) +
-                                (parseInt(condition.Defect) || 0) +
-                                (parseInt(condition.Damage) || 0);
+                {/* <Row gutter={16}>
+                <Col span={24}>
+                  <Form.Item name="usageType" label="Usage Type">
+                    <Select placeholder="Select Usage Type">
+                      <Option value="Laboratory Experiment">Laboratory Experiment</Option>
+                      <Option value="Research">Research</Option>
+                      <Option value="Community Extension">Community Extension</Option>
+                      <Option value="Others">Others</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+               </Row> */}
 
-                              if (value == null || value === "") {
-                                return Promise.resolve(); // wait for value
-                              }
+                {/* <Col span={12}>
+                  <Form.Item
+                    name="labRoom"
+                    label="Stock Room"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please enter Stock Room!",
+                      },
+                    ]}
+                  >
+                    <Input placeholder="Enter Stock Room" />
+                  </Form.Item>
+                </Col> */}
 
-                              if (parseInt(value) === totalCondition) {
-                                return Promise.resolve();
-                              }
+                <Col span={12}>
+                  <Form.Item
+                    name="quantity"
+                    label="Quantity"
+                    dependencies={[['condition']]} // watch for changes in condition
+                   rules={[
+                      { required: true, message: "Please enter quantity" },
+                      ({ getFieldValue }) => ({
+                        validator(_, value) {
+                          const condition = getFieldValue('condition') || {};
+                          const totalCondition =
+                            (parseInt(condition.Good) || 0) +
+                            (parseInt(condition.Defect) || 0) +
+                            (parseInt(condition.Damage) || 0);
 
-                              return Promise.reject(
-                                new Error("Sum of Good, Defect, and Damage must equal Quantity")
-                              );
-                            },
-                          }),
-                        ]}
-                      >
-                        <Input type="number" min={0} placeholder="Enter quantity" />
-                      </Form.Item>
-                    </Col>
-                  </Row>
+                          if (value == null || value === "") {
+                            return Promise.resolve(); // wait for value
+                          }
 
-                  <Row gutter={16}>
-                    <Col span={8}>
-                      <Form.Item
-                        name={["condition", "Good"]}
-                        label="Good"
-                        rules={[{ required: true, message: "Enter Good qty" }]}
-                      >
-                        <Input type="number" min={0} />
-                      </Form.Item>
-                    </Col>
+                          // Fix: ensure numbers are properly cast
+                          if (parseInt(value) === totalCondition) {
+                            return Promise.resolve();
+                          }
 
-                    <Col span={8}>
-                      <Form.Item
-                        name={["condition", "Defect"]}
-                        label="Defect"
-                        rules={[{ required: true, message: "Enter Defect qty" }]}
-                      >
-                        <Input type="number" min={0} />
-                      </Form.Item>
-                    </Col>
+                          return Promise.reject(
+                            new Error("Sum of Good, Defect, and Damage must equal Quantity")
+                          );
+                        },
+                      }),
+                    ]}
+                  >
+                    <Input type="number" min={0} placeholder="Enter quantity" />
+                  </Form.Item>
+                </Col>
+              </Row>
 
-                    <Col span={8}>
-                      <Form.Item
-                        name={["condition", "Damage"]}
-                        label="Damage"
-                        rules={[{ required: true, message: "Enter Damage qty" }]}
-                      >
-                        <Input type="number" min={0} />
-                      </Form.Item>
-                    </Col>
-                  </Row>
-                </>
-              )}
+              <Row gutter={16}>
+                {/* <Col span={12}>
+                  <Form.Item name="quantity" label="Quantity">
+                    <Input placeholder="Enter quantity" />
+                  </Form.Item>
+                </Col> */}
+              </Row>
+
+              {/* <Row gutter={16}>
+                <Col span={12}>
+                  <Form.Item name="status" label="Status">
+                    <Select placeholder="Select Status">
+                      <Option value="Available">Available</Option>
+                      <Option value="In Use">In Use</Option>
+                      <Option value="Damaged">Damaged</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+
+                <Col span={12}>
+                  <Form.Item name="condition" label="Condition">
+                    <Select placeholder="Select Condition">
+                      <Option value="Good">Good</Option>
+                      <Option value="Fair">Fair</Option>
+                      <Option value="Poor">Poor</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row> */}
+
+              <Row gutter={16}>
+                <Col span={8}>
+                  <Form.Item
+                    name={["condition", "Good"]}
+                    label="Good"
+                    rules={[{ required: true, message: "Enter Good qty" }]}
+                  >
+                    <Input type="number" min={0} />
+                  </Form.Item>
+                </Col>
+
+                <Col span={8}>
+                  <Form.Item
+                    name={["condition", "Defect"]}
+                    label="Defect"
+                    rules={[{ required: true, message: "Enter Defect qty" }]}
+                  >
+                    <Input type="number" min={0} />
+                  </Form.Item>
+                </Col>
+
+                <Col span={8}>
+                  <Form.Item
+                    name={["condition", "Damage"]}
+                    label="Damage"
+                    rules={[{ required: true, message: "Enter Damage qty" }]}
+                  >
+                    <Input type="number" min={0} />
+                  </Form.Item>
+                </Col>
+              </Row>
             </Form>
           </Modal>
 
@@ -2083,7 +1970,6 @@ const printPdf = () => {
               );
             }}
           />
-
 
           <NotificationModal
             isVisible={isNotificationVisible}

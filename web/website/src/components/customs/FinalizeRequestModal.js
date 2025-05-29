@@ -17,8 +17,6 @@ const FinalizeRequestModal = ({
   requestList = [],
 }) => {
 
-  const hasGlassware = requestList.some(item => item.category?.toLowerCase() === "glasswares");
-
   return (
     <Modal
       className="finalize-modal"
@@ -66,9 +64,6 @@ const FinalizeRequestModal = ({
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Item</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Category</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Quantity</th>
-              {hasGlassware && (
-                <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Volume</th>
-              )}
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Lab Room</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Status</th>
             </tr>
@@ -79,11 +74,6 @@ const FinalizeRequestModal = ({
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.itemName}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.category}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.quantity}</td>
-                {hasGlassware && (
-                  <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>
-                    {item.category?.toLowerCase() === "glasswares" ? (item.volume || "N/A") : ""}
-                  </td>
-                )}
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.labRoom}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.status}</td>
               </tr>
