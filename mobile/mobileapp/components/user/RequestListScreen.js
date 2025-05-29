@@ -159,7 +159,7 @@ const RequestListScreen = ({navigation}) => {
     });
   };
 
-  const submitRequest = async () => {
+ const submitRequest = async () => {
     console.log('submitRequest initiated');
     console.log('Submitting for user:', user?.id);
   
@@ -400,7 +400,7 @@ const RequestListScreen = ({navigation}) => {
           <View style={styles.modalContainer}>
             <Text style={styles.title}>Request Details</Text>
 
-            {selectedItem && (
+                     {selectedItem && (
               <>
                 <Text style={styles.modalDetail}>
                   <Text style={styles.bold}>Item:</Text> {selectedItem.selectedItem?.label}
@@ -417,10 +417,6 @@ const RequestListScreen = ({navigation}) => {
                   keyboardType="numeric"
                   placeholder="Enter quantity"
                 />
-
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Volume:</Text> {selectedItem.volume}
-                </Text>
 
                 <Text style={styles.modalDetail}>
                   <Text style={styles.bold}>Category:</Text> {selectedItem.category}
@@ -455,7 +451,7 @@ const RequestListScreen = ({navigation}) => {
         </View>
       </Modal>
 
-      {showConfirmationModal && (
+     {showConfirmationModal && (
         <Modal
           visible={showConfirmationModal}
           transparent
@@ -484,9 +480,6 @@ const RequestListScreen = ({navigation}) => {
                       <View style={styles.tableRowHeader}>
                         <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Name</Text>
                         <Text style={[styles.tableCellHeader, { width: 100 }]}>Qty</Text>
-                        {requestList.some(item => item.category === "Glasswares") && (
-                          <Text style={[styles.tableCellHeader, { width: 120 }]}>Volume</Text>
-                        )}
                         <Text style={[styles.tableCellHeader, { width: 120 }]}>Category</Text>
                         <Text style={[styles.tableCellHeader, { width: 120 }]}>Status</Text>
                       </View>
@@ -496,11 +489,6 @@ const RequestListScreen = ({navigation}) => {
                         <View key={item.id} style={styles.tableRow}>
                           <Text style={[styles.tableCell, { width: 150 }]}>{item.selectedItem?.label}</Text>
                           <Text style={[styles.tableCell, { width: 100 }]}>{item.quantity}</Text>
-                          {item.category === "Glasswares" && (
-                            <Text style={[styles.tableCell, { width: 120 }]}>
-                              {item.volume ? `${item.volume} ML` : '—'}
-                            </Text>
-                          )}
                           <Text style={[styles.tableCell, { width: 120 }]}>{item.category}</Text>
                           <Text style={[styles.tableCell, { width: 120 }]}>{item.status}</Text>
                         </View>

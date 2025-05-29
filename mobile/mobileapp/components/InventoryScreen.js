@@ -171,112 +171,9 @@ export default function InventoryScreen({ navigation }) {
     }
   };
 
-  // const addToList = async (item) => {
-  //   const quantity = itemQuantities[item.id];
-  
-  //   if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-  //     alert('Please enter a valid quantity.');
-  //     return;
-  //   }
-
-  //   if (!selectedUsageTypeInput) {
-  //     alert('Please select a usage type.');
-  //     return;
-  //   }
-
-  //   console.log('metadata.usageTypeOther:', metadata.usageTypeOther);
-  //   console.log('selectedUsageTypeInput:', selectedUsageTypeInput);
-
-
-  //   const finalUsageType =
-  //     selectedUsageTypeInput === 'Others'
-  //       ? metadata?.usageTypeOther || ''
-  //       : selectedUsageTypeInput;
-
-  //   const requestedQty = parseInt(quantity);
-  //   const availableQty = parseInt(item.quantity);
-  
-  //   if (requestedQty > availableQty) {
-  //     alert(`The quantity you requested exceeds available stock (${availableQty}).`);
-  //     return;
-  //   }
-
-  //   console.log({
-  //     dateRequired: metadata?.dateRequired,
-  //     timeFrom: metadata?.timeFrom,
-  //     timeTo: metadata?.timeTo,
-  //     program: metadata?.program,
-  //     course: metadata?.course,
-  //     room: metadata?.room,
-  //     usageType: metadata?.usageType,
-  //     usageTypeOther: metadata?.usageTypeOther,
-  //     finalUsageType
-  //   });
-
-  //   if (selectedUsageTypeInput === 'Others' && !finalUsageType) {
-  //     alert('Please specify the usage type in the text field.');
-  //     return;
-  //   }
-
-
-  //   if (
-  //     !metadata?.dateRequired || 
-  //     !metadata?.timeFrom || 
-  //     !metadata?.timeTo || 
-  //     !metadata?.program || 
-  //     !metadata?.course || 
-  //     !metadata?.room || 
-  //     !finalUsageType 
-  //   ) {
-  //     alert('Please fill out all the borrowing details before adding an item.');
-  //     return;
-  //   }
-  
-  //   try {
-  //     const collectionRef = collection(db, 'accounts', user.id, 'temporaryRequests');
-  
-  //     // 🔍 Check for duplicates by "id"
-  //     const q = query(collectionRef, where('id', '==', item.id));
-  //     const querySnapshot = await getDocs(q);
-  
-  //     if (!querySnapshot.empty) {
-  //       alert('This item is already in your request list.');
-  //       return;
-  //     }
-  
-  //     await addDoc(collectionRef, {
-  //       category: item.category || '',
-  //       // condition: item.condition || '',
-  //       department: item.department || '',
-  //       entryDate: item.entryCurrentDate || '',
-  //       expiryDate: item.expiryDate || '',
-  //       id: item.id, 
-  //       itemId: item.itemId || '',
-  //       itemName: item.itemName || '',
-  //       labRoom: item.labRoom || '',
-  //       qrCode: item.qrCode || '',
-  //       quantity: quantity.toString(),
-  //       selectedItemId: item.id,
-  //       selectedItemLabel: item.itemName,
-  //       status: item.status || 'Available',
-  //       timestamp: Timestamp.fromDate(new Date()),
-  //       type: item.type || '',
-  //       usageType: finalUsageType || '',
-  //     });
-  
-  //     alert('Item successfully added to temporaryRequests.');
-  //     setActiveInputItemId(null);
-  //     setItemQuantities((prev) => ({ ...prev, [item.id]: '' }));
-      
-  //   } catch (error) {
-  //     console.error('Error adding item to temporaryRequests:', error);
-  //     alert('Failed to add item. Try again.');
-  //   }
-  // };
-
-  const addToList = async (item, selectedVolume) => {
+  const addToList = async (item) => {
     const quantity = itemQuantities[item.id];
-
+  
     if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
       alert('Please enter a valid quantity.');
       return;
@@ -290,38 +187,37 @@ export default function InventoryScreen({ navigation }) {
     console.log('metadata.usageTypeOther:', metadata.usageTypeOther);
     console.log('selectedUsageTypeInput:', selectedUsageTypeInput);
 
+
     const finalUsageType =
       selectedUsageTypeInput === 'Others'
         ? metadata?.usageTypeOther || ''
         : selectedUsageTypeInput;
 
     const requestedQty = parseInt(quantity);
-
-    if (item.category === "Glasswares") {
-      // Find quantity object matching selected volume
-      const volumeObj = item.quantity.find(q => q.volume === selectedVolume);
-      if (!volumeObj) {
-        alert('Selected volume is invalid.');
-        return;
-      }
-      const availableQty = parseInt(volumeObj.qty);
-      if (requestedQty > availableQty) {
-        alert(`The quantity you requested exceeds available stock (${availableQty}) for volume ${selectedVolume} ML.`);
-        return;
-      }
-
-    } else {
-      const availableQty = parseInt(item.quantity);
-      if (requestedQty > availableQty) {
-        alert(`The quantity you requested exceeds available stock (${availableQty}).`);
-        return;
-      }
+    const availableQty = parseInt(item.quantity);
+  
+    if (requestedQty > availableQty) {
+      alert(`The quantity you requested exceeds available stock (${availableQty}).`);
+      return;
     }
+
+    console.log({
+      dateRequired: metadata?.dateRequired,
+      timeFrom: metadata?.timeFrom,
+      timeTo: metadata?.timeTo,
+      program: metadata?.program,
+      course: metadata?.course,
+      room: metadata?.room,
+      usageType: metadata?.usageType,
+      usageTypeOther: metadata?.usageTypeOther,
+      finalUsageType
+    });
 
     if (selectedUsageTypeInput === 'Others' && !finalUsageType) {
       alert('Please specify the usage type in the text field.');
       return;
     }
+
 
     if (
       !metadata?.dateRequired || 
@@ -335,31 +231,31 @@ export default function InventoryScreen({ navigation }) {
       alert('Please fill out all the borrowing details before adding an item.');
       return;
     }
-
+  
     try {
       const collectionRef = collection(db, 'accounts', user.id, 'temporaryRequests');
-
-      // Check for duplicates by "id"
+  
+      // 🔍 Check for duplicates by "id"
       const q = query(collectionRef, where('id', '==', item.id));
       const querySnapshot = await getDocs(q);
-
+  
       if (!querySnapshot.empty) {
         alert('This item is already in your request list.');
         return;
       }
-
+  
       await addDoc(collectionRef, {
         category: item.category || '',
+        // condition: item.condition || '',
         department: item.department || '',
         entryDate: item.entryCurrentDate || '',
         expiryDate: item.expiryDate || '',
-        id: item.id,
+        id: item.id, 
         itemId: item.itemId || '',
         itemName: item.itemName || '',
         labRoom: item.labRoom || '',
         qrCode: item.qrCode || '',
         quantity: quantity.toString(),
-        volume: selectedVolume || '',    
         selectedItemId: item.id,
         selectedItemLabel: item.itemName,
         status: item.status || 'Available',
@@ -367,12 +263,11 @@ export default function InventoryScreen({ navigation }) {
         type: item.type || '',
         usageType: finalUsageType || '',
       });
-
+  
       alert('Item successfully added to temporaryRequests.');
       setActiveInputItemId(null);
       setItemQuantities((prev) => ({ ...prev, [item.id]: '' }));
-      setSelectedVolumes((prev) => ({ ...prev, [item.id]: null })); // Reset selected volume for item
-
+      
     } catch (error) {
       console.error('Error adding item to temporaryRequests:', error);
       alert('Failed to add item. Try again.');
@@ -382,10 +277,7 @@ export default function InventoryScreen({ navigation }) {
   const renderItem = ({ item }) => {
     const isAlreadyInList = requestList.some(reqItem => reqItem.id === item.id);
     const isActive = activeInputItemId === item.id;
-
-    console.log('Category:', item.category);
-    console.log('Is quantity array?', Array.isArray(item.quantity), item.quantity);
-
+  
     const handleIcon =()=>{
       if(item.category === 'Equipment') return 'cube-outline';
       if(item.category === 'Chemical') return 'flask-outline';
@@ -404,26 +296,7 @@ export default function InventoryScreen({ navigation }) {
   
             <View style={styles.itemDetails}>
               <Text style={styles.itemName}>{item.itemName}</Text>
-              {/* <Text style={styles.itemType}>Quantity: {item.quantity}</Text> */}
-              {
-                item.category === "Glasswares" && Array.isArray(item.quantity) ? (
-                  <Text style={styles.itemType}>
-                    Quantity:{" "}
-                    {item.quantity
-                      .map(({ qty, volume }) => `${qty} pcs / ${volume} ML`)
-                      .join(", ")}
-                  </Text>
-                ) : (
-                  <Text style={styles.itemType}>
-                    Quantity: {
-                      // If quantity is an object, show a safe fallback
-                      typeof item.quantity === 'string' || typeof item.quantity === 'number'
-                        ? item.quantity
-                        : JSON.stringify(item.quantity)
-                    }
-                  </Text>
-                )
-              }
+              <Text style={styles.itemType}>Quantity: {item.quantity}</Text>
               <Text style={styles.itemType}>Status: {item.status}</Text>
             </View>
   
@@ -442,7 +315,7 @@ export default function InventoryScreen({ navigation }) {
             </TouchableOpacity>
           </View>
   
-          {/* {isActive && (
+          {isActive && (
             <View style={styles.inputRow}>
               <TextInput
                 style={styles.input}
@@ -457,45 +330,6 @@ export default function InventoryScreen({ navigation }) {
               >
                 <Text style={styles.confirmButtonText}>Add</Text>
               </TouchableOpacity>
-            </View>
-          )} */}
-
-          {isActive && (
-            <View style={styles.inputRow}>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Enter quantity"
-                keyboardType="numeric"
-                value={itemQuantities[item.id] || ''}
-                onChangeText={(text) => handleQuantityChange(text, item.id)}
-              />
-
-              {item.category === "Glasswares" && Array.isArray(item.quantity) && (
-                <Picker
-                  selectedValue={selectedVolumes[item.id] || item.quantity[0]?.volume}
-                  style={{ height: 50, width: 150 }}
-                  onValueChange={(value) => {
-                    console.log('Picker selected value:', value);
-                    setSelectedVolumes((prev) => ({
-                      ...prev,
-                      [item.id]: value,
-                    }));
-                  }}
-                >
-                  {item.quantity.map(({ volume }) => (
-                    <Picker.Item key={volume} label={`${volume} ML`} value={volume} />
-                  ))}
-                </Picker>
-              )}
-
-              <TouchableOpacity
-                style={styles.confirmButton}
-                onPress={() => addToList(item, selectedVolumes[item.id])}
-              >
-                <Text style={styles.confirmButtonText}>Add</Text>
-              </TouchableOpacity>
-
             </View>
           )}
         </View>

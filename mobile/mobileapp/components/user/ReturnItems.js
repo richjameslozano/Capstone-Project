@@ -419,25 +419,6 @@ const ReturnItems = () => {
   const filteredData =
     filterStatus === "All" ? historyData : historyData.filter((item) => item.status === filterStatus);
 
-  // Step 1: Check if any item is Glasswares
-  const hasGlasswares = selectedRequest?.raw?.requestList?.some(
-    (item) => item.category === "Glasswares"
-  );
-
-  // Step 2: unitLevelData already defined (you gave this)
-  const unitLevelData = selectedRequest?.raw?.requestList
-    ? selectedRequest.raw.requestList.flatMap((item) =>
-        Array.from({ length: item.quantity }, (_, idx) => ({
-          key: `${item.itemIdFromInventory}_${idx}`,
-          itemId: item.itemIdFromInventory,
-          itemDescription: item.itemName,
-          unitIndex: idx + 1,
-          volume: item.volume || (typeof item.quantity === 'object' ? item.quantity.volume : undefined),
-          category: item.category,  // Add category here for checking
-        }))
-      )
-    : [];
-
   return (
     <View style={styles.container}>
       <Header />
@@ -559,7 +540,7 @@ const ReturnItems = () => {
             </View>
         </Modal> */}
 
-        <Modal visible={modalVisible} animationType="slide" onRequestClose={closeModal} transparent={true}>
+       <Modal visible={modalVisible} animationType="slide" onRequestClose={closeModal} transparent={true}>
           <View style={styles.modalOverlay}>
             <KeyboardAvoidingView
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -578,10 +559,8 @@ const ReturnItems = () => {
                     <Text style={styles.headerCell}>Item Name</Text>
                     <Text style={styles.headerCell}>Quantity</Text>
                     <Text style={styles.headerCell}>Returned Qty</Text>
-                    {hasGlasswares && <Text style={styles.headerCell}>Unit</Text>}
                     <Text style={styles.headerCell}>Condition</Text>
                   </View>
-
 
                   {selectedRequest?.raw?.requestList?.map((item, index) => {
                     // Create an array of length item.quantity to render each quantity separately
@@ -618,12 +597,6 @@ const ReturnItems = () => {
                             }}
                           />
                         </View>
-
-                        {hasGlasswares && (
-                          <Text style={[styles.cell, { flex: 0.7 }]}>
-                            {item.volume ? `${item.volume} ML` : ""}
-                          </Text>
-                        )}
 
                         <View style={{ flex: 1, paddingHorizontal: 4 }}>
                           <Picker

@@ -438,7 +438,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
   //   setTimeout(() => setScanned(false), 1500);
   // };
 
-  const handleBarCodeScanned = async ({ data }) => {
+ const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
 
     setScanned(true);
@@ -554,36 +554,13 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               });
 
               requestorUserId = data.accountId;
-              // requestorLogData = {
-              //   ...data,
-              //   action: "Deployed",
-              //   deployedBy: user.name || "Unknown",
-              //   deployedById: user.id,
-              //   deployedAt: getTodayDate(),
-              //   timestamp: serverTimestamp()
-              // };
-
-              const scannedItem = updatedRequestList.find(item =>
-                item.itemName === itemName &&
-                item.selectedItemId === selectedItem.selectedItemId &&
-                item.labRoom === selectedItem.labRoom &&
-                item.quantity === selectedItem.quantity &&
-                item.program === selectedItem.program &&
-                item.timeFrom === selectedItem.timeFrom &&
-                item.timeTo === selectedItem.timeTo
-              );
-
               requestorLogData = {
+                ...data,
                 action: "Deployed",
                 deployedBy: user.name || "Unknown",
                 deployedById: user.id,
                 deployedAt: getTodayDate(),
-                timestamp: serverTimestamp(),
-                item: scannedItem,
-                borrower: data.userName || "Unknown",
-                borrowedDate: data.dateRequired,
-                timeFrom: data.timeFrom || "00:00",
-                timeTo: data.timeTo || "00:00"
+                timestamp: serverTimestamp()
               };
 
               break;
@@ -591,7 +568,52 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             } else if (currentStatus === "deployed") {
               alreadyDeployed = true;
 
-            } else if (currentStatus === "returned") {
+            // } else if (currentStatus === "returned") {
+            //   // ✅ Handle return approval
+            //   const requestorId = data.accountId;
+            //   const borrowDocRef = doc(db, "borrowcatalog", docSnap.id);
+
+            //   const inventoryId = borrowedItem.selectedItemId;
+            //   const returnQty = borrowedItem.returnedQuantity || 1; // ✅ SAFER
+
+            //   if (inventoryId && !isNaN(returnQty)) {
+            //     const inventoryRef = doc(db, "inventory", inventoryId);
+            //     const inventorySnap = await getDoc(inventoryRef);
+
+            //     if (inventorySnap.exists()) {
+            //       const currentQty = inventorySnap.data().quantity || 0;
+            //       await updateDoc(inventoryRef, {
+            //         quantity: currentQty + returnQty,
+            //       });
+
+            //       console.log(`✅ Inventory updated. Returned ${returnQty} of ${itemName}.`);
+
+            //       const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
+            //       const itemId = inventorySnap.data().itemId;
+
+            //       if (labRoomId && itemId) {
+            //         const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
+            //         const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+            //         if (labRoomItemSnap.exists()) {
+            //           const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
+            //           const newLabQty = currentLabQty + returnQty;
+
+            //           await updateDoc(labRoomItemRef, {
+            //             quantity: newLabQty,
+            //           });
+
+            //           console.log(`🏫 LabRoom item updated: ${currentLabQty} → ${newLabQty} for itemId ${itemId} in labRoom ${labRoomId}`);
+
+            //         } else {
+            //           console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+            //         }
+
+            //       } else {
+            //         console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+            //       }
+
+              } else if (currentStatus === "returned") {
               // ✅ Handle return approval
               const requestorId = data.accountId;
               const borrowDocRef = doc(db, "borrowcatalog", docSnap.id);
@@ -606,53 +628,17 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 const inventoryRef = doc(db, "inventory", inventoryId);
                 const inventorySnap = await getDoc(inventoryRef);
 
-              // if (inventorySnap.exists()) {
-              //       const inventoryData = inventorySnap.data();
-              //       const currentQty = inventoryData.quantity || 0;
-              //       const currentCond = inventoryData.condition || {};
-              //       const currentCondQty = Number(currentCond[conditionReturned] || 0);
-
-              //       await updateDoc(inventoryRef, {
-              //         quantity: currentQty + returnQty,
-              //         [`condition.${conditionReturned}`]: currentCondQty + returnQty,
-              //       });
-
               if (inventorySnap.exists()) {
-              const inventoryData = inventorySnap.data();
-              const isGlassware = borrowedItem.category === "Glasswares";
-              const currentCond = inventoryData.condition || {};
-              const currentCondQty = Number(currentCond[conditionReturned] || 0);
+                    const inventoryData = inventorySnap.data();
+                    const currentQty = inventoryData.quantity || 0;
+                    const currentCond = inventoryData.condition || {};
+                    const currentCondQty = Number(currentCond[conditionReturned] || 0);
 
-              if (isGlassware && Array.isArray(inventoryData.quantity)) {
-                const updatedQuantities = [...inventoryData.quantity];
-                const matchedVolumeIndex = updatedQuantities.findIndex(
-                  (q) => q.volume === borrowedItem.volume
-                );
+                    await updateDoc(inventoryRef, {
+                      quantity: currentQty + returnQty,
+                      [`condition.${conditionReturned}`]: currentCondQty + returnQty,
+                    });
 
-                if (matchedVolumeIndex !== -1) {
-                  // ✅ Update matched volume qty
-                  updatedQuantities[matchedVolumeIndex].qty += Number(returnQty);
-                } else {
-                  // ✅ Add new volume entry
-                  updatedQuantities.push({
-                    qty: Number(returnQty),
-                    volume: borrowedItem.volume,
-                  });
-                }
-
-                await updateDoc(inventoryRef, {
-                  quantity: updatedQuantities,
-                  [`condition.${conditionReturned}`]: currentCondQty + returnQty,
-                });
-
-              } else {
-                // 🧪 Non-glassware fallback
-                const currentQty = Number(inventoryData.quantity || 0);
-                await updateDoc(inventoryRef, {
-                  quantity: currentQty + returnQty,
-                  [`condition.${conditionReturned}`]: currentCondQty + returnQty,
-                });
-              }
                   // const labRoomId = inventorySnap.data().labRoom; // assuming labRoom stored in inventory doc
                   // const itemId = inventorySnap.data().itemId;
 
@@ -717,50 +703,16 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     const labItemDocId = itemDoc.id;
                     const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
 
-                    // const labData = itemDoc.data();
-                    // const currentLabQty = Number(labData.quantity || 0);
-                    // const currentLabCond = labData.condition || {};
-                    // const labCondQty = Number(currentLabCond[conditionReturned] || 0);
+                    const labData = itemDoc.data();
+                    const currentLabQty = Number(labData.quantity || 0);
+                    const currentLabCond = labData.condition || {};
+                    const labCondQty = Number(currentLabCond[conditionReturned] || 0);
 
                     // ✅ Update the labRoom item quantity and condition
-                    // await updateDoc(labItemRef, {
-                    //   quantity: currentLabQty + returnQty,
-                    //   [`condition.${conditionReturned}`]: labCondQty + returnQty,
-                    // });
-
-                    const labData = itemDoc.data();
-                    const isGlassware = borrowedItem.category === "Glasswares";
-                    const labCond = labData.condition || {};
-                    const labCondQty = Number(labCond[conditionReturned] || 0);
-
-                    if (isGlassware && Array.isArray(labData.quantity)) {
-                      const updatedLabQuantities = [...labData.quantity];
-                      const matchedVolumeIndex = updatedLabQuantities.findIndex(
-                        (q) => q.volume === borrowedItem.volume
-                      );
-
-                      if (matchedVolumeIndex !== -1) {
-                        updatedLabQuantities[matchedVolumeIndex].qty += Number(returnQty);
-                        
-                      } else {
-                        updatedLabQuantities.push({
-                          qty: Number(returnQty),
-                          volume: borrowedItem.volume,
-                        });
-                      }
-
-                      await updateDoc(labItemRef, {
-                        quantity: updatedLabQuantities,
-                        [`condition.${conditionReturned}`]: labCondQty + returnQty,
-                      });
-
-                    } else {
-                      const currentLabQty = Number(labData.quantity || 0);
-                      await updateDoc(labItemRef, {
-                        quantity: currentLabQty + returnQty,
-                        [`condition.${conditionReturned}`]: labCondQty + returnQty,
-                      });
-                    }
+                    await updateDoc(labItemRef, {
+                      quantity: currentLabQty + returnQty,
+                      [`condition.${conditionReturned}`]: labCondQty + returnQty,
+                    });
 
                     console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
 
@@ -768,10 +720,10 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     console.error("🔥 Error updating labRoom item:", error);
                   }
 
-                } else {
-                  console.warn(`❌ Inventory item not found for ID: ${inventoryId}`);
-                }
+              } else {
+                console.warn(`❌ Inventory item not found for ID: ${inventoryId}`);
               }
+            }
               
               await updateDoc(borrowDocRef, { status: "Return Approved" });
 
@@ -786,15 +738,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 const userData = userDoc.data();
                 const hasMatchingItem = userData.requestList?.some(item => item.itemName === itemName);
 
-                // if (hasMatchingItem) {
-                //   await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
-                //     status: "Return Approved"
-                //   });
-
-                  if (hasMatchingItem) {
-                  // Inject usageType into userData
-                  userData.usageType = hasMatchingItem.usageType || "Unknown";
-
+                if (hasMatchingItem) {
                   await updateDoc(doc(db, `accounts/${requestorId}/userrequestlog`, userDoc.id), {
                     status: "Return Approved"
                   });
@@ -805,7 +749,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     approvedBy: user.name || "Unknown",
                     approvedById: user.id,
                     approvedAt: getTodayDate(),
-                    timestamp: serverTimestamp(),
+                    timestamp: serverTimestamp()
                   });
 
                   Alert.alert("Return Approved", `Return of "${itemName}" approved.`);
@@ -874,16 +818,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
             // userRequestSnapshot.forEach(async (docSnap) => {
             //   const docData = docSnap.data();
-            //   // const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
-            //   const hasMatchingItem = docData.requestList?.some(item =>
-            //     item.itemName === itemName &&
-            //     item.selectedItemId === selectedItem.selectedItemId &&
-            //     item.labRoom === selectedItem.labRoom &&
-            //     item.quantity === selectedItem.quantity &&
-            //     item.program === selectedItem.program &&
-            //     item.timeFrom === selectedItem.timeFrom &&
-            //     item.timeTo === selectedItem.timeTo
-            //   );
+            //   const hasMatchingItem = docData.requestList?.some(item => item.itemName === itemName);
 
             //   if (hasMatchingItem) {
             //     await updateDoc(doc(db, `accounts/${requestorUserId}/userrequestlog`, docSnap.id), {
@@ -934,6 +869,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 }
               }
             }
+            
             
           } catch (err) {
             console.error("❌ Failed to update userrequestlog:", err);

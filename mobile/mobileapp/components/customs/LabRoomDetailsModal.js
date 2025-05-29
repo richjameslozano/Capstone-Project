@@ -19,15 +19,15 @@ const LabRoomDetailsModal = ({ visible, roomId, items, onClose }) => {
               </View>
             )}
           /> */}
-          {/* <FlatList
+          <FlatList
             data={items}
             keyExtractor={(item, index) => item.itemId || index.toString()}
             renderItem={({ item }) => (
               <View style={styles.item}>
                 <Text style={styles.text}>• {item.itemName || "Unknown"}</Text>
-                <Text style={styles.subText}>
+                {/* <Text style={styles.subText}>
                   ID: {item.itemId || "N/A"}, Qty: {item.quantity ?? "?"}, Borrowed Today: {item.borrowedToday ?? 0}
-                </Text>
+                </Text> */}
                 
                 <Text style={styles.subText}>
                   ID: {item.itemId || "N/A"}, Qty: {item.quantity ?? "?"}, Borrowed Today: {item.borrowedToday ?? 0}, Deployed Today: {item.deployedToday ?? 0}
@@ -45,49 +45,6 @@ const LabRoomDetailsModal = ({ visible, roomId, items, onClose }) => {
                 </Text>
               </View>
             )}
-          /> */}
-          
-          <FlatList
-            data={items}
-            keyExtractor={(item, index) => item.itemId || index.toString()}
-            renderItem={({ item }) => {
-              // Handle quantity display
-              let quantityDisplay;
-              if (Array.isArray(item.quantity)) {
-                quantityDisplay = item.quantity
-                  .map((q, i) => `Qty: ${q.qty}, Volume: ${q.volume}ml`)
-                  .join(" | ");
-
-              } else if (typeof item.quantity === "object") {
-                quantityDisplay = Object.entries(item.quantity)
-                  .map(([key, val]) => `${key}: ${val}`)
-                  .join(", ");
-
-              } else {
-                quantityDisplay = item.quantity ?? "?";
-              }
-
-              return (
-                <View style={styles.item}>
-                  <Text style={styles.text}>• {item.itemName || "Unknown"}</Text>
-
-                  <Text style={styles.subText}>
-                    ID: {item.itemId || "N/A"}, Qty: {quantityDisplay}, Borrowed Today: {item.borrowedToday ?? 0}, Deployed Today: {item.deployedToday ?? 0}
-                  </Text>
-
-                  <Text style={styles.subText}>
-                    Condition: {
-                      typeof item.condition === "object"
-                        ? Object.entries(item.condition)
-                            .map(([key, val]) => `${key}: ${val}`)
-                            .join(", ")
-                        : item.condition || "N/A"
-                    }
-                    , Status: {item.status || "N/A"}
-                  </Text>
-                </View>
-              );
-            }}
           />
           <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
             <Text style={styles.closeText}>Close</Text>

@@ -3,7 +3,6 @@ import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'reac
 
 const QuantityModal = ({ visible, onClose, onSubmit, itemName }) => {
   const [quantity, setQuantity] = useState('');
-  
 
   const handleConfirm = () => {
     const num = parseInt(quantity);

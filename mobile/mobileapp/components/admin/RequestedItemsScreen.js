@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { View, Text, FlatList, TouchableOpacity } from "react-native";
 import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
@@ -30,7 +29,7 @@ const RequestedItemsScreen = ({ route, navigation }) => {
 
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
-      
+
       if (
         data.userName === userName &&
         data.requestList &&
@@ -41,7 +40,7 @@ const RequestedItemsScreen = ({ route, navigation }) => {
             ...item,
             requestId: docSnap.id,
             requestIndex: index,
-            status: data.status, // Save actual status here
+            status: data.status, 
             requestMeta: {
               timeFrom: data.timeFrom,
               timeTo: data.timeTo,
