@@ -290,6 +290,12 @@ const LayoutMain = () => {
       label: "Requisition",
     },
     {
+      key: "/main/return-items",
+      icon: <RollbackOutlined />,
+      label: "Return Items",
+    },
+    
+    {
       key: "/main/orders",
       icon: <ShoppingCartOutlined />,
       label: "Orders",      
