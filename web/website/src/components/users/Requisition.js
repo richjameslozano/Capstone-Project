@@ -59,6 +59,7 @@ const Requisition = () => {
   const [roomError, setRoomError] = useState(false);
   const [program, setProgram] = useState("");
   const [course, setCourse] = useState("");
+  const [courseDescription, setCourseDescription] = useState("");
   const [usageType, setUsageType] = useState("");
   const [room, setRoom] = useState("");
   const [reason, setReason] = useState("");
@@ -83,6 +84,8 @@ const Requisition = () => {
   const [tableData, setTableData] = useState([
     { key: 0, selectedItemId: null }, 
   ]);
+
+
 
   useEffect(() => {
     const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
@@ -1148,6 +1151,18 @@ const Requisition = () => {
   //     ),
   //   },
   // ];
+      const courseDescriptions = {
+      MLSACHML: "ANALYTICAL CHEMISTRY",
+      MLSBIEPC: "BIOSTATISTICS AND EPIDEMIOLOGY",
+      MLSAUBFC: "ANALYSIS OF URINE AND OTHER BODY FLUIDS",
+      MLSHEM2L: "HEMATOLOGY 2",
+      MLSHPATL: "GENERAL PATHOLOGY WITH HISTOPATHOLOGIC AND CYTOLOGIC TECHNIQUES",
+      MLSIMHEL: "IMMUNOHEMATOLOGY",
+      MLSMOLBL: " MOLECULAR BIOLOGY AND DIAGNOSTICS",
+      MLSMYVIL: "MYCOLOGY AND VIROLOGY",
+      MLSPARAL: "CLINICAL PARASITOLOGY",
+      MLSPML2L: "PRINCIPLES OF MEDICAL LABORATORY SCIENCE PRACTICE 2 ",
+    };
 
   const columns = [
     {
@@ -1442,15 +1457,18 @@ const Requisition = () => {
                   <div className="program-container">
                     <strong>Course Code:</strong>
                     <select
-                      value={course}
-                      onChange={(e) => setCourse(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "1px solid #ccc",
-                        marginTop: "8px",
-                      }}
+                        value={course}
+                        onChange={(e) => {
+                          setCourse(e.target.value);
+                          setCourseDescription(courseDescriptions[e.target.value] || "");
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          marginTop: "8px",
+                        }}
                     >
                       <option value="">Select a Course Code</option>
                       <option value="MLSACHML">MLSACHML</option> 
@@ -1463,8 +1481,6 @@ const Requisition = () => {
                       <option value="MLSMYVIL">MLSMYVIL</option>
                        <option value="MLSPARAL">MLSPARAL</option>
                         <option value="MLSPML2L">MLSPML2L</option>
-                      
-
                     </select>
 
                     {courseError && (
@@ -1472,6 +1488,24 @@ const Requisition = () => {
                         Please select a course code before finalizing.
                       </p>
                     )}
+                      <strong style={{ marginTop: "12px", display: "block" }}>
+                        Course Description:
+                      </strong>
+                      <input
+                        type="text"
+                        value={courseDescription}
+                        readOnly
+                        placeholder="Course description will autofill here"
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          marginTop: "8px",
+                          backgroundColor: "#f9f9f9",
+                        }}
+                      />
+
                   </div>
 
                   <div className="room-container">
