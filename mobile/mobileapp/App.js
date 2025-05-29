@@ -239,7 +239,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
 
       <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
         <Icon2 name="package-variant" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Inventory</Title>
+        <Title style={styles.titleStyle}>View Inventory</Title>
       </TouchableOpacity>
 
       {/* <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')} style={styles.drawerItem}>
