@@ -1760,7 +1760,7 @@ const printPdf = () => {
                 <div style={{flexDirection: 'row', display: 'flex', justifyContent: 'space-between'}}>
                 
 
-                <div style={{marginTop: headerHeight || 70, borderRadius: 10, fontSize: 20, flexDirection: 'row', display: 'flex', width: '70%', gap: 50, marginLeft: 20  }}>
+                <div style={{marginTop: headerHeight || 70, borderRadius: 10, flexDirection: 'row', display: 'flex', width: '70%', gap: 50, marginLeft: 20  }}>
 
                 <div className="table-wrapper">
                   <table class="horizontal-table">

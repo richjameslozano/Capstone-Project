@@ -40,6 +40,7 @@
   overflow: hidden;
   border-collapse: collapse;
   height: 100%;
+  font-size: 18px;
 }
 
 .horizontal-table th {
