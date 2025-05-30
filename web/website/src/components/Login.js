@@ -892,7 +892,7 @@ const Login = () => {
                 {signUpMode ? (
                   <>
                     <label style={{marginTop: '10px'}}>Already have an account?{" "}
-                    <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Login here</span></label>
+                    <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign in here</span></label>
                   </>
                 ) : (
                   <>
