@@ -17,7 +17,7 @@ import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOut
 import moment from "moment";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
-import { QRCodeCanvas } from "qrcode.react";
+import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where } from "firebase/firestore";
@@ -1835,7 +1835,7 @@ const printPdf = () => {
                   <div style={{ marginTop: 24, textAlign: 'center' }}>
                     <h4>Item QR Code</h4>
                     {selectedRow.qrCode ? (
-                      <QRCodeCanvas value={selectedRow.qrCode} size={250} />
+                      <QRCodeSVG value={selectedRow.qrCode} size={250} />
                     ) : (
                       <p>No QR Code Available</p>
                     )}
