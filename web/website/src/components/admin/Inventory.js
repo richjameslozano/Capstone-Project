@@ -414,22 +414,22 @@ const printPdf = () => {
       department: values.department,
       type: values.type,
       status: "Available",
-      condition: {
-        Good: quantityNumber,
-        Defect: 0,
-        Damage: 0,
-      },
+      // condition: {
+      //   Good: quantityNumber,
+      //   Defect: 0,
+      //   Damage: 0,
+      // },
       // unit: values.unit || null,
       // volume: values.category === "Glasswares" ? values.volume : null,
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
-      // ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-      //   condition: {
-      //     Good: quantityNumber,
-      //     Defect: 0,
-      //     Damage: 0,
-      //   },
-      // }),
+      ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+        condition: {
+          Good: quantityNumber,
+          Defect: 0,
+          Damage: 0,
+        },
+      }),
     };
 
     const encryptedData = CryptoJS.AES.encrypt(
