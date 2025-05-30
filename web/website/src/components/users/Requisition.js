@@ -698,12 +698,17 @@ const Requisition = () => {
             timestamp: Timestamp.now(),
           };
   
-          await addDoc(userRequestRef, requestData);
+          // await addDoc(userRequestRef, requestData);
+
+          const newUserDocRef = await addDoc(userRequestRef, requestData);
+          const generatedId = newUserDocRef.id;
+          await updateDoc(newUserDocRef, { iid: generatedId });
   
           // Add to root userrequests collection
-          const userRequestsRootRef = collection(db, "userrequests");
-          const newUserRequestRef = doc(userRequestsRootRef);
-          await setDoc(newUserRequestRef, {
+          // const userRequestsRootRef = collection(db, "userrequests");
+          // const newUserRequestRef = doc(userRequestsRootRef);
+          const userRequestsRootRef = doc(db, "userrequests", generatedId);
+          await setDoc(userRequestsRootRef, {
             ...requestData,
             accountId: userId,
           });
