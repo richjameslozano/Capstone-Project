@@ -9,6 +9,40 @@
   margin-bottom: 20px;
 }
 
+.modal-header{
+  position: absolute;
+  display: flex ;
+  background-color: #6e9fc1;
+   top: 0; 
+   left: 0; 
+   right: 0;
+   border-top-right-radius: 6px;
+   border-top-left-radius: 6px;
+   align-items: center;
+   padding: 10px;
+   padding-left: 20px;
+  }
+
+  .horizontal-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.horizontal-table th {
+  text-align: left;
+  vertical-align: top;
+  padding: 8px;
+  width: 30%; /* or whatever column width you want */
+  background-color: #f0f0f0;
+}
+
+.horizontal-table td {
+  padding: 8px;
+}
+
+
+
+   
 .search-bar {
   width: 300px;
 }

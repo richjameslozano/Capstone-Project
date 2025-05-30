@@ -69,6 +69,28 @@ const Inventory = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const db = getFirestore();
 
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    const measureHeight = () => {
+      if (headerRef.current) {
+        const { height } = headerRef.current.getBoundingClientRect();
+        setHeaderHeight(height);
+      }
+    };
+
+    measureHeight();
+
+    // Optional: watch for resize events
+    const observer = new ResizeObserver(measureHeight);
+    if (headerRef.current) {
+      observer.observe(headerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
   useEffect(() => {
     const inventoryRef = collection(db, "inventory");
 
@@ -1695,15 +1717,86 @@ const printPdf = () => {
           </Modal>
 
           <Modal
-            title="Item Details"
             visible={isRowModalVisible}
             footer={null}
             onCancel={() => setIsRowModalVisible(false)}
             zIndex={1019}
+            closable={false}
+            width={'70%'}
           >
             {selectedRow && (
-              <div>
-                <p><strong>Item ID:</strong> {selectedRow.itemId}</p>
+              <div style={{display: 'flex', flexDirection: 'row'}}>
+                <div ref={headerRef} className="modal-header">
+                  <h1 style={{color: "white"  , margin: 0}}>Item Details - {selectedRow.itemName}</h1>
+                </div>
+
+                <div style={{marginTop: headerHeight || 70, borderRadius: 10, padding: 10, fontSize: 20, flexDirection: 'row', display: 'flex', width: '70%', gap: 100}}>
+
+                  <table class="horizontal-table">
+                      <tbody>
+                        <tr>
+                          <th>Item ID</th>
+                          <td>{selectedRow.itemId}</td>
+                        </tr>
+                        <tr>
+                          <th>Item Name</th>
+                          <td>{selectedRow.itemName}</td>
+                        </tr>
+                        <tr>
+                          <th>Inventory Balance</th>
+                          <td>
+                            {selectedRow.quantity}
+                  {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
+                   {selectedRow.category === "Glasswares" && selectedRow.volume && (
+                  <p>
+                    <strong>Volume:</strong> {selectedRow.volume} ML
+                  </p>
+                )}
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Category</th>
+                          <td>{selectedRow.category}</td>
+                        </tr>
+                        <tr>
+                          <th>Item Type</th>
+                          <td>{selectedRow.type}</td>
+                        </tr>
+                        <tr>
+                          <th>Date of Entry (latest)</th>
+                          <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                    <table class="horizontal-table">
+                      <tbody>
+                        <tr>
+                          <th>Status</th>
+                          <td>{selectedRow.status}</td>
+                        </tr>
+                        <tr>
+                          <th>Department</th>
+                          <td>{selectedRow.department}</td>
+                        </tr>
+                        <tr>
+                          <th>Condition</th>
+                          <td>{formatCondition(selectedRow.condition, selectedRow.category)}</td>
+                        </tr>
+                        <tr>
+                          <th>Lab/ Stock Room</th>
+                          <td>{selectedRow.labRoom}</td>
+                        </tr>
+                        <tr>
+                          <th>Date of Expiry</th>
+                          <td>{selectedRow.expiryDate || 'N/A'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+
+                 <div>
+                <p ><strong>Item ID:</strong> {selectedRow.itemId}</p>
                 <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
                 <p>
                   <strong>Inventory Balance:</strong>{" "}
@@ -1716,20 +1809,25 @@ const printPdf = () => {
                     <strong>Volume:</strong> {selectedRow.volume} ML
                   </p>
                 )}
-                <p><strong>Critical Level:</strong> {selectedRow.criticalLevel}</p>
+                {/* <p><strong>Critical Level:</strong> {selectedRow.criticalLevel}</p> */}
                 <p><strong>Category:</strong> {selectedRow.category}</p>
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
                 <p><strong>Department:</strong> {selectedRow.department}</p>
+                </div>
+
+                <div>
                 <p><strong>Status:</strong> {selectedRow.status}</p>
                 <p><strong>Condition:</strong> {formatCondition(selectedRow.condition, selectedRow.category)}</p>
                 <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
                 <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
                 <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
-                
+                </div>
+                </div>
+
                   <div style={{ marginTop: 24, textAlign: 'center' }}>
                     <h4>Item QR Code</h4>
                     {selectedRow.qrCode ? (
-                      <QRCodeCanvas value={selectedRow.qrCode} size={200} />
+                      <QRCodeCanvas value={selectedRow.qrCode} size={250} />
                     ) : (
                       <p>No QR Code Available</p>
                     )}
