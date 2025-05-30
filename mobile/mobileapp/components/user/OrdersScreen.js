@@ -373,18 +373,6 @@ const handleSearch = (query) => {
 
 const pagerRef = useRef(null);
 
-
-
-
-
-
-
-
-
-
-
-
-
   return (
     
     <View style={styles.container}>
@@ -533,6 +521,7 @@ const pagerRef = useRef(null);
                 <View style={{ marginTop: 10 }}>
                   <View style={[styles.tableHeader, { flexDirection: 'row', borderTopLeftRadius: 5, borderTopRightRadius: 5 }]}>
                     <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item</Text>
+                    <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item Description</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
                     <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
                     {/* <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text> */}
@@ -547,6 +536,7 @@ const pagerRef = useRef(null);
                       ]}
                     >
                       <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemName}</Text>
+                      <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemDetails}</Text>
                       <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
                       <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
                       {/* <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text> */}
@@ -612,8 +602,9 @@ const pagerRef = useRef(null);
             <Text style={styles.subTitle}>Requested Items:</Text>
               <View style={styles.table}>
                 <View style={styles.tableHeader}>
-                  <Text style={styles.tableHeaderCell}>Item Name</Text>
                   <Text style={styles.tableHeaderCell}>Item ID</Text>
+                  <Text style={styles.tableHeaderCell}>Item Name</Text>
+                  <Text style={styles.tableHeaderCell}>Item Description</Text>
                   <Text style={styles.tableHeaderCell}>Qty</Text>
                   <Text style={styles.tableHeaderCell}>Dept</Text>
                   <Text style={styles.tableHeaderCell}>Usage</Text>
@@ -621,8 +612,9 @@ const pagerRef = useRef(null);
                 
                 {selectedRequest?.items.map((item, idx) => (
                   <View key={idx} style={styles.tableRow}>
-                    <Text style={styles.tableCell}>{item.itemName}</Text>
                     <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
+                    <Text style={styles.tableCell}>{item.itemName}</Text>
+                    <Text style={styles.tableCell}>{item.itemDetails}</Text>
                     <Text style={styles.tableCell}>{item.quantity}</Text>
                     <Text style={styles.tableCell}>{item.department}</Text>
                     <Text style={styles.tableCell}>{item.usageType}</Text>

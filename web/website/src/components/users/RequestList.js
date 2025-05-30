@@ -359,10 +359,15 @@ const RequestList = () => {
   };
 
   const columns = [
+    // {
+    //   title: "Request ID",
+    //   dataIndex: "id",
+    //   key: "id",
+    // },
     {
-      title: "Request ID",
-      dataIndex: "id",
-      key: "id",
+      title: "Requester",
+      dataIndex: "requester",
+      key: "requester",
     },
     {
       title: "Requisition Date",
@@ -405,6 +410,11 @@ const RequestList = () => {
       title: "Item Name",
       dataIndex: "itemName",
       key: "itemName",
+    },
+    {
+      title: "Item Description",
+      dataIndex: "itemDetails",
+      key: "itemDetails",
     },
     {
       title: "Item ID",
@@ -493,7 +503,7 @@ const RequestList = () => {
               <>
                   <div className="request-details-container" style={{justifyContent: 'space-between'}}>
                     <strong style={{fontSize: '18px', color: 'white'}}>Request Details</strong>
-                    <span style={{fontSize: 12, color: 'white'}}>{selectedRequest?.id}</span>
+                    {/* <span style={{fontSize: 12, color: 'white'}}>{selectedRequest?.id}</span> */}
                   </div>
 
                   <div className="request-details-whole">

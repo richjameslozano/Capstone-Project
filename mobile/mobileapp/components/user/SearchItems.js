@@ -96,12 +96,12 @@ export default function SearchItemsScreen({ navigation }) {
         </Text>
       </View>
       <View style={{ flex: 1 }}>
-        {/* <Text style={styles.cellText}>{item.quantity}</Text> */}
-          <Text style={styles.cellText}>
+        <Text style={styles.cellText}>{item.quantity}</Text>
+          {/* <Text style={styles.cellText}>
             {item.quantity}
             {["Chemical", "Reagent", "Glasswares"].includes(item.category) && ' pcs'}
             {["Chemical", "Reagent", "Glasswares"].includes(item.category) && item.unit && ` / ${item.unit} ML`}
-          </Text>
+          </Text> */}
       </View>
       <View style={{ flex: 2 }}>
         <Text
@@ -221,7 +221,7 @@ export default function SearchItemsScreen({ navigation }) {
                     {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
                     {hoveredItem.category === "Glasswares" && hoveredItem.volume && ` / ${hoveredItem.volume} ML`}
                   </Text> */}
-                  <Text>
+                  {/* <Text>
                     Quantity: {hoveredItem.quantity}
                     {["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && " pcs"}
                     {["Chemical", "Reagent"].includes(hoveredItem.category) && hoveredItem.unit && ` / ${hoveredItem.unit} ML`}
@@ -230,8 +230,8 @@ export default function SearchItemsScreen({ navigation }) {
 
                   {!["Glasswares", "Chemical", "Reagent"].includes(hoveredItem.category) && (
                     <Text>Quantity: {hoveredItem.quantity}</Text>
-                  )}
-                  
+                  )} */}
+                  <Text>Quantity: {hoveredItem.quantity}</Text>
                   <Text>Status: {hoveredItem.status}</Text>
                   <Text>Category: {hoveredItem.category}</Text>
                   <Text>Location: {hoveredItem.labRoom}</Text>

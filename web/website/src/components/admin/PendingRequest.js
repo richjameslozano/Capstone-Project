@@ -64,7 +64,7 @@ const PendingRequest = () => {
             return {
               ...item,
               itemIdFromInventory: itemId,
-              volume: item.volume ?? "N/A",  
+              // volume: item.volume ?? "N/A",  
             };
           })
         );
@@ -1450,11 +1450,14 @@ try {
           condition: item.condition || "N/A",
           department: item.department || "N/A",
           itemName: item.itemName || "N/A",
+          itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
           quantity: item.quantity || "1",
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",
           program: item.program || "N/A",
           course: item.course || "N/A",
+          courseDescription: item.courseDescription || "N/A",
           reason: item.reason || "No reason provided",
           labRoom: item.labRoom || "N/A",
           timeFrom: item.timeFrom || "N/A",
@@ -2918,11 +2921,14 @@ try {
           condition: item.condition || "N/A",
           department: item.department || "N/A",
           itemName: item.itemName || "N/A",
+          itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
           quantity: item.quantity || "1",
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",
           program: item.program || "N/A",
           course: item.course || "N/A",
+          courseDescription: item.courseDescription || "N/A",
           reason: item.reason || "No reason provided",
           labRoom: item.labRoom || "N/A",
           timeFrom: item.timeFrom || "N/A",
@@ -3565,7 +3571,7 @@ try {
           ...item,
           selectedItemId,
           itemType,
-          volume: item.volume ?? "N/A", // <-- add this
+          // volume: item.volume ?? "N/A", // <-- add this
         };
     
         console.log("Enriched item:", enriched); // ✅ Individual log
@@ -4682,11 +4688,14 @@ try {
           condition: item.condition || "N/A",
           department: item.department || "N/A",
           itemName: item.itemName || "N/A",
+          itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
           quantity: item.quantity || "1",
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",
           program: item.program || "N/A",
           course: item.course || "N/A",
+          courseDescription: item.courseDescription || "N/A",
           reason: item.reason || "No reason provided",
           labRoom: item.labRoom || "N/A",
           timeFrom: item.timeFrom || "N/A",
@@ -4940,6 +4949,11 @@ try {
       key: "itemName",
     },
     {
+      title: "Item Description",
+      dataIndex: "itemDetails",
+      key: "itemDetails",
+    },
+    {
       title: "Quantity",
       dataIndex: "quantity",
       key: "quantity",
@@ -4997,6 +5011,10 @@ try {
     {
       title: "Item Name",
       dataIndex: "itemName",
+    },
+    {
+      title: "Item Description",
+      dataIndex: "itemDetails",
     },
     {
       title: "Quantity",
@@ -5213,6 +5231,11 @@ try {
                   title: 'Item Name',
                   dataIndex: 'itemName',
                   key: 'itemName',
+                },
+                {
+                  title: 'Item Description',
+                  dataIndex: 'itemDetails',
+                  key: 'itemDetails',
                 },
                 {
                   title: 'Quantity',

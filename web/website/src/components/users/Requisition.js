@@ -59,6 +59,7 @@ const Requisition = () => {
   const [roomError, setRoomError] = useState(false);
   const [program, setProgram] = useState("");
   const [course, setCourse] = useState("");
+  const [courseDescription, setCourseDescription] = useState("");
   const [usageType, setUsageType] = useState("");
   const [room, setRoom] = useState("");
   const [reason, setReason] = useState("");
@@ -84,20 +85,19 @@ const Requisition = () => {
     { key: 0, selectedItemId: null }, 
   ]);
 
+
+
   useEffect(() => {
-    const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
+   const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
       item.itemName &&
+      item.itemDetails &&
       item.category &&
       item.quantity &&
       item.labRoom &&
       item.status &&
       item.condition &&
       item.department &&
-      (
-        (["Chemical", "Reagent"].includes(item.category) && item.unit) ||
-        (item.category === "Materials" && item.volume) ||
-        (!["Chemical", "Reagent", "Materials"].includes(item.category)) // for other categories, no unit/volume required
-      )
+      item.category
     );
   
     const timeValid = timeFrom && timeTo &&
@@ -115,32 +115,32 @@ const Requisition = () => {
     }
   }, []);
 
-  useEffect(() => {
-    async function fetchVolumeOptions() {
-      const inventoryRef = collection(db, "inventory");
-      const snapshot = await getDocs(inventoryRef);
+  // useEffect(() => {
+  //   async function fetchVolumeOptions() {
+  //     const inventoryRef = collection(db, "inventory");
+  //     const snapshot = await getDocs(inventoryRef);
 
-      // Extract volumes from all glasswares' quantity arrays
-      const volumesSet = new Set();
+  //     // Extract volumes from all glasswares' quantity arrays
+  //     const volumesSet = new Set();
 
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        if (data.category === "Glasswares" && Array.isArray(data.quantity)) {
-          data.quantity.forEach(qtyObj => {
-            // qtyObj.volume may be string or number, convert to number for consistency
-            const vol = Number(qtyObj.volume);
-            if (!isNaN(vol)) volumesSet.add(vol);
-          });
-        }
-      });
+  //     snapshot.docs.forEach((doc) => {
+  //       const data = doc.data();
+  //       if (data.category === "Glasswares" && Array.isArray(data.quantity)) {
+  //         data.quantity.forEach(qtyObj => {
+  //           // qtyObj.volume may be string or number, convert to number for consistency
+  //           const vol = Number(qtyObj.volume);
+  //           if (!isNaN(vol)) volumesSet.add(vol);
+  //         });
+  //       }
+  //     });
 
-      // Convert Set to sorted array
-      const sortedVolumes = Array.from(volumesSet).sort((a, b) => a - b);
-      setVolumeOptions(sortedVolumes);
-    }
+  //     // Convert Set to sorted array
+  //     const sortedVolumes = Array.from(volumesSet).sort((a, b) => a - b);
+  //     setVolumeOptions(sortedVolumes);
+  //   }
 
-    fetchVolumeOptions();
-  }, [db]);
+  //   fetchVolumeOptions();
+  // }, [db]);
 
   // useEffect(() => {
   //   const fetchRequestList = async () => {
@@ -638,7 +638,8 @@ const Requisition = () => {
     console.log("Original mergedData:", mergedData);
     // Filter out incomplete items from mergedData
     const filteredMergedData = mergedData.filter(item =>
-      item.itemName && item.category && item.quantity && item.labRoom &&
+      // item.itemName && item.category && item.quantity && item.labRoom &&
+      item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
       item.status && item.condition && item.department
     );
 
@@ -688,6 +689,7 @@ const Requisition = () => {
             timeTo,
             program,
             course,
+            courseDescription,
             // usageType,
             usageType: finalUsageType,
             room,
@@ -697,12 +699,17 @@ const Requisition = () => {
             timestamp: Timestamp.now(),
           };
   
-          await addDoc(userRequestRef, requestData);
+          // await addDoc(userRequestRef, requestData);
+
+          const newUserDocRef = await addDoc(userRequestRef, requestData);
+          const generatedId = newUserDocRef.id;
+          await updateDoc(newUserDocRef, { iid: generatedId });
   
           // Add to root userrequests collection
-          const userRequestsRootRef = collection(db, "userrequests");
-          const newUserRequestRef = doc(userRequestsRootRef);
-          await setDoc(newUserRequestRef, {
+          // const userRequestsRootRef = collection(db, "userrequests");
+          // const newUserRequestRef = doc(userRequestsRootRef);
+          const userRequestsRootRef = doc(db, "userrequests", generatedId);
+          await setDoc(userRequestsRootRef, {
             ...requestData,
             accountId: userId,
           });
@@ -925,6 +932,7 @@ const Requisition = () => {
       },
       selectedItemId: itemId,
       itemName: selectedItem.itemName,
+      itemDetails: selectedItem.itemDetails,
       category: selectedItem.category,
       quantity: tableData[index]?.quantity || 1,
       // volume,  // <-- include volume here
@@ -1148,6 +1156,18 @@ const Requisition = () => {
   //     ),
   //   },
   // ];
+  const courseDescriptions = {
+    MLSACHML: "ANALYTICAL CHEMISTRY",
+    MLSBIEPC: "BIOSTATISTICS AND EPIDEMIOLOGY",
+    MLSAUBFC: "ANALYSIS OF URINE AND OTHER BODY FLUIDS",
+    MLSHEM2L: "HEMATOLOGY 2",
+    MLSHPATL: "GENERAL PATHOLOGY WITH HISTOPATHOLOGIC AND CYTOLOGIC TECHNIQUES",
+    MLSIMHEL: "IMMUNOHEMATOLOGY",
+    MLSMOLBL: " MOLECULAR BIOLOGY AND DIAGNOSTICS",
+    MLSMYVIL: "MYCOLOGY AND VIROLOGY",
+    MLSPARAL: "CLINICAL PARASITOLOGY",
+    MLSPML2L: "PRINCIPLES OF MEDICAL LABORATORY SCIENCE PRACTICE 2 ",
+  };
 
   const columns = [
     {
@@ -1176,10 +1196,10 @@ const Requisition = () => {
           >
             {/* Map through filtered items instead of the entire items list */}
             {filteredItems.map((item) => {
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
               const isDisabled = selectedIds.includes(item.id);
   
               return (
@@ -1196,6 +1216,11 @@ const Requisition = () => {
           </Select>
         );
       },
+    },
+    {
+      title: "Item Description",
+      dataIndex: "itemDetails",
+      key: "itemDetails",
     },
     {
       title: "Category",
@@ -1442,20 +1467,30 @@ const Requisition = () => {
                   <div className="program-container">
                     <strong>Course Code:</strong>
                     <select
-                      value={course}
-                      onChange={(e) => setCourse(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "1px solid #ccc",
-                        marginTop: "8px",
-                      }}
+                        value={course}
+                        onChange={(e) => {
+                          setCourse(e.target.value);
+                          setCourseDescription(courseDescriptions[e.target.value] || "");
+                        }}
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          marginTop: "8px",
+                        }}
                     >
-                      <option value="">Select a Program</option>
-                      <option value="SAM - BSMT">SAM - BSMT</option>
-                      <option value="SAH - BSN">SAH - BSN</option>
-                      <option value="SHS">SHS</option>
+                      <option value="">Select a Course Code</option>
+                      <option value="MLSACHML">MLSACHML</option> 
+                      <option value="MLSBIEPC">MLSBIEPC</option>
+                      <option value="MLSAUBFC">MLSAUBFC</option>
+                      <option value="MLSHEM2L">MLSHEM2L</option>
+                      <option value="MLSHPATL">MLSHPATL</option>
+                      <option value="MLSIMHEL">MLSIMHEL</option>
+                      <option value="MLSMOLBL">MLSMOLBL</option>
+                      <option value="MLSMYVIL">MLSMYVIL</option>
+                       <option value="MLSPARAL">MLSPARAL</option>
+                        <option value="MLSPML2L">MLSPML2L</option>
                     </select>
 
                     {courseError && (
@@ -1463,6 +1498,24 @@ const Requisition = () => {
                         Please select a course code before finalizing.
                       </p>
                     )}
+                      <strong style={{ marginTop: "12px", display: "block" }}>
+                        Course Description:
+                      </strong>
+                      <input
+                        type="text"
+                        value={courseDescription}
+                        readOnly
+                        placeholder="Course description will autofill here"
+                        style={{
+                          width: "100%",
+                          padding: "8px",
+                          borderRadius: "4px",
+                          border: "1px solid #ccc",
+                          marginTop: "8px",
+                          backgroundColor: "#f9f9f9",
+                        }}
+                      />
+
                   </div>
 
                   <div className="room-container">

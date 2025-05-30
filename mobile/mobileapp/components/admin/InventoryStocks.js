@@ -229,7 +229,12 @@ const formatCondition = (cond) => {
              <View style={{flex: 1, marginTop: 10}}>
                  <Text style={{color: handleColor(item), fontWeight: 'bold'}}>Other Details</Text>
                 <View style={{justifyContent: 'space-between'}}>
-                  <View style={styles.row}>
+                <View style={styles.row}>
+                <Text style={styles.cardLabel}>Item Description</Text>
+                <Text style={styles.cardValueNum}>{item.itemDetails}</Text>
+                </View>
+
+                <View style={styles.row}>
                 <Text style={styles.cardLabel}>Department</Text>
                 <Text style={styles.cardValueNum}>{item.department}</Text>
                 </View>
@@ -250,13 +255,15 @@ const formatCondition = (cond) => {
                 </View>
 
                 <View style={styles.row}>
-                <Text style={styles.cardLabel}>Inventory Balance:  </Text>
-                <Text style={styles.cardValueNum}>
+                {/* <Text style={styles.cardLabel}>Inventory Balance:  </Text>
+                <Text style={styles.cardValueNum}>{item.quantity}</Text> */}
+
+                {/* <Text style={styles.cardValueNum}>
                   {item.quantity}
                   {["Glasswares", "Chemical", "Reagent"].includes(item.category) && " pcs"}
                   {["Chemical", "Reagent"].includes(item.category) && item.unit && ` / ${item.unit} ML`}
                   {item.category === "Glasswares" && item.volume && ` / ${item.volume} ML`}
-                </Text>
+                </Text> */}
                 </View>
 
                 <View style={[styles.row, {marginTop:5}]}>
@@ -330,12 +337,12 @@ const formatCondition = (cond) => {
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Entry Date:</Text> {selectedItem.entryCurrentDate}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Expire Date:</Text> {selectedItem.expireDate || 'N/A'}</Text>
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Type:</Text> {selectedItem.type}</Text>
-                {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}</Text> */}
-                <Text style={styles.modalText}>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}</Text>
+                {/* <Text style={styles.modalText}>
                 <Text style={styles.modalLabel}>Inventory Stock:</Text> {selectedItem.quantity}
                   {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
                   {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
-                </Text>
+                </Text> */}
 
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Category:</Text> {selectedItem.category || 'N/A'}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Condition:</Text> {selectedItem.condition || 'N/A'}</Text> */}

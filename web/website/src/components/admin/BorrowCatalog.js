@@ -387,6 +387,7 @@ const BorrowCatalog = () => {
               ? data.requestList.map((item) => ({
                   itemId: item.itemIdFromInventory,
                   itemName: item.itemName,
+                  itemDetails: item.itemDetails,
                   quantity: item.quantity,
                   category: item.category,
                   condition: item.condition,
@@ -406,8 +407,8 @@ const BorrowCatalog = () => {
               dateRequired: data.dateRequired || "N/A",
               timeFrom: data.timeFrom || "N/A",
               timeTo: data.timeTo || "N/A",
-              courseDescription: data.courseDescription || "N/A",
               course: data.course || "N/A",
+              courseDescription: data.courseDescription || "N/A",
               program: data.program || "N/A",
               room: data.room || "N/A",
               requestList: Array.isArray(data.requestList) ? data.requestList : [],
@@ -453,6 +454,7 @@ const BorrowCatalog = () => {
   const filteredCatalog = catalog.filter((item) => {
     const matchesSearch =
       item.requestor?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.course?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.courseDescription?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.dateRequired?.toLowerCase().includes(searchQuery.toLowerCase());
 
@@ -469,9 +471,9 @@ const BorrowCatalog = () => {
       key: "requestor",
     },
     {
-      title: "Course Description",
-      dataIndex: "courseDescription",
-      key: "courseDescription",
+      title: "Course",
+      dataIndex: "course",
+      key: "course",
     },
     {
       title: "Date Required",

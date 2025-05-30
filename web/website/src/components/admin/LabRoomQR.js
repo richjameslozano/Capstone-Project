@@ -488,6 +488,7 @@ import { Layout, Row, Col, Table, Input, Button, Typography, Modal } from "antd"
 import { collection, getDocs, onSnapshot, doc, updateDoc, writeBatch, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/LabRoomQR.css";
+import { QRCodeSVG } from "qrcode.react";
 
 const LabRoomQR = () => {
   const [labRooms, setLabRooms] = useState([]);
@@ -631,6 +632,7 @@ const LabRoomQR = () => {
                   expiryDate: itemData.expiryDate || null,
                   itemId: itemData.itemId || "N/A",
                   itemName: itemData.itemName || "N/A",
+                  itemDetails: itemData.itemDetails || "N/A",
                   labRoom: itemData.labRoom || "N/A",
                   // quantity: itemData.quantity || 0,
                   // quantity: itemData.quantity ?? (itemData.category === "Glasswares" ? [] : 0),
@@ -639,8 +641,8 @@ const LabRoomQR = () => {
                   type: itemData.type || "N/A",
                   rawTimestamp: itemData.rawTimestamp || "N/A",
                   timestamp: itemData.timestamp || "N/A",
-                  unit: itemData.unit || "N/A",
-                  volume: itemData.volume || "N/A",
+                  // unit: itemData.unit || "N/A",
+                  // volume: itemData.volume || "N/A",
                 };
               });
 
@@ -855,7 +857,8 @@ const LabRoomQR = () => {
                   <tr>
                     <th>QR Code</th>
                     <th>Item Name</th>
-                    <th>Item ID</th>
+                    <th>Item Description</th>
+                    {/* <th>Item ID</th> */}
                     <th>Category</th>
                     <th>Condition</th>
                     <th>Department</th>
@@ -877,10 +880,16 @@ const LabRoomQR = () => {
                             ref={(el) => (qrRefs.current[room.id] = el)}
                             className="labroom-qr"
                           >
-                            <QRCodeCanvas
+                            {/* <QRCodeCanvas
+                              value={room.qrCode || "No QR code available"}
+                              size={128}
+                            /> */}
+
+                            <QRCodeSVG
                               value={room.qrCode || "No QR code available"}
                               size={128}
                             />
+                            
                             <button
                               onClick={() => downloadQRCode(room.id)}
                               className="labroom-download-button"
@@ -891,9 +900,11 @@ const LabRoomQR = () => {
                         </td>
                       ) : null}
                       <td>{item.itemName}</td>
-                      <td>{item.itemId}</td>
+                      <td>{item.itemDetails}</td>
+                      {/* <td>{item.itemId}</td> */}
                       <td>{item.category}</td>
-                      <td>{["Chemical", "Reagent"].includes(item.category) ? "N/A" : item.condition}</td>
+                      <td>{item.condition}</td>
+                      {/* <td>{["Chemical", "Reagent"].includes(item.category) ? "N/A" : item.condition}</td> */}
                       <td>{item.department}</td>
                       {/* <td>
                         {item.quantity}
@@ -901,12 +912,13 @@ const LabRoomQR = () => {
                         {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
                         {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
                       </td> */}
-                      <td>
+                      {/* <td>
                         {item.quantity}
                         {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
                         {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
                         {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
-                      </td>
+                      </td> */}
+                      <td>{item.quantity}</td>
                       <td>{item.status}</td>
                       <td>{item.type}</td>
                     </tr>

@@ -352,9 +352,19 @@ console.log("requestList in Modal:", requestList);
 
   const approvedRequestColumns = [
     {
+      title: "Item ID",
+      dataIndex: "itemId",
+      key: "itemId",
+    },
+    {
       title: "Item Name",
       dataIndex: "itemName",
       key: "itemName",
+    },
+    {
+      title: "Item Description",
+      dataIndex: "itemDetails",
+      key: "itemDetails",
     },
     {
       title: "Quantity",
@@ -631,6 +641,7 @@ function getConditionSummary(conditionsArray) {
 
             const matches =
               item.itemName === selectedItem?.itemName &&
+              item.itemDetails === selectedItem?.itemDetails &&
               item.selectedItemId === selectedItem?.selectedItemId &&
               item.labRoom === selectedItem?.labRoom &&
               item.quantity === selectedItem?.quantity &&
@@ -640,6 +651,7 @@ function getConditionSummary(conditionsArray) {
 
             console.log("🔍 Comparing item:");
             console.log("  itemName:", item.itemName, "==", selectedItem?.itemName);
+            console.log("  itemDetails:", item.itemDetails, "==", selectedItem?.itemDetails);
             console.log("  selectedItemId:", item.selectedItemId, "==", selectedItem?.selectedItemId);
             console.log("  labRoom:", item.labRoom, "==", selectedItem?.labRoom);
             console.log("  quantity:", item.quantity, "==", selectedItem?.quantity);
@@ -1045,9 +1057,9 @@ function getConditionSummary(conditionsArray) {
       title={
         <div style={{ background: "#389e0d", padding: "12px", color: "#fff" }}>
           <Text strong>✅ Approved Request Details</Text>
-          <span style={{ float: "right", fontStyle: "italic" }}>
+          {/* <span style={{ float: "right", fontStyle: "italic" }}>
             Requisition ID: {selectedApprovedRequest?.id || "N/A"}
-          </span>
+          </span> */}
         </div>
       }
       open={isApprovedModalVisible}

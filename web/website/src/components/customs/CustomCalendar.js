@@ -234,12 +234,12 @@ const CustomCalendar = ({ onSelectDate }) => {
                       <List.Item key={reqIdx}>
                         <Descriptions column={3} size="small" bordered>
                           <Descriptions.Item label="Item Name">{reqItem.itemName}</Descriptions.Item>
-                          <Descriptions.Item label="Quantity">
+                          {/* <Descriptions.Item label="Quantity">
                             {reqItem.quantity}
                             {["Chemical", "Reagent"].includes(reqItem.category) && reqItem.unit ? ` ${reqItem.unit}` : ""}
                             {reqItem.category === "Glasswares" && reqItem.volume ? ` / ${reqItem.volume} ML` : ""}
-                          </Descriptions.Item>
-                          {/* <Descriptions.Item label="Quantity">{reqItem.quantity}</Descriptions.Item> */}
+                          </Descriptions.Item> */}
+                          <Descriptions.Item label="Quantity">{reqItem.quantity}</Descriptions.Item>
                           {/* <Descriptions.Item label="Condition">{reqItem.condition}</Descriptions.Item> */}
                         </Descriptions>
                       </List.Item>

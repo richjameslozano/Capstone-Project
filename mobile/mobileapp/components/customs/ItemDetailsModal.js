@@ -6,6 +6,7 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
 
   const {
     itemName,
+    itemDetails,
     itemId,
     category,
     department,
@@ -34,11 +35,15 @@ const ItemDetailsModal = ({ visible, onClose, itemData }) => {
           <Text style={styles.title}>Item Details</Text>
 
           <Text style={styles.label}>
+            Item ID: <Text style={styles.value}>{itemId}</Text>
+          </Text>
+
+          <Text style={styles.label}>
             Item Name: <Text style={styles.value}>{itemName}</Text>
           </Text>
 
           <Text style={styles.label}>
-            Item ID: <Text style={styles.value}>{itemId}</Text>
+            Item Description: <Text style={styles.value}>{itemDetails}</Text>
           </Text>
 
           <Text style={styles.label}>

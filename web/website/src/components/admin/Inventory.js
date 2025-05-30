@@ -42,6 +42,7 @@ const Inventory = () => {
   const [dataSource, setDataSource] = useState([]);
   const [count, setCount] = useState(0);
   const [itemName, setItemName] = useState("");
+  const [itemDetails, setItemDetails] = useState("");
   const [itemId, setItemId] = useState("");
   const [editingItem, setEditingItem] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -213,6 +214,7 @@ const Inventory = () => {
     const flattenedData = filteredData.map((item) => ({
       ItemID: item.itemId || "",
       ItemName: item.itemName || "",
+      ItemDetails: item.itemDetails || "",
       Category: item.category || "",
       Department: item.department || "",
       Quantity: item.quantity?.toString() || "0", 
@@ -275,10 +277,11 @@ const Inventory = () => {
   y += 30;
 
   // Main Table
-  const headers = [["Item ID", "Item Name", "Category", "Department", "Quantity", "Status", "Condition"]];
+  const headers = [["Item ID", "Item Name", "Item Description", "Category", "Department", "Quantity", "Status", "Condition"]];
   const data = filteredData.map(item => [
     item.itemId || "",
     item.itemName || "",
+    item.itemDetails || "",
     item.category || "",
     item.department || "",
     item.quantity?.toString() || "0",
@@ -336,8 +339,8 @@ const printPdf = () => {
 };
 
   const handleAdd = async (values) => {
-    if (!itemName || !values.department) {
-      alert("Please enter both Item Name and Department!");
+    if (!itemName || !values.department || itemDetails) {
+      alert("Please fill up the form!");
       return;
     }
 
@@ -424,6 +427,7 @@ const printPdf = () => {
     const inventoryItem = {
       itemId: generatedItemId,
       itemName,
+      itemDetails,
       entryCurrentDate,
       expiryDate,
       timestamp,
@@ -432,13 +436,13 @@ const printPdf = () => {
       department: values.department,
       type: values.type,
       status: "Available",
-      condition: {
-        Good: 0,
-        Defect: 0,
-        Damage: 0,
-      },
-      unit: values.unit || null,
-      volume: values.category === "Glasswares" ? values.volume : null,
+      // condition: {
+      //   Good: quantityNumber,
+      //   Defect: 0,
+      //   Damage: 0,
+      // },
+      // unit: values.unit || null,
+      // volume: values.category === "Glasswares" ? values.volume : null,
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
@@ -459,6 +463,7 @@ const printPdf = () => {
       id: count + 1,
       itemId: generatedItemId,
       item: itemName,
+      itemDetails: itemDetails,
       entryDate: entryCurrentDate, 
       expiryDate: expiryDate, 
       qrCode: encryptedData,
@@ -577,6 +582,7 @@ const printPdf = () => {
         allLabRoomItems.push({
           itemId: itemData.itemId,
           itemName: itemData.itemName,
+          itemDetails: itemData.itemDetails,
           quantity: itemData.quantity,
           condition: {
             Good: quantityNumbers,
@@ -606,6 +612,7 @@ const printPdf = () => {
       setCount(count + 1);
       form.resetFields();
       setItemName("");
+      setItemDetails("")
       setItemId("");
       setIsModalVisible(false);
 
@@ -1068,22 +1075,23 @@ const printPdf = () => {
       sortDirections: ['ascend', 'descend'],
       defaultSortOrder: 'ascend', 
     },
+    { title: "Item Description", dataIndex: "itemDetails", key: "itemDetails" },
     {
       title: "Inventory Balance",
       dataIndex: "quantity",
       key: "quantity",
-      render: (text, record) => {
-        const { category, unit, volume } = record;
-        if (["Chemical", "Reagent"].includes(category)) {
-          return `${text} pcs / ${unit || ""} ML `;
-        }
+      // render: (text, record) => {
+      //   const { category, unit, volume } = record;
+      //   if (["Chemical", "Reagent"].includes(category)) {
+      //     return `${text} pcs / ${unit || ""} ML `;
+      //   }
 
-        if (category === "Glasswares" && volume) {
-          return `${text} pcs / ${volume} ML`;
-        }
+      //   if (category === "Glasswares" && volume) {
+      //     return `${text} pcs / ${volume} ML`;
+      //   }
 
-        return text;
-      },
+      //   return text;
+      // },
     },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },   
@@ -1571,7 +1579,7 @@ const printPdf = () => {
             </Form>
           </Modal> */}
 
-             <Modal
+          <Modal
             title="Add Item to Inventory"
             open={isModalVisible}
             onCancel={handleCancel}
@@ -1597,6 +1605,20 @@ const printPdf = () => {
 
                 <Col span={8}>
                   <Form.Item
+                    name="Item Description"
+                    label="Item Description"
+                    rules={[{ required: true, message: "Please enter Item Description!" }]}
+                  >
+                    <Input
+                      placeholder="Enter Item Description"
+                      value={itemDetails}
+                      onChange={(e) => setItemDetails(e.target.value)}
+                    />
+                  </Form.Item>
+                </Col>
+
+                <Col span={8}>
+                  <Form.Item
                     name="category"
                     label="Category"
                     rules={[{ required: true, message: "Please select a category!" }]}
@@ -1611,7 +1633,7 @@ const printPdf = () => {
                   </Form.Item>
                 </Col>
 
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
+                {/* {["Chemical", "Reagent"].includes(selectedCategory) && (
                   <Col span={8}>
                     <Form.Item
                       name="unit"
@@ -1624,7 +1646,7 @@ const printPdf = () => {
                       value="ML"/>
                     </Form.Item>
                   </Col>
-                )}
+                )} */}
 
               </Row>
 
@@ -1694,8 +1716,8 @@ const printPdf = () => {
                 <Col span={8}>
                   <Form.Item
                     name="labRoom"
-                    label="Lab/Stock Room"
-                    rules={[{ required: true, message: "Please enter Lab/Stock Room!" }]}
+                    label="Stock Room"
+                    rules={[{ required: true, message: "Please enter Stock Room!" }]}
                   >
                     <Input placeholder="Enter Lab/Stock Room" />
                   </Form.Item>
@@ -1798,7 +1820,8 @@ const printPdf = () => {
                  <div>
                 <p ><strong>Item ID:</strong> {selectedRow.itemId}</p>
                 <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
-                <p>
+                <p><strong>Quantity:</strong> {selectedRow.quantity}</p>
+                {/* <p>
                   <strong>Inventory Balance:</strong>{" "}
                   {selectedRow.quantity}
                   {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
@@ -1818,7 +1841,7 @@ const printPdf = () => {
                 <div>
                 <p><strong>Status:</strong> {selectedRow.status}</p>
                 <p><strong>Condition:</strong> {formatCondition(selectedRow.condition, selectedRow.category)}</p>
-                <p><strong>Lab / Stock Room:</strong> {selectedRow.labRoom}</p>
+                <p><strong>Stock Room:</strong> {selectedRow.labRoom}</p>
                 <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
                 <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
                 </div>

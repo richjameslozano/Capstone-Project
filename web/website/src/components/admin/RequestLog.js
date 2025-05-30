@@ -38,6 +38,7 @@ const RequestLog = () => {
       request.processDate || "N/A",
       request.status || "N/A",
       request.requestor || "N/A",
+      request.room || "N/A",
       request.status === "Approved" || request.status === "Returned" 
         ? request.approvedBy || "N/A"
         : request.rejectedBy || "N/A"
@@ -151,6 +152,7 @@ const RequestLog = () => {
               rawTimestamp: rawTimestamp ?? null,
               processDate: parsedRawTimestamp, 
               timestamp: parsedTimestamp,
+              room: data.room,
               raw: data,
               timeFrom, 
               timeTo,  
@@ -245,31 +247,39 @@ const generatePdfFromSlip = (slipData) => {
  const isRejected = slipData.raw?.status === "Rejected";
 
   // Build dynamic headers
-  let headers = ["Item ID", "Item Description", "Quantity"];
-  if (hasGlasswares) headers.push("Volume (ML)");
-  if (isRejected) headers.push("Reason of Rejection");
+  // let headers = ["Item ID", "Item Name", "Quantity"];
+  // if (hasGlasswares) headers.push("Volume (ML)");
+  // if (isRejected) headers.push("Reason of Rejection");
 
-  // Convert headers to required format for autoTable (array of arrays)
-  const tableHeaders = [headers];
+  // // Convert headers to required format for autoTable (array of arrays)
+  // const tableHeaders = [headers];
 
-  // Build dynamic data rows
-  const data = (slipData.raw?.requestList || []).map((item) => {
-    const row = [
-      item.itemIdFromInventory || "",
-      item.itemName || "",
-      String(item.quantity || ""),
-    ];
-    if (hasGlasswares) {
-      row.push(item.volume ? String(item.volume) : "");
-    }
-    if (isRejected) {
-       row.push(item.rejectionReason || item.reason || "");
-    }
-    return row;
-  });
+  // // Build dynamic data rows
+  // const data = (slipData.raw?.requestList || []).map((item) => {
+  //   const row = [
+  //     item.itemIdFromInventory || "",
+  //     item.itemName || "",
+  //     String(item.quantity || ""),
+  //   ];
+  //   if (hasGlasswares) {
+  //     row.push(item.volume ? String(item.volume) : "");
+  //   }
+  //   if (isRejected) {
+  //      row.push(item.rejectionReason || item.reason || "");
+  //   }
+  //   return row;
+  // });
+
+  const headers = [["Item ID", "Item Name", "Quantity"]];
+  const data = (slipData.raw?.requestList || []).map((item) => [
+    item.itemIdFromInventory || "",
+    item.itemName || "",
+    item.itemDetails || "",
+    String(item.quantity || ""),
+  ]);
 
   doc.autoTable({
-    head: tableHeaders,
+    head: headers,
     body: data,
     startY: y + 10,
     margin: { left: margin, right: margin },
@@ -282,15 +292,18 @@ const generatePdfFromSlip = (slipData) => {
       fontSize: 12,
       cellPadding: 6,
     },
+
     bodyStyles: {
       fontSize: 11,
       cellPadding: 5,
     },
+
     styles: {
       lineWidth: 0.1,
       lineColor: [200, 200, 200],
       cellPadding: 5,
     },
+
     alternateRowStyles: { fillColor: [245, 245, 245] },
     didDrawCell: (data) => {
       // Simulate rounded corners for the header row
@@ -489,10 +502,13 @@ const printPdf = () => {
                   <Text strong>Name:</Text> {selectedRequest.raw?.userName}
                 </Col>
 
-                <Col span={12} style={{ textAlign: "right" }}>
+                {/* <Col span={12} style={{ textAlign: "right" }}>
                   <Text italic>
                     Requisition ID: {selectedRequest.requisitionId}
                   </Text>
+                </Col> */}
+                <Col span={12}>
+                  <Text strong>Room:</Text> {selectedRequest.raw?.room}
                 </Col>
               </Row>
 
@@ -522,12 +538,13 @@ const printPdf = () => {
                 </Col>
               </Row>
 
-              {/* <Table
+              <Table
                 dataSource={(selectedRequest.raw?.requestList ?? []).map(
                   (item, index) => ({
                     key: index,
                     itemId: item.itemIdFromInventory,
                     itemDescription: item.itemName,
+                    itemDetails: item.itemDetails,
                     quantity: item.quantity,
                     rejectionReason:
                       item.reason ||  item.rejectionReason ||
@@ -547,6 +564,11 @@ const printPdf = () => {
                     key: "itemDescription",
                   },
                   {
+                    title: "Item Description",
+                    dataIndex: "itemDetails",
+                    key: "itemDetails",
+                  },
+                  {
                     title: "Quantity",
                     dataIndex: "quantity",
                     key: "quantity",
@@ -564,9 +586,9 @@ const printPdf = () => {
                 pagination={{ pageSize: 10 }}
                 style={{ marginTop: 10 }}
                 size="small"
-              /> */}
+              />
 
-              <Table
+              {/* <Table
                 dataSource={(selectedRequest.raw?.requestList ?? []).map((item, index) => {
                   const isGlassware = item.category?.toLowerCase() === "glasswares";
 
@@ -631,7 +653,7 @@ const printPdf = () => {
                 pagination={{ pageSize: 10 }}
                 style={{ marginTop: 10 }}
                 size="small"
-              />
+              /> */}
 
               <Row gutter={[16, 8]} style={{ marginTop: 20 }}>
                 <Col span={12}>
