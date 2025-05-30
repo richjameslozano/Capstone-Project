@@ -61,7 +61,8 @@ const FinalizeRequestModal = ({
         <table className="finalize-table" style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr>
-              <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Item</th>
+              <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Item Name</th>
+              <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Item Description</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Category</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Quantity</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Lab Room</th>
@@ -72,6 +73,7 @@ const FinalizeRequestModal = ({
             {requestList.length > 0 ? requestList.map((item, index) => (
               <tr key={index}>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.itemName}</td>
+                <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.itemDetails}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.category}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.quantity}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.labRoom}</td>

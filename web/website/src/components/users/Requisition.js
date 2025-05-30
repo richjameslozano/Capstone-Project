@@ -88,19 +88,16 @@ const Requisition = () => {
 
 
   useEffect(() => {
-    const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
+   const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
       item.itemName &&
+      item.itemDetails &&
       item.category &&
       item.quantity &&
       item.labRoom &&
       item.status &&
       item.condition &&
       item.department &&
-      (
-        (["Chemical", "Reagent"].includes(item.category) && item.unit) ||
-        (item.category === "Materials" && item.volume) ||
-        (!["Chemical", "Reagent", "Materials"].includes(item.category)) // for other categories, no unit/volume required
-      )
+      item.category
     );
   
     const timeValid = timeFrom && timeTo &&
@@ -118,32 +115,32 @@ const Requisition = () => {
     }
   }, []);
 
-  useEffect(() => {
-    async function fetchVolumeOptions() {
-      const inventoryRef = collection(db, "inventory");
-      const snapshot = await getDocs(inventoryRef);
+  // useEffect(() => {
+  //   async function fetchVolumeOptions() {
+  //     const inventoryRef = collection(db, "inventory");
+  //     const snapshot = await getDocs(inventoryRef);
 
-      // Extract volumes from all glasswares' quantity arrays
-      const volumesSet = new Set();
+  //     // Extract volumes from all glasswares' quantity arrays
+  //     const volumesSet = new Set();
 
-      snapshot.docs.forEach((doc) => {
-        const data = doc.data();
-        if (data.category === "Glasswares" && Array.isArray(data.quantity)) {
-          data.quantity.forEach(qtyObj => {
-            // qtyObj.volume may be string or number, convert to number for consistency
-            const vol = Number(qtyObj.volume);
-            if (!isNaN(vol)) volumesSet.add(vol);
-          });
-        }
-      });
+  //     snapshot.docs.forEach((doc) => {
+  //       const data = doc.data();
+  //       if (data.category === "Glasswares" && Array.isArray(data.quantity)) {
+  //         data.quantity.forEach(qtyObj => {
+  //           // qtyObj.volume may be string or number, convert to number for consistency
+  //           const vol = Number(qtyObj.volume);
+  //           if (!isNaN(vol)) volumesSet.add(vol);
+  //         });
+  //       }
+  //     });
 
-      // Convert Set to sorted array
-      const sortedVolumes = Array.from(volumesSet).sort((a, b) => a - b);
-      setVolumeOptions(sortedVolumes);
-    }
+  //     // Convert Set to sorted array
+  //     const sortedVolumes = Array.from(volumesSet).sort((a, b) => a - b);
+  //     setVolumeOptions(sortedVolumes);
+  //   }
 
-    fetchVolumeOptions();
-  }, [db]);
+  //   fetchVolumeOptions();
+  // }, [db]);
 
   // useEffect(() => {
   //   const fetchRequestList = async () => {
@@ -641,7 +638,8 @@ const Requisition = () => {
     console.log("Original mergedData:", mergedData);
     // Filter out incomplete items from mergedData
     const filteredMergedData = mergedData.filter(item =>
-      item.itemName && item.category && item.quantity && item.labRoom &&
+      // item.itemName && item.category && item.quantity && item.labRoom &&
+      item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
       item.status && item.condition && item.department
     );
 
@@ -928,6 +926,7 @@ const Requisition = () => {
       },
       selectedItemId: itemId,
       itemName: selectedItem.itemName,
+      itemDetails: selectedItem.itemDetails,
       category: selectedItem.category,
       quantity: tableData[index]?.quantity || 1,
       // volume,  // <-- include volume here
@@ -1151,18 +1150,18 @@ const Requisition = () => {
   //     ),
   //   },
   // ];
-      const courseDescriptions = {
-      MLSACHML: "ANALYTICAL CHEMISTRY",
-      MLSBIEPC: "BIOSTATISTICS AND EPIDEMIOLOGY",
-      MLSAUBFC: "ANALYSIS OF URINE AND OTHER BODY FLUIDS",
-      MLSHEM2L: "HEMATOLOGY 2",
-      MLSHPATL: "GENERAL PATHOLOGY WITH HISTOPATHOLOGIC AND CYTOLOGIC TECHNIQUES",
-      MLSIMHEL: "IMMUNOHEMATOLOGY",
-      MLSMOLBL: " MOLECULAR BIOLOGY AND DIAGNOSTICS",
-      MLSMYVIL: "MYCOLOGY AND VIROLOGY",
-      MLSPARAL: "CLINICAL PARASITOLOGY",
-      MLSPML2L: "PRINCIPLES OF MEDICAL LABORATORY SCIENCE PRACTICE 2 ",
-    };
+  const courseDescriptions = {
+    MLSACHML: "ANALYTICAL CHEMISTRY",
+    MLSBIEPC: "BIOSTATISTICS AND EPIDEMIOLOGY",
+    MLSAUBFC: "ANALYSIS OF URINE AND OTHER BODY FLUIDS",
+    MLSHEM2L: "HEMATOLOGY 2",
+    MLSHPATL: "GENERAL PATHOLOGY WITH HISTOPATHOLOGIC AND CYTOLOGIC TECHNIQUES",
+    MLSIMHEL: "IMMUNOHEMATOLOGY",
+    MLSMOLBL: " MOLECULAR BIOLOGY AND DIAGNOSTICS",
+    MLSMYVIL: "MYCOLOGY AND VIROLOGY",
+    MLSPARAL: "CLINICAL PARASITOLOGY",
+    MLSPML2L: "PRINCIPLES OF MEDICAL LABORATORY SCIENCE PRACTICE 2 ",
+  };
 
   const columns = [
     {
@@ -1191,7 +1190,7 @@ const Requisition = () => {
           >
             {/* Map through filtered items instead of the entire items list */}
             {filteredItems.map((item) => {
-              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
@@ -1211,6 +1210,11 @@ const Requisition = () => {
           </Select>
         );
       },
+    },
+    {
+      title: "Item Description",
+      dataIndex: "itemDetails",
+      key: "itemDetails",
     },
     {
       title: "Category",
