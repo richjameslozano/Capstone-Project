@@ -1634,12 +1634,21 @@ const Requisition = () => {
           </div>
 
           <div className="table-request-container">
+          {/* <Table
+            className="requisition-table"
+            columns={columns}
+            dataSource={mergedData}
+            pagination={{ pageSize: 10 }}
+            rowKey={(record) => record.key}
+          /> */}
+
           <Table
             className="requisition-table"
             columns={columns}
             dataSource={mergedData}
-            pagination={{ pageSize: 5 }}
+            pagination={{ pageSize: 10 }}
             rowKey={(record) => record.key}
+            scroll={{ y: 400 }} 
           />
           </div>
 
