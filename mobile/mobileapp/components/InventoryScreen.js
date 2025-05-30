@@ -1093,13 +1093,13 @@ export default function InventoryScreen({ navigation }) {
                   }
                 </Text>
                 <Text style={styles.itemType}>Status: {selectedItem?.status}</Text>
-                {/* <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text> */}
-                <Text style={styles.itemType}>
+                <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text>
+                {/* <Text style={styles.itemType}>
                   Available Quantity: {selectedItem?.quantity}
                   {["Glasswares", "Chemical", "Reagent"].includes(selectedItem?.category) && " pcs"}
                   {["Chemical", "Reagent"].includes(selectedItem?.category) && selectedItem?.unit && ` / ${selectedItem.unit} ML`}
                   {selectedItem?.category === "Glasswares" && selectedItem?.volume && ` / ${selectedItem.volume} ML`}
-                </Text>
+                </Text> */}
               </View>
             </TouchableWithoutFeedback> 
           </View>

@@ -639,8 +639,8 @@ const LabRoomQR = () => {
                   type: itemData.type || "N/A",
                   rawTimestamp: itemData.rawTimestamp || "N/A",
                   timestamp: itemData.timestamp || "N/A",
-                  unit: itemData.unit || "N/A",
-                  volume: itemData.volume || "N/A",
+                  // unit: itemData.unit || "N/A",
+                  // volume: itemData.volume || "N/A",
                 };
               });
 
@@ -901,12 +901,13 @@ const LabRoomQR = () => {
                         {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
                         {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
                       </td> */}
-                      <td>
+                      {/* <td>
                         {item.quantity}
                         {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
                         {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
                         {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
-                      </td>
+                      </td> */}
+                      <td>{item.quantity}</td>
                       <td>{item.status}</td>
                       <td>{item.type}</td>
                     </tr>

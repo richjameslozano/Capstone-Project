@@ -395,9 +395,9 @@ const SearchItems = () => {
                     {selectedItem.itemName}
                   </Descriptions.Item>
 
-                  {/* <Descriptions.Item label="Quantity">
+                  <Descriptions.Item label="Quantity">
                     {selectedItem.quantity}
-                  </Descriptions.Item> */}
+                  </Descriptions.Item>
 
                   {/* <Descriptions.Item label="Quantity">
                     {selectedItem.quantity}
@@ -405,12 +405,12 @@ const SearchItems = () => {
                     {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                   </Descriptions.Item> */}
 
-                  <Descriptions.Item label="Quantity">
+                  {/* <Descriptions.Item label="Quantity">
                     {selectedItem.quantity}
                     {["Glasswares", "Chemical", "Reagent"].includes(selectedItem.category) ? " pcs" : ""}
                     {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
                     {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` / ${selectedItem.unit} ML` : ""}
-                  </Descriptions.Item>
+                  </Descriptions.Item> */}
 
                   {/* <Descriptions.Item label="Quantity">
                     {(() => {

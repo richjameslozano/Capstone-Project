@@ -1191,10 +1191,10 @@ const Requisition = () => {
           >
             {/* Map through filtered items instead of the entire items list */}
             {filteredItems.map((item) => {
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
               const isDisabled = selectedIds.includes(item.id);
   
               return (

@@ -411,21 +411,21 @@ const printPdf = () => {
       type: values.type,
       status: "Available",
       condition: {
-        Good: 0,
+        Good: quantityNumber,
         Defect: 0,
         Damage: 0,
       },
-      unit: values.unit || null,
-      volume: values.category === "Glasswares" ? values.volume : null,
+      // unit: values.unit || null,
+      // volume: values.category === "Glasswares" ? values.volume : null,
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
-      ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-        condition: {
-          Good: quantityNumber,
-          Defect: 0,
-          Damage: 0,
-        },
-      }),
+      // ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+      //   condition: {
+      //     Good: quantityNumber,
+      //     Defect: 0,
+      //     Damage: 0,
+      //   },
+      // }),
     };
 
     const encryptedData = CryptoJS.AES.encrypt(
@@ -1050,18 +1050,18 @@ const printPdf = () => {
       title: "Inventory Balance",
       dataIndex: "quantity",
       key: "quantity",
-      render: (text, record) => {
-        const { category, unit, volume } = record;
-        if (["Chemical", "Reagent"].includes(category)) {
-          return `${text} pcs / ${unit || ""} ML `;
-        }
+      // render: (text, record) => {
+      //   const { category, unit, volume } = record;
+      //   if (["Chemical", "Reagent"].includes(category)) {
+      //     return `${text} pcs / ${unit || ""} ML `;
+      //   }
 
-        if (category === "Glasswares" && volume) {
-          return `${text} pcs / ${volume} ML`;
-        }
+      //   if (category === "Glasswares" && volume) {
+      //     return `${text} pcs / ${volume} ML`;
+      //   }
 
-        return text;
-      },
+      //   return text;
+      // },
     },
     // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },   
@@ -1589,7 +1589,7 @@ const printPdf = () => {
                   </Form.Item>
                 </Col>
 
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
+                {/* {["Chemical", "Reagent"].includes(selectedCategory) && (
                   <Col span={8}>
                     <Form.Item
                       name="unit"
@@ -1602,7 +1602,7 @@ const printPdf = () => {
                       value="ML"/>
                     </Form.Item>
                   </Col>
-                )}
+                )} */}
 
               </Row>
 
@@ -1705,7 +1705,8 @@ const printPdf = () => {
               <div>
                 <p><strong>Item ID:</strong> {selectedRow.itemId}</p>
                 <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
-                <p>
+                <p><strong>Quantity:</strong> {selectedRow.quantity}</p>
+                {/* <p>
                   <strong>Inventory Balance:</strong>{" "}
                   {selectedRow.quantity}
                   {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
@@ -1715,7 +1716,7 @@ const printPdf = () => {
                   <p>
                     <strong>Volume:</strong> {selectedRow.volume} ML
                   </p>
-                )}
+                )} */}
                 <p><strong>Critical Level:</strong> {selectedRow.criticalLevel}</p>
                 <p><strong>Category:</strong> {selectedRow.category}</p>
                 <p><strong>Item Type:</strong> {selectedRow.type}</p>
