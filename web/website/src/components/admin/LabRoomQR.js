@@ -631,6 +631,7 @@ const LabRoomQR = () => {
                   expiryDate: itemData.expiryDate || null,
                   itemId: itemData.itemId || "N/A",
                   itemName: itemData.itemName || "N/A",
+                  itemDetails: itemData.itemDetails || "N/A",
                   labRoom: itemData.labRoom || "N/A",
                   // quantity: itemData.quantity || 0,
                   // quantity: itemData.quantity ?? (itemData.category === "Glasswares" ? [] : 0),
@@ -855,7 +856,8 @@ const LabRoomQR = () => {
                   <tr>
                     <th>QR Code</th>
                     <th>Item Name</th>
-                    <th>Item ID</th>
+                    <th>Item Description</th>
+                    {/* <th>Item ID</th> */}
                     <th>Category</th>
                     <th>Condition</th>
                     <th>Department</th>
@@ -891,9 +893,11 @@ const LabRoomQR = () => {
                         </td>
                       ) : null}
                       <td>{item.itemName}</td>
-                      <td>{item.itemId}</td>
+                      <td>{item.itemDetails}</td>
+                      {/* <td>{item.itemId}</td> */}
                       <td>{item.category}</td>
-                      <td>{["Chemical", "Reagent"].includes(item.category) ? "N/A" : item.condition}</td>
+                      <td>{item.condition}</td>
+                      {/* <td>{["Chemical", "Reagent"].includes(item.category) ? "N/A" : item.condition}</td> */}
                       <td>{item.department}</td>
                       {/* <td>
                         {item.quantity}
