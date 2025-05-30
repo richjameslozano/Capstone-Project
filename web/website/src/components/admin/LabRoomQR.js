@@ -488,6 +488,7 @@ import { Layout, Row, Col, Table, Input, Button, Typography, Modal } from "antd"
 import { collection, getDocs, onSnapshot, doc, updateDoc, writeBatch, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/LabRoomQR.css";
+import { QRCodeSVG } from "qrcode.react";
 
 const LabRoomQR = () => {
   const [labRooms, setLabRooms] = useState([]);
@@ -879,10 +880,16 @@ const LabRoomQR = () => {
                             ref={(el) => (qrRefs.current[room.id] = el)}
                             className="labroom-qr"
                           >
-                            <QRCodeCanvas
+                            {/* <QRCodeCanvas
+                              value={room.qrCode || "No QR code available"}
+                              size={128}
+                            /> */}
+
+                            <QRCodeSVG
                               value={room.qrCode || "No QR code available"}
                               size={128}
                             />
+                            
                             <button
                               onClick={() => downloadQRCode(room.id)}
                               className="labroom-download-button"
