@@ -64,7 +64,7 @@ const PendingRequest = () => {
             return {
               ...item,
               itemIdFromInventory: itemId,
-              volume: item.volume ?? "N/A",  
+              // volume: item.volume ?? "N/A",  
             };
           })
         );
@@ -1451,6 +1451,7 @@ try {
           department: item.department || "N/A",
           itemName: item.itemName || "N/A",
           itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
           quantity: item.quantity || "1",
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",
@@ -2921,6 +2922,7 @@ try {
           department: item.department || "N/A",
           itemName: item.itemName || "N/A",
           itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
           quantity: item.quantity || "1",
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",
@@ -3569,7 +3571,7 @@ try {
           ...item,
           selectedItemId,
           itemType,
-          volume: item.volume ?? "N/A", // <-- add this
+          // volume: item.volume ?? "N/A", // <-- add this
         };
     
         console.log("Enriched item:", enriched); // ✅ Individual log
@@ -4687,6 +4689,7 @@ try {
           department: item.department || "N/A",
           itemName: item.itemName || "N/A",
           itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
           quantity: item.quantity || "1",
           selectedItemId: item.selectedItemId || "N/A",
           status: item.status || "Available",

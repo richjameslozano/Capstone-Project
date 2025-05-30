@@ -38,6 +38,7 @@ const RequestLog = () => {
       request.processDate || "N/A",
       request.status || "N/A",
       request.requestor || "N/A",
+      request.room || "N/A",
       request.status === "Approved" || request.status === "Returned" 
         ? request.approvedBy || "N/A"
         : request.rejectedBy || "N/A"
@@ -151,6 +152,7 @@ const RequestLog = () => {
               rawTimestamp: rawTimestamp ?? null,
               processDate: parsedRawTimestamp, 
               timestamp: parsedTimestamp,
+              room: data.room,
               raw: data,
               timeFrom, 
               timeTo,  
@@ -505,6 +507,9 @@ const printPdf = () => {
                     Requisition ID: {selectedRequest.requisitionId}
                   </Text>
                 </Col> */}
+                <Col span={12}>
+                  <Text strong>Room:</Text> {selectedRequest.raw?.room}
+                </Col>
               </Row>
 
               <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
