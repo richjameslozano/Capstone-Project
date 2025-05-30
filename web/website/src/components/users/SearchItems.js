@@ -395,6 +395,10 @@ const SearchItems = () => {
                     {selectedItem.itemName}
                   </Descriptions.Item>
 
+                  <Descriptions.Item label="Item Description"> 
+                    {selectedItem.itemDetails}
+                  </Descriptions.Item>
+
                   <Descriptions.Item label="Quantity">
                     {selectedItem.quantity}
                   </Descriptions.Item>
