@@ -13,7 +13,7 @@ export default StyleSheet.create({
     justifyContent: 'space-between', // Ensures space between buttons
     marginVertical: 5,
     marginBottom: 10, 
-    marginTop: 80,
+    marginTop: 120,
   },
 
   table: {
@@ -131,6 +131,115 @@ export default StyleSheet.create({
     textDecorationLine: 'underline',
     color: 'blue',
     fontSize: 16,
+  },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+  modalContainer: {
+    width: '90%',
+    maxHeight: '80%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+
+  modalHeader: {
+    padding: 15,
+    backgroundColor: '#f0f0f0',
+    borderBottomWidth: 1,
+    borderColor: '#ddd',
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+
+  modalBody: {
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+  },
+
+  infoRow: {
+    flexDirection: 'row',
+    marginBottom: 5,
+  },
+
+  infoLabel: {
+    fontWeight: 'bold',
+  },
+
+  infoValue: {
+    flexShrink: 1,
+  },
+
+  subTitle: {
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+
+  itemRow: {
+    flexDirection: 'row',
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+    paddingVertical: 6,
+  },
+
+  itemHeader: {
+    backgroundColor: '#ddd',
+  },
+
+  itemHeaderText: {
+    fontWeight: 'bold',
+  },
+
+  itemCell: {
+    flex: 1,
+    paddingHorizontal: 3,
+  },
+
+  modalFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 15,
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+  },
+
+  modalBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+
+  modalContainer: {
+    width: '90%',
+    maxHeight: '80%',
+    backgroundColor: 'white',
+    borderRadius: 8,
+    overflow: 'hidden',
+    padding: 15,
+  },
+
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+
+  modalText: {
+    fontSize: 14,
+    marginBottom: 10,
   },
 
 });

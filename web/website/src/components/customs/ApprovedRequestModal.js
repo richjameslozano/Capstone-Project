@@ -352,6 +352,11 @@ console.log("requestList in Modal:", requestList);
 
   const approvedRequestColumns = [
     {
+      title: "Item ID",
+      dataIndex: "itemId",
+      key: "itemId",
+    },
+    {
       title: "Item Name",
       dataIndex: "itemName",
       key: "itemName",
