@@ -1,24 +1,8 @@
-.request-card {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  padding: 15px;
-  transition: all 0.3s;
-}
 
 .request-card:hover {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-.view-btn {
-  text-decoration: underline;
-  color: #1890ff;
-}
-
-.view-btn:hover {
-  color: #40a9ff;
-}
 
 .approved-card {
   background-color: #f6ffed;
