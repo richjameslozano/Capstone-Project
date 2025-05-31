@@ -20,7 +20,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where, serverTimestamp, orderBy, limit } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -62,9 +62,7 @@ const Inventory = () => {
   const [qrModalVisible, setQrModalVisible] = useState(false);
   const [selectedQrCode, setSelectedQrCode] = useState('');
   const [selectedItemName, setSelectedItemName] = useState(null);
-  const [isItemModalVisible, setIsItemModalVisible] = useState(false);
-  const [isQrModalVisible, setIsQrModalVisible] = useState(false);
-  const [isViewQRModalVisible, setIsViewQRModalVisible] = useState(false);
+  const [logRefreshKey, setLogRefreshKey] = useState(0);
   const [filterCategory, setFilterCategory] = useState(null);
   const [filterItemType, setFilterItemType] = useState(null);
   const [filterUsageType, setFilterUsageType] = useState(null);
@@ -109,6 +107,7 @@ const Inventory = () => {
             const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
 
             return {
+              docId: doc.id,  
               id: index + 1,
               itemId: data.itemId,
               item: data.itemName,
@@ -661,6 +660,7 @@ const printPdf = () => {
 
       setDataSource([...dataSource, newItem]);
       setCount(count + 1);
+      setLogRefreshKey(prev => prev + 1);
       form.resetFields();
       setItemName("");
       setItemDetails("")
@@ -1083,6 +1083,35 @@ const printPdf = () => {
               await updateDoc(labRoomItemRef, safeValues);
               console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
 
+              
+              const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
+
+              // 1. Query the latest deliveryNumber
+              const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+              const latestSnapshot = await getDocs(latestLogQuery);
+
+              let newDeliveryNumber = "DLV-00001";
+
+              if (!latestSnapshot.empty) {
+                const latestDoc = latestSnapshot.docs[0];
+                const lastDeliveryNumber = latestDoc.data().deliveryNumber;
+
+                const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+                if (match) {
+                  const lastNumber = parseInt(match[1], 10);
+                  const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+                  newDeliveryNumber = `DLV-${nextNumber}`;
+                }
+              }
+
+              // 2. Add the new log
+              await addDoc(stockLogRef, {
+                date: new Date().toISOString().split("T")[0],
+                noOfItems: safeValues.quantity,
+                deliveryNumber: newDeliveryNumber,
+                createdAt: serverTimestamp(),
+              });
+
             } else {
               console.warn(`⚠️ Item ${itemId} not found in labRoom`);
             }
@@ -1476,11 +1505,25 @@ const printPdf = () => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
+            // onRow={(record) => {
+            //   return {
+            //     onClick: () => {
+            //       setSelectedRow(record);
+            //       setIsRowModalVisible(true); // Show the "View Details" modal
+            //     },
+            //   };
+            // }}
             onRow={(record) => {
               return {
                 onClick: () => {
-                  setSelectedRow(record);
-                  setIsRowModalVisible(true); // Show the "View Details" modal
+                  setIsRowModalVisible(false);
+                  setSelectedRow(null);
+
+                  // Ensure state updates flush before reopening
+                  setTimeout(() => {
+                    setSelectedRow(record);
+                    setIsRowModalVisible(true);
+                  }, 100);
                 },
               };
             }}
@@ -1946,7 +1989,7 @@ const printPdf = () => {
                       </tr>
                     </tbody>
                   </table> */}
-                  <StockLog />
+                  <StockLog inventoryDocId={selectedRow?.docId} />
                   </div>
               </div>
             )}
