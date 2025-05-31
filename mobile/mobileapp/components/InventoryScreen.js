@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView ,Picker, Platform, Keyboard, StatusBar, Alert} from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView, Platform, Keyboard, StatusBar, Alert} from 'react-native';
 import { getDocs, collection, onSnapshot, doc, setDoc, addDoc, query, where, Timestamp, collectionGroup } from 'firebase/firestore';
 import { db } from '../backend/firebase/FirebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -666,9 +666,10 @@ export default function InventoryScreen({ navigation }) {
                 ]}
               >
                   <Picker
-                    selectedValue={selectedCode}
+                    selectedValue={course}
                     onValueChange={(itemValue) => {
-                      setSelectedCode(itemValue);
+                      setCourse(itemValue);
+                      setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
                       setDescription(courseMap[itemValue]);
                     }}
                   >
