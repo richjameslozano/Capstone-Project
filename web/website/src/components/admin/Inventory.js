@@ -1877,10 +1877,17 @@ const printPdf = () => {
                           <th>Item ID</th>
                           <td>{selectedRow.itemId}</td>
                         </tr>
+
+                         <tr>
+                          <th>Item Description</th>
+                          <td>{selectedRow.itemDetails}</td>
+                        </tr>
+
                         <tr>
                           <th>Item Name</th>
                           <td>{selectedRow.itemName}</td>
                         </tr>
+
                         <tr>
                           <th>Inventory Balance</th>
                           <td>
@@ -1894,18 +1901,20 @@ const printPdf = () => {
                 )} */}
                           </td>
                         </tr>
+
                         <tr>
                           <th>Category</th>
                           <td>{selectedRow.category}</td>
                         </tr>
+
                         <tr>
                           <th>Item Type</th>
                           <td>{selectedRow.type}</td>
                         </tr>
-                        <tr>
+                        {/* <tr>
                           <th>Date of Entry (latest)</th>
                           <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
-                        </tr>
+                        </tr> */}
                       </tbody>
                     </table>
                     </div>
