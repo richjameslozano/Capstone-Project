@@ -612,35 +612,48 @@ const printPdf = () => {
       });
 
       // 🔽 Fetch all items under this labRoom
-      const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-      const allLabRoomItems = [];
-      labRoomItemsSnap.forEach((docItem) => {
-        const itemData = docItem.data();
-        const quantityNumbers = Number(itemData.quantity);
-        allLabRoomItems.push({
-          itemId: itemData.itemId,
-          itemName: itemData.itemName,
-          itemDetails: itemData.itemDetails,
-          quantity: itemData.quantity,
-          condition: {
-            Good: quantityNumbers,
-            Defect: 0,
-            Damage: 0,
-          },
-          status: itemData.status,
-        });
-      });
+      // const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+      // const allLabRoomItems = [];
+      // labRoomItemsSnap.forEach((docItem) => {
+      //   const itemData = docItem.data();
+      //   const quantityNumbers = Number(itemData.quantity);
+      //   allLabRoomItems.push({
+      //     itemId: itemData.itemId,
+      //     itemName: itemData.itemName,
+      //     itemDetails: itemData.itemDetails,
+      //     quantity: itemData.quantity,
+      //     condition: {
+      //       Good: quantityNumbers,
+      //       Defect: 0,
+      //       Damage: 0,
+      //     },
+      //     status: itemData.status,
+      //   });
+      // });
 
-      // 🔽 Generate encrypted QR code with labRoom data
+      // // 🔽 Generate encrypted QR code with labRoom data
+      // const labRoomQRData = CryptoJS.AES.encrypt(
+      //   JSON.stringify({
+      //     labRoom: values.labRoom,
+      //     items: allLabRoomItems,
+      //   }),
+      //   SECRET_KEY
+      // ).toString();
+
+      // // 🔽 Update labRoom document with the generated QR code
+      // await updateDoc(labRoomRef, {
+      //   qrCode: labRoomQRData,
+      //   updatedAt: new Date(),
+      // });
+
       const labRoomQRData = CryptoJS.AES.encrypt(
         JSON.stringify({
-          labRoom: values.labRoom,
-          items: allLabRoomItems,
+          labRoomId: labRoomRef.id,
         }),
         SECRET_KEY
       ).toString();
 
-      // 🔽 Update labRoom document with the generated QR code
+      // Update labRoom document with the generated QR code
       await updateDoc(labRoomRef, {
         qrCode: labRoomQRData,
         updatedAt: new Date(),
