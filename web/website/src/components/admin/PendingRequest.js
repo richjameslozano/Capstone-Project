@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Layout, Row, Col, Card, Button, Typography, Space, Modal, Table, notification, Input, Select, Spin } from "antd";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
@@ -9,7 +9,7 @@ import { getAuth } from "firebase/auth";
 import RequisitionRequestModal from "../customs/RequisitionRequestModal";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
 import NotificationModal from "../customs/NotificationModal";
-
+import { ArrowDownOutlined, ArrowUpOutlined, DownOutlined, UploadOutlined } from '@ant-design/icons';
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -1788,6 +1788,26 @@ const capitalizeName = (name) => {
   return name.replace(/\b\w/g, char => char.toUpperCase());
 };  
 
+const [collapsedGroups, setCollapsedGroups] = useState({});
+const contentRefs = useRef({});
+
+const toggleGroup = (label) => {
+  setCollapsedGroups(prev => ({
+    ...prev,
+    [label]: !prev[label],
+  }));
+};
+
+useEffect(() => {
+  // Ensure refs are reset when groupedRequests change
+  Object.keys(groupedRequests).forEach(label => {
+    if (!contentRefs.current[label]) {
+      contentRefs.current[label] = null;
+    }
+  });
+}, [groupedRequests]);
+
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout style={{padding: 20}}>
@@ -1795,63 +1815,90 @@ const capitalizeName = (name) => {
 <Spin spinning={loading} tip="Loading requests...">
   <div>
     {Object.entries(groupedRequests).map(([label, group]) => (
-      group.length > 0 && (
-        <div key={label} style={{ marginBottom: "2rem"}}>
-          <h2 style={{ marginBottom: "1rem", color: "#395a7f" }}>{label}{group.length}</h2>
-          {group.map((request) => (
-            <div
-              key={request.id}
-              onClick={() => handleViewDetails(request)}
-              style={{
-                border: "1px solid #ccc",
-                borderRadius: "8px",
-                padding: "16px",
-                marginBottom: "12px",
-                backgroundColor: "#f9f9f9",
-                cursor: "pointer",
-                display: 'flex',
-              }}
-            >
-              <div style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center'}}>
-                <p
-                  style={{
-                    fontSize: 20,
-                    padding: 15,
-                    backgroundColor: usageBG(request.usageType),
-                    borderRadius: 5,
-                    color: 'white',
-                    maxWidth: '60px', 
-                    textAlign: 'center',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  {getInitials(request.usageType)}
+  group.length > 0 && (
+    <div key={label} style={{ marginBottom: "2rem", justifyItems: 'flex-start'}}>
+      
+      {/* Group Header */}
+      <div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: 10}}>
+      <button
+        onClick={() => toggleGroup(label)}
+        style={{
+          cursor: 'pointer',
+          color: "#395a7f",
+          backgroundColor: 'white',
+          border: '1px solid #acacac',
+          padding: 10,
+          borderRadius: 5,
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+
+        }}
+      >
+        <h2 style={{ margin: 0, color: '#395a7f', fontWeight: 500}}>{label}  </h2>
+        <div style={{fontSize: 20, marginLeft: 10}}>
+        {collapsedGroups[label] ? <ArrowDownOutlined/> : <ArrowUpOutlined/> }
+        </div>
+      </button>
+      <h3 style={{margin: 0}}>({group.length})</h3>
+      </div>
+
+      {/* Collapsible Content */}
+      <div
+        style={{
+          maxHeight: collapsedGroups[label] ? 0 : '2000px',
+          overflow: 'hidden',
+          transition: 'max-height 0.3s ease, opacity 0.3s ease',
+          opacity: collapsedGroups[label] ? 0 : 1,
+          width: '100%',
+        }}
+      >
+        {group.map((request) => (
+          <div
+            key={request.id}
+            onClick={() => handleViewDetails(request)}
+            className="request-card"
+          >
+            <div style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center' }}>
+              <p
+                style={{
+                  fontSize: 20,
+                  padding: 15,
+                  backgroundColor: usageBG(request.usageType),
+                  borderRadius: 5,
+                  color: 'white',
+                  maxWidth: '60px',
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {getInitials(request.usageType)}
+              </p>
+            </div>
+
+            <div style={{ paddingLeft: 10, width: '100%', paddingTop: 0, paddingBottom: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <p style={{ fontSize: 23, fontWeight: 500, marginBottom: 5 }}>{capitalizeName(request.userName)}</p>
+                  <p style={{ fontSize: 18, color: '#707070' }}>{request.program}</p>
+                </div>
+                <p style={{ margin: 0, fontSize: 15, padding: 10, backgroundColor: '#e9ecee', borderRadius: 5 }}>
+                  <strong>Required Date:</strong> {request.dateRequired}
                 </p>
               </div>
 
-              <div style={{padding: 10, width: '100%', paddingTop: 0, paddingBottom: 0,}}> 
-                <div style={{marginBottom: 10,display: 'flex', flexDirection: 'row', justifyContent: 'space-between',alignItems: 'center'}}>
-                <p style={{fontSize: 25, marginBottom: 0}}><strong>{capitalizeName(request.userName)}</strong></p>
-                <p style={{margin: 0, fontSize: 15}}><strong>Required Date:</strong> {request.dateRequired}</p>
-                </div>
-
-              <p style={{fontSize: 18, color: 'gray'}}>{request.program}</p>
-
-              <div style={{margin: 0}}>
-              <p style={{color: 'gray', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
-              <p style={{color: 'gray', fontSize: 15, marginBottom: 5  }}>{request.usageType}</p>
-              <p style={{color: 'gray', fontSize: 15, marginBottom: 5  }}>(course code)(course description)</p>
+              <div style={{ margin: 0 }}>
+                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
+                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
+                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>(course code)(course description)</p>
               </div>
-              {/* <p><strong>Course Description:</strong> {request.courseDescription}</p> */}
-              {/* <p><strong>Requisition Date:</strong> {formatDate(request.timestamp)}</p> */}
-              
-              </div>
-              
             </div>
-          ))}
-        </div>
-      )
-    ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+))}
   </div>
 </Spin>
 

@@ -39,12 +39,16 @@
   border-radius: 8px;
   padding: 16px;
   background-color: #fff;
-  transition: box-shadow 0.3s;
+  transition: 0.1s ease-in-out;
   cursor: pointer;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
 }
 
 .request-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: #eeeeee;
 }
 
 .request-card h3 {
