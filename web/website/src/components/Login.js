@@ -19,6 +19,8 @@ import trybg2 from '../try-bg2.svg'
 import NotificationModal from "./customs/NotificationModal";
 import TermsModal from "./customs/TermsModal";
 
+import nulsLogo from '../logo1.png'
+
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -611,19 +613,29 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-box">
+        
         <div className="container2">
           <div className="image-div">
             <img src={trybg2} alt="This is the image" />
+              
           </div>
-  
+
           <div className="form-div">
             <h2 className={signUpMode ? "create-account-title" : "login-title"}>
+              {!signUpMode && (
+  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-120px', marginLeft:'-30px',marginBottom:'-45px' }}>
+    <img src={nulsLogo} alt="NULS Logo" style={{ maxWidth: '290px', height: 'auto' }} />
+  </div>
+)}
               {signUpMode
                 ? "Create an Account"
                 : isNewUser
                 ? "Set Your Password"
-                : "Login"}
+                
+                : "SIGN IN"}    
             </h2>
+            
+
             <form
               className={signUpMode ? "form-wrapper slide-in" : "form-wrapper slide-in2"}
               onSubmit={(e) => {
@@ -652,7 +664,7 @@ const Login = () => {
                       required
                     />
                   </div>
-  
+
                   <div className="form-group">
                     <label>Email</label>
                     <input
@@ -869,12 +881,14 @@ const Login = () => {
                   <div className="loader"></div>
                 ) : signUpMode ? (
                   "Sign Up"
+                  
                 ) : isNewUser ? (
                   "Set Password"
                 ) : (
                   "Login"
                 )}
               </button>
+               
             </form>
   
             <div className={signUpMode ? "bottom-label-div2" : "bottom-label-div"}>
