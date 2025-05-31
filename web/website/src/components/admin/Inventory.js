@@ -678,10 +678,10 @@ const printPdf = () => {
     setSelectedCategory(record.category);
 
     editForm.setFieldsValue({
-      category: record.category,
-      labRoom: record.labRoom,
+      // category: record.category,
+      // labRoom: record.labRoom,
       quantity: record.quantity,
-      status: record.status,
+      // status: record.status,
       condition: {
         Good: record.condition?.Good ?? 0,
         Defect: record.condition?.Defect ?? 0,
@@ -958,16 +958,24 @@ const printPdf = () => {
    const updateItem = async (values) => {
     console.log("✅ Raw incoming values:", values);
 
-    // Build safeValues but WITHOUT using values.labRoom (ignore it)
-    // We'll get labRoom from Firestore data directly below.
     const safeValues = {
-      // category: values.category ?? "",
-      // labRoom will be fetched from Firestore data, so omit here or set to empty string
-      // labRoom: "", 
       quantity: values.quantity ?? 0,
       // status: values.status ?? "Available",
       condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
     };
+
+      const isQuantitySame = safeValues.quantity === (editingItem.quantity ?? 0);
+      const isConditionSame = 
+        (safeValues.condition.Good ?? 0) === (editingItem.condition?.Good ?? 0) &&
+        (safeValues.condition.Defect ?? 0) === (editingItem.condition?.Defect ?? 0) &&
+        (safeValues.condition.Damage ?? 0) === (editingItem.condition?.Damage ?? 0);
+
+      if (isQuantitySame && isConditionSame) {
+        // No changes detected
+        setIsNotificationVisible(true);
+        setNotificationMessage("No changes detected. Please update at least one value.");
+        return;  // Exit early without updating
+      }
 
     // try {
     //   const snapshot = await getDocs(collection(db, "inventory"));
@@ -1084,6 +1092,10 @@ const printPdf = () => {
               console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
 
               
+              const existingGoodQty = data.condition?.Good ?? 0;
+              const newGoodQty = values.condition?.Good ?? 0;
+              const goodQtyDifference = newGoodQty - existingGoodQty;
+
               const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
 
               // 1. Query the latest deliveryNumber
@@ -1104,10 +1116,10 @@ const printPdf = () => {
                 }
               }
 
-              // 2. Add the new log
+              // 2. Add the new log (using quantityDifference instead of total)
               await addDoc(stockLogRef, {
                 date: new Date().toISOString().split("T")[0],
-                noOfItems: safeValues.quantity,
+                noOfItems: goodQtyDifference,
                 deliveryNumber: newDeliveryNumber,
                 createdAt: serverTimestamp(),
               });
