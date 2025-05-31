@@ -821,6 +821,7 @@ const Requisition = () => {
           setUsageType("");
           setRoom("");
           setReason("");
+           setCourseDescription("");
           setRequestList([]);
           setMergedData([]);
           setTableData([]); 
