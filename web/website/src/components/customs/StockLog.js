@@ -1,43 +1,82 @@
-import { Table } from 'antd';
+import { useState, useEffect } from 'react';
+import { Table, Spin, Alert } from 'antd';
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../../backend/firebase/FirebaseConfig';
 
-// Define your data
-const dataSource = [
-  {
-    key: '1',
-    date: '2025-05-30',
-    items: 10,
-    deliveryNumber: 'DLV-00123',
-  },
-  {
-    key: '2',
-    date: '2025-05-29',
-    items: 7,
-    deliveryNumber: 'DLV-00122',
-  },
-];
+const StockLog = ({ inventoryDocId }) => {
+  const [stockLogs, setStockLogs] = useState([]);
+  const [loading, setLoading] = useState(true); // start loading true
+  const [error, setError] = useState(null);
 
-// Define the columns
-const columns = [
-  {
-    title: 'Date',
-    dataIndex: 'date',
-    key: 'date',
-  },
-  {
-    title: 'No. of Items',
-    dataIndex: 'items',
-    key: 'items',
-  },
-  {
-    title: 'Delivery #',
-    dataIndex: 'deliveryNumber',
-    key: 'deliveryNumber',
-  },
-];
+  useEffect(() => {
+    if (!inventoryDocId) return;
 
-// Use it in your component
-const DeliveryTable = () => {
-  return <Table dataSource={dataSource} columns={columns} pagination={false} scroll={{ y: 300 }} className="custom-header-table"/>;
+    setLoading(true);
+    setError(null);
+
+    const logRef = collection(db, 'inventory', inventoryDocId, 'stockLog');
+
+    const unsubscribe = onSnapshot(
+        logRef,
+        (snapshot) => {
+        const logs = snapshot.docs.map(doc => ({
+            key: doc.id,
+            ...doc.data(),
+        }));
+
+        // 🔽 Sort by deliveryNumber descending (e.g., DLV-00010 > DLV-00001)
+        const sortedLogs = logs.sort((a, b) => {
+            const aNum = parseInt(a.deliveryNumber?.replace('DLV-', '')) || 0;
+            const bNum = parseInt(b.deliveryNumber?.replace('DLV-', '')) || 0;
+            return bNum - aNum;
+        });
+
+        setStockLogs(sortedLogs);
+        setLoading(false);
+        },
+        (err) => {
+        setError('Failed to fetch stock logs');
+        console.error(err);
+        setLoading(false);
+        }
+    );
+
+    return () => unsubscribe();
+  }, [inventoryDocId]);
+
+
+  const columns = [
+    {
+      title: 'Date',
+      dataIndex: 'date',
+      key: 'date',
+      render: text => new Date(text).toLocaleDateString(),
+    },
+    {
+      title: 'Inventory Balance',
+      dataIndex: 'noOfItems',
+      key: 'noOfItems',
+    },
+    {
+      title: 'Delivery #',
+      dataIndex: 'deliveryNumber',
+      key: 'deliveryNumber',
+    },
+  ];
+
+  if (loading) return <Spin />;
+  if (error) return <Alert message={error} type="error" />;
+  if (!stockLogs.length) return <p>No stock logs for this item.</p>;
+
+  return (
+    <Table
+      dataSource={stockLogs}
+      columns={columns}
+      pagination={false}
+      scroll={{ y: 300 }}
+      rowKey="key"
+    />
+  );
 };
 
-export default DeliveryTable;
+export default StockLog;

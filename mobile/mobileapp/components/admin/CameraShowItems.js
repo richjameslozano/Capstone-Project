@@ -305,62 +305,102 @@ const CameraShowItems = ({ onClose }) => {
       //      showLabRoomDetails(roomId, itemsDetailArray);
       //   }
       
-      } else if (
-        typeof parsedData === "string" ||
-        parsedData.labRoom ||
-        parsedData.roomNumber
+      // } else if (
+      //   typeof parsedData === "string" ||
+      //   parsedData.labRoom ||
+      //   parsedData.roomNumber
 
-      ) {
-        const roomNumber =
-          typeof parsedData === "string"
-            ? parsedData
-            : parsedData.labRoom || parsedData.roomNumber;
+      // ) {
+      //   const roomNumber =
+      //     typeof parsedData === "string"
+      //       ? parsedData
+      //       : parsedData.labRoom || parsedData.roomNumber;
+
+      //   try {
+      //     if (!parsedData.items || parsedData.items.length === 0) {
+      //       Alert.alert("Error", "No items found in QR data.");
+      //       return;
+      //     }
+
+      //     const itemsDetailArray = [];
+      //     let labRoomFromInventory = null; 
+
+      //     for (const item of parsedData.items) {
+      //       const itemQuery = query(
+      //         collection(db, "inventory"),
+      //         where("itemId", "==", item.itemId)
+      //       );
+
+      //       const itemSnapshot = await getDocs(itemQuery);
+      //       if (!itemSnapshot.empty) {
+
+      //         const data = itemSnapshot.docs[0].data();
+      //         if (data.status !== "archived") {
+      //           itemsDetailArray.push(data);
+
+      //                     if (!labRoomFromInventory && data.labRoom) {
+      //             labRoomFromInventory = data.labRoom;
+      //           }
+      //         }
+
+      //       } else {
+      //         console.warn(`Item ID ${item.itemId} not found in inventory`);
+      //       }
+      //     }
+
+      //     if (itemsDetailArray.length === 0) {
+      //       Alert.alert("Inventory", "No valid items found in inventory.");
+      //       return;
+      //     }
+
+      //     await addBorrowedAndDeployedCountToItems(itemsDetailArray);
+      //     showLabRoomDetails(labRoomFromInventory, itemsDetailArray);
+
+      //   } catch (error) {
+      //     console.error("Error fetching inventory items:", error);
+      //     Alert.alert("Error", "Failed to fetch inventory item details.");
+      //   }
+        
+      // } else {
+      //   Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
+      // }
+
+      } else if (parsedData.labRoomId) {
+        const labRoomId = parsedData.labRoomId;
 
         try {
-          if (!parsedData.items || parsedData.items.length === 0) {
-            Alert.alert("Error", "No items found in QR data.");
+          const labRoomRef = doc(db, "labRoom", labRoomId);
+          const labRoomDoc = await getDoc(labRoomRef);
+
+          if (!labRoomDoc.exists()) {
+            Alert.alert("Error", "Lab room not found.");
             return;
           }
 
+          const itemsSnap = await getDocs(collection(labRoomRef, "items"));
           const itemsDetailArray = [];
-          let labRoomFromInventory = null; 
 
-          for (const item of parsedData.items) {
-            const itemQuery = query(
-              collection(db, "inventory"),
-              where("itemId", "==", item.itemId)
-            );
-
-            const itemSnapshot = await getDocs(itemQuery);
-            if (!itemSnapshot.empty) {
-
-              const data = itemSnapshot.docs[0].data();
-              if (data.status !== "archived") {
-                itemsDetailArray.push(data);
-
-                          if (!labRoomFromInventory && data.labRoom) {
-                  labRoomFromInventory = data.labRoom;
-                }
-              }
-
-            } else {
-              console.warn(`Item ID ${item.itemId} not found in inventory`);
+          itemsSnap.forEach((docItem) => {
+            const data = docItem.data();
+            if (data.status !== "archived") {
+              itemsDetailArray.push(data);
             }
-          }
+          });
 
           if (itemsDetailArray.length === 0) {
-            Alert.alert("Inventory", "No valid items found in inventory.");
+            Alert.alert("Inventory", "No valid items found in lab room.");
             return;
           }
 
           await addBorrowedAndDeployedCountToItems(itemsDetailArray);
-          showLabRoomDetails(labRoomFromInventory, itemsDetailArray);
+
+          // Show modal with roomId and items
+          showLabRoomDetails(labRoomDoc.data().roomNumber || labRoomId, itemsDetailArray);
 
         } catch (error) {
-          console.error("Error fetching inventory items:", error);
-          Alert.alert("Error", "Failed to fetch inventory item details.");
+          console.error("Error fetching lab room data:", error);
+          Alert.alert("Error", "Failed to fetch lab room or items.");
         }
-        
       } else {
         Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
       }
