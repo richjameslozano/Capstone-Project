@@ -495,6 +495,7 @@ const LabRoomQR = () => {
   const [originalRoomNumbers, setOriginalRoomNumbers] = useState({});
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
   const [confirmRoomId, setConfirmRoomId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const qrRefs = useRef({});
 
   // useEffect(() => {
@@ -806,14 +807,19 @@ const LabRoomQR = () => {
     document.body.removeChild(downloadLink);
   };
 
+  const filteredRooms = labRooms.filter((room) =>
+    room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="labroom-container">
       <h2 className="labroom-header">Lab Room QR Codes</h2>
 
-      {labRooms.length === 0 ? (
+      {filteredRooms.length === 0 ? (
         <p>Loading lab rooms and items...</p>
       ) : (
-        labRooms
+        filteredRooms
           .filter(room => room.items && room.items.length > 0)
           .map(room => (
             <div key={room.id} className="labroom-table-wrapper">
