@@ -1365,7 +1365,7 @@ const Requisition = () => {
       return;
     }
 
-    const lastRow = tableData[tableData.length - 1];
+    const lastRow = tableData[tableData.length + 1];
 
     if (!lastRow || lastRow.selectedItemId) {
       setTableData([...tableData, { key: Date.now(), selectedItemId: null }]);
@@ -1651,7 +1651,7 @@ const Requisition = () => {
             </div>
           </div>
 
-          <div className="table-request-container">
+    
           {/* <Table
             className="requisition-table"
             columns={columns}
@@ -1664,11 +1664,12 @@ const Requisition = () => {
             className="requisition-table"
             columns={columns}
             dataSource={mergedData}
-            pagination={{ pageSize: 10 }}
-            rowKey={(record) => record.key}
-            scroll={{ y: 400 }} 
+            pagination={false}
+            style={{height: 'auto'}}
+            // rowKey={(record) => record.key}
+            scroll={{y: 260}} 
           />
-          </div>
+      
 
           <div className="bottom-btns">
             {/* <Button
