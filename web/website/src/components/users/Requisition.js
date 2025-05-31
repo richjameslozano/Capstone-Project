@@ -1365,7 +1365,7 @@ const Requisition = () => {
       return;
     }
 
-    const lastRow = tableData[tableData.length + 1];
+    const lastRow = tableData[tableData.length - 1];
 
     if (!lastRow || lastRow.selectedItemId) {
       setTableData([...tableData, { key: Date.now(), selectedItemId: null }]);
