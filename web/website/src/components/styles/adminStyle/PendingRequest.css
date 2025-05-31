@@ -48,7 +48,7 @@
 }
 
 .request-card:hover {
-  background-color: #eeeeee;
+  background-color: #f7f7f7
 }
 
 .request-card h3 {
@@ -61,12 +61,20 @@
   background-color: #f9f9f9;
 }
 
-.request-card {
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.filter-btns{
+  background-color: #e9ecee;
+  padding: 10px;
+  border-radius: 50px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border: 0px;
+  cursor: pointer;
 }
+
+.search-input{
+  margin-left: 20px;
+}
+
 
 .approved-card {
   margin-bottom: 12px;
@@ -79,12 +87,6 @@
   font-weight: bold;
 }
 
-.request-card {
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
 
 .approved-card {
   margin-bottom: 12px;
@@ -101,17 +103,6 @@
   color: #1890ff;
   font-style: italic;
   text-decoration: underline;
-}
-
-.request-card {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0px 3px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease-in-out;
-}
-
-.request-card:hover {
-  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.12);
 }
 
 .cards-hidden {

@@ -1807,49 +1807,99 @@ useEffect(() => {
   });
 }, [groupedRequests]);
 
+ const [selectedFilter, setSelectedFilter] = useState('All');
+
+const getFilteredRequests = () => {
+  if (selectedFilter === 'All') return requests;
+
+  return requests.filter((item) => {
+    const usage = item.usageType?.trim().toLowerCase();
+    if (!usage) return false;
+
+    const normalized = usage.replace(/\s+/g, ' ').toLowerCase();
+    const isKnownType = ['laboratory experiment', 'research', 'community extension'];
+
+    if (isKnownType.includes(normalized)) {
+      return normalized === selectedFilter.toLowerCase();
+    } else {
+      return selectedFilter === 'Others';
+    }
+  });
+};
+
+const filteredRequests = getFilteredRequests();
+const categorizedRequests = groupByDueDateCategory(filteredRequests);
+
+  const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout style={{padding: 20}}>
+
+      <div style={{display: 'flex', gap: 10, padding: 30, borderRadius: 10, backgroundColor: 'white', marginBottom: 20}}>
+        {usageTypes.map((type) => (
+                      <button
+                        key={type}
+                        
+                        className="filter-btns"
+                        onClick={() => setSelectedFilter(type)}
+                      >
+                        <Text
+                          style={
+                          {fontSize: 15, }
+                          }
+                        >
+                          {type}
+                        </Text>
+                      </button>
+                    ))}
+
+          <input placeholder="Search" className="search-input"/>
+      </div>
         
 <Spin spinning={loading} tip="Loading requests...">
   <div>
-    {Object.entries(groupedRequests).map(([label, group]) => (
-  group.length > 0 && (
-    <div key={label} style={{ marginBottom: "2rem", justifyItems: 'flex-start'}}>
+   {Object.entries(groupedRequests).map(([label, group]) => {
+  if (group.length === 0) return null;
+
+  const isCollapsed = collapsedGroups[label];
+  const contentRef = contentRefs.current[label] || (contentRefs.current[label] = React.createRef());
+
+  return (
+    <div key={label} style={{ marginBottom: "2rem", justifyItems: 'flex-start' }}>
       
       {/* Group Header */}
-      <div style={{display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: 10}}>
-      <button
-        onClick={() => toggleGroup(label)}
-        style={{
-          cursor: 'pointer',
-          color: "#395a7f",
-          backgroundColor: 'white',
-          border: '1px solid #acacac',
-          padding: 10,
-          borderRadius: 5,
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-
-        }}
-      >
-        <h2 style={{ margin: 0, color: '#395a7f', fontWeight: 500}}>{label}  </h2>
-        <div style={{fontSize: 20, marginLeft: 10}}>
-        {collapsedGroups[label] ? <ArrowDownOutlined/> : <ArrowUpOutlined/> }
-        </div>
-      </button>
-      <h3 style={{margin: 0}}>({group.length})</h3>
+      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: 10 }}>
+        <button
+          onClick={() => toggleGroup(label)}
+          style={{
+            cursor: 'pointer',
+            color: "#395a7f",
+            backgroundColor: 'white',
+            border: '1px solid #acacac',
+            padding: 10,
+            borderRadius: 5,
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
+          <h2 style={{ margin: 0, color: '#395a7f', fontWeight: 500 }}>{label}</h2>
+          <div style={{ fontSize: 20, marginLeft: 10 }}>
+            {isCollapsed ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
+          </div>
+        </button>
+        <h3 style={{ margin: 0 }}>({group.length})</h3>
       </div>
 
       {/* Collapsible Content */}
       <div
+        ref={contentRef}
         style={{
-          maxHeight: collapsedGroups[label] ? 0 : '2000px',
           overflow: 'hidden',
           transition: 'max-height 0.3s ease, opacity 0.3s ease',
-          opacity: collapsedGroups[label] ? 0 : 1,
+          maxHeight: isCollapsed ? '0px' : `${contentRef.current?.scrollHeight}px`,
+          opacity: isCollapsed ? 0 : 1,
           width: '100%',
         }}
       >
@@ -1897,8 +1947,9 @@ useEffect(() => {
         ))}
       </div>
     </div>
-  )
-))}
+  );
+})}
+
   </div>
 </Spin>
 
