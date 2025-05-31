@@ -28,6 +28,30 @@
   padding: 10px;
 }
 
+.request-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.request-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fff;
+  transition: box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.request-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.request-card h3 {
+  margin: 0 0 8px 0;
+}
+
+
 .content {
   padding: 20px;
   background-color: #f9f9f9;

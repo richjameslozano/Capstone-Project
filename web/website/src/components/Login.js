@@ -626,8 +626,8 @@ const Login = () => {
             <img src={nulsLogo} alt="NULS Logo" style={{maxHeight: 150}} />
           </div>
         )}
+ 
 
-        
             <h2 className={signUpMode ? "create-account-title" : "login-title"}>
               {signUpMode
                 ? "Create an Account"
