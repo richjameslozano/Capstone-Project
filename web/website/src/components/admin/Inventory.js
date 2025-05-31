@@ -678,10 +678,10 @@ const printPdf = () => {
     setSelectedCategory(record.category);
 
     editForm.setFieldsValue({
-      category: record.category,
-      labRoom: record.labRoom,
+      // category: record.category,
+      // labRoom: record.labRoom,
       quantity: record.quantity,
-      status: record.status,
+      // status: record.status,
       condition: {
         Good: record.condition?.Good ?? 0,
         Defect: record.condition?.Defect ?? 0,
@@ -963,6 +963,19 @@ const printPdf = () => {
       // status: values.status ?? "Available",
       condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
     };
+
+      const isQuantitySame = safeValues.quantity === (editingItem.quantity ?? 0);
+      const isConditionSame = 
+        (safeValues.condition.Good ?? 0) === (editingItem.condition?.Good ?? 0) &&
+        (safeValues.condition.Defect ?? 0) === (editingItem.condition?.Defect ?? 0) &&
+        (safeValues.condition.Damage ?? 0) === (editingItem.condition?.Damage ?? 0);
+
+      if (isQuantitySame && isConditionSame) {
+        // No changes detected
+        setIsNotificationVisible(true);
+        setNotificationMessage("No changes detected. Please update at least one value.");
+        return;  // Exit early without updating
+      }
 
     // try {
     //   const snapshot = await getDocs(collection(db, "inventory"));
