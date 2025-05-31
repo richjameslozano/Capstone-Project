@@ -348,15 +348,47 @@ const printPdf = () => {
       return;
     }
 
-    const isDuplicate = dataSource.some(
-      (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
+    // const isDuplicate = dataSource.some(
+    //   (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
+    // );
+
+    // if (isDuplicate) {
+    //   setNotificationMessage("An item with the same description already exists in the inventory.");
+    //   setIsNotificationVisible(true);
+    //   return;
+    // }
+
+    const trimmedName = itemName.trim();
+    const normalizedInputName = trimmedName.toLowerCase();
+    const normalizedInputDetails = itemDetails.trim().toLowerCase();
+
+    // Find items with the same name (case-insensitive)
+    const sameNameItems = dataSource.filter(
+      (item) => item.item.toLowerCase().startsWith(normalizedInputName)
     );
 
-    if (isDuplicate) {
-      setNotificationMessage("An item with the same description already exists in the inventory.");
+    // Check if same name AND same details already exists
+    const exactMatch = sameNameItems.find((item) => {
+      const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
+      const itemNameSafe = item.item ? item.item.toLowerCase() : "";
+      return (
+        itemDetailsSafe === normalizedInputDetails &&
+        itemNameSafe === normalizedInputName
+      );
+    });
+
+    if (exactMatch) {
+      setNotificationMessage("An item with the same name and details already exists in the inventory.");
       setIsNotificationVisible(true);
       return;
     }
+
+    // Generate suffix for similar items with same base name but different details
+    let similarItemCount = sameNameItems.length + 1;
+    const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
+    const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
+
+    const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
 
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
     const inventoryRef = collection(db, "inventory");
@@ -430,7 +462,8 @@ const printPdf = () => {
 
     const inventoryItem = {
       itemId: generatedItemId,
-      itemName,
+      // itemName,
+      itemName: finalItemName,
       itemDetails,
       entryCurrentDate,
       expiryDate,
@@ -466,7 +499,8 @@ const printPdf = () => {
     const newItem = {
       id: count + 1,
       itemId: generatedItemId,
-      item: itemName,
+      // item: itemName,
+      item: finalItemName,
       itemDetails: itemDetails,
       entryDate: entryCurrentDate, 
       expiryDate: expiryDate, 
@@ -1134,12 +1168,18 @@ const printPdf = () => {
   ];
 
   const disabledDate = (current) => {
-    return current && current < new Date().setHours(0, 0, 0, 0);
+    return current && current < dayjs().startOf("day");
   };
 
+  // Optional: disable expiry dates before entry date (if entryDate is used)
   const disabledExpiryDate = (current) => {
     const entryDate = form.getFieldValue("entryDate");
-    return current && entryDate && current.isBefore(entryDate.endOf("day"));
+    if (!entryDate) {
+      // If entryDate not selected yet, just disable past dates
+      return current && current < dayjs().startOf("day");
+    }
+    // Disable dates before the selected entryDate
+    return current && current < dayjs(entryDate).startOf("day");
   };
 
   const formatCondition = (condition, category) => {
