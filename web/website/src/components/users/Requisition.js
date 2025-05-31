@@ -1358,6 +1358,24 @@ const Requisition = () => {
     return conflictInRequests || conflictInCatalog;
   };
 
+  const handleAddRow = () => {
+    if (tableData.length >= 10) {
+      setModalMessage("You can only add up to 10 items.");
+      setIsModalVisible(true);
+      return;
+    }
+
+    const lastRow = tableData[tableData.length - 1];
+
+    if (!lastRow || lastRow.selectedItemId) {
+      setTableData([...tableData, { key: Date.now(), selectedItemId: null }]);
+      
+    } else {
+      setModalMessage("Please select an item in the last row first.");
+      setIsModalVisible(true);
+    }
+  };
+
   return (
     <Layout style={{ minHeight: "80vh" }}>
       <Layout className="site-layout">
@@ -1633,18 +1651,28 @@ const Requisition = () => {
             </div>
           </div>
 
-          <div className="table-request-container">
+    
+          {/* <Table
+            className="requisition-table"
+            columns={columns}
+            dataSource={mergedData}
+            pagination={{ pageSize: 10 }}
+            rowKey={(record) => record.key}
+          /> */}
+
           <Table
             className="requisition-table"
             columns={columns}
             dataSource={mergedData}
-            pagination={{ pageSize: 5 }}
-            rowKey={(record) => record.key}
+            pagination={false}
+            style={{height: 'auto'}}
+            // rowKey={(record) => record.key}
+            scroll={{y: 260}} 
           />
-          </div>
+      
 
           <div className="bottom-btns">
-            <Button
+            {/* <Button
               type="dashed"
               onClick={() => {
                 const lastRow = tableData[tableData.length - 1];
@@ -1661,6 +1689,15 @@ const Requisition = () => {
                 }
               }}
               className="add-item-row-btn"
+            >
+              Add Item Row
+            </Button> */}
+
+            <Button
+              type="dashed"
+              onClick={handleAddRow}
+              className="add-item-row-btn"
+              // disabled={tableData.length >= 10}
             >
               Add Item Row
             </Button>

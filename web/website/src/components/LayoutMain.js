@@ -1,10 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  MenuFoldOutlined,
-  MenuUnfoldOutlined,
-  UploadOutlined,
   UserOutlined,
-  VideoCameraOutlined,
   DashboardOutlined,
   UnorderedListOutlined,
   FileTextOutlined,
@@ -15,16 +11,14 @@ import {
   SnippetsOutlined,
   ClockCircleOutlined,
   SearchOutlined,
-  SolutionOutlined,
   ShoppingCartOutlined,
   DollarCircleOutlined,
   RollbackOutlined,
-  SwapLeftOutlined,
   ShoppingOutlined,
   DatabaseOutlined,
-  ApartmentOutlined,
-  BuildOutlined,
   HomeOutlined,
+  UserSwitchOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons';
 
 
@@ -55,7 +49,8 @@ import AdminActivityLog from './admin/AdminActivityLog';
 import NotAuthorized from './NotAuthorized';
 import CapexList from './admin/CapexList';
 import LabRoomQR from './admin/LabRoomQR';
-import PrivacyPolicy from './PrivacyPolicy'
+import PrivacyPolicy from './PrivacyPolicy';
+import './styles/LayoutMain.css'
 const { Header, Sider, Content } = Layout;
 
 const LayoutMain = () => {
@@ -273,70 +268,95 @@ const LayoutMain = () => {
     },
   ];
 
-  const adminMenuItems = [
+const adminMenuItems = [
+
     {
-      key: "/main/dashboard",
-      icon: <DashboardOutlined />,
-      label: "Dashboard",
-    },
+    type: "group",
+      label: (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      <UserOutlined />
+      Faculty panel
+    </span>
+  ),
+    children: [
+      {
+        key: "/main/requisition",
+        icon: <FileDoneOutlined />,
+        label: "Requisition",
+      },
+      {
+        key: "/main/return-items",
+        icon: <RollbackOutlined />,
+        label: "Return Items",
+      },
+      {
+        key: "/main/orders",
+        icon: <ShoppingCartOutlined />,
+        label: "Orders",
+      },
+    ],
+  },
     {
-      key: "/main/inventory",
-      icon: <UnorderedListOutlined />,
-      label: "Inventory",
-    },
-    {
-      key: "/main/requisition",
-      icon: <FileDoneOutlined />,
-      label: "Requisition",
-    },
-    {
-      key: "/main/return-items",
-      icon: <RollbackOutlined />,
-      label: "Return Items",
-    },
+      type: "group",
+      icon: <UserSwitchOutlined/>,
+       label: (
+    <span style={{ display: 'flex', alignItems: 'center', gap: 8}}>
+      <UserSwitchOutlined />
+      Admin Panel
+    </span>
+  ),
+      children: [
+      {
+        key: "/main/dashboard",
+        icon: <DashboardOutlined />,
+        label: "Dashboard",
+      },
+      {
+        key: "/main/inventory",
+        icon: <UnorderedListOutlined />,
+        label: "Inventory",
+      },
+      {
+        key: "/main/pending-request",
+        icon: <FileTextOutlined />,
+        label: "Pending Requests",
+      },
+      {
+        key: "/main/borrow-catalog",
+        icon: <ShoppingOutlined />,
+        label: "Borrow Catalog",
+      },
+      {
+        key: "/main/request-log",
+        icon: <DatabaseOutlined />,
+        label: "Request Log",
+      },
+      {
+        key: "/main/capex-request-list",
+        icon: <DollarCircleOutlined />,
+        label: "Capex Request List",
+      },
+      {
+        key: "/main/lab-room",
+        icon: <HomeOutlined />,
+        label: "Stock Room Details",
+      },
+    ],
+  },
+  {
+    key: "/main/admin-activity-log",
+    icon: <HistoryOutlined />,
+    label: "Activity Log",
+  },
+  {
+    key: "logout",
+    icon: <LogoutOutlined />,
+    label: "Sign Out",
+    danger: true,
     
-    {
-      key: "/main/orders",
-      icon: <ShoppingCartOutlined />,
-      label: "Orders",      
-    },
-    {
-      key: "/main/pending-request",
-      icon: <FileTextOutlined />,
-      label: "Pending Requests",
-    },
-    {
-      key: "/main/borrow-catalog",
-      icon: <ShoppingOutlined />,
-      label: "Borrow Catalog",
-    },
-    {
-      key: "/main/request-log",
-      icon: <DatabaseOutlined />,
-      label: "Request Log",
-    },
-    {
-      key: "/main/capex-request-list",
-      icon: <DollarCircleOutlined />,
-      label: "Capex Request List",
-    },
-    {
-      key: "/main/lab-room",
-      icon: <HomeOutlined />,
-      label: "Stock Room Details",
-    },
-    {
-      key: "/main/admin-activity-log",
-      icon: <HistoryOutlined />,
-      label: "Activity Log",
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Sign Out",
-      danger: true,
-    },
-  ];
+  },
+];
+
 
   const superUserMenuItems = [
     {
@@ -435,25 +455,34 @@ const LayoutMain = () => {
       ? superUserMenuItems
       : userMenuItems;
 
+const SIDEBAR_WIDTH = 220;
+const COLLAPSED_WIDTH = isMobile ? 0 : 80;
+const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+
+
+
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider
-          trigger={null}
-          collapsible
-          collapsed={collapsed}
-          collapsedWidth={isMobile ? 0 : undefined} 
-          width={200}  
-          className={isMobile && !mobileOpen ? 'mobile-collapsed' : ''} 
-          style={{ 
-            width: mobileOpen ? '200px' : (collapsed && !isMobile ? '80px' : '200px'),
-            position: "fixed",
-            top: 0,
-            left: 0,
-            height: "100vh",
-            zIndex: 1000,
-            overflow: "auto",
-          }}
-        > 
+    <Layout style={{ minHeight: "100vh",  marginLeft: 20, transition: 'margin-left 0.2s' }}>
+            <Sider
+              trigger={null}
+              collapsible
+              collapsed={collapsed}
+              collapsedWidth={COLLAPSED_WIDTH}
+              width={SIDEBAR_WIDTH}
+              className={isMobile && !mobileOpen ? 'mobile-collapsed' : ''}
+              style={{
+                width: currentSiderWidth,
+                position: "fixed",
+                top: 0,
+                left: 0,
+                height: "100vh",
+                zIndex: 1000,
+                overflow: "auto",
+                padding: 0
+              }}
+            >
+
+
           <div className="demo-logo-vertical" />
 
           <div className="logo">
@@ -473,8 +502,9 @@ const LayoutMain = () => {
             selectedKeys={[location.pathname]}
             onClick={handleMenuClick}
             items={menuItems}
-
+            className='custom-menu'
           />
+
       </Sider>
 
       <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: 'margin-left 0.2s' }}>
@@ -483,12 +513,13 @@ const LayoutMain = () => {
           style={{
             position: "fixed",
             top: 0,
-            left: collapsed ? 80 : 200,
+            left: currentSiderWidth,
             right: 0,
             zIndex: 1001,
             background: "#fff",
             padding: 0,
             transition: 'left 0.2s',
+            
           }}
         >
           <AppHeader

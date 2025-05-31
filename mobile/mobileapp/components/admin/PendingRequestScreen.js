@@ -374,6 +374,7 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
                     <View style={[styles.tableRow, styles.tableHeader]}>
                       <Text style={styles.tableCell}>Item ID</Text>
                       <Text style={styles.tableCell}>Item</Text>
+                      <Text style={styles.tableCell}>Item Description</Text>
                       <Text style={styles.tableCell}>Qty</Text> 
                       <Text style={styles.tableCell}>Category</Text>
                     </View>
@@ -381,6 +382,7 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
                       <View key={idx} style={styles.tableRow}>
                         <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
                         <Text style={styles.tableCell}>{item.itemName}</Text>
+                        <Text style={styles.tableCell}>{item.itemDetails}</Text>
                         <Text style={styles.tableCell}>{item.quantity}</Text>
                         <Text style={styles.tableCell}>{item.category}</Text>
                       </View>

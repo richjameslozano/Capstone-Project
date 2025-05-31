@@ -186,17 +186,17 @@
 }
 
 .requisition-table {
-  overflow-y: auto; 
-  max-height: 400px; 
+  overflow-y: hidden; 
   border: 1px solid #ccc;
   border-radius: 5px;
   background-color: #fff;
   width: 100%;
 }
 
+
 .requisition-table .ant-table-container {
-  max-height: 400px; 
-  overflow-y: auto;
+  overflow-y: hidden;
+  padding-bottom: 30px;
 }
 
 .requisition-table .ant-table-thead > tr > th {

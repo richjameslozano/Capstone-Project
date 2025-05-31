@@ -253,6 +253,7 @@ export default function InventoryScreen({ navigation }) {
         id: item.id, 
         itemId: item.itemId || '',
         itemName: item.itemName || '',
+        itemDetails: item.itemDetails || '',
         labRoom: item.labRoom || '',
         qrCode: item.qrCode || '',
         quantity: quantity.toString(),
@@ -829,7 +830,7 @@ export default function InventoryScreen({ navigation }) {
                     console.log('Updating usageTypeOther:', text);
                     setMetadata((prevMetadata) => ({
                       ...prevMetadata,
-                      usageTypeOther: text, // 🧠 Make sure this field is not misspelled!
+                      usageTypeOther: text, 
                     }));
                   }}
                 />
@@ -1081,6 +1082,7 @@ export default function InventoryScreen({ navigation }) {
                 </View>
 
                 <Text style={styles.modalItemName}>{selectedItem?.itemName}</Text>
+                <Text style={styles.itemType}>Item Description: {selectedItem?.itemDetails}</Text>
                 <Text style={styles.itemType}>Type: {selectedItem?.type}</Text>
                 <Text style={styles.itemType}>Department: {selectedItem?.department}</Text>
                 <Text style={styles.itemType}>Category: {selectedItem?.category}</Text>

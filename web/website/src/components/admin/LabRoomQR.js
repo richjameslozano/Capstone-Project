@@ -488,12 +488,14 @@ import { Layout, Row, Col, Table, Input, Button, Typography, Modal } from "antd"
 import { collection, getDocs, onSnapshot, doc, updateDoc, writeBatch, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/LabRoomQR.css";
+import { QRCodeSVG } from "qrcode.react";
 
 const LabRoomQR = () => {
   const [labRooms, setLabRooms] = useState([]);
   const [originalRoomNumbers, setOriginalRoomNumbers] = useState({});
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
   const [confirmRoomId, setConfirmRoomId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const qrRefs = useRef({});
 
   // useEffect(() => {
@@ -805,14 +807,19 @@ const LabRoomQR = () => {
     document.body.removeChild(downloadLink);
   };
 
+  const filteredRooms = labRooms.filter((room) =>
+    room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="labroom-container">
       <h2 className="labroom-header">Lab Room QR Codes</h2>
 
-      {labRooms.length === 0 ? (
+      {filteredRooms.length === 0 ? (
         <p>Loading lab rooms and items...</p>
       ) : (
-        labRooms
+        filteredRooms
           .filter(room => room.items && room.items.length > 0)
           .map(room => (
             <div key={room.id} className="labroom-table-wrapper">
@@ -879,10 +886,16 @@ const LabRoomQR = () => {
                             ref={(el) => (qrRefs.current[room.id] = el)}
                             className="labroom-qr"
                           >
-                            <QRCodeCanvas
+                            {/* <QRCodeCanvas
+                              value={room.qrCode || "No QR code available"}
+                              size={128}
+                            /> */}
+
+                            <QRCodeSVG
                               value={room.qrCode || "No QR code available"}
                               size={128}
                             />
+                            
                             <button
                               onClick={() => downloadQRCode(room.id)}
                               className="labroom-download-button"

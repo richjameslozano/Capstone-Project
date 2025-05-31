@@ -9,6 +9,82 @@
   margin-bottom: 20px;
 }
 
+.modal-header{
+  position: absolute;
+  display: flex ;
+  flex-direction: row;
+  background-color: #6e9fc1;
+   top: 0; 
+   left: 0; 
+   right: 0;
+   border-top-right-radius: 6px;
+   border-top-left-radius: 6px;
+   align-items: center;
+   padding: 10px;
+   padding-left: 20px;
+  }
+
+  .table-wrapper{
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  overflow: hidden; /* enables border-radius clipping */
+  width: 100%;
+  padding: 5px;
+  height: auto;
+  }
+
+  .horizontal-table {
+  width: 100%;
+  border: 1px solid #e9ecee;
+  border-radius: 10px;
+  overflow: hidden;
+  border-collapse: collapse;
+  height: 100%;
+  font-size: 18px;
+}
+
+.horizontal-table th {
+  text-align: left;
+  vertical-align: top;
+  padding: 8px;
+  width: 50%; /* or whatever column width you want */
+  background-color: #f0f0f0;
+}
+
+.horizontal-table td {
+  padding: 8px;
+}
+
+.horizontal-table th,
+.horizontal-table td {
+  border: 1px solid #ccc; /* cell borders */
+  padding: 8px 12px;
+  text-align: left;
+}
+
+.delivery-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+.delivery-table th,
+.delivery-table td {
+  border: 1px solid #ccc;
+  padding: 10px 14px;
+  text-align: left;
+}
+
+.delivery-table th {
+  background-color: #f5f5f5;
+  font-weight: bold;
+}
+
+   .custom-header-table .ant-table-thead > tr > th {
+  background-color: #6e9fc1 !important;
+  
+}
+
 .search-bar {
   width: 300px;
 }
@@ -40,6 +116,12 @@
   border-radius: 8px;
 }
 
+.inventory-table .ant-table-tbody{
+  font-size: 16px;
+}
+.inventory-table .ant-table-thead{
+  font-size: 18px;
+}
 .inventory-table .ant-table-thead th:nth-child(1), 
 .inventory-table .ant-table-tbody td:nth-child(1) {
   width: 20px;
@@ -101,13 +183,13 @@
 }
 
 .inventory-table .ant-table-tbody > tr:nth-child(odd) > td {
-  background-color: #fafafa; /* Light gray */
+  background-color: #fff; /* Light gray */
 }
 
 .inventory-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #ffffff; /* White */
+  background-color: #f0f8fc; /* White */
 }
 
 .inventory-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
+  background-color: #e2eaee !important;
 }

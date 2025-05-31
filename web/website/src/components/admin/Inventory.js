@@ -17,7 +17,7 @@ import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOut
 import moment from "moment";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
-import { QRCodeCanvas } from "qrcode.react";
+import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where } from "firebase/firestore";
@@ -30,6 +30,10 @@ import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
+import StockLog from '../customs/StockLog.js'
+import { FileTextOutlined  } from '@ant-design/icons';
+
+
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -69,6 +73,28 @@ const Inventory = () => {
   const [disableExpiryDate, setDisableExpiryDate] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const db = getFirestore();
+
+  const [headerHeight, setHeaderHeight] = useState(0);
+  const headerRef = useRef(null);
+
+  useEffect(() => {
+    const measureHeight = () => {
+      if (headerRef.current) {
+        const { height } = headerRef.current.getBoundingClientRect();
+        setHeaderHeight(height);
+      }
+    };
+
+    measureHeight();
+
+    // Optional: watch for resize events
+    const observer = new ResizeObserver(measureHeight);
+    if (headerRef.current) {
+      observer.observe(headerRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const inventoryRef = collection(db, "inventory");
@@ -322,15 +348,47 @@ const printPdf = () => {
       return;
     }
 
-    const isDuplicate = dataSource.some(
-      (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
+    // const isDuplicate = dataSource.some(
+    //   (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
+    // );
+
+    // if (isDuplicate) {
+    //   setNotificationMessage("An item with the same description already exists in the inventory.");
+    //   setIsNotificationVisible(true);
+    //   return;
+    // }
+
+    const trimmedName = itemName.trim();
+    const normalizedInputName = trimmedName.toLowerCase();
+    const normalizedInputDetails = itemDetails.trim().toLowerCase();
+
+    // Find items with the same name (case-insensitive)
+    const sameNameItems = dataSource.filter(
+      (item) => item.item.toLowerCase().startsWith(normalizedInputName)
     );
 
-    if (isDuplicate) {
-      setNotificationMessage("An item with the same description already exists in the inventory.");
+    // Check if same name AND same details already exists
+    const exactMatch = sameNameItems.find((item) => {
+      const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
+      const itemNameSafe = item.item ? item.item.toLowerCase() : "";
+      return (
+        itemDetailsSafe === normalizedInputDetails &&
+        itemNameSafe === normalizedInputName
+      );
+    });
+
+    if (exactMatch) {
+      setNotificationMessage("An item with the same name and details already exists in the inventory.");
       setIsNotificationVisible(true);
       return;
     }
+
+    // Generate suffix for similar items with same base name but different details
+    let similarItemCount = sameNameItems.length + 1;
+    const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
+    const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
+
+    const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
 
     const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
     const inventoryRef = collection(db, "inventory");
@@ -404,7 +462,8 @@ const printPdf = () => {
 
     const inventoryItem = {
       itemId: generatedItemId,
-      itemName,
+      // itemName,
+      itemName: finalItemName,
       itemDetails,
       entryCurrentDate,
       expiryDate,
@@ -440,7 +499,8 @@ const printPdf = () => {
     const newItem = {
       id: count + 1,
       itemId: generatedItemId,
-      item: itemName,
+      // item: itemName,
+      item: finalItemName,
       itemDetails: itemDetails,
       entryDate: entryCurrentDate, 
       expiryDate: expiryDate, 
@@ -1108,12 +1168,18 @@ const printPdf = () => {
   ];
 
   const disabledDate = (current) => {
-    return current && current < new Date().setHours(0, 0, 0, 0);
+    return current && current < dayjs().startOf("day");
   };
 
+  // Optional: disable expiry dates before entry date (if entryDate is used)
   const disabledExpiryDate = (current) => {
     const entryDate = form.getFieldValue("entryDate");
-    return current && entryDate && current.isBefore(entryDate.endOf("day"));
+    if (!entryDate) {
+      // If entryDate not selected yet, just disable past dates
+      return current && current < dayjs().startOf("day");
+    }
+    // Disable dates before the selected entryDate
+    return current && current < dayjs(entryDate).startOf("day");
   };
 
   const formatCondition = (condition, category) => {
@@ -1717,48 +1783,104 @@ const printPdf = () => {
           </Modal>
 
           <Modal
-            title="Item Details"
             visible={isRowModalVisible}
             footer={null}
             onCancel={() => setIsRowModalVisible(false)}
             zIndex={1019}
+            closable={true} 
+            width={'70%'}
+          
           >
             {selectedRow && (
-              <div>
-                <p><strong>Item ID:</strong> {selectedRow.itemId}</p>
-                <p><strong>Item Name:</strong> {selectedRow.itemName}</p>
-                <p><strong>Quantity:</strong> {selectedRow.quantity}</p>
-                {/* <p>
-                  <strong>Inventory Balance:</strong>{" "}
-                  {selectedRow.quantity}
-                  {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
+              <div style={{display: 'flex',flexDirection: 'column', gap: 40}}>
+                  <div ref={headerRef} className="modal-header">
+                  
+                  <h1 style={{color: "white"  , margin: 0}}><FileTextOutlined style={{color: 'white', fontSize: 27, marginRight: 20}}/>Item Details - {selectedRow.itemName}</h1>
+                </div>
+                <div style={{flexDirection: 'row', display: 'flex', justifyContent: 'space-between'}}>
+                
+
+                <div style={{marginTop: headerHeight || 70, borderRadius: 10, flexDirection: 'row', display: 'flex', width: '70%', gap: 50, marginLeft: 20  }}>
+
+                <div className="table-wrapper">
+                  <table class="horizontal-table">
+                      <tbody>
+                        <tr>
+                          <th>Item ID</th>
+                          <td>{selectedRow.itemId}</td>
+                        </tr>
+                        <tr>
+                          <th>Item Name</th>
+                          <td>{selectedRow.itemName}</td>
+                        </tr>
+                        <tr>
+                          <th>Inventory Balance</th>
+                          <td>
+                            {selectedRow.quantity}
+                  {/* {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
                   {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
-                </p>
-                {selectedRow.category === "Glasswares" && selectedRow.volume && (
+                   {selectedRow.category === "Glasswares" && selectedRow.volume && (
                   <p>
                     <strong>Volume:</strong> {selectedRow.volume} ML
                   </p>
                 )} */}
-                <p><strong>Critical Level:</strong> {selectedRow.criticalLevel}</p>
-                <p><strong>Category:</strong> {selectedRow.category}</p>
-                <p><strong>Item Type:</strong> {selectedRow.type}</p>
-                <p><strong>Department:</strong> {selectedRow.department}</p>
-                <p><strong>Status:</strong> {selectedRow.status}</p>
-                <p><strong>Condition:</strong> {formatCondition(selectedRow.condition, selectedRow.category)}</p>
-                <p><strong>Stock Room:</strong> {selectedRow.labRoom}</p>
-                <p><strong>Date of Entry:</strong> {selectedRow.entryCurrentDate || 'N/A'}</p>
-                <p><strong>Date of Expiry:</strong> {selectedRow.expiryDate || 'N/A'}</p>
-                
+                          </td>
+                        </tr>
+                        <tr>
+                          <th>Category</th>
+                          <td>{selectedRow.category}</td>
+                        </tr>
+                        <tr>
+                          <th>Item Type</th>
+                          <td>{selectedRow.type}</td>
+                        </tr>
+                        <tr>
+                          <th>Date of Entry (latest)</th>
+                          <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+
+                    <div className="table-wrapper">
+                    <table class="horizontal-table">
+                      <tbody>
+                        <tr>
+                          <th>Status</th>
+                          <td>{selectedRow.status}</td>
+                        </tr>
+                        <tr>
+                          <th>Department</th>
+                          <td>{selectedRow.department}</td>
+                        </tr>
+                        <tr>
+                          <th>Condition</th>
+                          <td>{formatCondition(selectedRow.condition, selectedRow.category)}</td>
+                        </tr>
+                        <tr>
+                          <th>Lab/ Stock Room</th>
+                          <td>{selectedRow.labRoom}</td>
+                        </tr>
+                        <tr>
+                          <th>Date of Expiry</th>
+                          <td>{selectedRow.expiryDate || 'N/A'}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                    </div>
+        
+                </div>
+
+                <div style={{justifyContent:'center', display: 'flex', flexDirection: 'column', width: '30%', marginRight: -20, marginTop: 50}}>
                   <div style={{ marginTop: 24, textAlign: 'center' }}>
                     <h4>Item QR Code</h4>
                     {selectedRow.qrCode ? (
-                      <QRCodeCanvas value={selectedRow.qrCode} size={200} />
+                      <QRCodeSVG value={selectedRow.qrCode} size={250} />
                     ) : (
                       <p>No QR Code Available</p>
                     )}
-                  </div>
 
-                  <div style={{ marginTop: 24, textAlign: 'center' }}>
+                    <div style={{ marginTop: 24, textAlign: 'center', gap: 10, width: '100%', display: 'flex', justifyContent: 'center'}}>
                     <Button
                       type="primary"
                       danger
@@ -1781,6 +1903,37 @@ const printPdf = () => {
                     >
                       Update Stock
                     </Button>
+
+                    </div>
+                  </div>
+                  </div>
+                  </div>
+
+                  <div>
+                    <h2>Stock Log</h2>
+
+                    {/* <table class="delivery-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>No. of Items</th>
+                        <th>Delivery #</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>2025-05-30</td>
+                        <td>10</td>
+                        <td>DLV-00123</td>
+                      </tr>
+                      <tr>
+                        <td>2025-05-29</td>
+                        <td>7</td>
+                        <td>DLV-00122</td>
+                      </tr>
+                    </tbody>
+                  </table> */}
+                  <StockLog />
                   </div>
               </div>
             )}

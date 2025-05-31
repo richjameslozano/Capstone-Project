@@ -30,7 +30,7 @@ const LabRoomDetailsModal = ({ visible, roomId, items, onClose }) => {
                 </Text> */}
                 
                 <Text style={styles.subText}>
-                  ID: {item.itemId || "N/A"}, Qty: {item.quantity ?? "?"}, Borrowed Today: {item.borrowedToday ?? 0}, Deployed Today: {item.deployedToday ?? 0}
+                  ID: {item.itemId || "N/A"}, {item.itemDetails || "Unknown"}, Qty: {item.quantity ?? "?"}, Borrowed Today: {item.borrowedToday ?? 0}, Deployed Today: {item.deployedToday ?? 0}
                 </Text>
 
                 <Text style={styles.subText}>

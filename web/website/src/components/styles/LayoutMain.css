@@ -1,0 +1,49 @@
+/* App.css or global style */
+.ant-menu-item-group-title {
+  font-size: 14px;
+  color: #9ca3af; /* a light gray or use your custom color */
+  padding: 8px 16px;
+  letter-spacing: 0.5px;
+  margin-bottom: 0px;
+  margin-top: 20px;
+}
+
+.ant-menu-item-group{
+    margin-bottom: 30px;
+}
+
+/* Style the menu background (optional if Sider handles it) */
+.custom-menu {
+  background-color: transparent;
+  font-size: 14px;
+  font-weight: 500;
+  border-right: none;
+}
+
+/* Style selected item */
+.custom-menu .ant-menu-item-selected {
+  background-color: #19344a !important;
+  color: #fff !important;
+}
+
+/* Hover effect */
+.custom-menu .ant-menu-item:hover {
+  background-color: #284b63 !important;
+  color: #fff !important;
+}
+
+/* Icon + text spacing */
+.custom-menu .ant-menu-item .anticon {
+  margin-right: 10px;
+}
+
+/* Group label (like Admin Panel, Faculty Panel) */
+.custom-menu .ant-menu-item-group-title {
+  color: #9ca3af;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding-left: 24px;
+  margin-top: 8px;
+}
