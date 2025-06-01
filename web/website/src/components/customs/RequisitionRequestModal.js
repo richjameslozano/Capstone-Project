@@ -33,7 +33,7 @@ const RequisitionReqestModal = ({
       // }
       open={isModalVisible}
       onCancel={handleCancel}
-      width={800}
+      width={1000}
       zIndex={1022}
       footer={[
         <Button key="cancel" onClick={handleCancel}>Cancel</Button>,
@@ -42,16 +42,116 @@ const RequisitionReqestModal = ({
           {allItemsChecked ? "Approve" : "Next"}
         </Button>
       ]}
+      className="request-modal"
+
     >
       {selectedRequest && (
         <>
         <div className="requisition-slip-title">
-          <strong>Requisitian Slip</strong>
-          <span style={{ float: "right", fontStyle: "italic", fontSize: '15px' }}>
+          <strong>Requisition Slip</strong>
+          {/* <span style={{ float: "right", fontStyle: "italic", fontSize: '15px' }}>
             Requisition ID: {selectedRequest?.id}
-          </span>
+          </span> */}
         </div>
             <div className="whole-slip">
+    
+              <div className="table-wrapper">
+                  <table class="horizontal-table">
+                      <tbody>
+                        <tr>
+                          <th>Requestor</th>
+                          <td>{selectedRequest.itemId}</td>
+                        </tr>
+
+                         <tr>
+                          <th>Date Submitted</th>
+                          <td>{selectedRequest.itemDetails}</td>
+                        </tr>
+
+                        <tr>
+                          <th>Program</th>
+                          <td>{selectedRequest.itemName}</td>
+                        </tr>
+
+                        <tr>
+                          <th>Course Code</th>
+                          <td>
+                            {selectedRequest.quantity}
+                  {/* {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
+                   {selectedRow.category === "Glasswares" && selectedRow.volume && (
+                  <p>
+                    <strong>Volume:</strong> {selectedRow.volume} ML
+                  </p>
+                )} */}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <th>Course Description</th>
+                          <td>{selectedRequest.category}</td>
+                        </tr>
+
+                        <tr>
+                          <th>Item Type</th>
+                          <td>{selectedRequest.type}</td>
+                        </tr>
+                        {/* <tr>
+                          <th>Date of Entry (latest)</th>
+                          <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
+                        </tr> */}
+                      </tbody>
+                    </table>
+                    </div>
+
+                    <div className="table-wrapper">
+                  <table class="horizontal-table">
+                      <tbody>
+                        <tr>
+                          <th>Item ID</th>
+                          <td>{selectedRequest.itemId}</td>
+                        </tr>
+
+                         <tr>
+                          <th>Item Description</th>
+                          <td>{selectedRequest.itemDetails}</td>
+                        </tr>
+
+                        <tr>
+                          <th>Item Name</th>
+                          <td>{selectedRequest.itemName}</td>
+                        </tr>
+
+                        <tr>
+                          <th>Inventory Balance</th>
+                          <td>
+                            {selectedRequest.quantity}
+                  {/* {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
+                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
+                   {selectedRow.category === "Glasswares" && selectedRow.volume && (
+                  <p>
+                    <strong>Volume:</strong> {selectedRow.volume} ML
+                  </p>
+                )} */}
+                          </td>
+                        </tr>
+
+                        <tr>
+                          <th>Category</th>
+                          <td>{selectedRequest.category}</td>
+                        </tr>
+
+                        <tr>
+                          <th>Item Type</th>
+                          <td>{selectedRequest.type}</td>
+                        </tr>
+                        {/* <tr>
+                          <th>Date of Entry (latest)</th>
+                          <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
+                        </tr> */}
+                      </tbody>
+                    </table>
+                    </div>
               <div className="left-slip">
                 <div> <strong>Requestor:</strong><p> {selectedRequest.userName}</p></div>
               <div>< strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p> </div>

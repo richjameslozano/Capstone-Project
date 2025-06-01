@@ -1718,7 +1718,8 @@ try {
     });
   };
 
-  const groupByDueDateCategory = (requests) => {
+
+const groupByDueDateCategory = (requests) => {
   const now = new Date();
 
   const startOfWeek = new Date(now);
@@ -1737,6 +1738,7 @@ try {
   endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
   endOfNextWeek.setHours(23, 59, 59, 999);
 
+  const pastDue = [];
   const thisWeek = [];
   const nextWeek = [];
   const later = [];
@@ -1744,7 +1746,9 @@ try {
   requests.forEach((item) => {
     const dueDate = new Date(item.dateRequired);
 
-    if (dueDate >= startOfWeek && dueDate <= endOfWeek) {
+    if (dueDate < startOfWeek) {
+      pastDue.push(item)
+    } else if (dueDate >= startOfWeek && dueDate <= endOfWeek) {
       thisWeek.push(item);
     } else if (dueDate >= startOfNextWeek && dueDate <= endOfNextWeek) {
       nextWeek.push(item);
@@ -1754,11 +1758,13 @@ try {
   });
 
   return {
+    'Past Due': pastDue,
     'Required This Week': thisWeek,
     'Next Week': nextWeek,
     'Further Ahead': later,
   };
 };
+
   const groupedRequests = groupByDueDateCategory(requests);
 
 const getInitials = (usage) => {
@@ -1798,31 +1804,36 @@ const toggleGroup = (label) => {
   }));
 };
 
-useEffect(() => {
-  // Ensure refs are reset when groupedRequests change
-  Object.keys(groupedRequests).forEach(label => {
-    if (!contentRefs.current[label]) {
-      contentRefs.current[label] = null;
-    }
-  });
-}, [groupedRequests]);
+  useEffect(() => {
+    // Ensure refs are reset when groupedRequests change
+    Object.keys(groupedRequests).forEach(label => {
+      
+      if (!contentRefs.current[label]) {
+        contentRefs.current[label] = null;
+      }
+    });
+  }, [groupedRequests]);
 
  const [selectedFilter, setSelectedFilter] = useState('All');
 
 const getFilteredRequests = () => {
-  if (selectedFilter === 'All') return requests;
+  
+
+  if (selectedFilter.trim().toLowerCase() === 'all') return requests;
+
 
   return requests.filter((item) => {
     const usage = item.usageType?.trim().toLowerCase();
     if (!usage) return false;
 
-    const normalized = usage.replace(/\s+/g, ' ').toLowerCase();
-    const isKnownType = ['laboratory experiment', 'research', 'community extension'];
+    const normalized = usage.replace(/\s+/g, ' ');
+    const knownTypes = ['laboratory experiment', 'research', 'community extension'];
+    const selected = selectedFilter.trim().toLowerCase();
 
-    if (isKnownType.includes(normalized)) {
-      return normalized === selectedFilter.toLowerCase();
+    if (knownTypes.includes(normalized)) {
+      return normalized === selected;
     } else {
-      return selectedFilter === 'Others';
+      return selected === 'others';
     }
   });
 };
@@ -1830,128 +1841,165 @@ const getFilteredRequests = () => {
 const filteredRequests = getFilteredRequests();
 const categorizedRequests = groupByDueDateCategory(filteredRequests);
 
+useEffect(() => {
+  // Timeout ensures layout finishes rendering before measuring scrollHeight
+  const timeout = setTimeout(() => {
+    Object.entries(categorizedRequests).forEach(([label, group]) => {
+      const ref = contentRefs.current[label];
+      if (ref && ref.current) {
+        // Force re-measure height after new content is shown
+        ref.current.style.maxHeight = collapsedGroups[label]
+          ? '0px'
+          : `${ref.current.scrollHeight}px`;
+      }
+    });
+  }, 50); // Adjust timeout if needed (50ms usually works well)
+
+  return () => clearTimeout(timeout);
+}, [categorizedRequests, collapsedGroups]);
+
+
   const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
+  
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout style={{padding: 20}}>
 
-      <div style={{display: 'flex', gap: 10, padding: 30, borderRadius: 10, backgroundColor: 'white', marginBottom: 20}}>
-        {usageTypes.map((type) => (
-                      <button
-                        key={type}
-                        
-                        className="filter-btns"
-                        onClick={() => setSelectedFilter(type)}
-                      >
-                        <Text
-                          style={
-                          {fontSize: 15, }
-                          }
-                        >
-                          {type}
-                        </Text>
-                      </button>
-                    ))}
+            <div style={{ display: 'flex', gap: 10, padding: 30, borderRadius: 10, backgroundColor: 'white', marginBottom: 20 }}>
+              {usageTypes.map((type) => (
+                <button
+                  key={type}
+                  onClick={() => setSelectedFilter(type)}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    border: '1px solid #ccc',
+                    backgroundColor: selectedFilter === type ? '#395a7f' : 'white',
+                    color: selectedFilter === type ? 'white' : '#395a7f',
+                    fontWeight: selectedFilter === type ? 'normal' : 'normal',
+                    transition: 'all 0.3s ease',
+                    cursor: 'pointer',
+                    fontSize: 15
+                  }}
+                >
+                  {type}
+                </button>
+              ))}
 
-          <input placeholder="Search" className="search-input"/>
-      </div>
+              <input placeholder="Search" className="search-input" />
+            </div>
+
         
 <Spin spinning={loading} tip="Loading requests...">
   <div>
-   {Object.entries(groupedRequests).map(([label, group]) => {
-  if (group.length === 0) return null;
+    {Object.entries(categorizedRequests).map(([label, group]) => {
+      if (group.length === 0) return null;
+        
+      const isCollapsed = collapsedGroups[label];
+      const contentRef = contentRefs.current[label] || (contentRefs.current[label] = React.createRef());
 
-  const isCollapsed = collapsedGroups[label];
-  const contentRef = contentRefs.current[label] || (contentRefs.current[label] = React.createRef());
+      return (
+        <div key={label} style={{ marginBottom: "2rem", justifyItems: 'flex-start' }}>
+          {/* Group Header */}
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: 10 }}>
+            <button
+              onClick={() => toggleGroup(label)}
+              style={{
+                cursor: 'pointer',
+                color: "#395a7f",
+                backgroundColor: 'white',
+                border: '1px solid #acacac',
+                padding: 10,
+                borderRadius: 5,
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+              }}
+            >
+              <h2 style={{ margin: 0, color: '#395a7f', fontWeight: 500 }}>{label}</h2>
+              <div style={{ fontSize: 20, marginLeft: 10 }}>
+                {isCollapsed ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
+              </div>
+            </button>
+            <h3 style={{ margin: 0 }}>({group.length})</h3>
+          </div>
+
+          {/* Collapsible Content */}
+          <div
+            ref={contentRef}
+            style={{
+              overflow: 'hidden',
+              transition: 'max-height 0.3s ease, opacity 0.3s ease',
+              maxHeight: isCollapsed ? '0px' : `${contentRef.current?.scrollHeight}px`,
+              opacity: isCollapsed ? 0 : 1,
+              width: '100%',
+            }}
+          >
+{group.map((request) => {
+  const isPastDue = new Date(request.dateRequired) < new Date();
 
   return (
-    <div key={label} style={{ marginBottom: "2rem", justifyItems: 'flex-start' }}>
-      
-      {/* Group Header */}
-      <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: 10 }}>
-        <button
-          onClick={() => toggleGroup(label)}
+    <div
+      key={request.id}
+      onClick={() => handleViewDetails(request)}
+      className="request-card"
+      style={{border: isPastDue ? '1px solid #ffb1a8' : '1px solid #ccc'}}
+    >
+      <div style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center' }}>
+        <p
           style={{
-            cursor: 'pointer',
-            color: "#395a7f",
-            backgroundColor: 'white',
-            border: '1px solid #acacac',
-            padding: 10,
+            fontSize: 20,
+            padding: 15,
+            backgroundColor: usageBG(request.usageType),
             borderRadius: 5,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            color: 'white',
+            maxWidth: '60px',
+            textAlign: 'center',
+            whiteSpace: 'nowrap'
           }}
         >
-          <h2 style={{ margin: 0, color: '#395a7f', fontWeight: 500 }}>{label}</h2>
-          <div style={{ fontSize: 20, marginLeft: 10 }}>
-            {isCollapsed ? <ArrowDownOutlined /> : <ArrowUpOutlined />}
-          </div>
-        </button>
-        <h3 style={{ margin: 0 }}>({group.length})</h3>
+          {getInitials(request.usageType)}
+        </p>
       </div>
 
-      {/* Collapsible Content */}
-      <div
-        ref={contentRef}
-        style={{
-          overflow: 'hidden',
-          transition: 'max-height 0.3s ease, opacity 0.3s ease',
-          maxHeight: isCollapsed ? '0px' : `${contentRef.current?.scrollHeight}px`,
-          opacity: isCollapsed ? 0 : 1,
-          width: '100%',
-        }}
-      >
-        {group.map((request) => (
-          <div
-            key={request.id}
-            onClick={() => handleViewDetails(request)}
-            className="request-card"
-          >
-            <div style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center' }}>
-              <p
-                style={{
-                  fontSize: 20,
-                  padding: 15,
-                  backgroundColor: usageBG(request.usageType),
-                  borderRadius: 5,
-                  color: 'white',
-                  maxWidth: '60px',
-                  textAlign: 'center',
-                  whiteSpace: 'nowrap'
-                }}
-              >
-                {getInitials(request.usageType)}
-              </p>
-            </div>
-
-            <div style={{ paddingLeft: 10, width: '100%', paddingTop: 0, paddingBottom: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div>
-                  <p style={{ fontSize: 23, fontWeight: 500, marginBottom: 5 }}>{capitalizeName(request.userName)}</p>
-                  <p style={{ fontSize: 18, color: '#707070' }}>{request.program}</p>
-                </div>
-                <p style={{ margin: 0, fontSize: 15, padding: 10, backgroundColor: '#e9ecee', borderRadius: 5 }}>
-                  <strong>Required Date:</strong> {request.dateRequired}
-                </p>
-              </div>
-
-              <div style={{ margin: 0 }}>
-                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
-                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
-                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>(course code)(course description)</p>
-              </div>
-            </div>
+      <div style={{ paddingLeft: 10, width: '100%', paddingTop: 0, paddingBottom: 0 }}>
+        <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+          <div>
+            <p style={{ fontSize: 23, fontWeight: 500, marginBottom: 5 }}>{capitalizeName(request.userName)}</p>
+            <p style={{ fontSize: 18, color: '#707070' }}>{request.program}</p>
           </div>
-        ))}
+
+          <p
+            style={{
+              margin: 0,
+              fontSize: 15,
+              padding: 10,
+              backgroundColor: isPastDue ? '#ffb1a8' : '#e9ecee',
+              borderRadius: 5,
+              color: isPastDue ? 'black' : 'black',
+            }}
+          >
+            <strong>Required Date:</strong> {request.dateRequired}
+          </p>
+        </div>
+
+        <div style={{ margin: 0 }}>
+          <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
+          <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
+          <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>(course code)(course description)</p>
+        </div>
       </div>
     </div>
   );
 })}
-
+          </div>
+        </div>
+      );
+    })}
   </div>
 </Spin>
+
 
 
         <Modal
@@ -2051,6 +2099,7 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
         )}
 
         <RequisitionRequestModal
+        
           isModalVisible={isModalVisible}
           handleCancel={handleCancel}
           handleApprove={handleApprove}
