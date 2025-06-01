@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView , Platform, Keyboard, StatusBar, Alert} from 'react-native';
+import { View, Text, TouchableOpacity, FlatList, TextInput, Image, Modal, TouchableWithoutFeedback, KeyboardAvoidingView, ScrollView, Platform, Keyboard, StatusBar, Alert} from 'react-native';
 import { getDocs, collection, onSnapshot, doc, setDoc, addDoc, query, where, Timestamp, collectionGroup } from 'firebase/firestore';
 import { db } from '../backend/firebase/FirebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -57,6 +57,19 @@ export default function InventoryScreen({ navigation }) {
     setHeaderHeight(height);
   };
 
+  const courseMap = {
+  MLSACHML: "ANALYTICAL CHEMISTRY",
+  MLSBIEPC: "BIOSTATISTICS AND EPIDEMIOLOGY",
+  MLSAUBFC: "ANALYSIS OF URINE AND OTHER BODY FLUIDS",
+  MLSHEM2L: "HEMATOLOGY 2",
+  MLSHPATL: "GENERAL PATHOLOGY WITH HISTOPATHOLOGIC AND CYTOLOGIC TECHNIQUES",
+  MLSIMHEL: "IMMUNOHEMATOLOGY",
+  MLSMOLBL: "MOLECULAR BIOLOGY AND DIAGNOSTICS",
+  MLSMYVIL: "MYCOLOGY AND VIROLOGY",
+  MLSPARAL: "CLINICAL PARASITOLOGY",
+  MLSPML2L: "PRINCIPLES OF MEDICAL LABORATORY SCIENCE PRACTICE 2",
+};
+
   useFocusEffect(
     useCallback(() => {
       setIsComplete(false); 
@@ -67,6 +80,7 @@ export default function InventoryScreen({ navigation }) {
       setCourse('')
       setRoom('')
       setReason('')
+      setDescription('')
       setSelectedUsageTypeInput(null)
 
           StatusBar.setBarStyle('light-content');
@@ -558,6 +572,8 @@ export default function InventoryScreen({ navigation }) {
 
     setIsComplete(true);
   };
+   const [selectedCode, setSelectedCode] = useState("");
+  const [description, setDescription] = useState("");
 
   return (
     <View style={styles.container}>
@@ -654,15 +670,13 @@ export default function InventoryScreen({ navigation }) {
                     onValueChange={(itemValue) => {
                       setCourse(itemValue);
                       setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
+                      setDescription(courseMap[itemValue]);
                     }}
-                    style={styles.programItem}
-                    dropdownIconColor= "#6e9fc1"
-                    dropdownIconRippleColor='white'
                   >
-                    <Picker.Item label="Course Code" value=""  style={{fontSize: 15}}/>
-                    <Picker.Item label="SAH - BSMT" value="SAH - BSMT" style={{fontSize: 15}} />
-                    <Picker.Item label="SAH - BSN" value="SAH - BSN"  style={{fontSize: 15}}/>
-                    <Picker.Item label="SHS" value="SHS"  style={{fontSize: 15}}/>
+                    <Picker.Item label="Select Course Code" value="" />
+                    {Object.entries(courseMap).map(([code, desc]) => (
+                      <Picker.Item key={code} label={code} value={code} />
+                    ))}
                   </Picker>
 
                   <Icon2
@@ -677,7 +691,7 @@ export default function InventoryScreen({ navigation }) {
 
           <View style={styles.programSection}>
               <Text style={styles.label}>Course Description:</Text>
-              <TextInput style={{width: '60%', backgroundColor: 'gray', backgroundColor: '#e9ecee', borderRadius: 5, paddingHorizontal: 10}} placeholder='<autofill>'></TextInput>
+              <TextInput style={{width: '60%', backgroundColor: 'gray', backgroundColor: '#e9ecee', borderRadius: 5, paddingHorizontal: 10}} value={description} editable={false}placeholder='Course Description'></TextInput>
           </View>
         </View>
 
