@@ -1,82 +1,118 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8',
-    paddingHorizontal: 10,
-    paddingBottom: 20,
+    backgroundColor: '#e9ecee',
+    paddingHorizontal: 7,
+    paddingBottom: 7,
+    gap: 5
   },
 
   filterContainer: {
     flexDirection: 'row',  // Keeps the buttons side by side
-    justifyContent: 'space-between', // Ensures space between buttons
-    marginVertical: 5,
-    marginBottom: 10, 
-    marginTop: 120,
-  },
-
-  table: {
-    width: '100%',
-    backgroundColor: 'white',
-    borderRadius: 10,
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    marginTop: 10,
-  },
-
-  tableRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 5,
-  },
-
-  tableHeader: {
-    flex: 1,
-    fontSize: 13,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    backgroundColor: '#00796B',
-    color: 'white',
-    paddingVertical: 8,
-    borderRightWidth: 1,
-    borderColor: '#005a4f',
-  },
-
-  tableCell: {
-    flex: 1,
-    fontSize: 12,
-    textAlign: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 6,
-    borderBottomWidth: 1,
-    borderColor: '#e0e0e0',
-  },
-
-  tableRowEven: {
-    backgroundColor: '#ffffff',
-  },
-
-  tableRowOdd: {
-    backgroundColor: '#f9f9f9',
-  },
-
-  button: {
-    backgroundColor: '#00796B',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
+    justifyContent: 'center', // Ensures space between buttons
+    backgroundColor: '#fff',
+    padding: 10,
     borderRadius: 5,
-    marginVertical: 5,
+    gap: 20
   },
 
-  buttonText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: 'white',
-    textAlign: 'center',
-  },
+
+pendingHeader:{
+position: 'absolute',
+    backgroundColor: '#fff',
+    flex: 1,
+    paddingTop: StatusBar.currentHeight+15,
+    left: 0,
+    right:0,
+    flexDirection: 'row',
+    paddingBottom: 10,
+    paddingHorizontal: 15,
+    alignItems: 'center',
+    justifyContent:'space-between',
+    borderBottomWidth: 1,
+    borderColor: '#e9ecee',
+      zIndex: 999
+},
+
+filterBtn:{
+  padding: 10,
+  borderRadius: 5,
+  backgroundColor: '#dfdfdf'
+},
+
+activeFilterBtn: {
+  backgroundColor: '#6e9fc1',
+  borderColor: '#005a4f',
+},
+
+activeFilterText: {
+  color: 'white',
+  fontWeight: 'bold',
+},
+
+inactiveFilterText: {
+  color: '#333',
+}
+,
+
+table: {
+  backgroundColor: '#fff',
+  borderRadius: 10,
+  overflow: 'hidden',
+  borderWidth: 1,
+  borderColor: '#ccc',
+},
+
+tableRow: {
+  flexDirection: 'row',
+  alignItems: 'center',
+  paddingVertical: 10,
+  paddingHorizontal: 5,
+},
+
+tableHeaderRow: {
+  backgroundColor: '#395a7f',
+},
+
+tableHeaderCell: {
+  fontWeight: 'bold',
+  fontSize: 13,
+  color: 'white',
+  textAlign: 'center',
+  paddingVertical: 10,
+  paddingHorizontal: 8,
+  borderRightWidth: 1,
+  borderColor: '#005a4f',
+},
+
+tableCell: {
+  fontSize: 12,
+  color: '#333',
+  textAlign: 'center',
+  paddingVertical: 10,
+  paddingHorizontal: 8,
+  borderRightWidth: 1,
+  borderColor: '#eee',
+},
+
+tableRowEven: {
+  backgroundColor: '#f9f9f9',
+},
+
+tableRowOdd: {
+  backgroundColor: '#ffffff',
+},
+
+viewText: {
+  color: '#007bff',
+  fontWeight: 'bold',
+  textAlign: 'center',
+  fontSize: 12,
+  paddingVertical: 6,
+},
+
 
   modalOverlay: {
     flex: 1,
