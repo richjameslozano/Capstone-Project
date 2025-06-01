@@ -114,10 +114,22 @@ const LogScreen = () => {
                 </TouchableOpacity>
               </View>
 
-      <View style={styles.filterContainer}>
-        {["All", "Approved", "Rejected", "Returned"].map((status) => (
-          <Button key={status} title={status} onPress={() => setFilterStatus(status)} />
-        ))}
+      <View style={[styles.filterContainer, {marginTop: headerHeight+5}]}>
+        {['All', 'Approved', 'Rejected', 'Returned'].map((status) => (
+  <TouchableOpacity
+    key={status}
+    style={[
+      styles.filterBtn,
+      filterStatus === status && styles.activeFilterBtn // apply active style if selected
+    ]}
+    onPress={() => setFilterStatus(status)}
+  >
+    <Text style={filterStatus === status ? styles.activeFilterText : styles.inactiveFilterText}>
+      {status}
+    </Text>
+  </TouchableOpacity>
+))}
+
       </View>
 
       {loading ? (
@@ -126,29 +138,40 @@ const LogScreen = () => {
           <Text>Loading request logs...</Text>
         </View>
       ) : (
-        <ScrollView horizontal>
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>Date</Text>
-              <Text style={styles.tableHeader}>Status</Text>
-              <Text style={styles.tableHeader}>Requestor</Text>
-              <Text style={styles.tableHeader}>Action</Text>
-            </View>
-            {filteredData.map((item, index) => (
-              <View
-                key={item.id}
-                style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd]}
-              >
-                <Text style={styles.tableCell}>{item.timestamp}</Text>
-                <Text style={styles.tableCell}>{item.status}</Text>
-                <Text style={styles.tableCell}>{item.requestor}</Text>
-                <TouchableOpacity onPress={() => handleViewDetails(item)}>
-                  <Text style={{ color: "blue" }}>View Details</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+        <View style={{flex: 1, padding: 10, backgroundColor: 'white', borderRadius: 5}}>
+       <ScrollView horizontal>
+    <View>
+      {/* Table Header */}
+      <View style={[styles.tableRow, styles.tableHeaderRow]}>
+        <Text style={[styles.tableHeaderCell, { minWidth: 180 }]}>Date</Text>
+        <Text style={[styles.tableHeaderCell, { minWidth: 100 }]}>Status</Text>
+        <Text style={[styles.tableHeaderCell, { minWidth: 160 }]}>Requestor</Text>
+        <Text style={[styles.tableHeaderCell, { minWidth: 80 }]}>Action</Text>
+      </View>
+
+      {/* Inner vertical scroll */}
+      <ScrollView >
+        {filteredData.map((item, index) => (
+          <View
+            key={item.id}
+            style={[
+              styles.tableRow,
+              index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
+            ]}
+          >
+            <Text style={[styles.tableCell, { minWidth: 180 }]}>{item.timestamp}</Text>
+            <Text style={[styles.tableCell, { minWidth: 100 }]}>{item.status}</Text>
+            <Text style={[styles.tableCell, { minWidth: 160 }]}>{item.requestor}</Text>
+            <TouchableOpacity onPress={() => handleViewDetails(item)} style={{ minWidth: 80 }}>
+              <Text style={styles.viewText}>View</Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
+        ))}
+      </ScrollView>
+    </View>
+  </ScrollView>
+
+        </View>
       )}
 
       <Modal transparent={true} visible={modalVisible} animationType="slide">
