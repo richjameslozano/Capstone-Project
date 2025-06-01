@@ -132,7 +132,19 @@ maskRight: {
   text: {
     color: 'white',
     textAlign: 'center',
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: 'bold'
+  },
+
+  scannerTitle:{
+    position: 'absolute', 
+    color: 'white', 
+    zIndex: 999, 
+    fontWeight: 'bold', 
+    fontSize: 15,
+    padding: 10,
+    paddingVertical: 5,
+    backgroundColor: 'rgba(56, 160, 179, 0.6)',
+    borderRadius: 5,
   },
 });

@@ -456,11 +456,11 @@ const sideWidth = (width - frameWidth) / 2;
   return (
     <View style={styles.container}>
       <TouchableOpacity onPress={handleBackButton} style={styles.backBtn}>
-         <Icon name="keyboard-backspace" size={28} color="white" />
+         <Icon name="keyboard-backspace" size={20} color="white" />
         <Text style={styles.text}>Go Back</Text>
       </TouchableOpacity>
 
-            <Text style={{position: 'absolute', color: 'white', bottom: bottomOffset-10, zIndex: 999, fontWeight: 'bold', fontSize: 20}}>Track Items</Text>
+            <Text style={[styles.scannerTitle,{bottom: bottomOffset-10}]}>Track Items</Text>
 
       <CameraView
         style={styles.camera}
