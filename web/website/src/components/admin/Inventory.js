@@ -133,10 +133,10 @@ const Inventory = () => {
   //   return () => unsubscribe(); // Clean up the listener on unmount
   // }, []);
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchInventory = async () => {
       try {
-        const response = await fetch('https://us-central1-nuls-8c12b.cloudfunctions.net/getInventory');
+        const response = await fetch('https://nuls-8c12b.web.app/api/getInventory');
         const data = await response.json();
 
         if (data.success && data.items) {
