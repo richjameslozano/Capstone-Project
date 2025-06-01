@@ -94,44 +94,67 @@ const Inventory = () => {
     return () => observer.disconnect();
   }, []);
 
-  useEffect(() => {
-    const inventoryRef = collection(db, "inventory");
+  // useEffect(() => {
+  //   const inventoryRef = collection(db, "inventory");
 
-    const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
-      try {
-        const items = snapshot.docs
-          .map((doc, index) => {
-            const data = doc.data();
+  //   const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
+  //     try {
+  //       const items = snapshot.docs
+  //         .map((doc, index) => {
+  //           const data = doc.data();
 
-            const entryDate = data.entryDate ? data.entryDate : "N/A";
-            const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
+  //           const entryDate = data.entryDate ? data.entryDate : "N/A";
+  //           const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
 
-            return {
-              docId: doc.id,  
-              id: index + 1,
-              itemId: data.itemId,
-              item: data.itemName,
-              entryDate,
-              expiryDate,
-              qrCode: data.qrCode,
-              ...data,
-            };
-          })
-          .sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+  //           return {
+  //             docId: doc.id,  
+  //             id: index + 1,
+  //             itemId: data.itemId,
+  //             item: data.itemName,
+  //             entryDate,
+  //             expiryDate,
+  //             qrCode: data.qrCode,
+  //             ...data,
+  //           };
+  //         })
+  //         .sort((a, b) => (a.item || "").localeCompare(b.item || ""));
 
-        setDataSource(items);
-        setCount(items.length);
+  //       setDataSource(items);
+  //       setCount(items.length);
         
+  //     } catch (error) {
+  //       console.error("Error processing inventory snapshot: ", error);
+  //     }
+
+  //   }, (error) => {
+  //     console.error("Error fetching inventory with onSnapshot: ", error);
+  //   });
+
+  //   return () => unsubscribe(); // Clean up the listener on unmount
+  // }, []);
+
+    useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const response = await fetch('https://us-central1-nuls-8c12b.cloudfunctions.net/getInventory');
+        const data = await response.json();
+
+        if (data.success && data.items) {
+          setDataSource(data.items);
+          setCount(data.count);
+        } else {
+          console.warn('No inventory data:', data.message || 'Unknown reason');
+          setDataSource([]);
+          setCount(0);
+        }
       } catch (error) {
-        console.error("Error processing inventory snapshot: ", error);
+        console.error('Error fetching inventory from backend:', error);
       }
+    };
 
-    }, (error) => {
-      console.error("Error fetching inventory with onSnapshot: ", error);
-    });
-
-    return () => unsubscribe(); // Clean up the listener on unmount
+    fetchInventory();
   }, []);
+
 
   useEffect(() => {
     if (isEditModalVisible) {
