@@ -496,89 +496,8 @@ const LabRoomQR = () => {
   const [isConfirmModalVisible, setIsConfirmModalVisible] = useState(false);
   const [confirmRoomId, setConfirmRoomId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expandedRooms, setExpandedRooms] = useState({});
   const qrRefs = useRef({});
-
-  // useEffect(() => {
-  //   const unsubscribeFunctions = [];
-
-  //   const fetchLabRoomsWithItems = async () => {
-  //     try {
-  //       const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
-  //       const rooms = labRoomSnapshot.docs.map(doc => {
-  //         const data = doc.data();
-  //         return {
-  //           id: doc.id,
-  //           name: data.name || "N/A",
-  //           roomNumber: data.roomNumber || "N/A", // 🟢 get roomNumber here
-  //           qrCode: data.qrCode || "",
-  //           items: [],
-  //         };
-  //       });
-
-
-  //         // Set initial rooms (empty items for now)
-  //         setLabRooms(rooms);
-
-  //         const originalNumbers = {};
-  //         rooms.forEach(room => {
-  //           originalNumbers[room.id] = room.roomNumber;
-  //         });
-  //         setOriginalRoomNumbers(originalNumbers);
-
-  //         // Set up item listeners per room
-  //         labRoomSnapshot.docs.forEach((roomDoc) => {
-  //           const roomId = roomDoc.id;
-  //           const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
-
-  //           const unsub = onSnapshot(itemsCollectionRef, (itemsSnapshot) => {
-  //             const updatedItems = itemsSnapshot.docs.map(itemDoc => {
-  //               const itemData = itemDoc.data();
-  //               return {
-  //                 id: itemDoc.id,
-  //                 category: itemData.category || "N/A",
-  //                 condition: itemData.condition
-  //                   ? `Good: ${itemData.condition.Good ?? 0}, Defect: ${itemData.condition.Defect ?? 0}, Damage: ${itemData.condition.Damage ?? 0}`
-  //                   : "N/A",
-  //                 department: itemData.department || "N/A",
-  //                 entryCurrentDate: itemData.entryCurrentDate || "N/A",
-  //                 expiryDate: itemData.expiryDate || null,
-  //                 itemId: itemData.itemId || "N/A",
-  //                 itemName: itemData.itemName || "N/A",
-  //                 labRoom: itemData.labRoom || "N/A",
-  //                 quantity: itemData.quantity || 0,
-  //                 status: itemData.status || "N/A",
-  //                 type: itemData.type || "N/A",
-  //                 rawTimestamp: itemData.rawTimestamp || "N/A",
-  //                 timestamp: itemData.timestamp || "N/A",
-  //                 unit: itemData.unit || "N/A",
-  //                 volume: itemData.volume || "N/A",
-  //               };
-  //             });
-
-  //             setLabRooms(prevRooms =>
-  //               prevRooms.map(room =>
-  //                 room.id === roomId ? { ...room, items: updatedItems } : room
-  //               )
-  //             );
-  //           });
-
-  //           unsubscribeFunctions.push(unsub);
-  //         });
-  //       });
-
-  //       unsubscribeFunctions.push(labRoomUnsub);
-
-  //     } catch (error) {
-  //       console.error("Error setting up real-time listeners:", error);
-  //     }
-  //   };
-
-  //   fetchLabRoomsWithItems();
-
-  //   return () => {
-  //     unsubscribeFunctions.forEach(unsub => unsub());
-  //   };
-  // }, []);
 
    useEffect(() => {
     const unsubscribeFunctions = [];
@@ -586,24 +505,16 @@ const LabRoomQR = () => {
     const fetchLabRoomsWithItems = async () => {
       try {
         const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
-          // const rooms = labRoomSnapshot.docs.map(doc => ({
-          //   id: doc.id,
-          //   name: doc.data().name || "N/A",
-          //   qrCode: doc.data().qrCode || "",
-          //   items: [],
-          // }));
-
         const rooms = labRoomSnapshot.docs.map(doc => {
           const data = doc.data();
           return {
             id: doc.id,
             name: data.name || "N/A",
-            roomNumber: data.roomNumber || "N/A", // 🟢 get roomNumber here
+            roomNumber: data.roomNumber || "N/A",
             qrCode: data.qrCode || "",
             items: [],
           };
         });
-
 
           // Set initial rooms (empty items for now)
           setLabRooms(rooms);
@@ -672,58 +583,12 @@ const LabRoomQR = () => {
     };
   }, []);
 
-  // const updateRoomNumber = async (roomId, oldRoomNumber, newRoomNumber) => {
-  //   try {
-  //     const roomRef = doc(db, "labRoom", roomId);
-  //     await updateDoc(roomRef, {
-  //       roomNumber: newRoomNumber,
-  //     });
-
-  //     const batch = writeBatch(db);
-
-  //     // 🔁 Update labRoom field in labRoom/{roomId}/items
-  //     const itemsRef = collection(db, "labRoom", roomId, "items");
-  //     const itemsSnapshot = await getDocs(itemsRef);
-
-  //     itemsSnapshot.forEach((itemDoc) => {
-  //       const itemRef = doc(db, "labRoom", roomId, "items", itemDoc.id);
-  //       batch.update(itemRef, {
-  //         labRoom: newRoomNumber,
-  //       });
-  //     });
-
-  //     // ✅ Fix: Ensure oldRoomNumber is trimmed and matched exactly
-  //     const inventoryRef = collection(db, "inventory");
-  //     const inventoryQuery = query(
-  //       inventoryRef,
-  //       where("labRoom", "==", oldRoomNumber.trim())
-  //     );
-      
-  //     const inventorySnapshot = await getDocs(inventoryQuery);
-
-  //     console.log(`Matching inventory docs for labRoom = "${oldRoomNumber}":`, inventorySnapshot.size);
-
-  //     inventorySnapshot.forEach((invDoc) => {
-  //       const invRef = doc(db, "inventory", invDoc.id);
-  //       batch.update(invRef, {
-  //         labRoom: newRoomNumber,
-  //       });
-  //     });
-
-  //     await batch.commit();
-
-  //     // ✅ Also update UI state
-  //     setOriginalRoomNumbers((prev) => ({
-  //       ...prev,
-  //       [roomId]: newRoomNumber,
-  //     }));
-
-  //     console.log(`✅ Updated labRoom ${roomId} to ${newRoomNumber} and synced all items/inventory.`);
-
-  //   } catch (error) {
-  //     console.error("❌ Error updating lab room and related data:", error);
-  //   }
-  // };
+    const toggleRoomExpansion = (roomId) => {
+      setExpandedRooms(prev => ({
+        ...prev,
+        [roomId]: !prev[roomId],
+      }));
+    };
 
     const updateRoomNumber = async (roomId, oldRoomNumber, newRoomNumber) => {
     try {
@@ -814,10 +679,18 @@ const LabRoomQR = () => {
 
   return (
     <div className="labroom-container">
-      <h2 className="labroom-header">Lab Room QR Codes</h2>
+      <h2 className="labroom-header">Stock Room QR Codes</h2>
 
-      {filteredRooms.length === 0 ? (
-        <p>Loading lab rooms and items...</p>
+      <Input.Search
+        placeholder="Search lab room by name or room number"
+        value={searchTerm}
+        onChange={(e) => setSearchTerm(e.target.value)}
+        style={{ width: 300, marginBottom: 20 }}
+        allowClear
+      />
+
+      {/* {filteredRooms.length === 0 ? (
+        <p>Loading Stock rooms and items...</p>
       ) : (
         filteredRooms
           .filter(room => room.items && room.items.length > 0)
@@ -837,15 +710,6 @@ const LabRoomQR = () => {
                   style={{ marginLeft: "10px", width: "120px" }}
                 />
 
-                {/* <button
-                  onClick={() =>
-                    updateRoomNumber(room.id, originalRoomNumbers[room.id], room.roomNumber)
-                  }
-                  style={{ marginLeft: "10px" }}
-                >
-                  Save
-                </button> */}
-
                 <Button
                   type="primary"
                   onClick={() => {
@@ -864,7 +728,6 @@ const LabRoomQR = () => {
                     <th>QR Code</th>
                     <th>Item Name</th>
                     <th>Item Description</th>
-                    {/* <th>Item ID</th> */}
                     <th>Category</th>
                     <th>Condition</th>
                     <th>Department</th>
@@ -886,10 +749,6 @@ const LabRoomQR = () => {
                             ref={(el) => (qrRefs.current[room.id] = el)}
                             className="labroom-qr"
                           >
-                            {/* <QRCodeCanvas
-                              value={room.qrCode || "No QR code available"}
-                              size={128}
-                            /> */}
 
                             <QRCodeSVG
                               value={room.qrCode || "No QR code available"}
@@ -907,23 +766,9 @@ const LabRoomQR = () => {
                       ) : null}
                       <td>{item.itemName}</td>
                       <td>{item.itemDetails}</td>
-                      {/* <td>{item.itemId}</td> */}
                       <td>{item.category}</td>
                       <td>{item.condition}</td>
-                      {/* <td>{["Chemical", "Reagent"].includes(item.category) ? "N/A" : item.condition}</td> */}
                       <td>{item.department}</td>
-                      {/* <td>
-                        {item.quantity}
-                        {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
-                        {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
-                        {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
-                      </td> */}
-                      {/* <td>
-                        {item.quantity}
-                        {(item.category === "Glasswares" || ["Chemical", "Reagent"].includes(item.category)) ? " pcs" : ""}
-                        {item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}
-                        {["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""}
-                      </td> */}
                       <td>{item.quantity}</td>
                       <td>{item.status}</td>
                       <td>{item.type}</td>
@@ -933,7 +778,101 @@ const LabRoomQR = () => {
               </table>
             </div>
           ))
-      )}
+      )} */}
+
+      {filteredRooms
+        .filter(room => room.items && room.items.length > 0)
+        .map(room => {
+          const isExpanded = expandedRooms[room.id];
+
+          return (
+            <div key={room.id} className="labroom-table-wrapper">
+              <div className="labroom-title-wrapper" onClick={() => toggleRoomExpansion(room.id)}>
+                <h3 className="labroom-title">
+                  Room:
+                  <input
+                    type="number"
+                    value={room.roomNumber}
+                    onChange={(e) => {
+                      const newRoomNumber = e.target.value;
+                      setLabRooms(prev =>
+                        prev.map(r => r.id === room.id ? { ...r, roomNumber: newRoomNumber } : r)
+                      );
+                    }}
+                    style={{ marginLeft: "10px", width: "120px" }}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <Button
+                    type="primary"
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent collapse toggle when clicking button
+                      setConfirmRoomId(room.id);
+                      setIsConfirmModalVisible(true);
+                    }}
+                    style={{ marginLeft: "10px" }}
+                  >
+                    Save
+                  </Button>
+                </h3>
+                <span className="dropdown-arrow">{isExpanded ? "▲" : "▼"}</span>
+              </div>
+
+              {isExpanded && (
+                <table className="labroom-table">
+                  <thead>
+                    <tr>
+                      <th>QR Code</th>
+                      <th>Item Name</th>
+                      <th>Item Description</th>
+                      <th>Category</th>
+                      <th>Condition</th>
+                      <th>Department</th>
+                      <th>Quantity</th>
+                      <th>Status</th>
+                      <th>Type</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {room.items.map((item, index) => (
+                      <tr key={item.id}>
+                        {index === 0 ? (
+                          <td
+                            rowSpan={room.items.length}
+                            className="labroom-qr-cell"
+                          >
+                            <div
+                              ref={(el) => (qrRefs.current[room.id] = el)}
+                              className="labroom-qr"
+                            >
+                              <QRCodeSVG
+                                value={room.qrCode || "No QR code available"}
+                                size={128}
+                              />
+                              <button
+                                onClick={() => downloadQRCode(room.id)}
+                                className="labroom-download-button"
+                              >
+                                Download QR
+                              </button>
+                            </div>
+                          </td>
+                        ) : null}
+                        <td>{item.itemName}</td>
+                        <td>{item.itemDetails}</td>
+                        <td>{item.category}</td>
+                        <td>{item.condition}</td>
+                        <td>{item.department}</td>
+                        <td>{item.quantity}</td>
+                        <td>{item.status}</td>
+                        <td>{item.type}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          );
+        })}
 
         <Modal
           title="Confirm Room Number Update"
