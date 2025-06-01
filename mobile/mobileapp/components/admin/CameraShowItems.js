@@ -460,6 +460,8 @@ const sideWidth = (width - frameWidth) / 2;
         <Text style={styles.text}>Go Back</Text>
       </TouchableOpacity>
 
+            <Text style={{position: 'absolute', color: 'white', bottom: bottomOffset-10, zIndex: 999, fontWeight: 'bold', fontSize: 20}}>Track Items</Text>
+
       <CameraView
         style={styles.camera}
         facing={cameraType}

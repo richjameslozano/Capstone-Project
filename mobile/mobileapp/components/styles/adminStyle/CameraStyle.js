@@ -9,8 +9,8 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
   },
+
 backBtn:{
   position: 'absolute',
   top: 70,
@@ -18,7 +18,11 @@ backBtn:{
   zIndex: 999,
   flexDirection: 'row',
   alignItems: 'center',
-  gap: 5
+  gap: 5,
+  padding: 10,
+  backgroundColor: 'rgba(255, 255, 255, 0.3)',
+  borderRadius: 50,
+  paddingVertical: 5
 },
   camera: {
     flex: 1,

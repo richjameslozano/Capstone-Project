@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useRef } from "react";
-import { View, Text, TouchableOpacity, Animated, Dimensions, Alert, Modal, FlatList } from "react-native";
-import { useNavigation, useRoute } from '@react-navigation/native';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { View, Text, TouchableOpacity, Animated, Dimensions, Alert, Modal, FlatList, StatusBar } from "react-native";
+import { useFocusEffect, useNavigation, useRoute } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from "expo-camera";
 import CryptoJS from "crypto-js";
 import { collection, query, getDocs, where, serverTimestamp, doc, getDoc, updateDoc, addDoc, orderBy, limit, docSnap } from "firebase/firestore";
@@ -10,6 +10,7 @@ import styles from "../styles/adminStyle/CameraStyle";
 import QuantityModal from '../customs/QuantityModal';
 import CONFIG from "../config";
 import Header from "../Header";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const { width, height } = Dimensions.get("window");
 const frameSize = width * 0.7;
@@ -29,6 +30,14 @@ const CameraUpdateItems = ({ onClose }) => {
   const [permission, requestPermission] = useCameraPermissions();
   const [selectedVolumeIndex, setSelectedVolumeIndex] = useState(null);
   const [volumeModalVisible, setVolumeModalVisible] = useState(false);
+
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle('light-content');
+      StatusBar.setBackgroundColor('transparent'); // Android only
+      StatusBar.setTranslucent(true)
+    }, [])
+  );
 
   useEffect(() => {
     if (permission?.status !== 'granted') {
@@ -81,7 +90,7 @@ const CameraUpdateItems = ({ onClose }) => {
     };
 
     const handleBackButton = () => {
-        navigation.goBack();
+        navigation.navigate('QRScanScreen');
     };
 
     const logRequestOrReturn = async (userId, userName, action) => {
@@ -156,270 +165,7 @@ const CameraUpdateItems = ({ onClose }) => {
     }
   };
 
-  // const handleAddQuantity = async (addedQuantity) => {
-  //   const { itemId, itemName, labRoom: roomNumber } = currentItem;
 
-  //   try {
-  //     console.log("roomNumber:", roomNumber); // Should be '0930'
-  //     console.log("itemId:", itemId);         // Should be 'DENT02'
-
-  //     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
-  //     const snapshot = await getDocs(inventoryQuery);
-
-  //       snapshot.forEach(async docSnap => {
-  //         const ref = doc(db, 'inventory', docSnap.id);
-  //         const existing = docSnap.data();
-
-  //         const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-  //         const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
-
-
-  //         await updateDoc(ref, {
-  //           quantity: newQty,
-  //           'condition.Good': newGood
-  //         });
-
-  //         console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-
-  //           const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
-
-  //           try {
-  //             const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
-  //             const latestSnapshot = await getDocs(latestLogQuery);
-
-  //             let newDeliveryNumber = "DLV-00001"; // default
-
-  //             if (!latestSnapshot.empty) {
-  //               const latestDoc = latestSnapshot.docs[0];
-  //               const lastDeliveryNumber = latestDoc.data().deliveryNumber;
-  //               const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
-  //               if (match) {
-  //                 const lastNumber = parseInt(match[1], 10);
-  //                 const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
-  //                 newDeliveryNumber = `DLV-${nextNumber}`;
-  //               }
-  //             }
-
-  //             await addDoc(stockLogRef, {
-  //               date: new Date().toISOString().split("T")[0],
-  //               noOfItems: addedQuantity,
-  //               deliveryNumber: newDeliveryNumber,
-  //               action: "Quantity Added",
-  //               user: user.displayName || user.email || "Unknown",
-  //               createdAt: serverTimestamp(),
-  //             });
-
-  //             console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
-  //           } catch (error) {
-  //             console.error("❌ Error adding stock log:", error);
-  //           }
-  //       });
-
-  //     // ✅ STEP 1: Get the labRoom doc ID using roomNumber
-  //     const labRoomQuery = query(
-  //       collection(db, 'labRoom'),
-  //       where('roomNumber', '==', roomNumber)
-  //     );
-  //     const labRoomSnap = await getDocs(labRoomQuery);
-
-  //     if (labRoomSnap.empty) {
-  //       Alert.alert("Error", `Lab room ${roomNumber} not found.`);
-  //       return;
-  //     }
-
-  //     const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
-
-  //     // ✅ STEP 2: Get item in subcollection
-  //     const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
-  //     const itemDocSnap = await getDoc(itemDocRef);
-
-  //     if (!itemDocSnap.exists()) {
-  //       Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
-  //       return;
-  //     }
-
-  //     // ✅ STEP 3: Update quantity and condition
-  //     const existing = itemDocSnap.data();
-  //     const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-  //     const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
-
-  //     await updateDoc(itemDocRef, {
-  //       quantity: newQty,
-  //       'condition.Good': newGood,
-  //     });
-
-  //     console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-  //     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
-
-  //     // // ✅ Log the stock addition to Firestore logs
-  //     // const inventoryId = docSnap.id;
-  //     // const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
-
-  //     // try {
-  //     //   // 2. Query the latest deliveryNumber by createdAt
-  //     //   const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
-  //     //   const latestSnapshot = await getDocs(latestLogQuery);
-
-  //     //   let newDeliveryNumber = "DLV-00001"; // default
-
-  //     //   if (!latestSnapshot.empty) {
-  //     //     const latestDoc = latestSnapshot.docs[0];
-  //     //     const lastDeliveryNumber = latestDoc.data().deliveryNumber;
-
-  //     //     const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
-  //     //     if (match) {
-  //     //       const lastNumber = parseInt(match[1], 10);
-  //     //       const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
-  //     //       newDeliveryNumber = `DLV-${nextNumber}`;
-  //     //     }
-  //     //   }
-
-  //     //   // 3. Add the new stock log
-  //     //   await addDoc(stockLogRef, {
-  //     //     date: new Date().toISOString().split("T")[0],
-  //     //     noOfItems: addedQuantity,
-  //     //     deliveryNumber: newDeliveryNumber,
-  //     //     action: "Quantity Added",
-  //     //     user: user.displayName || user.email || "Unknown",
-  //     //     createdAt: serverTimestamp(),
-  //     //   });
-
-  //     //   console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
-  //     // } catch (error) {
-  //     //   console.error("❌ Error adding stock log:", error);
-  //     // }
-
-  //   } catch (err) {
-  //     console.error("Quantity update error:", err);
-  //     Alert.alert("Error", "Failed to update quantity.");
-
-  //   } finally {
-  //     setModalVisible(false);
-  //     setScanned(false);
-  //   }
-  // };
-
-  // const handleAddQuantity = async (addedQuantity, expiryDate) => {
-  //   const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
-
-  //   try {
-  //     console.log("roomNumber:", roomNumber); // Should be '0930'
-  //     console.log("itemId:", itemId);         // Should be 'DENT02'
-
-  //     const isChemicalOrReagent = category === "Chemical" || category === "Reagent";
-  //     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
-  //     const snapshot = await getDocs(inventoryQuery);
-
-  //       snapshot.forEach(async docSnap => {
-  //         const ref = doc(db, 'inventory', docSnap.id);
-  //         const existing = docSnap.data();
-
-  //         const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-  //         const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
-
-
-  //         await updateDoc(ref, {
-  //           quantity: newQty,
-  //           'condition.Good': newGood
-  //         });
-
-  //         console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-
-  //           const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
-
-  //           try {
-  //             const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
-  //             const latestSnapshot = await getDocs(latestLogQuery);
-
-  //             let newDeliveryNumber = "DLV-00001"; // default
-
-  //             if (!latestSnapshot.empty) {
-  //               const latestDoc = latestSnapshot.docs[0];
-  //               const lastDeliveryNumber = latestDoc.data().deliveryNumber;
-  //               const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
-
-  //               if (match) {
-  //                 const lastNumber = parseInt(match[1], 10);
-  //                 const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
-  //                 newDeliveryNumber = `DLV-${nextNumber}`;
-  //               }
-  //             }
-
-  //             // await addDoc(stockLogRef, {
-  //             //   date: new Date().toISOString().split("T")[0],
-  //             //   noOfItems: addedQuantity,
-  //             //   deliveryNumber: newDeliveryNumber,
-  //             //   // action: "Quantity Added",
-  //             //   // user: user.displayName || user.email || "Unknown",
-  //             //   createdAt: serverTimestamp(),
-  //             // });
-
-  //             const logData = {
-  //               date: new Date().toISOString().split("T")[0],
-  //               noOfItems: addedQuantity,
-  //               deliveryNumber: newDeliveryNumber,
-  //               // action: "Quantity Added",
-  //               // user: user.displayName || user.email || "Unknown",
-  //               createdAt: serverTimestamp(),
-  //             };
-
-  //             if (isChemicalOrReagent && expiryDate) {
-  //               logData.expiryDate = expiryDate; // include expiryDate in log
-  //             }
-
-  //             await addDoc(stockLogRef, logData);
-
-  //             console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
-  //           } catch (error) {
-  //             console.error("❌ Error adding stock log:", error);
-  //           }
-  //       });
-
-  //     // ✅ STEP 1: Get the labRoom doc ID using roomNumber
-  //     const labRoomQuery = query(
-  //       collection(db, 'labRoom'),
-  //       where('roomNumber', '==', roomNumber)
-  //     );
-  //     const labRoomSnap = await getDocs(labRoomQuery);
-
-  //     if (labRoomSnap.empty) {
-  //       Alert.alert("Error", `Lab room ${roomNumber} not found.`);
-  //       return;
-  //     }
-
-  //     const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
-
-  //     // ✅ STEP 2: Get item in subcollection
-  //     const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
-  //     const itemDocSnap = await getDoc(itemDocRef);
-
-  //     if (!itemDocSnap.exists()) {
-  //       Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
-  //       return;
-  //     }
-
-  //     // ✅ STEP 3: Update quantity and condition
-  //     const existing = itemDocSnap.data();
-  //     const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-  //     const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
-
-  //     await updateDoc(itemDocRef, {
-  //       quantity: newQty,
-  //       'condition.Good': newGood,
-  //     });
-
-  //     console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-  //     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
-
-  //   } catch (err) {
-  //     console.error("Quantity update error:", err);
-  //     Alert.alert("Error", "Failed to update quantity.");
-
-  //   } finally {
-  //     setModalVisible(false);
-  //     setScanned(false);
-  //   }
-  // };
 
   const handleAddQuantity = async (addedQuantity, expiryDate) => {
   const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
@@ -515,15 +261,25 @@ const CameraUpdateItems = ({ onClose }) => {
   }
 };
 
+const { width, height } = Dimensions.get('window');
+const frameWidth = width * 0.7;
+const frameHeight = frameWidth; // square frame
+
+const topOffset = (height - frameHeight) / 3;
+const bottomOffset = height - topOffset - frameHeight;
+const sideWidth = (width - frameWidth) / 2;
+
 
   return (
     <View style={styles.container}>
-    <Header/>
-      <TouchableOpacity onPress={handleBackButton}>
-        <Text style={styles.text}>Go Back</Text>
-      </TouchableOpacity>
 
-      <Text style={styles.text}>Scanning for: {selectedItem?.itemName}</Text>
+      <TouchableOpacity onPress={handleBackButton} style={styles.backBtn}>
+               <Icon name="keyboard-backspace" size={28} color="white" />
+              <Text style={styles.text}>Go Back</Text>
+            </TouchableOpacity>
+
+      <Text style={{position: 'absolute', color: 'white', top: topOffset-30, zIndex: 999}}>Scanning for: {selectedItem?.itemName}</Text>
+      <Text style={{position: 'absolute', color: 'white', bottom: bottomOffset-10, zIndex: 999, fontWeight: 'bold', fontSize: 20}}>Update Stock Items</Text>
 
       <CameraView
         style={styles.camera}
@@ -532,21 +288,21 @@ const CameraUpdateItems = ({ onClose }) => {
         barcodeScannerEnabled={true}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       >
-        <View style={styles.overlay}>
-          <View style={styles.maskTop} />
-          <View style={styles.maskBottom} />
-          <View style={[styles.maskLeft, { top: (height - frameSize) / 2, height: frameSize }]} />
-          <View style={[styles.maskRight, { top: (height - frameSize) / 2, height: frameSize }]} />
+<View style={styles.overlay}>
+  <View style={[styles.maskTop, { height: topOffset }]} />
+  <View style={[styles.maskBottom, { height: bottomOffset+35 }]} />
+  <View style={[styles.maskLeft, { top: topOffset, height: frameHeight, width: sideWidth }]} />
+  <View style={[styles.maskRight, { top: topOffset, height: frameHeight, width: sideWidth }]} />
 
-          <View style={styles.scannerFrame}>
-            <View style={[styles.corner, styles.cornerTopLeft]} />
-            <View style={[styles.corner, styles.cornerTopRight]} />
-            <View style={[styles.corner, styles.cornerBottomLeft]} />
-            <View style={[styles.corner, styles.cornerBottomRight]} />
+  <View style={[styles.scannerFrame, { top: topOffset, width: frameWidth, height: frameHeight }]}>
+    <View style={[styles.corner, styles.cornerTopLeft]} />
+    <View style={[styles.corner, styles.cornerTopRight]} />
+    <View style={[styles.corner, styles.cornerBottomLeft]} />
+    <View style={[styles.corner, styles.cornerBottomRight]} />
 
-            <Animated.View style={[styles.scanLine, { top: scanLinePosition }]} />
-          </View>
-        </View>
+    <Animated.View style={[styles.scanLine, { top: scanLinePosition }]} />
+  </View>
+</View>
 
         <View style={styles.controls}>
           <TouchableOpacity
