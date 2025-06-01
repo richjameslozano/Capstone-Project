@@ -265,6 +265,7 @@ const AccountManagement = () => {
 
     setIsModalVisible(true);
   };
+  
 
   const handleSave = async (values) => {
     // Sanitize input by trimming extra spaces and lowering the case
@@ -330,6 +331,19 @@ const AccountManagement = () => {
         // If adding a new account
         const docRef = await addDoc(collection(db, "accounts"), sanitizedValues);
         const newAccount = { ...sanitizedValues, id: docRef.id };
+
+        await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: email.trim().toLowerCase(),
+            subject: "Account Registration - Pending Approval",
+            text: `Hi ${sanitizedValues.name},\n\nYour account has been added by the ITSO. You may now login your account. \n\nRegards,\nNU MOA ITSO Team`,
+            html: `<p>Hi ${sanitizedValues.name},</p><p>Your account has been added by the ITSO. You may now login your account.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+          }),
+        });
   
         setAccounts([...accounts, newAccount]);
         setModalMessage("Account added successfully!");
