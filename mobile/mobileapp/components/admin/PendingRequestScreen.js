@@ -145,10 +145,11 @@ const capitalizeName = (name) => {
   return name.replace(/\b\w/g, char => char.toUpperCase());
 };
 
-  const renderItem = ({ item, index }) => (
-    
 
-      <TouchableOpacity key={index} onPress={() => { setSelectedRequest(item), setViewModalVisible(true)}} style={styles.pendingCard}>
+  const renderItem = ({ item, index }) => {
+    const isPastDue = new Date(item.dateRequired) < new Date();
+    return(
+      <TouchableOpacity key={index} onPress={() => { setSelectedRequest(item), setViewModalVisible(true)}} style={[styles.pendingCard, {borderColor: isPastDue? '#ffb1a8':'#dcdcdc'}]}>
               <View style={styles.usageContainer}>
               <Text style={[styles.usage, {backgroundColor: usageBG(item)}]}>{getInitials(item.usageType)}</Text>
               </View>
@@ -156,7 +157,7 @@ const capitalizeName = (name) => {
               <View style={styles.detailsContainer}>
                 <View style={{justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center', width: '100%'}}>
                 <Text style={styles.name}>{capitalizeName(item.userName) || 'N/A'}</Text>
-                <Text style={{color: 'gray', fontSize: 12, fontWeight: 300}}>{item.dateRequested.toLocaleDateString()}</Text>
+                <Text style={{color: isPastDue? 'black':'gray', fontSize: 12, fontWeight: 300, backgroundColor: isPastDue? '#ffb1a8':'none', padding: isPastDue? 5: 0, borderRadius: 5, paddingVertical: isPastDue? 2: 0}}>{item.dateRequired}</Text>
                 </View>
 
 
@@ -176,7 +177,11 @@ const capitalizeName = (name) => {
                 <Text style={[styles.reason]}>Room {item.room}</Text>
               </View>
       </TouchableOpacity>
-  );
+    )}
+    
+
+      
+
 
 const groupByDueDateCategory = (requests) => {
   const now = new Date();
@@ -197,6 +202,7 @@ const groupByDueDateCategory = (requests) => {
   endOfNextWeek.setDate(startOfNextWeek.getDate() + 6);
   endOfNextWeek.setHours(23, 59, 59, 999);
 
+  const pastDue = [];
   const thisWeek = [];
   const nextWeek = [];
   const later = [];
@@ -204,7 +210,9 @@ const groupByDueDateCategory = (requests) => {
   requests.forEach((item) => {
     const dueDate = new Date(item.dateRequired);
 
-    if (dueDate >= startOfWeek && dueDate <= endOfWeek) {
+    if (dueDate < startOfWeek) {
+      pastDue.push(item)
+    } else if (dueDate >= startOfWeek && dueDate <= endOfWeek) {
       thisWeek.push(item);
     } else if (dueDate >= startOfNextWeek && dueDate <= endOfNextWeek) {
       nextWeek.push(item);
@@ -214,6 +222,7 @@ const groupByDueDateCategory = (requests) => {
   });
 
   return {
+    'Past Due': pastDue,
     'Required This Week': thisWeek,
     'Next Week': nextWeek,
     'Further Ahead': later,

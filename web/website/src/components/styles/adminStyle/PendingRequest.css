@@ -1,7 +1,4 @@
 
-.request-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
 
 .approved-card {
@@ -98,33 +95,42 @@
   background-color: #e6f7ff;
 }
 
+.request-modal .ant-modal-content{
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+  
+}
+.request-modal .ant-modal-body{
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
 .requisition-slip-title{
+  position: absolute;
   display: flex;
   align-items: center;
-  width: 800px; 
   background-color: #212f7e;
-  height: 50px;
+  height: 60px;
   padding-left: 20px;
   padding-right: 20px;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
-  margin-top: -20px;
-  margin-left: -24px;
   color: white;
   font-size: 20px;
   justify-content: space-between;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .whole-slip{
   background-color: #eaefff;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 20px;
-  width: 800px;
-  padding-top: 15px;
-  margin-left: -24px;
+  width: 100%;
   padding-left: 20px;
   font-size: 16px;
+  margin-top: 60px;
 }
 
 .left-slip{

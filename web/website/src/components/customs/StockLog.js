@@ -53,7 +53,7 @@ const StockLog = ({ inventoryDocId }) => {
       render: text => new Date(text).toLocaleDateString(),
     },
     {
-      title: 'Inventory Balance',
+      title: 'Number of Items',
       dataIndex: 'noOfItems',
       key: 'noOfItems',
     },
