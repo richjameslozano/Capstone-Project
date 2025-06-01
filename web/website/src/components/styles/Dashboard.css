@@ -35,7 +35,7 @@
 }
 
 .card-count{
-  color: white;
+  color: rgb(88, 61, 61);
   font-weight: 700;
   font-size: 45px;
   margin-bottom: 0px;
@@ -43,7 +43,7 @@
 
 .card-title{
   font-size: 17px;
-  color: white;
+  color: rgb(87, 66, 66);
   font-weight: bold;
 
 }
@@ -106,7 +106,7 @@ align-self: center;
 }
 
 .summary-card {
-  color: white;
+  color: rgb(0, 0, 0);
   border: none;
 }
 
@@ -136,7 +136,7 @@ align-self: center;
 }
 
 .summary-card-icon {
-  font-size: 36px;
+  font-size: 30px;
 }
 
 
@@ -185,7 +185,7 @@ align-self: center;
 
 
 .critical-card .ant-card-head {
-  background-color: #ac2c2c !important;
+  background-color: #ef5a52 !important;
   color: white !important;
   border-bottom: none !important;
 }
@@ -196,7 +196,7 @@ align-self: center;
 }
 
 .damaged-card .ant-card-head {
-  background-color: #d5892e !important; 
+  background-color: #d99b50 !important; 
   color: white !important;
   border-bottom: none !important;
 }
@@ -207,9 +207,9 @@ align-self: center;
 }
 
 .item-expiry-card .ant-card-head {
-  background-color: #097eb1 !important; 
-  color: white !important;
-  border-bottom: none !important;
+  border-bottom: 1px solid #757575; 
+  font-weight: bold; 
+  color: rgb(0, 0, 0);
 }
 
 

@@ -398,10 +398,10 @@ useEffect(() => {
   };
  
    const summaryCards = [
-     { title: "Pending Requests", count: pendingRequestCount, color: "#2fe82f", icon: "📄" },
-     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#d6d606", icon: "📋" },
-     { title: "Inventory", count: dataSource, color: "#3d5be2", icon: "🛒" },
-     { title: "Request Log", count: historyData, color: "#cf1b26", icon: "💵" },
+     { title: "Pending Requests", count: pendingRequestCount, color: "#94d39f", icon: "📄" },
+     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#d1d394", icon: "📋" },
+     { title: "Inventory", count: dataSource, color: "#94b9d3", icon: "🛒" },
+     { title: "Request Log", count: historyData, color: "#d08b87", icon: "💵" },
    ];
 
   const lightenColor = (hex, percent) => {
@@ -479,7 +479,7 @@ useEffect(() => {
             <div className="summary-card-icon">{card.icon}</div>
             <div className="card-content-layout">
               <h3 className="card-count">{card.count}</h3>
-              <div className="card-title"><p style={{margin: 0}}>{card.title}</p></div>
+              <div className="card-title"><p>{card.title}</p></div>
             </div>
           </div>
           )        
@@ -492,7 +492,7 @@ useEffect(() => {
     <Col xs={24} md={14}>
       <div className="analytics-box">
         <div className="analytics-center-wrapper">
-          <h1 style={{ fontWeight: "bold", marginTop: '30px', marginBottom: '40px', fontSize: '32px', marginLeft:'20px'}}>
+          <h1 style={{ fontWeight: "bold", marginTop: '30px', marginBottom: '40px', fontSize: '26px', marginLeft:'20px'}}>
             Analytics Center
           </h1>
         </div>
@@ -534,7 +534,30 @@ useEffect(() => {
               />
             </Card>
 
-            {/* Damaged / Defective Items */}
+          </Col>
+
+          <Col xs={24} md={12}>
+               
+            {/* Recently Added Products */}
+<Card title="Recently Added Products" style={{marginBottom:'24px'}} className="sales-card-header">
+              <div style={{ height: '234px', overflowY: 'auto'}}> 
+                <List
+                  dataSource={recentProducts}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 500 }}>{item.itemName}</div>
+                          <small style={{ color: "#888" }}>{item.category}</small>
+                        </div>
+                        <div style={{ color: '#555', fontSize: '0.9em' }}>{item.entryCurrentDate}</div>
+                      </div>
+                    </List.Item>
+                  )}
+                />
+                </div>
+            </Card>
+                        {/* Damaged / Defective Items */}
             <Card title="Damaged / Defective Items" className="damaged-card" style={{ marginBottom: '24px' }}>
               <Table
                 dataSource={damagedItems}
@@ -552,61 +575,6 @@ useEffect(() => {
               />
             </Card>
           </Col>
-
-
-          <Col xs={24} md={12}>
-
-         
-            <Card title="Highest Sale Products" style={{marginBottom:'20px', color:'#022850' }} className="sales-card-header">  
-              <div style={{ height: '150px', width:'auto', overflowY: 'auto' }}> 
-                <List
-                  dataSource={topProducts}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
-                        <span style={{ fontWeight: 500 }}>{item.title}</span>
-                        <span style={{ color: '#555', fontSize: '0.9em' }}>
-                          {item.sold} Sold / {item.quantity} Qty
-                        </span>
-                      </div>
-                    </List.Item>
-                  )}
-                />
-              </div>
-            </Card>
-         
-  {/* Latest Sales */}
-            <Card title="Latest Sales" style={{marginBottom:'20px'}} className="sales-card-header"> 
-              <div style={{ height: '150px', overflowY: 'auto' }}> 
-                <Table
-                  dataSource={latestSales}
-                  columns={salesColumns}
-                  pagination={false}
-                  size="small"
-                  scroll={{ x: 200 }}
-                />
-              </div>
-            </Card>                   
-            {/* Recently Added Products */}
-<Card title="Recently Added Products" style={{marginBottom:'20px'}} className="sales-card-header">
-              <div style={{ height: '150px', overflowY: 'auto'}}> 
-                <List
-                  dataSource={recentProducts}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontWeight: 500 }}>{item.itemName}</div>
-                          <small style={{ color: "#888" }}>{item.category}</small>
-                        </div>
-                        <div style={{ color: '#555', fontSize: '0.9em' }}>{item.entryCurrentDate}</div>
-                      </div>
-                    </List.Item>
-                  )}
-                />
-                </div>
-            </Card>
-          </Col>
         </Row>
       </div>
     </Col>
@@ -614,7 +582,7 @@ useEffect(() => {
 
     <Col xs={24} md={10}>
       <div className="calendar-box">
-        <Card title="Calendar" style={{ height: '100%' }}>
+        <Card title="Calendar" style={{ height: '100%', width:'100%' }}>
           <CustomCalendar onSelectDate={handleDateSelect} />
         </Card>
       </div>
