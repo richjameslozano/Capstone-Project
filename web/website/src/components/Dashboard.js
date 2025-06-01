@@ -14,6 +14,8 @@ import "./styles/Dashboard.css";
    const [showModal, setShowModal] = useState(false);
    const [pendingRequestCount, setPendingRequestCount] = useState(0);
    const [borrowCatalogCount, setBorrowCAtalogCount] = useState(0);
+   const [historyData, setHistoryData] = useState(0);
+   const [dataSource, setDataSource] = useState(0);
    const [predictedSales, setPredictedSales] = useState(null);  
    const [productTrends, setProductTrends] = useState([]);  
    const [showPolicies, setShowPolicies] = useState(false); 
@@ -45,6 +47,10 @@ import "./styles/Dashboard.css";
      { key: 2, name: "Raspberry Pi", date: "2019-02-03", total: "$100.00" },
      { key: 3, name: "Electronics Project Enclosure Case Box", date: "2019-02-03", total: "$30.00" },
      { key: 4, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
+     { key: 5, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
+     { key: 6, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
+     { key: 7, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
+        
    ]);
 
 
@@ -252,6 +258,36 @@ useEffect(() => {
       return () => unsubscribe();
     }, []);
  
+        useEffect(() => {
+      const q = collectionGroup(db, "requestlog");
+  
+      // Set up the real-time listener
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        setHistoryData(querySnapshot.size);
+  
+      }, (error) => {
+        console.error("Error fetching pending requests:", error);
+      });
+  
+      // Cleanup the listener on unmount
+      return () => unsubscribe();
+    }, []);
+
+      useEffect(() => {
+      const q = collectionGroup(db, "inventory");
+  
+      // Set up the real-time listener
+      const unsubscribe = onSnapshot(q, (querySnapshot) => {
+        setDataSource(querySnapshot.size);
+  
+      }, (error) => {
+        console.error("Error fetching pending requests:", error);
+      });
+  
+      // Cleanup the listener on unmount
+      return () => unsubscribe();
+    }, []);
+
     useEffect(() => {
       if (location.state?.loginSuccess === true) {
         setShowModal(true);
@@ -362,10 +398,10 @@ useEffect(() => {
   };
  
    const summaryCards = [
-     { title: "Pending Requests", count: pendingRequestCount, color: "#fa541c", icon: "📄" },
-     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#a0d911", icon: "📋" },
-     { title: "Products", count: 7, color: "#13c2c2", icon: "🛒" },
-     { title: "Sales", count: 15, color: "#faad14", icon: "💵" },
+     { title: "Pending Requests", count: pendingRequestCount, color: "#2fe82f", icon: "📄" },
+     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#d6d606", icon: "📋" },
+     { title: "Inventory", count: dataSource, color: "#3d5be2", icon: "🛒" },
+     { title: "Request Log", count: historyData, color: "#cf1b26", icon: "💵" },
    ];
 
   const lightenColor = (hex, percent) => {
@@ -432,6 +468,12 @@ useEffect(() => {
               if (card.title === "Borrow Catalog") {
                 navigate("/main/borrow-catalog"); 
               }
+              if (card.title === "Request Log") {
+                navigate("/main/request-log"); 
+              }
+              if (card.title === "Inventory") {
+                navigate("/main/inventory"); 
+              }
             }}
             >
             <div className="summary-card-icon">{card.icon}</div>
@@ -444,144 +486,146 @@ useEffect(() => {
         })}
         </div>
 
-        <Content className="content">
-          <h1 style={{fontWeight: "bold", marginTop: '20px'}}>Analytics Center</h1>
-            {/* AI Analytics Section */}
-            <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
-              <Col xs={24} md={8}>
+<Content className="content">
+  <Row gutter={[24, 24]}>
 
-                <Card title="Item Expiry">
-                  <h4>Expired Items</h4>
-                  <Table
-                    dataSource={expiredItems}
-                    columns={expiryColumns}
-                    pagination={false}
-                    size="small"
-                    locale={{ emptyText: "No expired items" }}
-                  />
+    <Col xs={24} md={14}>
+      <div className="analytics-box">
+        <div className="analytics-center-wrapper">
+          <h1 style={{ fontWeight: "bold", marginTop: '30px', marginBottom: '40px', fontSize: '32px', marginLeft:'20px'}}>
+            Analytics Center
+          </h1>
+        </div>
 
-                  <h4 style={{ marginTop: "20px" }}>Expiring Soon (Next 7 Days)</h4>
-                  <Table
-                    dataSource={expiringSoonItems}
-                    columns={expiryColumns}
-                    pagination={false}
-                    size="small"
-                    locale={{ emptyText: "No items expiring soon" }}
-                  />
-                </Card>
+        <Row gutter={16}>
 
-              </Col>
+          <Col xs={24} md={12}>
+            {/* Item Expiry */}
+            <Card title="Item Expiry" className="item-expiry-card" style={{ marginBottom: '24px' }}>
+              <h4>Expired Items</h4>
+              <Table
+                dataSource={expiredItems}
+                columns={expiryColumns}
+                pagination={false}
+                size="small"
+                scroll={{ y: 100 }}
+                locale={{ emptyText: "No expired items" }}
+              />
+              <h4 style={{ marginTop: "20px" }}>Expiring Soon (Next 7 Days)</h4>
+              <Table
+                dataSource={expiringSoonItems}
+                columns={expiryColumns}
+                pagination={false}
+                size="small"
+                scroll={{ y: 100 }}
+                locale={{ emptyText: "No items expiring soon" }}
+              />
+            </Card>
 
-              <Col xs={24} md={8}>
-                <Card title="Critical Stocks">
-                 <Table
-                  dataSource={criticalStockList}
-                  columns={criticalColumns}
-                  rowKey="id"
-                  pagination={false}
+            {/* Critical Stocks */}
+            <Card title="Critical Stocks" className="critical-card" style={{ marginBottom: '24px' }}>
+              <Table
+                dataSource={criticalStockList}
+                columns={criticalColumns}
+                pagination={false}
+                size="small"
+                scroll={{ y: 250 }}
+                locale={{ emptyText: "No data" }}
+              />
+            </Card>
+
+            {/* Damaged / Defective Items */}
+            <Card title="Damaged / Defective Items" className="damaged-card" style={{ marginBottom: '24px' }}>
+              <Table
+                dataSource={damagedItems}
+                scroll={{ x: 'max-content', y: 100 }}
+                columns={[
+                  { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
+                  { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
+                  { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
+                  { title: "Damaged", dataIndex: "damageQty", key: "damageQty", width: 100 },
+                  { title: "Defective", dataIndex: "defectQty", key: "defectQty", width: 100 },
+                ]}
+                pagination={{ pageSize: 5 }}
+                size="small"
+                locale={{ emptyText: "No damaged items" }}
+              />
+            </Card>
+          </Col>
+
+
+          <Col xs={24} md={12}>
+
+         
+            <Card title="Highest Sale Products" style={{marginBottom:'20px', color:'#022850' }} className="sales-card-header">  
+              <div style={{ height: '150px', width:'auto', overflowY: 'auto' }}> 
+                <List
+                  dataSource={topProducts}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
+                        <span style={{ fontWeight: 500 }}>{item.title}</span>
+                        <span style={{ color: '#555', fontSize: '0.9em' }}>
+                          {item.sold} Sold / {item.quantity} Qty
+                        </span>
+                      </div>
+                    </List.Item>
+                  )}
                 />
-                </Card>
-              </Col>
-              <Col xs={24} md={8}>
-                <Card title="Damaged / Defective Items">
-                    <Table
-                      dataSource={damagedItems}
-                      columns={[
-                        {
-                          title: "Item Name",
-                          dataIndex: "itemName",
-                          key: "itemName",
-                        },
-                        {
-                          title: "Item ID",
-                          dataIndex: "itemId",
-                          key: "itemId",
-                        },
-
-                        {
-                          title: "Lab Room",
-                          dataIndex: "labRoom",
-                          key: "labRoom",
-                        },
-                        {
-                          title: "Damaged",
-                          dataIndex: "damageQty",
-                          key: "damageQty",
-                        },
-                        {
-                          title: "Defective",
-                          dataIndex: "defectQty",
-                          key: "defectQty",
-                        },
-                      ]}
-                    />
-                    </Card>
-
-              </Col>
-            </Row>
-
-            {/* Main Content - Highest Sale / Latest Sales / Recent Products */}
-            <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
-              <Col xs={24} md={8}>
-                <Card title="Highest Sale Products">
-                  <List
-                    dataSource={topProducts}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
-                          <span>{item.title}</span>
-                          <span>{item.sold} Sold / {item.quantity} Qty</span>
+              </div>
+            </Card>
+         
+  {/* Latest Sales */}
+            <Card title="Latest Sales" style={{marginBottom:'20px'}} className="sales-card-header"> 
+              <div style={{ height: '150px', overflowY: 'auto' }}> 
+                <Table
+                  dataSource={latestSales}
+                  columns={salesColumns}
+                  pagination={false}
+                  size="small"
+                  scroll={{ x: 200 }}
+                />
+              </div>
+            </Card>                   
+            {/* Recently Added Products */}
+<Card title="Recently Added Products" style={{marginBottom:'20px'}} className="sales-card-header">
+              <div style={{ height: '150px', overflowY: 'auto'}}> 
+                <List
+                  dataSource={recentProducts}
+                  renderItem={(item) => (
+                    <List.Item>
+                      <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: 500 }}>{item.itemName}</div>
+                          <small style={{ color: "#888" }}>{item.category}</small>
                         </div>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
-              </Col>
-
-              <Col xs={24} md={8}>
-                <Card title="Latest Sales">
-                  <Table
-                    dataSource={latestSales}
-                    columns={salesColumns}
-                    pagination={false}
-                    size="small"
-                  />
-                </Card>
-              </Col>
-
-              <Col xs={24} md={8}>
-                <Card title="Recently Added Products">
-                  <List
-                    dataSource={recentProducts}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
-                          <div>
-                            <div>{item.itemName}</div>
-                            <small style={{ color: "#999" }}>{item.category}</small>
-                          </div>
-                          <div>{item.entryCurrentDate}</div>
-                        </div>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
-              </Col>
-            </Row>
-
-            <Row style={{ marginTop: "20px", width: "100%" }}>
-              <Col span={24}>
-                <div className="calendar-wrapper">
-                <CustomCalendar onSelectDate={handleDateSelect} />
+                        <div style={{ color: '#555', fontSize: '0.9em' }}>{item.entryCurrentDate}</div>
+                      </div>
+                    </List.Item>
+                  )}
+                />
                 </div>
-              </Col>
-            </Row>
-          </Content>
+            </Card>
+          </Col>
+        </Row>
+      </div>
+    </Col>
 
+
+    <Col xs={24} md={10}>
+      <div className="calendar-box">
+        <Card title="Calendar" style={{ height: '100%' }}>
+          <CustomCalendar onSelectDate={handleDateSelect} />
+        </Card>
+      </div>
+    </Col>
+  </Row>
+</Content>
+                    
          <SuccessModal isVisible={showModal} onClose={closeModal} />
 
          {/* <PoliciesModal isOpen={showPolicies} onClose={closePolicies} /> */}
-
+        
        </Layout>
      </Layout>
    );
