@@ -68,7 +68,7 @@ const renderItem = ({ item }) => (
   return (
     <View style={styles.container}>
       <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-          <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+          <TouchableOpacity onPress={() => navigation.navigate('QRScanScreen')} style={styles.backButton}>
                           <Icon name="keyboard-backspace" size={28} color="black" />
                         </TouchableOpacity>
 
