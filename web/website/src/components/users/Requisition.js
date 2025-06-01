@@ -1773,8 +1773,6 @@ const Requisition = () => {
     <div className="page-sections" style={{ display: "flex", flexDirection: "column", gap: "0", padding: "24px",height:"100vh" }}>
 
          <div className="section requisition-form">
-         
-          <Title level={2}>Requisition Form</Title>
           <div className="request-details">
             <div className="whole-section" >
               <div className="left-section">

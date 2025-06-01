@@ -13,6 +13,10 @@
   flex-direction: column;
   justify-content: space-between;
   height: auto;
+  border: 1px solid #d9d9d9;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
   /* max-height: 150px; */
 }
 
@@ -20,6 +24,8 @@
   font-weight: bold;
   background-color: #f9f9f9 !important;
   border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+  color: #333; 
 }
 
 .card-content-layout{
@@ -42,6 +48,16 @@
 
 }
 
+.analytics-box {
+  background: #fff;
+  border-radius: 12px; 
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); 
+  margin-bottom: 20px; 
+  border: 2px solid #ddd;
+  padding: 15px;
+}
+
+
 
 .ant-tooltip {
   z-index: 2050 !important;
@@ -62,15 +78,33 @@
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 300px; 
+  height: 300px;
 }
+.fixed-height-table {
+    display: flex;
+  flex-direction: column;
 
+}
+.fixed-height-table .ant-table-container {
+flex: 1;
+display: flex;
+flex-direction: column;
+}
+.fixed-height-table .ant-table-body {
+  flex:1;
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+}
 .pie-chart .recharts-wrapper {
   width: 100% !important;
   height: 100% !important;
+
+}
+.analytics-center-wrapper {
+justify-content: center;
+align-self: center;
 }
 
-/* Summary Cards */
 .summary-card {
   color: white;
   border: none;
@@ -98,39 +132,43 @@
 .summary-card-content:hover{
   cursor: pointer;
   transform: scale(105%);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .summary-card-icon {
   font-size: 36px;
 }
 
-/* List Styles */
-.ant-list-item {
-  padding: 8px 0;
-}
 
+.ant-list-item {
+  padding: 10px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+.ant-list-item:last-child {
+  border-bottom: none; 
+}
+.ant-table-wrapper {
+  border-radius: 6px;
+  overflow: hidden;
+}
 /* Table Header */
 .ant-table-thead > tr > th {
   font-weight: bold;
 }
 
-/* Fix spacing */
-.content {
-  padding: 30px;
-  background-color: #f0f2f5;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  overflow-y: auto;
+.ant-table-tbody > tr > td {
+  padding: 10px 16px;
 }
+
 
 .calendar-wrapper {
+
   width: 100%;
-  padding: 0 24px; /* Optional horizontal padding */
+  min-width: 300px;
+
 }
 
-/* Ensure the calendar fills its container */
+
 .calendar-wrapper .ant-card {
   width: 100%;
 }
@@ -139,10 +177,75 @@
   width: 100% !important;
 }
 
-/* Make header and panel stretch */
+
 .calendar-wrapper .ant-picker-calendar-header,
 .calendar-wrapper .ant-picker-panel {
   width: 100% !important;
 }
 
 
+.critical-card .ant-card-head {
+  background-color: #ac2c2c !important;
+  color: white !important;
+  border-bottom: none !important;
+}
+
+.critical-card .ant-card-head .ant-card-extra,
+.critical-card .ant-card-head .ant-card-actions {
+  color: white !important;
+}
+
+.damaged-card .ant-card-head {
+  background-color: #d5892e !important; 
+  color: white !important;
+  border-bottom: none !important;
+}
+
+.damaged-card .ant-card-head .ant-card-extra,
+.damaged-card .ant-card-head .ant-card-actions {
+  color: white !important;
+}
+
+.item-expiry-card .ant-card-head {
+  background-color: #097eb1 !important; 
+  color: white !important;
+  border-bottom: none !important;
+}
+
+
+
+
+.ant-table-thead > tr > th {
+  font-weight: 600;
+  background-color: #f8f8f8 !important; 
+  color: #333 !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+
+.item-expiry-card .ant-table-thead > tr > th {
+  background-color: #e2e2e2 !important; 
+  color: rgb(0, 0, 0) !important;
+}
+
+
+.critical-card .ant-table-thead > tr > th {
+  background-color: #e2e2e2 !important; 
+  color: rgb(0, 0, 0) !important;
+}
+
+.damaged-card .ant-table-thead > tr > th {
+  background-color: #e2e2e2 !important; 
+  color: rgb(0, 0, 0) !important;
+}
+
+
+.sales-card-header .ant-card-head-title {
+  color: rgb(0, 0, 0);
+  font-weight: bold; 
+}
+
+
+.sales-card-header.ant-card .ant-card-head {
+  border-bottom: 1px solid #757575; 
+}

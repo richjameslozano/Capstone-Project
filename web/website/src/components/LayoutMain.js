@@ -268,95 +268,172 @@ const LayoutMain = () => {
     },
   ];
 
-const adminMenuItems = [
+// const adminMenuItems = [
 
-    {
-    type: "group",
-      label: (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-      <UserOutlined />
-      Faculty panel
-    </span>
-  ),
-    children: [
-      {
-        key: "/main/requisition",
-        icon: <FileDoneOutlined />,
-        label: "Requisition",
-      },
-      {
-        key: "/main/return-items",
-        icon: <RollbackOutlined />,
-        label: "Return Items",
-      },
-      {
-        key: "/main/orders",
-        icon: <ShoppingCartOutlined />,
-        label: "Orders",
-      },
-    ],
-  },
-    {
-      type: "group",
-      icon: <UserSwitchOutlined/>,
-       label: (
-    <span style={{ display: 'flex', alignItems: 'center', gap: 8}}>
-      <UserSwitchOutlined />
-      Admin Panel
-    </span>
-  ),
-      children: [
-      {
-        key: "/main/dashboard",
-        icon: <DashboardOutlined />,
-        label: "Dashboard",
-      },
-      {
-        key: "/main/inventory",
-        icon: <UnorderedListOutlined />,
-        label: "Inventory",
-      },
-      {
-        key: "/main/pending-request",
-        icon: <FileTextOutlined />,
-        label: "Pending Requests",
-      },
-      {
-        key: "/main/borrow-catalog",
-        icon: <ShoppingOutlined />,
-        label: "Borrow Catalog",
-      },
-      {
-        key: "/main/request-log",
-        icon: <DatabaseOutlined />,
-        label: "Request Log",
-      },
-      {
-        key: "/main/capex-request-list",
-        icon: <DollarCircleOutlined />,
-        label: "Capex Request List",
-      },
-      {
-        key: "/main/lab-room",
-        icon: <HomeOutlined />,
-        label: "Stock Room Details",
-      },
-    ],
-  },
-  {
-    key: "/main/admin-activity-log",
-    icon: <HistoryOutlined />,
-    label: "Activity Log",
-  },
-  {
-    key: "logout",
-    icon: <LogoutOutlined />,
-    label: "Sign Out",
-    danger: true,
+//     {
+//     type: "group",
+//       label: (
+//     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+//       <UserOutlined />
+//       Faculty panel
+//     </span>
+//   ),
+//     children: [
+//       {
+//         key: "/main/requisition",
+//         icon: <FileDoneOutlined />,
+//         label: "Requisition",
+//       },
+//       {
+//         key: "/main/return-items",
+//         icon: <RollbackOutlined />,
+//         label: "Return Items",
+//       },
+//       {
+//         key: "/main/orders",
+//         icon: <ShoppingCartOutlined />,
+//         label: "Orders",
+//       },
+//     ],
+//   },
+//     {
+//       type: "group",
+//       icon: <UserSwitchOutlined/>,
+//        label: (
+//     <span style={{ display: 'flex', alignItems: 'center', gap: 8}}>
+//       <UserSwitchOutlined />
+//       Admin Panel
+//     </span>
+//   ),
+//       children: [
+//       {
+//         key: "/main/dashboard",
+//         icon: <DashboardOutlined />,
+//         label: "Dashboard",
+//       },
+//       {
+//         key: "/main/inventory",
+//         icon: <UnorderedListOutlined />,
+//         label: "Inventory",
+//       },
+//       {
+//         key: "/main/pending-request",
+//         icon: <FileTextOutlined />,
+//         label: "Pending Requests",
+//       },
+//       {
+//         key: "/main/borrow-catalog",
+//         icon: <ShoppingOutlined />,
+//         label: "Borrow Catalog",
+//       },
+//       {
+//         key: "/main/request-log",
+//         icon: <DatabaseOutlined />,
+//         label: "Request Log",
+//       },
+//       {
+//         key: "/main/capex-request-list",
+//         icon: <DollarCircleOutlined />,
+//         label: "Capex Request List",
+//       },
+//       {
+//         key: "/main/lab-room",
+//         icon: <HomeOutlined />,
+//         label: "Stock Room Details",
+//       },
+//     ],
+//   },
+//   {
+//     key: "/main/admin-activity-log",
+//     icon: <HistoryOutlined />,
+//     label: "Activity Log",
+//   },
+//   {
+//     key: "logout",
+//     icon: <LogoutOutlined />,
+//     label: "Sign Out",
+//     danger: true,
     
-  },
-];
+//   },
+// ];
 
+  const adminMenuItems = [
+    {
+      key: 'faculty-panel',
+      icon: <UserOutlined />,
+      label: 'Faculty Panel',
+      children: [
+        {
+          key: "/main/requisition",
+          icon: <FileDoneOutlined />,
+          label: "Requisition",
+        },
+        {
+          key: "/main/return-items",
+          icon: <RollbackOutlined />,
+          label: "Return Items",
+        },
+        {
+          key: "/main/orders",
+          icon: <ShoppingCartOutlined />,
+          label: "Orders",
+        },
+      ],
+    },
+    {
+      key: 'admin-panel',
+      icon: <UserSwitchOutlined />,
+      label: 'Admin Panel',
+      children: [
+        {
+          key: "/main/dashboard",
+          icon: <DashboardOutlined />,
+          label: "Dashboard",
+        },
+        {
+          key: "/main/inventory",
+          icon: <UnorderedListOutlined />,
+          label: "Inventory",
+        },
+        {
+          key: "/main/pending-request",
+          icon: <FileTextOutlined />,
+          label: "Pending Requests",
+        },
+        {
+          key: "/main/borrow-catalog",
+          icon: <ShoppingOutlined />,
+          label: "Borrow Catalog",
+        },
+        {
+          key: "/main/request-log",
+          icon: <DatabaseOutlined />,
+          label: "Request Log",
+        },
+        {
+          key: "/main/capex-request-list",
+          icon: <DollarCircleOutlined />,
+          label: "Capex Request List",
+        },
+        {
+          key: "/main/lab-room",
+          icon: <HomeOutlined />,
+          label: "Stock Room Details",
+        },
+      ],
+    },
+    {
+      key: "/main/admin-activity-log",
+      icon: <HistoryOutlined />,
+      label: "Activity Log",
+    },
+    {
+      key: "logout",
+      icon: <LogoutOutlined />,
+      label: "Sign Out",
+      danger: true,
+    },
+  ];
 
   const superUserMenuItems = [
     {
