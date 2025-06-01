@@ -12,6 +12,7 @@ import {
   DatePicker,
   Modal,
   InputNumber,
+  Radio,
 } from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'; 
 import moment from "moment";
@@ -70,6 +71,8 @@ const Inventory = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [disableExpiryDate, setDisableExpiryDate] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [showExpiry, setShowExpiry] = useState(false);
+  const [hasExpiryDate, setHasExpiryDate] = useState(false);
   const db = getFirestore();
 
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -180,22 +183,7 @@ const Inventory = () => {
     );
   });  
 
-//  const handleCategoryChange = (value) => {
-//     let type = "";
-
-//     if (["Chemical", "Reagent"].includes(value)) {
-//       type = "Consumable";
-      
-//     } else if (["Equipment", "Glasswares", "Materials"].includes(value)) {
-//       type = "Fixed";
-//     }
-
-//     setItemType(type);
-//     setSelectedCategory(value);
-//     form.setFieldsValue({ type });
-//   };
-
- const handleCategoryChange = (value) => {
+  const handleCategoryChange = (value) => {
     let type = "";
     let disableExpiry = false;
 
@@ -205,7 +193,7 @@ const Inventory = () => {
 
     } else if (value === "Materials") {
       type = "Consumable";
-      disableExpiry = true; 
+      disableExpiry = true;
 
     } else if (["Equipment", "Glasswares"].includes(value)) {
       type = "Fixed";
@@ -214,8 +202,11 @@ const Inventory = () => {
 
     setItemType(type);
     setSelectedCategory(value);
-    setDisableExpiryDate(disableExpiry); // new state
-    form.setFieldsValue({ type });
+    setDisableExpiryDate(disableExpiry);
+
+    // Reset radio + expiry
+    setShowExpiry(false);
+    form.setFieldsValue({ type, expiryDate: null });
   };
 
   const showModal = () => setIsModalVisible(true);
@@ -364,21 +355,342 @@ const printPdf = () => {
   }
 };
 
-  const handleAdd = async (values) => {
-    if (!itemName || !values.department || itemDetails) {
+  // const handleAdd = async (values) => {
+  //   if (!itemName || !values.department || itemDetails) {
+  //     alert("Please fill up the form!");
+  //     return;
+  //   }
+
+  //   // const isDuplicate = dataSource.some(
+  //   //   (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
+  //   // );
+
+  //   // if (isDuplicate) {
+  //   //   setNotificationMessage("An item with the same description already exists in the inventory.");
+  //   //   setIsNotificationVisible(true);
+  //   //   return;
+  //   // }
+
+  //   const trimmedName = itemName.trim();
+  //   const normalizedInputName = trimmedName.toLowerCase();
+  //   const normalizedInputDetails = itemDetails.trim().toLowerCase();
+
+  //   // Find items with the same name (case-insensitive)
+  //   const sameNameItems = dataSource.filter(
+  //     (item) => item.item.toLowerCase().startsWith(normalizedInputName)
+  //   );
+
+  //   // Check if same name AND same details already exists
+  //   const exactMatch = sameNameItems.find((item) => {
+  //     const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
+  //     const itemNameSafe = item.item ? item.item.toLowerCase() : "";
+  //     return (
+  //       itemDetailsSafe === normalizedInputDetails &&
+  //       itemNameSafe === normalizedInputName
+  //     );
+  //   });
+
+  //   if (exactMatch) {
+  //     setNotificationMessage("An item with the same name and details already exists in the inventory.");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+
+  //   // Generate suffix for similar items with same base name but different details
+  //   let similarItemCount = sameNameItems.length + 1;
+  //   const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
+  //   const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
+
+  //   const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
+
+  //   const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
+  //   const inventoryRef = collection(db, "inventory");
+  //   const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
+  //   const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
+  //   // const departmentCount = deptQuerySnapshot.size + 1;
+  //   // const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+
+  //   // const idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  //   // if (!idQuerySnapshot.empty) {
+  //   //   setNotificationMessage("Item ID already exists. Please try again.");
+  //   //   setIsNotificationVisible(true);
+  //   //   return;
+  //   // }
+
+  //   let departmentCount = deptQuerySnapshot.size + 1;
+  //   let generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+  //   let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+
+  //   // 🔁 Keep trying until we find a unique ID
+  //   while (!idQuerySnapshot.empty) {
+  //     departmentCount++;
+  //     generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+  //     idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  //   }
+
+  //   setItemId(generatedItemId); 
+
+  
+  //   const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
+  //   const expiryDate = values.type === "Fixed" 
+  //     ? null 
+  //     : values.expiryDate 
+  //     ? values.expiryDate.format("YYYY-MM-DD")
+  //     : null;
+
+  //   const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+  //   const timestamp = new Date();
+
+  //   const quantityNumber = Number(values.quantity);
+
+  //   // const inventoryItem = {
+  //   //   itemId: generatedItemId,
+  //   //   itemName,
+  //   //   entryCurrentDate,
+  //   //   expiryDate,
+  //   //   timestamp,
+  //   //   category: values.category,
+  //   //   labRoom: values.labRoom,
+  //   //   quantity: Number(values.quantity),
+  //   //   department: values.department,
+  //   //   type: values.type,
+  //   //   status: "Available",
+  //   //   condition: {
+  //   //     Good: quantityNumber,
+  //   //     Defect: 0,
+  //   //     Damage: 0,
+  //   //   },
+  //   //   unit: values.unit || null,
+  //   //   // usageType: values.usageType,
+  //   //   volume: values.category === "Glasswares" ? values.volume : null,
+  //   //   rawTimestamp: new Date(),
+  //   //   ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+  //   //     condition: {
+  //   //       Good: quantityNumber,
+  //   //       Defect: 0,
+  //   //       Damage: 0,
+  //   //     },
+  //   //   }),
+  //   // };
+
+  //   const inventoryItem = {
+  //     itemId: generatedItemId,
+  //     // itemName,
+  //     itemName: finalItemName,
+  //     itemDetails,
+  //     entryCurrentDate,
+  //     expiryDate,
+  //     timestamp,
+  //     category: values.category,
+  //     labRoom: values.labRoom,
+  //     department: values.department,
+  //     type: values.type,
+  //     status: "Available",
+  //     // condition: {
+  //     //   Good: quantityNumber,
+  //     //   Defect: 0,
+  //     //   Damage: 0,
+  //     // },
+  //     // unit: values.unit || null,
+  //     // volume: values.category === "Glasswares" ? values.volume : null,
+  //     rawTimestamp: new Date(),
+  //     criticalLevel:criticalLevel,
+  //     ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+  //       condition: {
+  //         Good: quantityNumber,
+  //         Defect: 0,
+  //         Damage: 0,
+  //       },
+  //     }),
+  //   };
+
+  //   const encryptedData = CryptoJS.AES.encrypt(
+  //     JSON.stringify(inventoryItem),
+  //     SECRET_KEY
+  //   ).toString();
+    
+  //   const newItem = {
+  //     id: count + 1,
+  //     itemId: generatedItemId,
+  //     // item: itemName,
+  //     item: finalItemName,
+  //     itemDetails: itemDetails,
+  //     entryDate: entryCurrentDate, 
+  //     expiryDate: expiryDate, 
+  //     qrCode: encryptedData,
+  //     ...inventoryItem,
+  //     // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
+  //   };
+
+  //   // try {
+  //   //   await addDoc(collection(db, "inventory"), {
+  //   //     ...inventoryItem,
+  //   //     qrCode: encryptedData,
+  //   //   });
+
+  //   //   // 🔽 NEW: Ensure labRoom document exists
+  //   //   const labRoomRef = doc(db, "labRoom", values.labRoom);
+  //   //   const labRoomSnap = await getDoc(labRoomRef);
+
+  //   //   // 🔽 Create labRoom doc if it doesn't exist
+  //   //   if (!labRoomSnap.exists()) {
+  //   //     await setDoc(labRoomRef, {
+  //   //       createdAt: new Date(),
+  //   //     });
+  //   //   }
+
+  //   //   // 🔽 Add full item details to subcollection under labRoom
+  //   //   await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
+  //   //     ...inventoryItem,
+  //   //     qrCode: encryptedData,
+  //   //   });
+
+  //   //    // 🔽 Generate Lab Room QR Code containing all items
+  //   //   const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+  //   //   const allLabRoomItems = [];
+  //   //   labRoomItemsSnap.forEach((docItem) => {
+  //   //     const itemData = docItem.data();
+  //   //     const quantityNumbers = Number(itemData.quantity); 
+  //   //     allLabRoomItems.push({
+  //   //       itemId: itemData.itemId,
+  //   //       itemName: itemData.itemName,
+  //   //       quantity: itemData.quantity,
+  //   //       condition: {
+  //   //         Good: quantityNumbers,
+  //   //         Defect: 0,
+  //   //         Damage: 0,
+  //   //       },
+  //   //       status: itemData.status,
+  //   //     });
+  //   //   });
+
+  //   //   const labRoomQRData = CryptoJS.AES.encrypt(
+  //   //     JSON.stringify({
+  //   //       labRoom: values.labRoom,
+  //   //       items: allLabRoomItems,
+  //   //     }),
+  //   //     SECRET_KEY
+  //   //   ).toString();
+
+  //   //   // 🔽 Store labRoom QR code on the labRoom document
+  //   //   await updateDoc(labRoomRef, {
+  //   //     qrCode: labRoomQRData,
+  //   //     updatedAt: new Date(),
+  //   //   });
+
+  //   //   setDataSource([...dataSource, newItem]);
+  //   //   setCount(count + 1);
+  //   //   form.resetFields();
+  //   //   setItemName("");
+  //   //   setItemId("");
+  //   //   setIsModalVisible(false);
+
+  //   // } catch (error) {
+  //   //   console.error("Error adding document to Firestore:", error);
+  //   // }
+
+  //    try {
+  //     // 🔽 Add to inventory collection
+  //     await addDoc(collection(db, "inventory"), {
+  //       ...inventoryItem,
+  //       qrCode: encryptedData,
+  //     });
+
+  //     // 🔽 Check if labRoom with the given room number already exists
+  //     const labRoomQuery = query(
+  //       collection(db, "labRoom"),
+  //       where("roomNumber", "==", values.labRoom)
+  //     );
+  //     const labRoomSnapshot = await getDocs(labRoomQuery);
+
+  //     let labRoomRef;
+
+  //     if (labRoomSnapshot.empty) {
+  //       // 🔽 Create new labRoom document with generated ID
+  //       labRoomRef = await addDoc(collection(db, "labRoom"), {
+  //         roomNumber: values.labRoom,
+  //         createdAt: new Date(),
+  //       });
+
+  //     } else {
+  //       // 🔽 Use existing labRoom document
+  //       labRoomRef = labRoomSnapshot.docs[0].ref;
+  //     }
+
+  //     // 🔽 Add item to the labRoom's subcollection
+  //     await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
+  //       ...inventoryItem,
+  //       qrCode: encryptedData,
+  //       roomNumber: values.labRoom,
+  //     });
+
+  //     // 🔽 Fetch all items under this labRoom
+  //     // const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+  //     // const allLabRoomItems = [];
+  //     // labRoomItemsSnap.forEach((docItem) => {
+  //     //   const itemData = docItem.data();
+  //     //   const quantityNumbers = Number(itemData.quantity);
+  //     //   allLabRoomItems.push({
+  //     //     itemId: itemData.itemId,
+  //     //     itemName: itemData.itemName,
+  //     //     itemDetails: itemData.itemDetails,
+  //     //     quantity: itemData.quantity,
+  //     //     condition: {
+  //     //       Good: quantityNumbers,
+  //     //       Defect: 0,
+  //     //       Damage: 0,
+  //     //     },
+  //     //     status: itemData.status,
+  //     //   });
+  //     // });
+
+  //     // // 🔽 Generate encrypted QR code with labRoom data
+  //     // const labRoomQRData = CryptoJS.AES.encrypt(
+  //     //   JSON.stringify({
+  //     //     labRoom: values.labRoom,
+  //     //     items: allLabRoomItems,
+  //     //   }),
+  //     //   SECRET_KEY
+  //     // ).toString();
+
+  //     // // 🔽 Update labRoom document with the generated QR code
+  //     // await updateDoc(labRoomRef, {
+  //     //   qrCode: labRoomQRData,
+  //     //   updatedAt: new Date(),
+  //     // });
+
+  //     const labRoomQRData = CryptoJS.AES.encrypt(
+  //       JSON.stringify({
+  //         labRoomId: labRoomRef.id,
+  //       }),
+  //       SECRET_KEY
+  //     ).toString();
+
+  //     // Update labRoom document with the generated QR code
+  //     await updateDoc(labRoomRef, {
+  //       qrCode: labRoomQRData,
+  //       updatedAt: new Date(),
+  //     });
+
+  //     setDataSource([...dataSource, newItem]);
+  //     setCount(count + 1);
+  //     setLogRefreshKey(prev => prev + 1);
+  //     form.resetFields();
+  //     setItemName("");
+  //     setItemDetails("")
+  //     setItemId("");
+  //     setIsModalVisible(false);
+
+  //   } catch (error) {
+  //     console.error("Error adding document to Firestore:", error);
+  //   }
+  // };
+
+   const handleAdd = async (values) => {
+    if (!itemName || !values.department || !itemDetails) {
       alert("Please fill up the form!");
       return;
     }
-
-    // const isDuplicate = dataSource.some(
-    //   (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
-    // );
-
-    // if (isDuplicate) {
-    //   setNotificationMessage("An item with the same description already exists in the inventory.");
-    //   setIsNotificationVisible(true);
-    //   return;
-    // }
 
     const trimmedName = itemName.trim();
     const normalizedInputName = trimmedName.toLowerCase();
@@ -416,15 +728,6 @@ const printPdf = () => {
     const inventoryRef = collection(db, "inventory");
     const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
     const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
-    // const departmentCount = deptQuerySnapshot.size + 1;
-    // const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
-
-    // const idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-    // if (!idQuerySnapshot.empty) {
-    //   setNotificationMessage("Item ID already exists. Please try again.");
-    //   setIsNotificationVisible(true);
-    //   return;
-    // }
 
     let departmentCount = deptQuerySnapshot.size + 1;
     let generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
@@ -452,36 +755,6 @@ const printPdf = () => {
 
     const quantityNumber = Number(values.quantity);
 
-    // const inventoryItem = {
-    //   itemId: generatedItemId,
-    //   itemName,
-    //   entryCurrentDate,
-    //   expiryDate,
-    //   timestamp,
-    //   category: values.category,
-    //   labRoom: values.labRoom,
-    //   quantity: Number(values.quantity),
-    //   department: values.department,
-    //   type: values.type,
-    //   status: "Available",
-    //   condition: {
-    //     Good: quantityNumber,
-    //     Defect: 0,
-    //     Damage: 0,
-    //   },
-    //   unit: values.unit || null,
-    //   // usageType: values.usageType,
-    //   volume: values.category === "Glasswares" ? values.volume : null,
-    //   rawTimestamp: new Date(),
-    //   ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-    //     condition: {
-    //       Good: quantityNumber,
-    //       Defect: 0,
-    //       Damage: 0,
-    //     },
-    //   }),
-    // };
-
     const inventoryItem = {
       itemId: generatedItemId,
       // itemName,
@@ -492,16 +765,10 @@ const printPdf = () => {
       timestamp,
       category: values.category,
       labRoom: values.labRoom,
+      quantity: Number(values.quantity),
       department: values.department,
       type: values.type,
       status: "Available",
-      // condition: {
-      //   Good: quantityNumber,
-      //   Defect: 0,
-      //   Damage: 0,
-      // },
-      // unit: values.unit || null,
-      // volume: values.category === "Glasswares" ? values.volume : null,
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
@@ -531,78 +798,28 @@ const printPdf = () => {
       // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
     };
 
-    // try {
-    //   await addDoc(collection(db, "inventory"), {
-    //     ...inventoryItem,
-    //     qrCode: encryptedData,
-    //   });
-
-    //   // 🔽 NEW: Ensure labRoom document exists
-    //   const labRoomRef = doc(db, "labRoom", values.labRoom);
-    //   const labRoomSnap = await getDoc(labRoomRef);
-
-    //   // 🔽 Create labRoom doc if it doesn't exist
-    //   if (!labRoomSnap.exists()) {
-    //     await setDoc(labRoomRef, {
-    //       createdAt: new Date(),
-    //     });
-    //   }
-
-    //   // 🔽 Add full item details to subcollection under labRoom
-    //   await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
-    //     ...inventoryItem,
-    //     qrCode: encryptedData,
-    //   });
-
-    //    // 🔽 Generate Lab Room QR Code containing all items
-    //   const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-    //   const allLabRoomItems = [];
-    //   labRoomItemsSnap.forEach((docItem) => {
-    //     const itemData = docItem.data();
-    //     const quantityNumbers = Number(itemData.quantity); 
-    //     allLabRoomItems.push({
-    //       itemId: itemData.itemId,
-    //       itemName: itemData.itemName,
-    //       quantity: itemData.quantity,
-    //       condition: {
-    //         Good: quantityNumbers,
-    //         Defect: 0,
-    //         Damage: 0,
-    //       },
-    //       status: itemData.status,
-    //     });
-    //   });
-
-    //   const labRoomQRData = CryptoJS.AES.encrypt(
-    //     JSON.stringify({
-    //       labRoom: values.labRoom,
-    //       items: allLabRoomItems,
-    //     }),
-    //     SECRET_KEY
-    //   ).toString();
-
-    //   // 🔽 Store labRoom QR code on the labRoom document
-    //   await updateDoc(labRoomRef, {
-    //     qrCode: labRoomQRData,
-    //     updatedAt: new Date(),
-    //   });
-
-    //   setDataSource([...dataSource, newItem]);
-    //   setCount(count + 1);
-    //   form.resetFields();
-    //   setItemName("");
-    //   setItemId("");
-    //   setIsModalVisible(false);
-
-    // } catch (error) {
-    //   console.error("Error adding document to Firestore:", error);
-    // }
-
      try {
-      // 🔽 Add to inventory collection
-      await addDoc(collection(db, "inventory"), {
+
+      const inventoryDocRef = await addDoc(collection(db, "inventory"), {
         ...inventoryItem,
         qrCode: encryptedData,
+      });
+
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName") || "User";
+
+      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+        action: `Added new item (${finalItemName}) to inventory`,
+        userName: userName || "User",
+        timestamp: serverTimestamp(),
+      });
+
+      await addDoc(collection(inventoryDocRef, "stockLog"), {
+        date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
+        noOfItems: quantityNumber,
+        deliveryNumber: "DLV-00001",
+        createdAt: serverTimestamp(),
+        ...(expiryDate && { expiryDate }),
       });
 
       // 🔽 Check if labRoom with the given room number already exists
@@ -634,40 +851,9 @@ const printPdf = () => {
       });
 
       // 🔽 Fetch all items under this labRoom
-      // const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-      // const allLabRoomItems = [];
-      // labRoomItemsSnap.forEach((docItem) => {
-      //   const itemData = docItem.data();
-      //   const quantityNumbers = Number(itemData.quantity);
-      //   allLabRoomItems.push({
-      //     itemId: itemData.itemId,
-      //     itemName: itemData.itemName,
-      //     itemDetails: itemData.itemDetails,
-      //     quantity: itemData.quantity,
-      //     condition: {
-      //       Good: quantityNumbers,
-      //       Defect: 0,
-      //       Damage: 0,
-      //     },
-      //     status: itemData.status,
-      //   });
-      // });
+      const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
 
-      // // 🔽 Generate encrypted QR code with labRoom data
-      // const labRoomQRData = CryptoJS.AES.encrypt(
-      //   JSON.stringify({
-      //     labRoom: values.labRoom,
-      //     items: allLabRoomItems,
-      //   }),
-      //   SECRET_KEY
-      // ).toString();
-
-      // // 🔽 Update labRoom document with the generated QR code
-      // await updateDoc(labRoomRef, {
-      //   qrCode: labRoomQRData,
-      //   updatedAt: new Date(),
-      // });
-
+      // 🔽 Generate encrypted QR code with labRoom ID only
       const labRoomQRData = CryptoJS.AES.encrypt(
         JSON.stringify({
           labRoomId: labRoomRef.id,
@@ -675,15 +861,15 @@ const printPdf = () => {
         SECRET_KEY
       ).toString();
 
-      // Update labRoom document with the generated QR code
+      // 🔽 Update labRoom document with the generated QR code
       await updateDoc(labRoomRef, {
         qrCode: labRoomQRData,
         updatedAt: new Date(),
       });
 
       setDataSource([...dataSource, newItem]);
-      setCount(count + 1);
       setLogRefreshKey(prev => prev + 1);
+      setCount(count + 1);
       form.resetFields();
       setItemName("");
       setItemDetails("")
@@ -695,28 +881,50 @@ const printPdf = () => {
     }
   };
 
-  const editItem = (record) => {
-    editForm.resetFields();
-    setEditingItem(record);
-    setSelectedCategory(record.category);
+  // const editItem = (record) => {
+  //   editForm.resetFields();
+  //   setEditingItem(record);
+  //   setSelectedCategory(record.category);
 
-    editForm.setFieldsValue({
-      // category: record.category,
-      // labRoom: record.labRoom,
-      quantity: record.quantity,
-      // status: record.status,
-      condition: {
-        Good: record.condition?.Good ?? 0,
-        Defect: record.condition?.Defect ?? 0,
-        Damage: record.condition?.Damage ?? 0,
-      },
-      // condition: record.condition, 
-      // usageType: record.usageType,
-    });
+  //   editForm.setFieldsValue({
+  //     // category: record.category,
+  //     // labRoom: record.labRoom,
+  //     quantity: record.quantity,
+  //     // status: record.status,
+  //     condition: {
+  //       Good: record.condition?.Good ?? 0,
+  //       Defect: record.condition?.Defect ?? 0,
+  //       Damage: record.condition?.Damage ?? 0,
+  //     },
+  //     // condition: record.condition, 
+  //     // usageType: record.usageType,
+  //   });
 
-    setIsEditModalVisible(true);
-  };
-  
+  //   setIsEditModalVisible(true);
+  // };
+
+    const editItem = (record) => {
+      editForm.resetFields();
+      setEditingItem(record);
+      setSelectedCategory(record.category);
+
+      // ✅ Check if expiry date exists
+      setHasExpiryDate(!!record.expiryDate); // or: based on category logic if preferred
+
+      // ✅ Set form fields
+      editForm.setFieldsValue({
+        quantity: record.quantity,
+        expiryDate: record.expiryDate ? dayjs(record.expiryDate) : null, // ← include this
+        condition: {
+          Good: record.condition?.Good ?? 0,
+          Defect: record.condition?.Defect ?? 0,
+          Damage: record.condition?.Damage ?? 0,
+        },
+      });
+
+      setIsEditModalVisible(true);
+    };
+    
   // const updateItem = async (values) => {
   //   const safeValues = {
   //     category: values.category ?? "",
@@ -981,15 +1189,19 @@ const printPdf = () => {
    const updateItem = async (values) => {
     console.log("✅ Raw incoming values:", values);
 
-    const safeValues = {
-      quantity: values.quantity ?? 0,
-      // status: values.status ?? "Available",
-      condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
-    };
+    const isChemicalOrReagent = editingItem.category === "Chemical" || editingItem.category === "Reagent";
+
+      const safeValues = {
+        quantity: values.quantity ?? 0,
+        ...(isChemicalOrReagent ? {} : {
+          condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
+        }),
+      };
 
       const isQuantitySame = safeValues.quantity === (editingItem.quantity ?? 0);
-      const isConditionSame = 
-        (safeValues.condition.Good ?? 0) === (editingItem.condition?.Good ?? 0) &&
+      const isConditionSame = isChemicalOrReagent 
+      ? true 
+      : (safeValues.condition.Good ?? 0) === (editingItem.condition?.Good ?? 0) &&
         (safeValues.condition.Defect ?? 0) === (editingItem.condition?.Defect ?? 0) &&
         (safeValues.condition.Damage ?? 0) === (editingItem.condition?.Damage ?? 0);
 
@@ -999,59 +1211,6 @@ const printPdf = () => {
         setNotificationMessage("No changes detected. Please update at least one value.");
         return;  // Exit early without updating
       }
-
-    // try {
-    //   const snapshot = await getDocs(collection(db, "inventory"));
-
-    //   snapshot.forEach(async (docItem) => {
-    //     const data = docItem.data();
-
-    //     if (data.itemId === editingItem.itemId) {
-    //       const inventoryId = docItem.id;
-    //       const itemRef = doc(db, "inventory", inventoryId);
-
-    //       await updateDoc(itemRef, safeValues);
-
-    //       setIsNotificationVisible(true);
-    //       setNotificationMessage("Item updated successfully!");
-
-    //       const updatedItem = {
-    //         ...editingItem,
-    //         ...safeValues,
-    //       };
-
-    //       setDataSource((prevData) =>
-    //         prevData.map((item) =>
-    //           item.id === editingItem.id ? updatedItem : item
-    //         )
-    //       );
-
-    //       const labRoomId = safeValues.labRoom;
-    //       const itemId = data.itemId;
-
-    //       if (labRoomId && itemId) {
-    //         const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-    //         const labRoomSnap = await getDoc(labRoomItemRef);
-
-    //         if (labRoomSnap.exists()) {
-    //           await updateDoc(labRoomItemRef, safeValues);
-    //           console.log(`🏫 labRoom/${labRoomId}/items/${itemId} updated successfully`);
-
-    //         } else {
-    //           console.warn(`⚠️ labRoom item not found for itemId: ${itemId} in labRoom: ${labRoomId}`);
-    //         }
-    //       }
-
-    //       setIsEditModalVisible(false);
-    //       setIsRowModalVisible(false)
-    //       setEditingItem(null);
-    //       form.resetFields();
-    //     }
-    //   });
-      
-    // } catch (error) {
-    //   console.error("Error updating document in Firestore:", error);
-    // }
 
     try {
       const snapshot = await getDocs(collection(db, "inventory"));
@@ -1092,7 +1251,6 @@ const printPdf = () => {
 
           // Now get the roomNumber string for query (padStart if needed)
           const roomNumber = existingLabRoom.toString().padStart(4, '0');
-
           const itemId = data.itemId;
 
           console.log("🧪 Matching roomNumber:", roomNumber);
@@ -1110,14 +1268,32 @@ const printPdf = () => {
             const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
             const labRoomItemSnap = await getDoc(labRoomItemRef);
 
+            const userId = localStorage.getItem("userId");
+            const userName = localStorage.getItem("userName") || "User";
+
             if (labRoomItemSnap.exists()) {
               await updateDoc(labRoomItemRef, safeValues);
               console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
 
-              
-              const existingGoodQty = data.condition?.Good ?? 0;
-              const newGoodQty = values.condition?.Good ?? 0;
-              const goodQtyDifference = newGoodQty - existingGoodQty;
+              let stockLogPayload = {};
+              let noOfItems = 0;
+
+              if (isChemicalOrReagent) {
+                noOfItems = values.quantity ?? 0;
+                stockLogPayload = {
+                  noOfItems: noOfItems,
+                  expiryDate: values.expiryDate ? values.expiryDate.format("YYYY-MM-DD") : null,
+                };
+
+              } else {
+                const existingGoodQty = data.condition?.Good ?? 0;
+                const newGoodQty = values.condition?.Good ?? 0;
+                const goodQtyDifference = newGoodQty - existingGoodQty;
+                noOfItems = goodQtyDifference;
+                stockLogPayload = {
+                  noOfItems: goodQtyDifference,
+                };
+              }
 
               const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
 
@@ -1139,12 +1315,11 @@ const printPdf = () => {
                 }
               }
 
-              // 2. Add the new log (using quantityDifference instead of total)
               await addDoc(stockLogRef, {
                 date: new Date().toISOString().split("T")[0],
-                noOfItems: goodQtyDifference,
                 deliveryNumber: newDeliveryNumber,
                 createdAt: serverTimestamp(),
+                ...stockLogPayload,
               });
 
             } else {
@@ -1166,6 +1341,7 @@ const printPdf = () => {
       console.error("Error updating document in Firestore:", error);
     }
   };
+
 
   const printQRCode = (record) => {
     html2canvas(qrRefs.current[record.id]).then((canvas) => {
@@ -1817,7 +1993,7 @@ const printPdf = () => {
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                {/* <Col span={8}>
                   <Form.Item name="expiryDate" label="Date of Expiry">
                     <DatePicker
                       format="YYYY-MM-DD"
@@ -1826,7 +2002,39 @@ const printPdf = () => {
                       disabled={disableExpiryDate}
                     />
                   </Form.Item>
-                </Col>
+                </Col> */}
+
+                {["Chemical", "Reagent"].includes(selectedCategory) && (
+                  <>
+                    <Col span={8}>
+                      <Form.Item label="Does this item expire?">
+                        <Radio.Group
+                          onChange={(e) => setShowExpiry(e.target.value)}
+                          value={showExpiry}
+                        >
+                          <Radio value={true}>Yes</Radio>
+                          <Radio value={false}>No</Radio>
+                        </Radio.Group>
+                      </Form.Item>
+                    </Col>
+
+                    {showExpiry && (
+                      <Col span={8}>
+                        <Form.Item
+                          name="expiryDate"
+                          label="Date of Expiry"
+                          rules={[{ required: true, message: "Please select expiry date!" }]}
+                        >
+                          <DatePicker
+                            format="YYYY-MM-DD"
+                            style={{ width: "100%" }}
+                            disabledDate={disabledExpiryDate}
+                          />
+                        </Form.Item>
+                      </Col>
+                    )}
+                  </>
+                )}
               </Row>
 
               <Row gutter={16}>
@@ -1901,14 +2109,14 @@ const printPdf = () => {
                           <td>{selectedRow.itemId}</td>
                         </tr>
 
-                         <tr>
-                          <th>Item Description</th>
-                          <td>{selectedRow.itemDetails}</td>
-                        </tr>
-
                         <tr>
                           <th>Item Name</th>
                           <td>{selectedRow.itemName}</td>
+                        </tr>
+
+                        <tr>
+                          <th>Item Description</th>
+                          <td>{selectedRow.itemDetails}</td>
                         </tr>
 
                         <tr>
@@ -2165,16 +2373,30 @@ const printPdf = () => {
                   >
                     <Input type="number" min={0} placeholder="Enter quantity" />
                   </Form.Item>
+
+                  {hasExpiryDate && (
+                    <Row gutter={16}>
+                      <Col span={12}>
+                        <Form.Item
+                          name="expiryDate"
+                          label="Expiry Date"
+                          rules={[{ required: true, message: "Please select expiry date" }]}
+                        >
+                          <DatePicker style={{ width: "100%" }} />
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  )}
                 </Col>
               </Row>
 
-              <Row gutter={16}>
-                {/* <Col span={12}>
+              {/* <Row gutter={16}>
+                <Col span={12}>
                   <Form.Item name="quantity" label="Quantity">
                     <Input placeholder="Enter quantity" />
                   </Form.Item>
-                </Col> */}
-              </Row>
+                </Col>
+              </Row> */}
 
               {/* <Row gutter={16}>
                 <Col span={12}>
@@ -2198,7 +2420,7 @@ const printPdf = () => {
                 </Col>
               </Row> */}
 
-              <Row gutter={16}>
+              {/* <Row gutter={16}>
                 <Col span={8}>
                   <Form.Item
                     name={["condition", "Good"]}
@@ -2228,7 +2450,41 @@ const printPdf = () => {
                     <Input type="number" min={0} />
                   </Form.Item>
                 </Col>
-              </Row>
+              </Row> */}
+
+              {selectedCategory !== "Chemical" && selectedCategory !== "Reagent" && (
+                <Row gutter={16}>
+                  <Col span={8}>
+                    <Form.Item
+                      name={["condition", "Good"]}
+                      label="Good"
+                      rules={[{ required: true, message: "Enter Good qty" }]}
+                    >
+                      <Input type="number" min={0} />
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={8}>
+                    <Form.Item
+                      name={["condition", "Defect"]}
+                      label="Defect"
+                      rules={[{ required: true, message: "Enter Defect qty" }]}
+                    >
+                      <Input type="number" min={0} />
+                    </Form.Item>
+                  </Col>
+
+                  <Col span={8}>
+                    <Form.Item
+                      name={["condition", "Damage"]}
+                      label="Damage"
+                      rules={[{ required: true, message: "Enter Damage qty" }]}
+                    >
+                      <Input type="number" min={0} />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              )}
             </Form>
           </Modal>
 

@@ -62,6 +62,13 @@ const StockLog = ({ inventoryDocId }) => {
       dataIndex: 'deliveryNumber',
       key: 'deliveryNumber',
     },
+    {
+    title: 'Expiry Date',
+    dataIndex: 'expiryDate',
+    key: 'expiryDate',
+    render: (text) =>
+      text ? new Date(text).toLocaleDateString() : <span style={{ color: '#888' }}>N/A</span>,
+    },
   ];
 
   if (loading) return <Spin />;
