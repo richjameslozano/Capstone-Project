@@ -23,6 +23,10 @@ const RequisitionReqestModal = ({
     }
   }, [selectedRequest]);
 
+const capitalizeName = (name) => {
+  return name.replace(/\b\w/g, char => char.toUpperCase());
+};  
+
   return (
     <Modal
       // title={
@@ -55,88 +59,66 @@ const RequisitionReqestModal = ({
         </div>
             <div className="whole-slip">
     
-              <div className="table-wrapper">
+    <div className="table-container">
+              <div className="table-wrapper2">
                   <table class="horizontal-table">
                       <tbody>
                         <tr>
                           <th>Requestor</th>
-                          <td>{selectedRequest.itemId}</td>
+                          <td>{capitalizeName(selectedRequest.userName)}</td>
                         </tr>
 
                          <tr>
                           <th>Date Submitted</th>
-                          <td>{selectedRequest.itemDetails}</td>
+                          <td>{formatDate(selectedRequest.timestamp)}</td>
                         </tr>
 
                         <tr>
                           <th>Program</th>
-                          <td>{selectedRequest.itemName}</td>
+                          <td>{selectedRequest.program}</td>
                         </tr>
 
                         <tr>
                           <th>Course Code</th>
                           <td>
-                            {selectedRequest.quantity}
-                  {/* {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
-                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
-                   {selectedRow.category === "Glasswares" && selectedRow.volume && (
-                  <p>
-                    <strong>Volume:</strong> {selectedRow.volume} ML
-                  </p>
-                )} */}
+                            {selectedRequest.course}
                           </td>
                         </tr>
 
                         <tr>
                           <th>Course Description</th>
-                          <td>{selectedRequest.category}</td>
-                        </tr>
-
-                        <tr>
-                          <th>Item Type</th>
-                          <td>{selectedRequest.type}</td>
-                        </tr>
-                        {/* <tr>
-                          <th>Date of Entry (latest)</th>
-                          <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
-                        </tr> */}
+                          <td>{selectedRequest.courseDescription || 'N/A'}</td>
+                        </tr> 
                       </tbody>
                     </table>
                     </div>
 
-                    <div className="table-wrapper">
+                    <div className="table-wrapper2">
                   <table class="horizontal-table">
                       <tbody>
                         <tr>
-                          <th>Item ID</th>
-                          <td>{selectedRequest.itemId}</td>
+                          <th>Date Needed</th>
+                          <td>{selectedRequest.dateRequired}</td>
                         </tr>
 
                          <tr>
-                          <th>Item Description</th>
-                          <td>{selectedRequest.itemDetails}</td>
+                          <th>Room</th>
+                          <td>{selectedRequest.room}</td>
                         </tr>
 
                         <tr>
-                          <th>Item Name</th>
-                          <td>{selectedRequest.itemName}</td>
+                          <th>Time Needed</th>
+                          <td>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</td>
                         </tr>
 
                         <tr>
-                          <th>Inventory Balance</th>
+                          <th>Usage Type</th>
                           <td>
-                            {selectedRequest.quantity}
-                  {/* {["Glasswares", "Chemical", "Reagent"].includes(selectedRow.category) && " pcs"}
-                  {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && ` / ${selectedRow.unit} ML`}
-                   {selectedRow.category === "Glasswares" && selectedRow.volume && (
-                  <p>
-                    <strong>Volume:</strong> {selectedRow.volume} ML
-                  </p>
-                )} */}
+                            {selectedRequest.usageType}
                           </td>
                         </tr>
 
-                        <tr>
+                        {/* <tr>
                           <th>Category</th>
                           <td>{selectedRequest.category}</td>
                         </tr>
@@ -144,15 +126,13 @@ const RequisitionReqestModal = ({
                         <tr>
                           <th>Item Type</th>
                           <td>{selectedRequest.type}</td>
-                        </tr>
-                        {/* <tr>
-                          <th>Date of Entry (latest)</th>
-                          <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
                         </tr> */}
+
                       </tbody>
                     </table>
                     </div>
-              <div className="left-slip">
+              </div>
+              {/* <div className="left-slip">
                 <div> <strong>Requestor:</strong><p> {selectedRequest.userName}</p></div>
               <div>< strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p> </div>
               <div>< strong>Date Needed:</strong> <p>{selectedRequest.dateRequired}</p></div>
@@ -166,26 +146,26 @@ const RequisitionReqestModal = ({
               <div><strong>Course Description:</strong> <p>{selectedRequest.courseDescription}</p></div>
               <div><strong>Program:</strong> <p>{selectedRequest.program}</p></div>
               <div><strong>Usage Type:</strong> <p>{selectedRequest.usageType}</p></div>
-              </div>
+              </div> */}
               
             </div>
             
          
-
-          <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
+        <div style={{padding: 20}}>
+          <Title level={5} style={{ marginTop: 10 }}>Requested Items:</Title>
           <Table
             dataSource={selectedRequest.requestList}
             columns={columns}
             rowKey="id"
             pagination={false}
             bordered
+            className="requested-item-tbl"
           />
 
-          <div style={{display: 'flex', marginTop: '20px'}}><p><strong>Note:</strong> {selectedRequest.reason}</p></div>
+          <div style={{display: 'flex', marginTop: '20px'}}><p style={{textDecoration: 'italics'}}><strong>Note:</strong> {selectedRequest.reason || 'None'}</p></div>
+          </div>
         </>
-        
-       
-              
+
   
       )}
     </Modal>

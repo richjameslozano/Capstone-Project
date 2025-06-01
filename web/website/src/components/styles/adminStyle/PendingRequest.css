@@ -96,8 +96,7 @@
 }
 
 .request-modal .ant-modal-content{
-  padding-right: 0 !important;
-  padding-left: 0 !important;
+
   
 }
 .request-modal .ant-modal-body{
@@ -123,35 +122,34 @@
 }
 
 .whole-slip{
-  background-color: #eaefff;
   display: flex;
   flex-direction: column;
   gap: 20px;
   width: 100%;
-  padding-left: 20px;
   font-size: 16px;
-  margin-top: 60px;
+  margin-top: 40px;
+  padding-top: 20px;
 }
 
-.left-slip{
+.table-container{
   display: flex;
-  flex-direction: column;
+  width: 100%;
+  gap: 20px;
+}
+
+.table-wrapper2{
+  padding: 5px;
+  border: 1px solid #acacac;
+  border-radius: 5px;
   width: 50%;
-  padding-right: 30px;
 }
 
-
-.left-slip div{
-  display: flex;
-  justify-content: space-between;
+.requested-item-tbl .ant-table{
+  font-size: 15px;
+    color: black;
 }
 
-.right-slip{
-  width: 50%;
-  padding-right: 30px;
-}
-
-.right-slip div{
-  display: flex;
-  justify-content: space-between;
+.requested-item-tbl .ant-table-thead >tr>th{
+  background-color: #3f627e !important;
+  color: white !important;
 }

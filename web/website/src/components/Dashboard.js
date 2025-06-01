@@ -450,6 +450,8 @@ useEffect(() => {
             <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
               <Col xs={24} md={8}>
 
+    
+                <Col>
                 <Card title="Item Expiry">
                   <h4>Expired Items</h4>
                   <Table
@@ -469,10 +471,9 @@ useEffect(() => {
                     locale={{ emptyText: "No items expiring soon" }}
                   />
                 </Card>
+                </Col>
 
-              </Col>
-
-              <Col xs={24} md={8}>
+                <Col>
                 <Card title="Critical Stocks">
                  <Table
                   dataSource={criticalStockList}
@@ -481,7 +482,10 @@ useEffect(() => {
                   pagination={false}
                 />
                 </Card>
+                </Col>
+
               </Col>
+
               <Col xs={24} md={8}>
                 <Card title="Damaged / Defective Items">
                     <Table
@@ -522,32 +526,6 @@ useEffect(() => {
 
             {/* Main Content - Highest Sale / Latest Sales / Recent Products */}
             <Row gutter={[16, 16]} style={{ marginTop: "20px" }}>
-              <Col xs={24} md={8}>
-                <Card title="Highest Sale Products">
-                  <List
-                    dataSource={topProducts}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between" }}>
-                          <span>{item.title}</span>
-                          <span>{item.sold} Sold / {item.quantity} Qty</span>
-                        </div>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
-              </Col>
-
-              <Col xs={24} md={8}>
-                <Card title="Latest Sales">
-                  <Table
-                    dataSource={latestSales}
-                    columns={salesColumns}
-                    pagination={false}
-                    size="small"
-                  />
-                </Card>
-              </Col>
 
               <Col xs={24} md={8}>
                 <Card title="Recently Added Products">
