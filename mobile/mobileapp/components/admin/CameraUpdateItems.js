@@ -156,148 +156,365 @@ const CameraUpdateItems = ({ onClose }) => {
     }
   };
 
-  const handleAddQuantity = async (addedQuantity) => {
-    const { itemId, itemName, labRoom: roomNumber } = currentItem;
+  // const handleAddQuantity = async (addedQuantity) => {
+  //   const { itemId, itemName, labRoom: roomNumber } = currentItem;
 
-    try {
-      console.log("roomNumber:", roomNumber); // Should be '0930'
-      console.log("itemId:", itemId);         // Should be 'DENT02'
+  //   try {
+  //     console.log("roomNumber:", roomNumber); // Should be '0930'
+  //     console.log("itemId:", itemId);         // Should be 'DENT02'
 
-      const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
-      const snapshot = await getDocs(inventoryQuery);
+  //     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+  //     const snapshot = await getDocs(inventoryQuery);
 
-        snapshot.forEach(async docSnap => {
-          const ref = doc(db, 'inventory', docSnap.id);
-          const existing = docSnap.data();
+  //       snapshot.forEach(async docSnap => {
+  //         const ref = doc(db, 'inventory', docSnap.id);
+  //         const existing = docSnap.data();
 
-          const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-          const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+  //         const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //         const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
 
 
-          await updateDoc(ref, {
-            quantity: newQty,
-            'condition.Good': newGood
-          });
+  //         await updateDoc(ref, {
+  //           quantity: newQty,
+  //           'condition.Good': newGood
+  //         });
 
-          console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+  //         console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
 
-            const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
+  //           const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
 
-            try {
-              const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
-              const latestSnapshot = await getDocs(latestLogQuery);
+  //           try {
+  //             const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+  //             const latestSnapshot = await getDocs(latestLogQuery);
 
-              let newDeliveryNumber = "DLV-00001"; // default
+  //             let newDeliveryNumber = "DLV-00001"; // default
 
-              if (!latestSnapshot.empty) {
-                const latestDoc = latestSnapshot.docs[0];
-                const lastDeliveryNumber = latestDoc.data().deliveryNumber;
-                const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
-                if (match) {
-                  const lastNumber = parseInt(match[1], 10);
-                  const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
-                  newDeliveryNumber = `DLV-${nextNumber}`;
-                }
-              }
+  //             if (!latestSnapshot.empty) {
+  //               const latestDoc = latestSnapshot.docs[0];
+  //               const lastDeliveryNumber = latestDoc.data().deliveryNumber;
+  //               const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+  //               if (match) {
+  //                 const lastNumber = parseInt(match[1], 10);
+  //                 const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+  //                 newDeliveryNumber = `DLV-${nextNumber}`;
+  //               }
+  //             }
 
-              await addDoc(stockLogRef, {
-                date: new Date().toISOString().split("T")[0],
-                noOfItems: addedQuantity,
-                deliveryNumber: newDeliveryNumber,
-                action: "Quantity Added",
-                user: user.displayName || user.email || "Unknown",
-                createdAt: serverTimestamp(),
-              });
+  //             await addDoc(stockLogRef, {
+  //               date: new Date().toISOString().split("T")[0],
+  //               noOfItems: addedQuantity,
+  //               deliveryNumber: newDeliveryNumber,
+  //               action: "Quantity Added",
+  //               user: user.displayName || user.email || "Unknown",
+  //               createdAt: serverTimestamp(),
+  //             });
 
-              console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
-            } catch (error) {
-              console.error("❌ Error adding stock log:", error);
-            }
-        });
+  //             console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
+  //           } catch (error) {
+  //             console.error("❌ Error adding stock log:", error);
+  //           }
+  //       });
 
-      // ✅ STEP 1: Get the labRoom doc ID using roomNumber
-      const labRoomQuery = query(
-        collection(db, 'labRoom'),
-        where('roomNumber', '==', roomNumber)
-      );
-      const labRoomSnap = await getDocs(labRoomQuery);
+  //     // ✅ STEP 1: Get the labRoom doc ID using roomNumber
+  //     const labRoomQuery = query(
+  //       collection(db, 'labRoom'),
+  //       where('roomNumber', '==', roomNumber)
+  //     );
+  //     const labRoomSnap = await getDocs(labRoomQuery);
 
-      if (labRoomSnap.empty) {
-        Alert.alert("Error", `Lab room ${roomNumber} not found.`);
-        return;
-      }
+  //     if (labRoomSnap.empty) {
+  //       Alert.alert("Error", `Lab room ${roomNumber} not found.`);
+  //       return;
+  //     }
 
-      const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
+  //     const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
 
-      // ✅ STEP 2: Get item in subcollection
-      const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
-      const itemDocSnap = await getDoc(itemDocRef);
+  //     // ✅ STEP 2: Get item in subcollection
+  //     const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
+  //     const itemDocSnap = await getDoc(itemDocRef);
 
-      if (!itemDocSnap.exists()) {
-        Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
-        return;
-      }
+  //     if (!itemDocSnap.exists()) {
+  //       Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
+  //       return;
+  //     }
 
-      // ✅ STEP 3: Update quantity and condition
-      const existing = itemDocSnap.data();
+  //     // ✅ STEP 3: Update quantity and condition
+  //     const existing = itemDocSnap.data();
+  //     const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //     const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+  //     await updateDoc(itemDocRef, {
+  //       quantity: newQty,
+  //       'condition.Good': newGood,
+  //     });
+
+  //     console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+  //     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+
+  //     // // ✅ Log the stock addition to Firestore logs
+  //     // const inventoryId = docSnap.id;
+  //     // const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
+
+  //     // try {
+  //     //   // 2. Query the latest deliveryNumber by createdAt
+  //     //   const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+  //     //   const latestSnapshot = await getDocs(latestLogQuery);
+
+  //     //   let newDeliveryNumber = "DLV-00001"; // default
+
+  //     //   if (!latestSnapshot.empty) {
+  //     //     const latestDoc = latestSnapshot.docs[0];
+  //     //     const lastDeliveryNumber = latestDoc.data().deliveryNumber;
+
+  //     //     const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+  //     //     if (match) {
+  //     //       const lastNumber = parseInt(match[1], 10);
+  //     //       const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+  //     //       newDeliveryNumber = `DLV-${nextNumber}`;
+  //     //     }
+  //     //   }
+
+  //     //   // 3. Add the new stock log
+  //     //   await addDoc(stockLogRef, {
+  //     //     date: new Date().toISOString().split("T")[0],
+  //     //     noOfItems: addedQuantity,
+  //     //     deliveryNumber: newDeliveryNumber,
+  //     //     action: "Quantity Added",
+  //     //     user: user.displayName || user.email || "Unknown",
+  //     //     createdAt: serverTimestamp(),
+  //     //   });
+
+  //     //   console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
+  //     // } catch (error) {
+  //     //   console.error("❌ Error adding stock log:", error);
+  //     // }
+
+  //   } catch (err) {
+  //     console.error("Quantity update error:", err);
+  //     Alert.alert("Error", "Failed to update quantity.");
+
+  //   } finally {
+  //     setModalVisible(false);
+  //     setScanned(false);
+  //   }
+  // };
+
+  // const handleAddQuantity = async (addedQuantity, expiryDate) => {
+  //   const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
+
+  //   try {
+  //     console.log("roomNumber:", roomNumber); // Should be '0930'
+  //     console.log("itemId:", itemId);         // Should be 'DENT02'
+
+  //     const isChemicalOrReagent = category === "Chemical" || category === "Reagent";
+  //     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+  //     const snapshot = await getDocs(inventoryQuery);
+
+  //       snapshot.forEach(async docSnap => {
+  //         const ref = doc(db, 'inventory', docSnap.id);
+  //         const existing = docSnap.data();
+
+  //         const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //         const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+
+  //         await updateDoc(ref, {
+  //           quantity: newQty,
+  //           'condition.Good': newGood
+  //         });
+
+  //         console.log(`✅ Inventory updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+
+  //           const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
+
+  //           try {
+  //             const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+  //             const latestSnapshot = await getDocs(latestLogQuery);
+
+  //             let newDeliveryNumber = "DLV-00001"; // default
+
+  //             if (!latestSnapshot.empty) {
+  //               const latestDoc = latestSnapshot.docs[0];
+  //               const lastDeliveryNumber = latestDoc.data().deliveryNumber;
+  //               const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+
+  //               if (match) {
+  //                 const lastNumber = parseInt(match[1], 10);
+  //                 const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+  //                 newDeliveryNumber = `DLV-${nextNumber}`;
+  //               }
+  //             }
+
+  //             // await addDoc(stockLogRef, {
+  //             //   date: new Date().toISOString().split("T")[0],
+  //             //   noOfItems: addedQuantity,
+  //             //   deliveryNumber: newDeliveryNumber,
+  //             //   // action: "Quantity Added",
+  //             //   // user: user.displayName || user.email || "Unknown",
+  //             //   createdAt: serverTimestamp(),
+  //             // });
+
+  //             const logData = {
+  //               date: new Date().toISOString().split("T")[0],
+  //               noOfItems: addedQuantity,
+  //               deliveryNumber: newDeliveryNumber,
+  //               // action: "Quantity Added",
+  //               // user: user.displayName || user.email || "Unknown",
+  //               createdAt: serverTimestamp(),
+  //             };
+
+  //             if (isChemicalOrReagent && expiryDate) {
+  //               logData.expiryDate = expiryDate; // include expiryDate in log
+  //             }
+
+  //             await addDoc(stockLogRef, logData);
+
+  //             console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
+  //           } catch (error) {
+  //             console.error("❌ Error adding stock log:", error);
+  //           }
+  //       });
+
+  //     // ✅ STEP 1: Get the labRoom doc ID using roomNumber
+  //     const labRoomQuery = query(
+  //       collection(db, 'labRoom'),
+  //       where('roomNumber', '==', roomNumber)
+  //     );
+  //     const labRoomSnap = await getDocs(labRoomQuery);
+
+  //     if (labRoomSnap.empty) {
+  //       Alert.alert("Error", `Lab room ${roomNumber} not found.`);
+  //       return;
+  //     }
+
+  //     const labRoomDocId = labRoomSnap.docs[0].id; // <-- correct Firestore document ID
+
+  //     // ✅ STEP 2: Get item in subcollection
+  //     const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
+  //     const itemDocSnap = await getDoc(itemDocRef);
+
+  //     if (!itemDocSnap.exists()) {
+  //       Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
+  //       return;
+  //     }
+
+  //     // ✅ STEP 3: Update quantity and condition
+  //     const existing = itemDocSnap.data();
+  //     const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+  //     const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+
+  //     await updateDoc(itemDocRef, {
+  //       quantity: newQty,
+  //       'condition.Good': newGood,
+  //     });
+
+  //     console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
+  //     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+
+  //   } catch (err) {
+  //     console.error("Quantity update error:", err);
+  //     Alert.alert("Error", "Failed to update quantity.");
+
+  //   } finally {
+  //     setModalVisible(false);
+  //     setScanned(false);
+  //   }
+  // };
+
+  const handleAddQuantity = async (addedQuantity, expiryDate) => {
+  const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
+  const isChemicalOrReagent = category === "Chemical" || category === "Reagent";
+
+  try {
+    const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+    const snapshot = await getDocs(inventoryQuery);
+
+    snapshot.forEach(async docSnap => {
+      const ref = doc(db, 'inventory', docSnap.id);
+      const existing = docSnap.data();
+
       const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-      const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+      const updateData = { quantity: newQty };
 
-      await updateDoc(itemDocRef, {
-        quantity: newQty,
-        'condition.Good': newGood,
-      });
+      if (!isChemicalOrReagent) {
+        const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+        updateData['condition.Good'] = newGood;
+      }
 
-      console.log(`✅ labRoom updated: quantity → ${newQty}, condition.Good → ${newGood}`);
-      Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+      await updateDoc(ref, updateData);
+      console.log(`✅ Inventory updated: quantity → ${newQty}${!isChemicalOrReagent ? `, condition.Good → ${updateData['condition.Good']}` : ''}`);
 
-      // // ✅ Log the stock addition to Firestore logs
-      // const inventoryId = docSnap.id;
-      // const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
+      // Add to stockLog
+      const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
+      const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+      const latestSnapshot = await getDocs(latestLogQuery);
 
-      // try {
-      //   // 2. Query the latest deliveryNumber by createdAt
-      //   const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
-      //   const latestSnapshot = await getDocs(latestLogQuery);
+      let newDeliveryNumber = "DLV-00001";
+      if (!latestSnapshot.empty) {
+        const lastDeliveryNumber = latestSnapshot.docs[0].data().deliveryNumber;
+        const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+        if (match) {
+          const nextNumber = (parseInt(match[1], 10) + 1).toString().padStart(5, "0");
+          newDeliveryNumber = `DLV-${nextNumber}`;
+        }
+      }
 
-      //   let newDeliveryNumber = "DLV-00001"; // default
+      const logData = {
+        date: new Date().toISOString().split("T")[0],
+        noOfItems: addedQuantity,
+        deliveryNumber: newDeliveryNumber,
+        createdAt: serverTimestamp(),
+      };
 
-      //   if (!latestSnapshot.empty) {
-      //     const latestDoc = latestSnapshot.docs[0];
-      //     const lastDeliveryNumber = latestDoc.data().deliveryNumber;
+      if (isChemicalOrReagent && expiryDate) {
+        logData.expiryDate = expiryDate;
+      }
 
-      //     const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
-      //     if (match) {
-      //       const lastNumber = parseInt(match[1], 10);
-      //       const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
-      //       newDeliveryNumber = `DLV-${nextNumber}`;
-      //     }
-      //   }
+      await addDoc(stockLogRef, logData);
+      console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
+    });
 
-      //   // 3. Add the new stock log
-      //   await addDoc(stockLogRef, {
-      //     date: new Date().toISOString().split("T")[0],
-      //     noOfItems: addedQuantity,
-      //     deliveryNumber: newDeliveryNumber,
-      //     action: "Quantity Added",
-      //     user: user.displayName || user.email || "Unknown",
-      //     createdAt: serverTimestamp(),
-      //   });
+    // 🔎 Step 1: Find labRoom doc
+    const labRoomQuery = query(collection(db, 'labRoom'), where('roomNumber', '==', roomNumber));
+    const labRoomSnap = await getDocs(labRoomQuery);
 
-      //   console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
-      // } catch (error) {
-      //   console.error("❌ Error adding stock log:", error);
-      // }
-
-    } catch (err) {
-      console.error("Quantity update error:", err);
-      Alert.alert("Error", "Failed to update quantity.");
-
-    } finally {
-      setModalVisible(false);
-      setScanned(false);
+    if (labRoomSnap.empty) {
+      Alert.alert("Error", `Lab room ${roomNumber} not found.`);
+      return;
     }
-  };
+
+    const labRoomDocId = labRoomSnap.docs[0].id;
+    const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
+    const itemDocSnap = await getDoc(itemDocRef);
+
+    if (!itemDocSnap.exists()) {
+      Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
+      return;
+    }
+
+    const existing = itemDocSnap.data();
+    const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+    const updateRoomData = { quantity: newQty };
+
+    if (!isChemicalOrReagent) {
+      const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+      updateRoomData['condition.Good'] = newGood;
+    }
+
+    await updateDoc(itemDocRef, updateRoomData);
+    console.log(`✅ labRoom updated: quantity → ${newQty}${!isChemicalOrReagent ? `, condition.Good → ${updateRoomData['condition.Good']}` : ''}`);
+
+    Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+
+  } catch (err) {
+    console.error("Quantity update error:", err);
+    Alert.alert("Error", "Failed to update quantity.");
+  } finally {
+    setModalVisible(false);
+    setScanned(false);
+  }
+};
+
 
   return (
     <View style={styles.container}>
@@ -344,6 +561,7 @@ const CameraUpdateItems = ({ onClose }) => {
       <QuantityModal
         visible={modalVisible}
         itemName={currentItem?.itemName}
+        category={currentItem?.category} 
         onClose={() => {
           setModalVisible(false);
           setScanned(false);
