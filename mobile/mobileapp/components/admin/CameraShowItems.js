@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { View, Text, TouchableOpacity, Animated, Dimensions, Alert } from "react-native";
 import { useNavigation } from '@react-navigation/native';
 import { CameraView,useCameraPermissions } from 'expo-camera';
-
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import CryptoJS from "crypto-js";
 import { collection, query, getDocs, where, serverTimestamp, doc, getDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -13,8 +13,7 @@ import Header from "../Header";
 import ItemDetailsModal from "../customs/ItemDetailsModal";
 import LabRoomDetailsModal from "../customs/LabRoomDetailsModal";
 
-const { width, height } = Dimensions.get("window");
-const frameSize = width * 0.7;
+
 const SECRET_KEY = CONFIG.SECRET_KEY;
 
 const CameraShowItems = ({ onClose }) => {
@@ -83,7 +82,7 @@ const CameraShowItems = ({ onClose }) => {
     };
 
     const handleBackButton = () => {
-        navigation.goBack();
+        navigation.navigate('QRScanScreen');
     };
 
     const showItemDetails = (foundItem, borrowedCount, deployedCount, deployedInfo) => {
@@ -196,174 +195,13 @@ const CameraShowItems = ({ onClose }) => {
             }
           });
 
-          // const detailMsg = `
-          //         Item Name: ${foundItem.itemName}
-          //         Item ID: ${foundItem.itemId}
-          //         Category: ${foundItem.category}
-          //         Department: ${foundItem.department}
-          //         Quantity Available: ${foundItem.quantity}
-          //         Location: ${foundItem.labRoom}
-          //         Borrowed Today: ${borrowedCount} times
-          //         `;
-          // Alert.alert("Item Details", detailMsg);
           showItemDetails(foundItem, borrowedCount, deployedCount, deployedInfo);
 
         } else {
           Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
         }
 
-      // } else if (parsedData.items && Array.isArray(parsedData.items) && parsedData.labRoom) {
-      //   // Instead of showing embedded QR code items, fetch live Firestore data for labRoom and filter archived
-      //   const roomId = parsedData.labRoom;
-      //   const labRoomItemsRef = collection(db, `labRoom/${roomId}/items`);
-      //   const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
 
-      //   if (labRoomItemsSnapshot.empty) {
-      //     Alert.alert("Room Details", `No items found in lab room ${roomId}.`);
-      //     //  showLabRoomDetails(roomId, items);
-
-      //   } else {
-      //     const itemsDetailArray = [];
-
-      //     labRoomItemsSnapshot.forEach(doc => {
-      //       const item = doc.data();
-      //       if (item.status !== "archived") { 
-      //         // itemsDetailArray.push(
-      //         //   `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"}, Status: ${item.status || "N/A"})`
-      //         // );
-      //         itemsDetailArray.push(item);
-      //       }
-      //     });
-
-      //     const itemsDetail = itemsDetailArray.join("\n");
-      //     // await addBorrowedCountToItems(itemsDetailArray);
-      //     await addBorrowedAndDeployedCountToItems(itemsDetailArray)
-      //     // Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
-      //     showLabRoomDetails(roomId, itemsDetailArray);
-      //   }
-
-      // } else if (typeof parsedData === "string") {
-      //   // It's a labRoom id string (e.g. "0430")
-      //   const roomId = parsedData;
-
-      //   const labRoomItemsRef = collection(db, `labRoom/${roomId}/items`);
-      //   const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
-
-      //   if (labRoomItemsSnapshot.empty) {
-      //     Alert.alert("Room Details", `No items found in lab room ${roomId}.`);
-
-      //   } else {
-      //     const itemsDetailArray = [];
-
-      //     labRoomItemsSnapshot.forEach(doc => {
-      //       const item = doc.data();
-      //       if (item.status !== "archived") {
-      //         // itemsDetailArray.push(
-      //         //   `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
-      //         // );
-      //         itemsDetailArray.push(item);
-      //       }
-      //     });
-
-      //     const itemsDetail = itemsDetailArray.join("\n");
-
-      //     // await addBorrowedCountToItems(itemsDetailArray);
-      //     await addBorrowedAndDeployedCountToItems(itemsDetailArray)
-      //     // Alert.alert("Lab Room Inventory", `Room: ${roomId}\nItems:\n${itemsDetail}`);
-      //      showLabRoomDetails(roomId, itemsDetailArray);
-      //   }
-
-      // } else if (parsedData.roomNumber) {
-      //   // Your existing roomNumber object check (if needed)
-      //   const { roomNumber } = parsedData;
-
-      //   const labRoomItemsRef = collection(db, `labRoom/${roomNumber}/items`);
-      //   const labRoomItemsSnapshot = await getDocs(labRoomItemsRef);
-
-      //   if (labRoomItemsSnapshot.empty) {
-      //     Alert.alert("Room Details", `No items found in lab room ${roomNumber}.`);
-
-      //   } else {
-      //     const itemsDetailArray = [];
-
-      //     labRoomItemsSnapshot.forEach(doc => {
-      //       const item = doc.data();
-      //       if (item.status !== "archived") {
-      //         // itemsDetailArray.push(
-      //         //   `- ${item.itemName || "Unknown"} (ID: ${item.itemId || "N/A"}, Qty: ${item.quantity ?? "?"}, Condition: ${item.condition || "N/A"})`
-      //         // );
-      //         itemsDetailArray.push(item);
-      //       }
-      //     });
-          
-      //     const itemsDetail = itemsDetailArray.join("\n");
-
-      //     // await addBorrowedCountToItems(itemsDetailArray);
-      //     await addBorrowedAndDeployedCountToItems(itemsDetailArray)
-
-      //     // Alert.alert("Lab Room Inventory", `Room: ${roomNumber}\nItems:\n${itemsDetail}`);
-      //      showLabRoomDetails(roomId, itemsDetailArray);
-      //   }
-      
-      // } else if (
-      //   typeof parsedData === "string" ||
-      //   parsedData.labRoom ||
-      //   parsedData.roomNumber
-
-      // ) {
-      //   const roomNumber =
-      //     typeof parsedData === "string"
-      //       ? parsedData
-      //       : parsedData.labRoom || parsedData.roomNumber;
-
-      //   try {
-      //     if (!parsedData.items || parsedData.items.length === 0) {
-      //       Alert.alert("Error", "No items found in QR data.");
-      //       return;
-      //     }
-
-      //     const itemsDetailArray = [];
-      //     let labRoomFromInventory = null; 
-
-      //     for (const item of parsedData.items) {
-      //       const itemQuery = query(
-      //         collection(db, "inventory"),
-      //         where("itemId", "==", item.itemId)
-      //       );
-
-      //       const itemSnapshot = await getDocs(itemQuery);
-      //       if (!itemSnapshot.empty) {
-
-      //         const data = itemSnapshot.docs[0].data();
-      //         if (data.status !== "archived") {
-      //           itemsDetailArray.push(data);
-
-      //                     if (!labRoomFromInventory && data.labRoom) {
-      //             labRoomFromInventory = data.labRoom;
-      //           }
-      //         }
-
-      //       } else {
-      //         console.warn(`Item ID ${item.itemId} not found in inventory`);
-      //       }
-      //     }
-
-      //     if (itemsDetailArray.length === 0) {
-      //       Alert.alert("Inventory", "No valid items found in inventory.");
-      //       return;
-      //     }
-
-      //     await addBorrowedAndDeployedCountToItems(itemsDetailArray);
-      //     showLabRoomDetails(labRoomFromInventory, itemsDetailArray);
-
-      //   } catch (error) {
-      //     console.error("Error fetching inventory items:", error);
-      //     Alert.alert("Error", "Failed to fetch inventory item details.");
-      //   }
-        
-      // } else {
-      //   Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
-      // }
 
       } else if (parsedData.labRoomId) {
         const labRoomId = parsedData.labRoomId;
@@ -606,10 +444,19 @@ const CameraShowItems = ({ onClose }) => {
         setTimeout(() => setScanned(false), 1500);
     };
 
+const { width, height } = Dimensions.get('window');
+const frameWidth = width * 0.7;
+const frameHeight = frameWidth; // square frame
+
+const topOffset = (height - frameHeight) / 3;
+const bottomOffset = height - topOffset - frameHeight;
+const sideWidth = (width - frameWidth) / 2;
+
+
   return (
     <View style={styles.container}>
-    <Header/>
-      <TouchableOpacity onPress={handleBackButton}>
+      <TouchableOpacity onPress={handleBackButton} style={styles.backBtn}>
+         <Icon name="keyboard-backspace" size={28} color="white" />
         <Text style={styles.text}>Go Back</Text>
       </TouchableOpacity>
 
@@ -620,21 +467,25 @@ const CameraShowItems = ({ onClose }) => {
         barcodeScannerEnabled={true}
         onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       >
-        <View style={styles.overlay}>
-          <View style={styles.maskTop} />
-          <View style={styles.maskBottom} />
-          <View style={[styles.maskLeft, { top: (height - frameSize) / 2, height: frameSize }]} />
-          <View style={[styles.maskRight, { top: (height - frameSize) / 2, height: frameSize }]} />
+<View style={styles.overlay}>
+  <View style={[styles.maskTop, { height: topOffset }]} />
+  <View style={[styles.maskBottom, { height: bottomOffset+35 }]} />
+  <View style={[styles.maskLeft, { top: topOffset, height: frameHeight, width: sideWidth }]} />
+  <View style={[styles.maskRight, { top: topOffset, height: frameHeight, width: sideWidth }]} />
 
-          <View style={styles.scannerFrame}>
-            <View style={[styles.corner, styles.cornerTopLeft]} />
-            <View style={[styles.corner, styles.cornerTopRight]} />
-            <View style={[styles.corner, styles.cornerBottomLeft]} />
-            <View style={[styles.corner, styles.cornerBottomRight]} />
+  <View style={[styles.scannerFrame, { top: topOffset, width: frameWidth, height: frameHeight }]}>
+    <View style={[styles.corner, styles.cornerTopLeft]} />
+    <View style={[styles.corner, styles.cornerTopRight]} />
+    <View style={[styles.corner, styles.cornerBottomLeft]} />
+    <View style={[styles.corner, styles.cornerBottomRight]} />
 
-            <Animated.View style={[styles.scanLine, { top: scanLinePosition }]} />
-          </View>
-        </View>
+    <Animated.View style={[styles.scanLine, { top: scanLinePosition }]} />
+  </View>
+</View>
+
+
+
+
 
         <View style={styles.controls}>
           <TouchableOpacity

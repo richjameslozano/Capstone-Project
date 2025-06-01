@@ -9,9 +9,17 @@ export default StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#000',
+    backgroundColor: '#fff',
   },
-
+backBtn:{
+  position: 'absolute',
+  top: 70,
+  left: 20,
+  zIndex: 999,
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: 5
+},
   camera: {
     flex: 1,
     width: '100%',
@@ -30,7 +38,7 @@ export default StyleSheet.create({
   scannerFrame: {
     width: frameSize,
     height: frameSize,
-    position: 'relative',
+    position: 'absolute',
     borderColor: 'rgba(255, 255, 255, 0.3)',
   },
 
@@ -38,7 +46,7 @@ export default StyleSheet.create({
     position: 'absolute',
     width: 40,
     height: 40,
-    borderColor: '#39FF14',
+    borderColor: '#a3cae9',
   },
 
   cornerTopLeft: {
@@ -77,37 +85,32 @@ export default StyleSheet.create({
   },
 
   // Dark overlays to dim the area outside the scanning frame
-  maskTop: {
-    position: 'absolute',
-    top: 0,
-    width: '100%',
-    height: (height - frameSize) / 2,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
+maskTop: {
+  position: 'absolute',
+  top: 0,
+  width: '100%',
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+},
 
-  maskBottom: {
-    position: 'absolute',
-    bottom: 0,
-    width: '100%',
-    height: (height - frameSize) / 2,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
+maskBottom: {
+  position: 'absolute',
+  bottom: 0,
+  width: '100%',
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+},
 
-  maskLeft: {
-    position: 'absolute',
-    left: 0,
-    width: (width - frameSize) / 2,
-    height: frameSize,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
 
-  maskRight: {
-    position: 'absolute',
-    right: 0,
-    width: (width - frameSize) / 2,
-    height: frameSize,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-  },
+maskLeft: {
+  position: 'absolute',
+  left: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+},
+
+maskRight: {
+  position: 'absolute',
+  right: 0,
+  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+},
 
   controls: {
     position: 'absolute',
@@ -125,6 +128,7 @@ export default StyleSheet.create({
   text: {
     color: 'white',
     textAlign: 'center',
-    marginTop: 100,
+    fontSize: 15,
+    fontWeight: 'bold'
   },
 });
