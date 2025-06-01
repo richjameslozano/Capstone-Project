@@ -54,6 +54,7 @@ activeFilterText: {
 
 inactiveFilterText: {
   color: '#333',
+  fontWeight: 300
 }
 ,
 

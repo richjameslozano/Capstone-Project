@@ -124,7 +124,7 @@ const LogScreen = () => {
     ]}
     onPress={() => setFilterStatus(status)}
   >
-    <Text style={filterStatus === status ? styles.activeFilterText : styles.inactiveFilterText}>
+    <Text style={[filterStatus === status ? styles.activeFilterText : styles.inactiveFilterText, {fontSize: 12}]}>
       {status}
     </Text>
   </TouchableOpacity>
