@@ -234,7 +234,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
       </View>
 
 <View style={{paddingHorizontal: 15}}>
-    <View style={{borderBottomWidth: 1, borderColor: '#dcdcdc', paddingBottom: 5, marginBottom: 15}}>
+    <View style={{borderBottomWidth: 1, borderColor: '#dcdcdc', paddingBottom: 5, marginBottom: 5}}>
       <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
       <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
       <Title style={styles.titleStyle}>Home</Title>
