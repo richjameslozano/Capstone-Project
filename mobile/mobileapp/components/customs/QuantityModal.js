@@ -1,8 +1,21 @@
 import React, { useState } from 'react';
 import { Modal, View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 
-const QuantityModal = ({ visible, onClose, onSubmit, itemName }) => {
+const QuantityModal = ({ visible, onClose, onSubmit, itemName, category }) => {
   const [quantity, setQuantity] = useState('');
+  const [expiryDate, setExpiryDate] = useState('');
+
+  const isChemicalOrReagent = category === "Chemical" || category === "Reagent";
+
+  // const handleConfirm = () => {
+  //   const num = parseInt(quantity);
+  //   if (isNaN(num) || num <= 0) {
+  //     alert("Please enter a valid positive number");
+  //     return;
+  //   }
+  //   onSubmit(num);
+  //   setQuantity('');
+  // };
 
   const handleConfirm = () => {
     const num = parseInt(quantity);
@@ -10,12 +23,19 @@ const QuantityModal = ({ visible, onClose, onSubmit, itemName }) => {
       alert("Please enter a valid positive number");
       return;
     }
-    onSubmit(num);
+
+    if (isChemicalOrReagent && !expiryDate) {
+      alert("Please enter an expiry date");
+      return;
+    }
+
+    onSubmit(num, expiryDate || null); // pass expiryDate
     setQuantity('');
+    setExpiryDate('');
   };
 
   return (
-    <Modal transparent visible={visible} animationType="fade">
+      <Modal transparent visible={visible} animationType="fade">
       <View style={styles.overlay}>
         <View style={styles.modalContainer}>
           <Text style={styles.title}>Add Quantity</Text>
@@ -27,6 +47,14 @@ const QuantityModal = ({ visible, onClose, onSubmit, itemName }) => {
             value={quantity}
             onChangeText={setQuantity}
           />
+          {isChemicalOrReagent && (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter expiry date (YYYY-MM-DD)"
+              value={expiryDate}
+              onChangeText={setExpiryDate}
+            />
+          )}
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.buttonCancel} onPress={onClose}>
               <Text style={styles.buttonText}>Cancel</Text>
