@@ -107,3 +107,42 @@
 .labroom-item-card p {
   all: unset;
 }
+
+.labroom-title-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  background-color: #f5f7fa;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.labroom-title-wrapper:hover {
+  background-color: #e1e7ef;
+}
+
+.dropdown-arrow {
+  font-size: 20px;
+  color: #888;
+  margin-left: 1rem;
+}
+
+.labroom-table {
+  margin-top: 1rem;
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.labroom-table th,
+.labroom-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.labroom-table th {
+  background-color: #f0f4f8;
+  font-weight: 600;
+}

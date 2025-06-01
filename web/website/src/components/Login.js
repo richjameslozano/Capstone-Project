@@ -621,18 +621,19 @@ const Login = () => {
           </div>
 
           <div className="form-div">
+             {!signUpMode && (
+          <div style={{ display: 'flex', justifyContent: 'center', height: 'auto',justifySelf: 'flex-start'}}>
+            <img src={nulsLogo} alt="NULS Logo" style={{maxHeight: 150}} />
+          </div>
+        )}
+ 
+
             <h2 className={signUpMode ? "create-account-title" : "login-title"}>
-              {!signUpMode && (
-  <div style={{ display: 'flex', justifyContent: 'center', marginTop: '-120px', marginLeft:'-30px',marginBottom:'-45px' }}>
-    <img src={nulsLogo} alt="NULS Logo" style={{ maxWidth: '290px', height: 'auto' }} />
-  </div>
-)}
               {signUpMode
                 ? "Create an Account"
                 : isNewUser
                 ? "Set Your Password"
-                
-                : "SIGN IN"}    
+                : "Sign in to your account"} 
             </h2>
             
 

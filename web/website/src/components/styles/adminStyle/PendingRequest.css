@@ -1,24 +1,5 @@
-.request-card {
-  background-color: #fff;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  margin-bottom: 15px;
-  padding: 15px;
-  transition: all 0.3s;
-}
 
-.request-card:hover {
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
 
-.view-btn {
-  text-decoration: underline;
-  color: #1890ff;
-}
-
-.view-btn:hover {
-  color: #40a9ff;
-}
 
 .approved-card {
   background-color: #f6ffed;
@@ -28,17 +9,53 @@
   padding: 10px;
 }
 
+.request-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.request-card {
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fff;
+  transition: 0.1s ease-in-out;
+  cursor: pointer;
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+}
+
+.request-card:hover {
+  background-color: #f7f7f7
+}
+
+.request-card h3 {
+  margin: 0 0 8px 0;
+}
+
+
 .content {
   padding: 20px;
   background-color: #f9f9f9;
 }
 
-.request-card {
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+.filter-btns{
+  background-color: #e9ecee;
+  padding: 10px;
+  border-radius: 50px;
+  padding-left: 20px;
+  padding-right: 20px;
+  border: 0px;
+  cursor: pointer;
 }
+
+.search-input{
+  margin-left: 20px;
+}
+
 
 .approved-card {
   margin-bottom: 12px;
@@ -51,12 +68,6 @@
   font-weight: bold;
 }
 
-.request-card {
-  margin-bottom: 16px;
-  border-radius: 8px;
-  background-color: #fff;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
 
 .approved-card {
   margin-bottom: 12px;
@@ -75,17 +86,6 @@
   text-decoration: underline;
 }
 
-.request-card {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0px 3px 12px rgba(0, 0, 0, 0.08);
-  transition: all 0.3s ease-in-out;
-}
-
-.request-card:hover {
-  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.12);
-}
-
 .cards-hidden {
   display: none;
 }
@@ -95,54 +95,61 @@
   background-color: #e6f7ff;
 }
 
+.request-modal .ant-modal-content{
+
+  
+}
+.request-modal .ant-modal-body{
+  padding-right: 0 !important;
+  padding-left: 0 !important;
+}
 .requisition-slip-title{
+  position: absolute;
   display: flex;
   align-items: center;
-  width: 800px; 
   background-color: #212f7e;
-  height: 50px;
+  height: 60px;
   padding-left: 20px;
   padding-right: 20px;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
-  margin-top: -20px;
-  margin-left: -24px;
   color: white;
   font-size: 20px;
   justify-content: space-between;
+  top: 0;
+  left: 0;
+  right: 0;
 }
 
 .whole-slip{
-  background-color: #eaefff;
-  display: flex;
-  flex-direction: row;
-  gap: 20px;
-  width: 800px;
-  padding-top: 15px;
-  margin-left: -24px;
-  padding-left: 20px;
-  font-size: 16px;
-}
-
-.left-slip{
   display: flex;
   flex-direction: column;
-  width: 50%;
-  padding-right: 30px;
+  gap: 20px;
+  width: 100%;
+  font-size: 16px;
+  margin-top: 40px;
+  padding-top: 20px;
 }
 
-
-.left-slip div{
+.table-container{
   display: flex;
-  justify-content: space-between;
+  width: 100%;
+  gap: 20px;
 }
 
-.right-slip{
+.table-wrapper2{
+  padding: 5px;
+  border: 1px solid #acacac;
+  border-radius: 5px;
   width: 50%;
-  padding-right: 30px;
 }
 
-.right-slip div{
-  display: flex;
-  justify-content: space-between;
+.requested-item-tbl .ant-table{
+  font-size: 15px;
+    color: black;
+}
+
+.requested-item-tbl .ant-table-thead >tr>th{
+  background-color: #3f627e !important;
+  color: white !important;
 }

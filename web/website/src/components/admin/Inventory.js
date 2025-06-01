@@ -20,7 +20,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where, serverTimestamp, orderBy, limit } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -62,9 +62,7 @@ const Inventory = () => {
   const [qrModalVisible, setQrModalVisible] = useState(false);
   const [selectedQrCode, setSelectedQrCode] = useState('');
   const [selectedItemName, setSelectedItemName] = useState(null);
-  const [isItemModalVisible, setIsItemModalVisible] = useState(false);
-  const [isQrModalVisible, setIsQrModalVisible] = useState(false);
-  const [isViewQRModalVisible, setIsViewQRModalVisible] = useState(false);
+  const [logRefreshKey, setLogRefreshKey] = useState(0);
   const [filterCategory, setFilterCategory] = useState(null);
   const [filterItemType, setFilterItemType] = useState(null);
   const [filterUsageType, setFilterUsageType] = useState(null);
@@ -109,6 +107,7 @@ const Inventory = () => {
             const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
 
             return {
+              docId: doc.id,  
               id: index + 1,
               itemId: data.itemId,
               item: data.itemName,
@@ -133,6 +132,29 @@ const Inventory = () => {
 
     return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
+
+  // useEffect(() => {
+  //   const fetchInventory = async () => {
+  //     try {
+  //       const response = await fetch('https://nuls-8c12b.web.app/api/getInventory');
+  //       const data = await response.json();
+
+  //       if (data.success && data.items) {
+  //         setDataSource(data.items);
+  //         setCount(data.count);
+  //       } else {
+  //         console.warn('No inventory data:', data.message || 'Unknown reason');
+  //         setDataSource([]);
+  //         setCount(0);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching inventory from backend:', error);
+  //     }
+  //   };
+
+  //   fetchInventory();
+  // }, []);
+
 
   useEffect(() => {
     if (isEditModalVisible) {
@@ -612,35 +634,48 @@ const printPdf = () => {
       });
 
       // 🔽 Fetch all items under this labRoom
-      const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-      const allLabRoomItems = [];
-      labRoomItemsSnap.forEach((docItem) => {
-        const itemData = docItem.data();
-        const quantityNumbers = Number(itemData.quantity);
-        allLabRoomItems.push({
-          itemId: itemData.itemId,
-          itemName: itemData.itemName,
-          itemDetails: itemData.itemDetails,
-          quantity: itemData.quantity,
-          condition: {
-            Good: quantityNumbers,
-            Defect: 0,
-            Damage: 0,
-          },
-          status: itemData.status,
-        });
-      });
+      // const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+      // const allLabRoomItems = [];
+      // labRoomItemsSnap.forEach((docItem) => {
+      //   const itemData = docItem.data();
+      //   const quantityNumbers = Number(itemData.quantity);
+      //   allLabRoomItems.push({
+      //     itemId: itemData.itemId,
+      //     itemName: itemData.itemName,
+      //     itemDetails: itemData.itemDetails,
+      //     quantity: itemData.quantity,
+      //     condition: {
+      //       Good: quantityNumbers,
+      //       Defect: 0,
+      //       Damage: 0,
+      //     },
+      //     status: itemData.status,
+      //   });
+      // });
 
-      // 🔽 Generate encrypted QR code with labRoom data
+      // // 🔽 Generate encrypted QR code with labRoom data
+      // const labRoomQRData = CryptoJS.AES.encrypt(
+      //   JSON.stringify({
+      //     labRoom: values.labRoom,
+      //     items: allLabRoomItems,
+      //   }),
+      //   SECRET_KEY
+      // ).toString();
+
+      // // 🔽 Update labRoom document with the generated QR code
+      // await updateDoc(labRoomRef, {
+      //   qrCode: labRoomQRData,
+      //   updatedAt: new Date(),
+      // });
+
       const labRoomQRData = CryptoJS.AES.encrypt(
         JSON.stringify({
-          labRoom: values.labRoom,
-          items: allLabRoomItems,
+          labRoomId: labRoomRef.id,
         }),
         SECRET_KEY
       ).toString();
 
-      // 🔽 Update labRoom document with the generated QR code
+      // Update labRoom document with the generated QR code
       await updateDoc(labRoomRef, {
         qrCode: labRoomQRData,
         updatedAt: new Date(),
@@ -648,6 +683,7 @@ const printPdf = () => {
 
       setDataSource([...dataSource, newItem]);
       setCount(count + 1);
+      setLogRefreshKey(prev => prev + 1);
       form.resetFields();
       setItemName("");
       setItemDetails("")
@@ -665,10 +701,10 @@ const printPdf = () => {
     setSelectedCategory(record.category);
 
     editForm.setFieldsValue({
-      category: record.category,
-      labRoom: record.labRoom,
+      // category: record.category,
+      // labRoom: record.labRoom,
       quantity: record.quantity,
-      status: record.status,
+      // status: record.status,
       condition: {
         Good: record.condition?.Good ?? 0,
         Defect: record.condition?.Defect ?? 0,
@@ -945,16 +981,24 @@ const printPdf = () => {
    const updateItem = async (values) => {
     console.log("✅ Raw incoming values:", values);
 
-    // Build safeValues but WITHOUT using values.labRoom (ignore it)
-    // We'll get labRoom from Firestore data directly below.
     const safeValues = {
-      // category: values.category ?? "",
-      // labRoom will be fetched from Firestore data, so omit here or set to empty string
-      // labRoom: "", 
       quantity: values.quantity ?? 0,
       // status: values.status ?? "Available",
       condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
     };
+
+      const isQuantitySame = safeValues.quantity === (editingItem.quantity ?? 0);
+      const isConditionSame = 
+        (safeValues.condition.Good ?? 0) === (editingItem.condition?.Good ?? 0) &&
+        (safeValues.condition.Defect ?? 0) === (editingItem.condition?.Defect ?? 0) &&
+        (safeValues.condition.Damage ?? 0) === (editingItem.condition?.Damage ?? 0);
+
+      if (isQuantitySame && isConditionSame) {
+        // No changes detected
+        setIsNotificationVisible(true);
+        setNotificationMessage("No changes detected. Please update at least one value.");
+        return;  // Exit early without updating
+      }
 
     // try {
     //   const snapshot = await getDocs(collection(db, "inventory"));
@@ -1069,6 +1113,39 @@ const printPdf = () => {
             if (labRoomItemSnap.exists()) {
               await updateDoc(labRoomItemRef, safeValues);
               console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
+
+              
+              const existingGoodQty = data.condition?.Good ?? 0;
+              const newGoodQty = values.condition?.Good ?? 0;
+              const goodQtyDifference = newGoodQty - existingGoodQty;
+
+              const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
+
+              // 1. Query the latest deliveryNumber
+              const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+              const latestSnapshot = await getDocs(latestLogQuery);
+
+              let newDeliveryNumber = "DLV-00001";
+
+              if (!latestSnapshot.empty) {
+                const latestDoc = latestSnapshot.docs[0];
+                const lastDeliveryNumber = latestDoc.data().deliveryNumber;
+
+                const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+                if (match) {
+                  const lastNumber = parseInt(match[1], 10);
+                  const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
+                  newDeliveryNumber = `DLV-${nextNumber}`;
+                }
+              }
+
+              // 2. Add the new log (using quantityDifference instead of total)
+              await addDoc(stockLogRef, {
+                date: new Date().toISOString().split("T")[0],
+                noOfItems: goodQtyDifference,
+                deliveryNumber: newDeliveryNumber,
+                createdAt: serverTimestamp(),
+              });
 
             } else {
               console.warn(`⚠️ Item ${itemId} not found in labRoom`);
@@ -1463,11 +1540,25 @@ const printPdf = () => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
+            // onRow={(record) => {
+            //   return {
+            //     onClick: () => {
+            //       setSelectedRow(record);
+            //       setIsRowModalVisible(true); // Show the "View Details" modal
+            //     },
+            //   };
+            // }}
             onRow={(record) => {
               return {
                 onClick: () => {
-                  setSelectedRow(record);
-                  setIsRowModalVisible(true); // Show the "View Details" modal
+                  setIsRowModalVisible(false);
+                  setSelectedRow(null);
+
+                  // Ensure state updates flush before reopening
+                  setTimeout(() => {
+                    setSelectedRow(record);
+                    setIsRowModalVisible(true);
+                  }, 100);
                 },
               };
             }}
@@ -1809,10 +1900,17 @@ const printPdf = () => {
                           <th>Item ID</th>
                           <td>{selectedRow.itemId}</td>
                         </tr>
+
+                         <tr>
+                          <th>Item Description</th>
+                          <td>{selectedRow.itemDetails}</td>
+                        </tr>
+
                         <tr>
                           <th>Item Name</th>
                           <td>{selectedRow.itemName}</td>
                         </tr>
+
                         <tr>
                           <th>Inventory Balance</th>
                           <td>
@@ -1826,18 +1924,20 @@ const printPdf = () => {
                 )} */}
                           </td>
                         </tr>
+
                         <tr>
                           <th>Category</th>
                           <td>{selectedRow.category}</td>
                         </tr>
+
                         <tr>
                           <th>Item Type</th>
                           <td>{selectedRow.type}</td>
                         </tr>
-                        <tr>
+                        {/* <tr>
                           <th>Date of Entry (latest)</th>
                           <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
-                        </tr>
+                        </tr> */}
                       </tbody>
                     </table>
                     </div>
@@ -1933,7 +2033,7 @@ const printPdf = () => {
                       </tr>
                     </tbody>
                   </table> */}
-                  <StockLog />
+                  <StockLog inventoryDocId={selectedRow?.docId} />
                   </div>
               </div>
             )}
