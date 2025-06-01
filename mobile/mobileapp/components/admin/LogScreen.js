@@ -1,224 +1,4 @@
-// import React, { useState, useEffect } from "react";
-// import { View, Text, Button, Modal, FlatList, ScrollView, ActivityIndicator } from "react-native";
-// import { db } from "../../backend/firebase/FirebaseConfig";
-// import { collection, getDocs, onSnapshot} from "firebase/firestore";
-// import { useAuth } from "../contexts/AuthContext";
-// import styles from "../styles/adminStyle/LogStyle";
-// import ApprovedRequestModal from "../customs/ApprovedRequestModal";
-// import Header from '../Header';
-
-// const LogScreen = () => {
-//   const [filterStatus, setFilterStatus] = useState("All");
-//   const [modalVisible, setModalVisible] = useState(false);
-//   const [selectedRequest, setSelectedRequest] = useState(null);
-//   const [historyData, setHistoryData] = useState([]);
-//   const [loading, setLoading] = useState(true);
-//   const { user } = useAuth(); 
-
-//   // useEffect(() => {
-//   //   const fetchRequestLogs = async () => {
-//   //     try {
-//   //       const querySnapshot = await getDocs(collection(db, "requestlog"));
-//   //       const logs = querySnapshot.docs.map((doc) => {
-//   //         const data = doc.data();
-//   //         const timestamp = data.timestamp ? formatTimestamp(data.timestamp) : "N/A";
-
-//   //         return {
-//   //           id: doc.id,
-//   //           date: data.dateRequired ?? "N/A",
-//   //           status: data.status ?? "Pending",
-//   //           requestor: data.userName ?? "Unknown",
-//   //           requestedItems: data.requestList ?? [],
-//   //           requisitionId: doc.id,
-//   //           reason: data.reason ?? "No reason provided",
-//   //           department: data.requestList?.[0]?.department ?? "N/A",
-//   //           approvedBy: data.approvedBy,
-//   //           rejectedBy: data.rejectedBy,
-//   //           timestamp: timestamp,
-//   //           raw: data,
-//   //           itemId: data.itemId,
-//   //         };
-//   //       });
-
-//   //       const sortedLogs = logs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-//   //       setHistoryData(sortedLogs);
-
-//   //     } catch (error) {
-//   //       console.error("Error fetching request logs:", error);
-        
-//   //     } finally {
-//   //       setLoading(false);
-//   //     }
-//   //   };
-
-//   //   fetchRequestLogs();
-//   // }, []);
-
-//   useEffect(() => {
-//     const fetchRequestLogs = () => {
-//       try {
-//         const requestLogRef = collection(db, "requestlog");
-//         const unsubscribe = onSnapshot(requestLogRef, (querySnapshot) => {
-//           const logs = querySnapshot.docs.map((doc) => {
-//             const data = doc.data();
-//             const timeFrom = data.timeFrom || "N/A";  
-//             const timeTo = data.timeTo || "N/A";    
-//             const rawTimestamp = data.rawTimestamp;
-//             const timestamp = data.timestamp;
-
-//             let parsedRawTimestamp = "N/A";
-//             let parsedTimestamp = "N/A";
-
-//             if (rawTimestamp && typeof rawTimestamp.toDate === "function") {
-//               try {
-//                 parsedRawTimestamp = rawTimestamp.toDate().toLocaleString("en-PH", {
-//                   timeZone: "Asia/Manila",
-//                 });
-//               } catch (e) {
-//                 console.warn(`Error formatting rawTimestamp for doc ${doc.id}:`, e);
-//               }
-//             }
-
-//             if (timestamp && typeof timestamp.toDate === "function") {
-//               try {
-//                 parsedTimestamp = timestamp.toDate().toLocaleString("en-PH", {
-//                   timeZone: "Asia/Manila",
-//                 });
-//               } catch (e) {
-//                 console.warn(`Error formatting timestamp for doc \${doc.id}:`, e);
-//               }
-//             }
-
-//             return {
-//               id: doc.id,
-//               date: data.dateRequired ?? "N/A",
-//               status: data.status ?? "Pending",
-//               requestor: data.userName ?? "Unknown",
-//               requestedItems: data.requestList
-//                 ? data.requestList.map((item) => item.itemName).join(", ")
-//                 : "No items",
-//               requisitionId: doc.id,
-//               reason: data.reason ?? "No reason provided",
-//               department: data.requestList?.[0]?.department ?? "N/A",
-//               rejectionReason:
-//                 data.requestList?.[0]?.reason || data.reason || "N/A",
-//               approvedBy: data.approvedBy,
-//               rejectedBy: data.rejectedBy,
-//               rawTimestamp: rawTimestamp ?? null,
-//               processDate: parsedRawTimestamp, 
-//               timestamp: parsedTimestamp,
-//               room: data.room,
-//               raw: data,
-//               timeFrom, 
-//               timeTo,  
-//             };
-//           });
-
-//           logs.sort((a, b) => {
-//             const timeA = a.rawTimestamp?.toMillis?.() ?? 0;
-//             const timeB = b.rawTimestamp?.toMillis?.() ?? 0;
-//             return timeB - timeA;
-//           });
-
-//           setHistoryData(logs);
-//         });
-
-//         return () => unsubscribe();
-//       } catch (error) {
-//         console.error("Error fetching request logs: ", error);
-//       }
-//     };
-
-//     fetchRequestLogs();
-//   }, []);
-
-//   const formatTimestamp = (timestamp) => {
-//     try {
-//       const date = timestamp.toDate();
-//       return date.toLocaleString("en-US", {
-//         month: "short",
-//         day: "numeric",
-//         year: "numeric",
-//         hour: "2-digit",
-//         minute: "2-digit",
-//         hour12: true,
-//       });
-
-//     } catch (e) {
-//       return "N/A";
-//     }
-//   };
-
-//   const handleViewDetails = (record) => {
-//     setSelectedRequest(record.raw);
-//     setModalVisible(true);
-//   };
-
-//   const closeModal = () => {
-//     setModalVisible(false);
-//     setSelectedRequest(null);
-//   };
-
-//   const filteredData =
-//     filterStatus === "All"
-//       ? historyData
-//       : historyData.filter((item) => item.status === filterStatus);
-
-//   return (
-//     <View style={styles.container}>
-//       <Header />
-
-//       <View style={styles.filterContainer}>
-//         <Button title="All" onPress={() => setFilterStatus("All")} />
-//         <Button title="Approved" onPress={() => setFilterStatus("Approved")} />
-//         <Button title="Rejected" onPress={() => setFilterStatus("Rejected")} />
-//         <Button title="Returned" onPress={() => setFilterStatus("Returned")} />
-//       </View>
-
-//       {loading ? (
-//         <View style={{ flex: 1, justifyContent: "center", alignItems: "center", paddingTop: 50 }}>
-//           <ActivityIndicator size="large" color="#007bff" />
-//           <Text>Loading request logs...</Text>
-//         </View>
-
-//       ) : (
-//         <ScrollView horizontal>
-//           <View style={styles.table}>
-//             <View style={styles.tableRow}>
-//               <Text style={styles.tableHeader}>Date</Text>
-//               <Text style={styles.tableHeader}>Status</Text>
-//               <Text style={styles.tableHeader}>Requestor</Text>
-//               <Text style={styles.tableHeader}>Action</Text>
-//             </View>
-//             {filteredData.map((item, index) => (
-//               <View
-//                 key={item.id}
-//                 style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd]}
-//               >
-//                 <Text style={styles.tableCell}>{item.timestamp}</Text>
-//                 <Text style={styles.tableCell}>{item.status}</Text>
-//                 <Text style={styles.tableCell}>{item.requestor}</Text>
-//                 <Button title="View Details" onPress={() => handleViewDetails(item)} />
-//               </View>
-//             ))}
-//           </View>
-//         </ScrollView>
-//       )}
-
-//       {modalVisible && (
-//         <Modal transparent={true} visible={modalVisible} animationType="slide">
-//           <ApprovedRequestModal
-//             request={selectedRequest}
-//             isVisible={modalVisible}
-//             onClose={closeModal}
-//           />
-//         </Modal>
-//       )}
-//     </View>
-//   );
-// };
-
-// export default LogScreen;
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 import React, { useState, useEffect } from "react";
 import {
@@ -235,6 +15,7 @@ import { collection, onSnapshot } from "firebase/firestore";
 import { useAuth } from "../contexts/AuthContext";
 import Header from "../Header";
 import styles from "../styles/adminStyle/LogStyle";
+import { useNavigation } from '@react-navigation/native';
 
 const LogScreen = () => {
   const [filterStatus, setFilterStatus] = useState("All");
@@ -243,6 +24,14 @@ const LogScreen = () => {
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
+
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+  const navigation = useNavigation()
+  const handleHeaderLayout = (event) => {
+  const { height } = event.nativeEvent.layout;
+  setHeaderHeight(height);
+};
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "requestlog"), (querySnapshot) => {
@@ -311,12 +100,36 @@ const LogScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header />
+            <View style={styles.pendingHeader} onLayout={handleHeaderLayout}>
+              <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+                                                    <Icon name="keyboard-backspace" size={28} color="black" />
+                                                  </TouchableOpacity>
+              <View>
+                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Request Log</Text>
+                <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>View Processed Requests</Text>
+              </View>
 
-      <View style={styles.filterContainer}>
-        {["All", "Approved", "Rejected", "Returned"].map((status) => (
-          <Button key={status} title={status} onPress={() => setFilterStatus(status)} />
-        ))}
+                <TouchableOpacity style={{padding: 2}}>
+                  <Icon name="information-outline" size={24} color="#000" />
+                </TouchableOpacity>
+              </View>
+
+      <View style={[styles.filterContainer, {marginTop: headerHeight+5}]}>
+        {['All', 'Approved', 'Rejected', 'Returned'].map((status) => (
+  <TouchableOpacity
+    key={status}
+    style={[
+      styles.filterBtn,
+      filterStatus === status && styles.activeFilterBtn // apply active style if selected
+    ]}
+    onPress={() => setFilterStatus(status)}
+  >
+    <Text style={[filterStatus === status ? styles.activeFilterText : styles.inactiveFilterText, {fontSize: 12}]}>
+      {status}
+    </Text>
+  </TouchableOpacity>
+))}
+
       </View>
 
       {loading ? (
@@ -325,29 +138,40 @@ const LogScreen = () => {
           <Text>Loading request logs...</Text>
         </View>
       ) : (
-        <ScrollView horizontal>
-          <View style={styles.table}>
-            <View style={styles.tableRow}>
-              <Text style={styles.tableHeader}>Date</Text>
-              <Text style={styles.tableHeader}>Status</Text>
-              <Text style={styles.tableHeader}>Requestor</Text>
-              <Text style={styles.tableHeader}>Action</Text>
-            </View>
-            {filteredData.map((item, index) => (
-              <View
-                key={item.id}
-                style={[styles.tableRow, index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd]}
-              >
-                <Text style={styles.tableCell}>{item.timestamp}</Text>
-                <Text style={styles.tableCell}>{item.status}</Text>
-                <Text style={styles.tableCell}>{item.requestor}</Text>
-                <TouchableOpacity onPress={() => handleViewDetails(item)}>
-                  <Text style={{ color: "blue" }}>View Details</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+        <View style={{flex: 1, padding: 10, backgroundColor: 'white', borderRadius: 5}}>
+       <ScrollView horizontal>
+    <View>
+      {/* Table Header */}
+      <View style={[styles.tableRow, styles.tableHeaderRow]}>
+        <Text style={[styles.tableHeaderCell, { minWidth: 180 }]}>Date</Text>
+        <Text style={[styles.tableHeaderCell, { minWidth: 100 }]}>Status</Text>
+        <Text style={[styles.tableHeaderCell, { minWidth: 160 }]}>Requestor</Text>
+        <Text style={[styles.tableHeaderCell, { minWidth: 80 }]}>Action</Text>
+      </View>
+
+      {/* Inner vertical scroll */}
+      <ScrollView >
+        {filteredData.map((item, index) => (
+          <View
+            key={item.id}
+            style={[
+              styles.tableRow,
+              index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
+            ]}
+          >
+            <Text style={[styles.tableCell, { minWidth: 180 }]}>{item.timestamp}</Text>
+            <Text style={[styles.tableCell, { minWidth: 100 }]}>{item.status}</Text>
+            <Text style={[styles.tableCell, { minWidth: 160 }]}>{item.requestor}</Text>
+            <TouchableOpacity onPress={() => handleViewDetails(item)} style={{ minWidth: 80 }}>
+              <Text style={styles.viewText}>View</Text>
+            </TouchableOpacity>
           </View>
-        </ScrollView>
+        ))}
+      </ScrollView>
+    </View>
+  </ScrollView>
+
+        </View>
       )}
 
       <Modal transparent={true} visible={modalVisible} animationType="slide">

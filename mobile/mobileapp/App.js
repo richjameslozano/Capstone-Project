@@ -122,6 +122,7 @@ const CustomDrawerContent = ({ navigation }) => {
         </View>
       </View>
 
+    
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
         <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>My Account</Title>
@@ -167,8 +168,13 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Capex Request</Title>
       </TouchableOpacity>
     </View>
+
   );
 };
+
+
+
+
 
 const CustomAdminDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
@@ -227,40 +233,28 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         </View>
       </View>
 
+<View style={{paddingHorizontal: 15}}>
+    <View style={{borderBottomWidth: 1, borderColor: '#dcdcdc', paddingBottom: 5, marginBottom: 5}}>
+      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
+      <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
+      <Title style={styles.titleStyle}>Home</Title>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
         <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>My Account</Title>
       </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
-         <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Home</Title>
-      </TouchableOpacity>
+    </View>
 
       <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
         <Icon2 name="package-variant" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>View Inventory</Title>
-      </TouchableOpacity>
-
-      {/* <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')} style={styles.drawerItem}>
-        <Icon2 name="progress-clock" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Pending Requests</Title>
-      </TouchableOpacity> */}
-
-      <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
-        <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Activity Log</Title>
-      </TouchableOpacity>
+      </TouchableOpacity>   
 
       <TouchableOpacity onPress={() => navigation.navigate('RequestLogScreen')} style={styles.drawerItem}>
         <Icon2 name="book-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Request Log</Title>
       </TouchableOpacity>
-
-      {/* <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
-        <Icon2 name="qrcode" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>QR Scanner</Title>
-      </TouchableOpacity> */}
 
       <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
         <Icon2 name="hand-extended-outline" size={25} style={styles.icon} />
@@ -272,9 +266,18 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Capex Request List</Title>
       </TouchableOpacity>
 
+      <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
+        <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Activity Log</Title>
+      </TouchableOpacity>
+</View>
     </View>
   );
 };
+
+
+
+
 
 const CustomSuperUserDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
@@ -502,7 +505,6 @@ const styles = StyleSheet.create({
 
   drawerContent: {
     flex: 1,
-    
     height: '100%',
     backgroundColor: 'white', 
     fontFamily: 'sans-serif'
@@ -547,9 +549,9 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    paddingHorizontal: 10,
     backgroundColor: '#ffffff',
-    marginBottom: 10,
+    paddingVertical: 5,
     color: '#333',
   },
 
