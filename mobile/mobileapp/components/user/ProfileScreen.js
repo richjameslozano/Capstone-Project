@@ -230,7 +230,7 @@ export default function ProfileScreen({ navigation }) {
 
       <TouchableOpacity 
         style={styles.logoutButton}
-        onPress={handleLogout}
+        // onPress={navigation.navigate('PolicyScreen')}
       >
         <Icon name='shield-check-outline' size={20} color='#6abce2'/>
         <Text style={{fontWeight: 'bold', fontSize: 15, color: '#6abce2'}}>Policy</Text>

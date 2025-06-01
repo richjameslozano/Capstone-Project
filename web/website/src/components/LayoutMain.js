@@ -409,19 +409,9 @@ const adminMenuItems = [
       label: "Requisition",
     },
     {
-      key: "/main/request-list",
-      icon: <SnippetsOutlined />,
-      label: "Request List",
-    },
-    {
       key: "/main/search-items",
       icon: <SearchOutlined/>,
       label: "Search Items",
-    },
-    {
-      key: "/main/activity-log",
-      icon: <ClockCircleOutlined />,
-      label: "Activity Log",
     },
     {
       key: "/main/orders",
@@ -437,6 +427,11 @@ const adminMenuItems = [
       key: "/main/return-items",
       icon: <RollbackOutlined />,
       label: "Return Items",
+    },
+        {
+      key: "/main/activity-log",
+      icon: <ClockCircleOutlined />,
+      label: "Activity Log",
     },
     {
       key: "logout",

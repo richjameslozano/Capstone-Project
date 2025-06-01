@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
@@ -15,6 +15,25 @@ export default StyleSheet.create({
     marginBottom: 10, 
     marginTop: 120,
   },
+
+
+      pendingHeader:{
+        position: 'absolute',
+            backgroundColor: '#fff',
+            flex: 1,
+            paddingTop: StatusBar.currentHeight+15,
+            left: 0,
+            right:0,
+            flexDirection: 'row',
+            paddingBottom: 10,
+            paddingHorizontal: 15,
+            alignItems: 'center',
+            justifyContent:'space-between',
+            borderBottomWidth: 1,
+            borderColor: '#e9ecee',
+             zIndex: 999
+      },
+
 
   table: {
     width: '100%',
