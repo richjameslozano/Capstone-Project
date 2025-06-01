@@ -133,6 +133,29 @@ const Inventory = () => {
     return () => unsubscribe(); // Clean up the listener on unmount
   }, []);
 
+  // useEffect(() => {
+  //   const fetchInventory = async () => {
+  //     try {
+  //       const response = await fetch('https://nuls-8c12b.web.app/api/getInventory');
+  //       const data = await response.json();
+
+  //       if (data.success && data.items) {
+  //         setDataSource(data.items);
+  //         setCount(data.count);
+  //       } else {
+  //         console.warn('No inventory data:', data.message || 'Unknown reason');
+  //         setDataSource([]);
+  //         setCount(0);
+  //       }
+  //     } catch (error) {
+  //       console.error('Error fetching inventory from backend:', error);
+  //     }
+  //   };
+
+  //   fetchInventory();
+  // }, []);
+
+
   useEffect(() => {
     if (isEditModalVisible) {
       const currentCategory = editForm.getFieldValue("category");
