@@ -20,6 +20,18 @@
   border-right: none;
 }
 
+/* Top-level menu items and single items */
+.custom-menu > .ant-menu-item,
+.custom-menu > .ant-menu-submenu > .ant-menu-submenu-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+/* Submenu items (children under top-level submenu) */
+.custom-menu .ant-menu-sub {
+  font-size: 12px;
+}
+
 /* Style selected item */
 .custom-menu .ant-menu-item-selected {
   background-color: #19344a !important;
