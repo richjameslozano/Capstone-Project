@@ -6,8 +6,9 @@ import { db } from '../../backend/firebase/FirebaseConfig';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/adminStyle/InventoryStocksStyle';
 import Header from '../Header';
+import { useNavigation } from '@react-navigation/native';
 
-export default function InventoryStocks({ navigation }) {
+export default function InventoryStocks({ }) {
   const [inventoryItems, setInventoryItems] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
@@ -19,6 +20,7 @@ export default function InventoryStocks({ navigation }) {
   const [isOpen, setIsOpen] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('All');
 
+  const navigation = useNavigation()
 
   const [headerHeight, setHeaderHeight] = useState(0);
   const handleHeaderLayout = (event) => {
@@ -121,7 +123,7 @@ const formatCondition = (cond) => {
   return (
     <View style={styles.container}>
       <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-                     <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                                      <Icon name="keyboard-backspace" size={28} color="black" />
                                    </TouchableOpacity>
 

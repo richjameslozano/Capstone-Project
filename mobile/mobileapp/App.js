@@ -18,7 +18,7 @@ import { LogBox } from 'react-native';
 
 import ActivityLogScreen from './components/admin/ActivityLogScreen';
 import LoginScreen from './components/LoginScreen2';
-import UserDashboard from './components/user/UserDashboard';
+import UserHome from './components/user/UserHome';
 import CalendarScreen from './components/user/CalendarScreen';
 import PolicyScreen from './components/PolicyScreen';
 import ProfileScreen from './components/user/ProfileScreen';
@@ -45,6 +45,7 @@ import ItemListScreen from './components/admin/ItemListScreen';
 import CameraShowItems from './components/admin/CameraShowItems';
 import QRScanScreen from './components/admin/QRScanScreen';
 import CameraUpdateItems from './components/admin/CameraUpdateItems';
+import LabTechHome from './components/admin/LabTechHome';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -124,7 +125,7 @@ const CustomDrawerContent = ({ navigation }) => {
 
       <View style={{paddingHorizontal: 15}}>
     <View style={{borderBottomWidth: 1, borderColor: '#dcdcdc', paddingBottom: 5, marginBottom: 5}}>
-      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
+      <TouchableOpacity onPress={() => navigation.navigate('UserHome')} style={styles.drawerItem}>
       <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
       <Title style={styles.titleStyle}>Home</Title>
       </TouchableOpacity>
@@ -331,7 +332,7 @@ const CustomSuperUserDrawerContent = ({ navigation }) => {
 
       <View style={{paddingHorizontal: 15}}>
          <View style={{borderBottomWidth: 1, borderColor: '#dcdcdc', paddingBottom: 5, marginBottom: 5}}>
-      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
+      <TouchableOpacity onPress={() => navigation.navigate('LabTechHome')} style={styles.drawerItem}>
       <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
       <Title style={styles.titleStyle}>Home</Title>
       </TouchableOpacity>
@@ -373,11 +374,11 @@ function UserDrawer() {
   return (
     <Drawer.Navigator
     
-      initialRouteName="InventoryScreen"
+      initialRouteName="UserHome"
       screenOptions={{ headerShown: false }}
       drawerContent={(props) => <CustomDrawerContent {...props} />}
     >
-      <Drawer.Screen name="UserDashboard" component={UserDashboard} />
+      <Drawer.Screen name="UserHome" component={UserHome} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
       <Drawer.Screen name="PolicyScreen" component={PolicyScreen} />
       <Drawer.Screen name="OrdersScreen" component={OrdersScreen} />
@@ -426,11 +427,11 @@ const AdminDrawer = () => {
 const SuperUserDrawer = () => {
   return (
     <Drawer.Navigator
-      initialRouteName="Admin2Dashboard"
+      initialRouteName="LabTechHome"
       screenOptions={{ headerShown: false }}
       drawerContent={(props) => <CustomSuperUserDrawerContent {...props} />}
     >
-      <Drawer.Screen name="Admin2Dashboard" component={Admin2Dashboard} />
+      <Drawer.Screen name="LabTechHome" component={LabTechHome} />
       <Drawer.Screen name="PendingRequestScreen" component={PendingRequestScreen} />
       <Drawer.Screen name="InventoryScreen" component={InventoryScreen} />
       <Drawer.Screen name="CameraScreen" component={CameraScreen} />

@@ -69,7 +69,7 @@ const QRScanScreen = () => {
     >
     <View style={styles.container2}>
       <View style={styles.qrHeader} onLayout={handleHeaderLayout}>
-        <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.backButton}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                                               <Icon name="keyboard-backspace" size={28} color="white" />
                                             </TouchableOpacity>
         <View>
