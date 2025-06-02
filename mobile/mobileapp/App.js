@@ -122,11 +122,18 @@ const CustomDrawerContent = ({ navigation }) => {
         </View>
       </View>
 
-    
+      <View style={{paddingHorizontal: 15}}>
+    <View style={{borderBottomWidth: 1, borderColor: '#dcdcdc', paddingBottom: 5, marginBottom: 5}}>
+      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
+      <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
+      <Title style={styles.titleStyle}>Home</Title>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
         <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>My Account</Title>
       </TouchableOpacity>
+    </View>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('InventoryScreen')}>
         <Icon2 name="clipboard-list-outline" size={25} style={styles.icon} />
@@ -148,25 +155,11 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Activity Log</Title>
       </TouchableOpacity>
 
-      {/* <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CalendarScreen')}>
-        <Icon2 name="calendar-month" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Calendar</Title>
-      </TouchableOpacity> */}
-
-      {/* <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserHistoryLogScreen')}>
-        <Icon2 name="file-document-outline" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Request List</Title>
-      </TouchableOpacity> */}
-
-      {/* <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('PolicyScreen')}>
-        <Icon2 name="shield-outline" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Policy</Title>
-      </TouchableOpacity> */}
-
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CapexRequestScreen')}>
         <Icon2 name="cash-multiple" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Capex Request</Title>
       </TouchableOpacity>
+      </View>
     </View>
 
   );
@@ -336,25 +329,24 @@ const CustomSuperUserDrawerContent = ({ navigation }) => {
         </View>
       </View>
 
+      <View style={{paddingHorizontal: 15}}>
+         <View style={{borderBottomWidth: 1, borderColor: '#dcdcdc', paddingBottom: 5, marginBottom: 5}}>
+      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
+      <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
+      <Title style={styles.titleStyle}>Home</Title>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('ProfileScreen')} activeOpacity={0.5}>
         <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>My Account</Title>
       </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate('Admin2Dashboard')} style={styles.drawerItem}>
-         <Icon2 name="view-dashboard-outline" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Dashboard</Title>
-      </TouchableOpacity>
+    </View>
 
       <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
         <Icon2 name="package-variant" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Inventory</Title>
       </TouchableOpacity>
 
-      {/* <TouchableOpacity onPress={() => navigation.navigate('PendingRequestScreen')} style={styles.drawerItem}>
-        <Icon2 name="progress-clock" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Pending Requests</Title>
-      </TouchableOpacity> */}
 
       <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
         <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
@@ -366,20 +358,13 @@ const CustomSuperUserDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Request Log</Title>
       </TouchableOpacity>
 
-      {/* <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
-        <Icon2 name="qrcode" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>QR Scanner</Title>
-      </TouchableOpacity> */}
 
       <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
         <Icon2 name="hand-extended-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Borrow Catalog</Title>
       </TouchableOpacity>
+</View>
 
-      {/* <TouchableOpacity onPress={() => navigation.navigate('CapexRequestListScreen')} style={styles.drawerItem}>
-        <Icon2 name="cash-multiple" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Capex Request List</Title>
-      </TouchableOpacity> */}
     </View>
   );
 };
