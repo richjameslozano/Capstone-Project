@@ -903,27 +903,30 @@ const printPdf = () => {
   //   setIsEditModalVisible(true);
   // };
 
-    const editItem = (record) => {
-      editForm.resetFields();
-      setEditingItem(record);
-      setSelectedCategory(record.category);
+  const editItem = (record, clearFields = true) => {
+  editForm.resetFields();
+  setEditingItem(record);
+  setSelectedCategory(record.category);
 
-      // ✅ Check if expiry date exists
-      setHasExpiryDate(!!record.expiryDate); // or: based on category logic if preferred
+  const hasExpiry = record.category === "Chemical" || record.category === "Reagent";
+  setHasExpiryDate(hasExpiry); // This controls if the Expiry field is shown
 
-      // ✅ Set form fields
-      editForm.setFieldsValue({
-        quantity: record.quantity,
-        expiryDate: record.expiryDate ? dayjs(record.expiryDate) : null, // ← include this
-        condition: {
-          Good: record.condition?.Good ?? 0,
-          Defect: record.condition?.Defect ?? 0,
-          Damage: record.condition?.Damage ?? 0,
-        },
-      });
+  editForm.setFieldsValue({
+    quantity: clearFields ? null : record.quantity,
+    expiryDate: hasExpiry
+      ? (clearFields ? null : (record.expiryDate ? dayjs(record.expiryDate) : null))
+      : null,
+    condition: {
+      Good: record.condition?.Good ?? 0,
+      Defect: record.condition?.Defect ?? 0,
+      Damage: record.condition?.Damage ?? 0,
+    },
+  });
 
-      setIsEditModalVisible(true);
-    };
+  setIsEditModalVisible(true);
+};
+
+
     
   // const updateItem = async (values) => {
   //   const safeValues = {
@@ -1193,14 +1196,10 @@ const printPdf = () => {
 const updateItem = async (values) => {
   console.log("✅ Raw incoming values:", values);
 
-  const isChemicalOrReagent = editingItem.category === "Chemical" || editingItem.category === "Reagent";
+  const isChemicalOrReagent =
+    editingItem.category === "Chemical" || editingItem.category === "Reagent";
 
-  const safeValues = {
-    quantity: Number(values.quantity) || 0,
-    ...(isChemicalOrReagent ? {} : {
-      condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
-    }),
-  };
+  const addedQuantity = Number(values.quantity) || 0;
 
   try {
     const snapshot = await getDocs(collection(db, "inventory"));
@@ -1211,39 +1210,32 @@ const updateItem = async (values) => {
       if (data.itemId === editingItem.itemId) {
         const inventoryId = docItem.id;
         const itemRef = doc(db, "inventory", inventoryId);
-
         const existingLabRoom = data.labRoom;
+
         if (!existingLabRoom) {
-          console.warn("❌ Existing item has no labRoom, cannot update labRoom items subcollection.");
+          console.warn("❌ Item has no labRoom, cannot update labRoom/items subcollection.");
           return;
         }
 
-        const updatedData = { ...safeValues, labRoom: existingLabRoom };
+        // ✅ Compute new condition and total quantity
+        const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
+        const newCondition = {
+          Good: prevCondition.Good + addedQuantity,
+          Defect: prevCondition.Defect,
+          Damage: prevCondition.Damage,
+        };
 
-        if (isChemicalOrReagent) {
-          updatedData.quantity = (Number(data.quantity) || 0) + (Number(values.quantity) || 0);
-          if (values.expiryDate) {
-            updatedData.expiryDate = values.expiryDate.format("YYYY-MM-DD");
-          }
-        } else {
-          const prevCond = data.condition || { Good: 0, Defect: 0, Damage: 0 };
-          const newCond = values.condition || { Good: 0, Defect: 0, Damage: 0 };
+        const updatedData = {
+          labRoom: existingLabRoom,
+          quantity: (Number(data.quantity) || 0) + addedQuantity,
+          condition: newCondition,
+        };
 
-          const updatedGood = (Number(prevCond.Good) || 0) + (Number(newCond.Good) || 0);
-          const updatedDefect = (Number(prevCond.Defect) || 0) + (Number(newCond.Defect) || 0);
-          const updatedDamage = (Number(prevCond.Damage) || 0) + (Number(newCond.Damage) || 0);
-
-          updatedData.condition = {
-            Good: updatedGood,
-            Defect: updatedDefect,
-            Damage: updatedDamage,
-          };
-
-          // 🔥 Now update total inventory balance
-          updatedData.quantity = updatedGood + updatedDefect + updatedDamage;
-
+        if (isChemicalOrReagent && values.expiryDate) {
+          updatedData.expiryDate = values.expiryDate.format("YYYY-MM-DD");
         }
 
+        // 🔄 Update inventory document
         await updateDoc(itemRef, updatedData);
 
         setIsNotificationVisible(true);
@@ -1258,9 +1250,8 @@ const updateItem = async (values) => {
           prevData.map((item) => (item.id === editingItem.id ? updatedItem : item))
         );
 
-        const roomNumber = existingLabRoom.toString().padStart(4, '0');
-        const itemId = data.itemId;
-
+        // 🔄 Update labRoom subcollection
+        const roomNumber = existingLabRoom.toString().padStart(4, "0");
         const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
         const labRoomSnapshot = await getDocs(labRoomQuery);
 
@@ -1268,56 +1259,41 @@ const updateItem = async (values) => {
           const labRoomDoc = labRoomSnapshot.docs[0];
           const labRoomRef = labRoomDoc.ref;
 
-          const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
+          const labRoomItemRef = doc(collection(labRoomRef, "items"), data.itemId);
           const labRoomItemSnap = await getDoc(labRoomItemRef);
-
-          const userId = localStorage.getItem("userId");
-          const userName = localStorage.getItem("userName") || "User";
 
           if (labRoomItemSnap.exists()) {
             await updateDoc(labRoomItemRef, updatedData);
 
-            let stockLogPayload = {};
-            let noOfItems = 0;
-
-            if (isChemicalOrReagent) {
-              noOfItems = Number(values.quantity) || 0;
-              stockLogPayload = {
-                noOfItems,
-                expiryDate: values.expiryDate ? values.expiryDate.format("YYYY-MM-DD") : null,
-              };
-            } else {
-              const newGoodQty = Number(values.condition?.Good) || 0;
-              stockLogPayload = { noOfItems: newGoodQty };
-            }
-
+            // 🧾 Stock log logic
             const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
             const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
             const latestSnapshot = await getDocs(latestLogQuery);
 
             let newDeliveryNumber = "DLV-00001";
             if (!latestSnapshot.empty) {
-              const latestDoc = latestSnapshot.docs[0];
-              const lastDeliveryNumber = latestDoc.data().deliveryNumber;
+              const lastDeliveryNumber = latestSnapshot.docs[0].data().deliveryNumber;
               const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
               if (match) {
-                const lastNumber = parseInt(match[1], 10);
-                const nextNumber = (lastNumber + 1).toString().padStart(5, "0");
-                newDeliveryNumber = `DLV-${nextNumber}`;
+                const nextNum = (parseInt(match[1], 10) + 1).toString().padStart(5, "0");
+                newDeliveryNumber = `DLV-${nextNum}`;
               }
             }
 
-            await addDoc(stockLogRef, {
+            const logPayload = {
               date: new Date().toISOString().split("T")[0],
               deliveryNumber: newDeliveryNumber,
               createdAt: serverTimestamp(),
-              ...stockLogPayload,
-            });
+              noOfItems: addedQuantity,
+              ...(isChemicalOrReagent && values.expiryDate && {
+                expiryDate: values.expiryDate.format("YYYY-MM-DD"),
+              }),
+            };
 
+            await addDoc(stockLogRef, logPayload);
           } else {
-            console.warn(`⚠️ Item ${itemId} not found in labRoom`);
+            console.warn(`⚠️ Item ${data.itemId} not found in labRoom`);
           }
-
         } else {
           console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
         }
@@ -1328,12 +1304,20 @@ const updateItem = async (values) => {
         form.resetFields();
       }
     });
-
   } catch (error) {
     console.error("Error updating document in Firestore:", error);
   }
 };
 
+
+useEffect(() => {
+  if (isEditModalVisible) {
+    form.setFieldsValue({
+      quantity: undefined,
+      expiryDate: null
+    });
+  }
+}, [isEditModalVisible]);
 
 
   const printQRCode = (record) => {
@@ -2191,19 +2175,17 @@ const updateItem = async (values) => {
                       Archive
                     </Button>
 
-                    <Button
-                      type="link"
-                      icon={<EditOutlined />}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedRow(selectedRow);
-                        setIsEditModalVisible(true);
-                        editItem(selectedRow);
-                      }}
-                      style={{ marginRight: 12 }}
-                    >
-                      Update Stock
-                    </Button>
+                   <Button
+                    type="link"
+                    icon={<EditOutlined />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedRow(selectedRow);
+                      editItem(selectedRow, true); // clears quantity & expiry
+                    }}
+                  >
+                    Update Stock
+                  </Button>
 
                     </div>
                   </div>
@@ -2357,9 +2339,6 @@ const updateItem = async (values) => {
                             return Promise.resolve();
                           }
 
-                          return Promise.reject(
-                            new Error("Sum of Good, Defect, and Damage must equal Quantity")
-                          );
                         },
                       }),
                     ]}
@@ -2371,11 +2350,11 @@ const updateItem = async (values) => {
                     <Row gutter={16}>
                       <Col span={12}>
                         <Form.Item
-                          name="expiryDate"
                           label="Expiry Date"
-                          rules={[{ required: true, message: "Please select expiry date" }]}
-                        >
-                          <DatePicker style={{ width: "100%" }} />
+                            name="expiryDate"
+                            rules={[{ required: true, message: "Please select expiry date" }]}
+                          >
+                            <DatePicker style={{ width: "100%" }} />
                         </Form.Item>
                       </Col>
                     </Row>
@@ -2448,7 +2427,7 @@ const updateItem = async (values) => {
               {selectedCategory !== "Chemical" && selectedCategory !== "Reagent" && (
                 <Row gutter={16}>
                   <Col span={8}>
-                    <Form.Item
+                    {/* <Form.Item
                       name={["condition", "Good"]}
                       label="Good"
                       rules={[{ required: true, message: "Enter Good qty" }]}
@@ -2464,17 +2443,17 @@ const updateItem = async (values) => {
                       rules={[{ required: true, message: "Enter Defect qty" }]}
                     >
                       <Input type="number" min={0} />
-                    </Form.Item>
-                  </Col>
+                    </Form.Item> */}
+                  {/* </Col> */}
 
-                  <Col span={8}>
+                  {/* <Col span={8}>
                     <Form.Item
                       name={["condition", "Damage"]}
                       label="Damage"
                       rules={[{ required: true, message: "Enter Damage qty" }]}
                     >
-                      <Input type="number" min={0} />
-                    </Form.Item>
+                      <Input type="number" min={0} /> */}
+                    {/* </Form.Item> */}
                   </Col>
                 </Row>
               )}
