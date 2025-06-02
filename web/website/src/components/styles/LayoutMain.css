@@ -21,7 +21,6 @@
 /* Style the menu background (optional if Sider handles it) */
 .custom-menu {
   background-color: transparent;
-  font-size: 14px;
   font-weight: 500;
   border-right: none;
 }
@@ -29,13 +28,13 @@
 /* Top-level menu items and single items */
 .custom-menu > .ant-menu-item,
 .custom-menu > .ant-menu-submenu > .ant-menu-submenu-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
 }
 
 /* Submenu items (children under top-level submenu) */
 .custom-menu .ant-menu-sub {
-  font-size: 12px;
+  font-size: 14px;
 }
 
 /* Style selected item */

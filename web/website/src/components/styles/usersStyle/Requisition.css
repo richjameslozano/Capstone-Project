@@ -141,6 +141,11 @@
   text-align: left;
 }
 
+.usage-container{
+display: flex;
+gap: 15px;
+}
+
 .usage-type-dropdown {
   margin-left: 10px;
   padding: 8px;
@@ -159,6 +164,7 @@
 .room-container {
   flex: 1;
 }
+
 
 .requisition-container {
   display: flex;

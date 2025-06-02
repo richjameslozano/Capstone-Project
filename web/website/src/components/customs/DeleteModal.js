@@ -27,10 +27,25 @@ const DeleteModal = ({ visible, onClose, item, onDeleteSuccess, setDataSource })
           await deleteDoc(doc(db, 'inventory', inventoryId));
 
           // Step 3: Delete from labRoom if labRoom and itemId exist
+          // if (data.labRoom && data.itemId) {
+          //   const labRoomRef = doc(db, "labRoom", data.labRoom, "items", data.itemId);
+          //   await deleteDoc(labRoomRef);
+          //   console.log(`✅ Removed from labRoom/${data.labRoom}/items/${data.itemId}`);
+          // }
+
           if (data.labRoom && data.itemId) {
-            const labRoomRef = doc(db, "labRoom", data.labRoom, "items", data.itemId);
-            await deleteDoc(labRoomRef);
-            console.log(`✅ Removed from labRoom/${data.labRoom}/items/${data.itemId}`);
+            const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", data.labRoom));
+            const labRoomSnapshot = await getDocs(labRoomQuery);
+
+            if (!labRoomSnapshot.empty) {
+              const labRoomDoc = labRoomSnapshot.docs[0];
+              const labRoomRef = labRoomDoc.ref;
+
+              const labRoomItemRef = doc(collection(labRoomRef, "items"), data.itemId);
+              await deleteDoc(labRoomItemRef);
+
+              console.log(`✅ Removed from labRoom/${labRoomRef.id}/items/${data.itemId}`);
+            }
           }
         }
       }
