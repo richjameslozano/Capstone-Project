@@ -16,6 +16,7 @@ const { Option } = Select;
 
 const PendingRequest = () => {
   const [pageTitle, setPageTitle] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [checkedItems, setCheckedItems] = useState({});
   const [approvedRequests, setApprovedRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
@@ -37,6 +38,31 @@ const PendingRequest = () => {
  const [pRequests, setPRequests] = useState([]);
 const [loading, setLoading] = useState(true);
 
+// const filteredRequests = requests.filter((request) => {
+//   const searchLower = searchTerm.toLowerCase();
+//   return (
+//     request.userName?.toLowerCase().includes(searchLower) ||
+//     request.room?.toLowerCase().includes(searchLower) ||
+//     request.course?.toLowerCase().includes(searchLower) ||
+//     request.courseDescription?.toLowerCase().includes(searchLower)
+//   );
+// });
+ const [selectedFilter, setSelectedFilter] = useState('All');
+const filteredRequests = requests.filter((request) => {
+  // Filter by usage type
+  const matchesFilter =
+    selectedFilter === 'All' || request.usageType === selectedFilter;
+
+  // Filter by search term
+  const searchLower = searchTerm.toLowerCase();
+  const matchesSearch =
+    request.userName?.toLowerCase().includes(searchLower) ||
+    request.room?.toLowerCase().includes(searchLower) ||
+    request.course?.toLowerCase().includes(searchLower) ||
+    request.courseDescription?.toLowerCase().includes(searchLower);
+
+  return matchesFilter && matchesSearch;
+});
 useEffect(() => {
   const userRequestRef = collection(db, "userrequests");
   const q = query(userRequestRef, orderBy("timestamp", "desc"));
@@ -1814,7 +1840,7 @@ const toggleGroup = (label) => {
     });
   }, [groupedRequests]);
 
- const [selectedFilter, setSelectedFilter] = useState('All');
+
 
 const getFilteredRequests = () => {
   
@@ -1838,7 +1864,9 @@ const getFilteredRequests = () => {
   });
 };
 
-const filteredRequests = getFilteredRequests();
+// const filteredRequests = getFilteredRequests();
+// Filter requests based on search term
+
 const categorizedRequests = groupByDueDateCategory(filteredRequests);
 
 useEffect(() => {
@@ -1887,7 +1915,8 @@ useEffect(() => {
                 </button>
               ))}
 
-              <input placeholder="Search" className="search-input" />
+              <input placeholder="Search" className="search-input" value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}/>
             </div>
 
         
@@ -1944,7 +1973,7 @@ useEffect(() => {
       key={request.id}
       onClick={() => handleViewDetails(request)}
       className="request-card"
-      style={{border: isPastDue ? '1px solid #ffb1a8' : '1px solid #ccc'}}
+      style={{border: isPastDue ? '1px solidrgb(209, 168, 255)' : '1px solid #ccc'}}
     >
       <div style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center' }}>
         <p

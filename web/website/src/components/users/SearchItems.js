@@ -403,6 +403,12 @@ const SearchItems = () => {
                     {selectedItem.quantity}
                   </Descriptions.Item>
 
+                  {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit && (
+                    <Descriptions.Item label="Unit">
+                      {selectedItem.unit}
+                    </Descriptions.Item>
+                  )}
+
                   {/* <Descriptions.Item label="Quantity">
                     {selectedItem.quantity}
                     {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}

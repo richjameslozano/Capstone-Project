@@ -769,6 +769,9 @@ const printPdf = () => {
       department: values.department,
       type: values.type,
       status: "Available",
+      unit: ["Chemical", "Reagent"].includes(values.category)
+      ? `${values.unit} ${values.unitType}`
+      : null,
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
@@ -1921,6 +1924,28 @@ useEffect(() => {
                   </Form.Item>
                 </Col>
 
+                {["Chemical", "Reagent"].includes(selectedCategory) && (
+                  <Col span={8}>
+                    <Form.Item
+                      name="unit"
+                      label="Unit"
+                      rules={[{ required: true, message: "Please select a unit!" }]}
+                    >
+                      <Input
+                        type="number"
+                        addonAfter={
+                          <Form.Item name="unitType" noStyle rules={[{ required: true }]}>
+                            <Select style={{ width: 70 }}>
+                              <Select.Option value="ml">ml</Select.Option>
+                              <Select.Option value="g">g</Select.Option>
+                            </Select>
+                          </Form.Item>
+                        }
+                      />
+                    </Form.Item>
+                  </Col>
+                )}
+
                 {/* {["Chemical", "Reagent"].includes(selectedCategory) && (
                   <Col span={8}>
                     <Form.Item
@@ -2110,10 +2135,12 @@ useEffect(() => {
                           </td>
                         </tr>
 
-                        <tr>
-                          <th>Category</th>
-                          <td>{selectedRow.category}</td>
-                        </tr>
+                        {["Chemical", "Reagent"].includes(selectedRow.category) && selectedRow.unit && (
+                          <tr>
+                            <th>Unit</th>
+                            <td>{selectedRow.unit}</td>
+                          </tr>
+                        )}
 
                         <tr>
                           <th>Item Type</th>
@@ -2134,18 +2161,27 @@ useEffect(() => {
                           <th>Status</th>
                           <td>{selectedRow.status}</td>
                         </tr>
+
                         <tr>
                           <th>Department</th>
                           <td>{selectedRow.department}</td>
                         </tr>
+
+                        <tr>
+                          <th>Category</th>
+                          <td>{selectedRow.category}</td>
+                        </tr>
+
                         <tr>
                           <th>Condition</th>
                           <td>{formatCondition(selectedRow.condition, selectedRow.category)}</td>
                         </tr>
+                        
                         <tr>
                           <th>Lab/ Stock Room</th>
                           <td>{selectedRow.labRoom}</td>
                         </tr>
+                        
                         <tr>
                           <th>Date of Expiry</th>
                           <td>{selectedRow.expiryDate || 'N/A'}</td>
