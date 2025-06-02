@@ -634,7 +634,224 @@ const Requisition = () => {
   //   }
   // };  
 
-   const finalizeRequest = async () => {
+  //  const finalizeRequest = async () => {
+  //   let isValid = true;
+  //   let idsToRemove = [];
+  
+  //   if (!dateRequired) {
+  //     setNotificationMessage("Please select a date!.");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+  
+  //   if (!program) {
+  //     setProgramError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setProgramError(false);
+  //   }
+
+  //   if (!course) {
+  //     setCourseError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setCourseError(false);
+  //   }
+
+  //   if (!usageType) {
+  //     setUsageError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setUsageError(false);
+  //   }
+  
+  //   if (!room) {
+  //     setRoomError(true);
+  //     isValid = false;
+
+  //   } else {
+  //     setRoomError(false);
+  //   }
+
+  //   if (usageType === "Others" && !customUsageType.trim()) {
+  //     setNotificationMessage("Please specify the usage type.");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+
+  //   if (!timeFrom || !timeTo) {
+  //     setNotificationMessage("Please select both 'Time From' and 'Time To'!");
+  //     setIsNotificationVisible(true);
+
+  //     isValid = false;
+
+  //   } else if (new Date(`1970-01-01T${timeFrom}`) >= new Date(`1970-01-01T${timeTo}`)) {
+  //     setNotificationMessage("'Time From' must be earlier than 'Time To'!");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+    
+  //   if (mergedData.length === 0) {
+  //     setNotificationMessage("Please add items to the request list!");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+
+  //   console.log("Original mergedData:", mergedData);
+  //   // Filter out incomplete items from mergedData
+  //   const filteredMergedData = mergedData.filter(item =>
+  //     // item.itemName && item.category && item.quantity && item.labRoom &&
+  //     item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
+  //     item.status && item.condition && item.department && item.unit
+  //   );
+
+  //   // Show a warning if all items are incomplete
+  //   if (filteredMergedData.length === 0) {
+  //     setNotificationMessage("Please complete all required item fields before finalizing.");
+  //     setIsNotificationVisible(true);
+  //     isValid = false;
+  //   }
+  //   console.log("Filtered mergedData:", filteredMergedData);
+
+  // // for (const item of filteredMergedData) {
+  // //   if (item.category.toLowerCase() === "glasswares") {
+  // //     // Assuming volume property is named "volume" and must be > 0
+  // //     if (!item.volume || Number(item.volume) <= 0) {
+  // //       setNotificationMessage(`Please specify a valid volume for glassware item "${item.itemName}".`);
+  // //       setIsNotificationVisible(true);
+  // //       isValid = false;
+  // //       break; // no need to check further once invalid
+  // //     }
+  // //   }
+  // // }
+
+  //   if (isValid) {
+  //     try {
+  //       const userId = localStorage.getItem("userId");
+  
+  //       if (userId) {
+  //         // Fetch the user's name from the accounts collection
+  //         const userDocRef = doc(db, "accounts", userId);
+  //         const userDocSnapshot = await getDoc(userDocRef);
+  
+  //         if (!userDocSnapshot.exists()) {
+  //           message.error("User not found.");
+  //           return;
+  //         }
+  
+  //         const userName = userDocSnapshot.data().name;
+
+  //         const finalUsageType = usageType === "Others" ? customUsageType : usageType;
+  
+  //         // Add data to the user's requests collection
+  //         const userRequestRef = collection(db, "accounts", userId, "userRequests");
+  //         const requestData = {
+  //           dateRequired,
+  //           timeFrom,
+  //           timeTo,
+  //           program,
+  //           course,
+  //           courseDescription,
+  //           // usageType,
+  //           usageType: finalUsageType,
+  //           room,
+  //           reason,
+  //           filteredMergedData,
+  //           userName,
+  //           timestamp: Timestamp.now(),
+  //         };
+  
+  //         // await addDoc(userRequestRef, requestData);
+
+  //         const newUserDocRef = await addDoc(userRequestRef, requestData);
+  //         const generatedId = newUserDocRef.id;
+  //         await updateDoc(newUserDocRef, { iid: generatedId });
+  
+  //         // Add to root userrequests collection
+  //         // const userRequestsRootRef = collection(db, "userrequests");
+  //         // const newUserRequestRef = doc(userRequestsRootRef);
+  //         const userRequestsRootRef = doc(db, "userrequests", generatedId);
+  //         await setDoc(userRequestsRootRef, {
+  //           ...requestData,
+  //           accountId: userId,
+  //         });
+
+  //         await logRequestOrReturn(userId, userName, "Requested Items", filteredMergedData); 
+  
+  //         const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
+  //         const querySnapshot = await getDocs(tempRequestRef);
+  
+  //         const deletionPromises = [];
+  
+  //         querySnapshot.forEach((docSnapshot) => {
+  //           const itemData = docSnapshot.data();
+  //           idsToRemove.push(itemData.id);
+  
+  //           const pendingRequestRef = collection(db, "accounts", userId, "pendingrequest");
+  
+  //           deletionPromises.push(
+  //             (async () => {
+  //               // Add to pending requests
+  //               await addDoc(pendingRequestRef, itemData);
+  
+  //               // Delete from temporaryRequests
+  //               await deleteDoc(doc(db, "accounts", userId, "temporaryRequests", docSnapshot.id));
+  
+  //               // Delete from pendingRequest if already exists
+  //               const pendingRequestDocs = await getDocs(pendingRequestRef);
+  //               pendingRequestDocs.forEach((pendingDoc) => {
+  //                 if (pendingDoc.data().id === itemData.id) {
+  //                   deletionPromises.push(deleteDoc(doc(db, "accounts", userId, "pendingrequest", pendingDoc.id)));
+  //                 }
+  //               });
+  //             })()
+  //           );
+  //         });
+  
+  //         await Promise.all(deletionPromises);
+  
+  //         // Filter out removed items from requestList
+  //         const updatedRequestList = mergedData.filter((item) => !idsToRemove.includes(item.id));
+  //         setRequestList(updatedRequestList);
+  //         localStorage.setItem('requestList', JSON.stringify(updatedRequestList));
+  
+  //         setNotificationMessage("Requisition sent successfully!");
+  //         setIsNotificationVisible(true);
+  //         setIsFinalizeVisible(false);
+  
+  //         clearTableData();
+  //         setDateRequired(null);
+  //         setTimeFrom(null);
+  //         setTimeTo(null);
+  //         setProgram("");
+  //         setCourse("");
+  //         setUsageType("");
+  //         setRoom("");
+  //         setReason("");
+  //          setCourseDescription("");
+  //         setRequestList([]);
+  //         setMergedData([]);
+  //         setTableData([]); 
+  //         console.log("MergedData after finalize:", mergedData);
+  //         console.log("TableData after finalize:", tableData);
+
+  //         localStorage.removeItem('requestList');
+
+  //       } else {
+  //         message.error("User is not logged in.");
+  //       }
+  
+  //     } catch (error) {
+  //       console.error("Error finalizing the requisition:", error);
+  //       message.error("Failed to send requisition. Please try again.");
+  //     }
+  //   }
+  // };  
+
+    const finalizeRequest = async () => {
     let isValid = true;
     let idsToRemove = [];
   
@@ -702,19 +919,47 @@ const Requisition = () => {
 
     console.log("Original mergedData:", mergedData);
     // Filter out incomplete items from mergedData
-    const filteredMergedData = mergedData.filter(item =>
-      // item.itemName && item.category && item.quantity && item.labRoom &&
-      item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
-      item.status && item.condition && item.department && item.unit
-    );
+    // const filteredMergedData = mergedData.filter(item =>
+    //   // item.itemName && item.category && item.quantity && item.labRoom &&
+    //   item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
+    //   item.status && item.condition && item.department  && item.unit
+    // );
 
-    // Show a warning if all items are incomplete
-    if (filteredMergedData.length === 0) {
-      setNotificationMessage("Please complete all required item fields before finalizing.");
-      setIsNotificationVisible(true);
-      isValid = false;
+    const normalizedData = mergedData.map(item => {
+      if (
+        item.category !== "Chemical" &&
+        item.category !== "Reagent" &&
+        (!item.unit || item.unit === null || item.unit === "")
+      ) {
+
+        return {...item, unit: "N/A"};
+      }
+
+      return item;
+    });
+
+  console.log("Normalized mergedData:", normalizedData);
+
+  const filteredMergedData = normalizedData.filter(item => {
+    const basicFieldsValid =
+      item.itemName &&
+      item.itemDetails &&
+      item.category &&
+      item.quantity &&
+      item.labRoom &&
+      item.status &&
+      item.department;
+
+    if (item.category === "Chemical" || item.category === "Reagent") {
+      return basicFieldsValid; // unit and condition optional here
+    } else {
+      const conditionValid = !!item.condition;
+      // unit can be empty or missing for non-Chem/Reagent, matching your UI logic
+      return basicFieldsValid && conditionValid;
     }
-    console.log("Filtered mergedData:", filteredMergedData);
+  });
+
+  console.log("Filtered mergedData:", filteredMergedData);
 
   // for (const item of filteredMergedData) {
   //   if (item.category.toLowerCase() === "glasswares") {
@@ -727,6 +972,28 @@ const Requisition = () => {
   //     }
   //   }
   // }
+
+    // Check if any item is incomplete (filtered list must be same length as original)
+  if (filteredMergedData.length !== normalizedData.length) {
+    setNotificationMessage("Please complete all required item fields before finalizing.");
+    setIsNotificationVisible(true);
+    isValid = false;
+  }
+
+  const sanitizeData = (data) => {
+    return data.map(item => {
+      const cleanItem = {};
+      Object.entries(item).forEach(([key, value]) => {
+        cleanItem[key] = value === undefined ? null : value;
+      });
+
+      return cleanItem;
+    });
+  };
+
+  const sanitizedFilteredData = sanitizeData(filteredMergedData);
+
+  if (!isValid) return; // Stop if validation failed
 
     if (isValid) {
       try {
@@ -759,7 +1026,7 @@ const Requisition = () => {
             usageType: finalUsageType,
             room,
             reason,
-            filteredMergedData,
+            filteredMergedData: sanitizedFilteredData,
             userName,
             timestamp: Timestamp.now(),
           };
@@ -779,7 +1046,7 @@ const Requisition = () => {
             accountId: userId,
           });
 
-          await logRequestOrReturn(userId, userName, "Requested Items", filteredMergedData); 
+          await logRequestOrReturn(userId, userName, "Requested Items", sanitizedFilteredData); 
   
           const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
           const querySnapshot = await getDocs(tempRequestRef);
