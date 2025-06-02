@@ -1728,6 +1728,10 @@ try {
       title: "Quantity",
       dataIndex: "quantity",
     },
+     {
+      title: "Unit",
+      dataIndex: "unit",
+    },
     {
       title: "Category",
       dataIndex: "category",
