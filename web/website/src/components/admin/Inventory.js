@@ -1238,6 +1238,7 @@ const updateItem = async (values) => {
             Defect: updatedDefect,
             Damage: updatedDamage,
           };
+          //
 
           // 🔥 Now update total inventory balance
           updatedData.quantity = updatedGood + updatedDefect + updatedDamage;
