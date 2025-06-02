@@ -10,12 +10,14 @@ import { db, storage } from '../../backend/firebase/FirebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
 import * as FileSystem from 'expo-file-system';
+import TermsModal from '../customs/TermsModal';
 
 export default function ProfileScreen({ navigation }) {
   const { user, logout } = useAuth();  
   const [uploading, setUploading] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [profileImage, setProfileImage] = useState(null);
+  const [isPolicy, setIsPolicy] = useState(false)
 
   useEffect(() => {
     const fetchProfileImage = async () => {
@@ -179,6 +181,11 @@ export default function ProfileScreen({ navigation }) {
           )}
         </TouchableOpacity> */}
 
+        <TermsModal
+                    visible={isPolicy}
+                    onClose={() => setIsPolicy(false)}
+                  />
+
         <View style={styles.profileImageContainer}>
           {profileImage ? (
             <Avatar.Image size={85} source={{ uri: profileImage }} />
@@ -230,7 +237,7 @@ export default function ProfileScreen({ navigation }) {
 
       <TouchableOpacity 
         style={styles.logoutButton}
-        // onPress={navigation.navigate('PolicyScreen')}
+        onPress={() => setIsPolicy(true)}
       >
         <Icon name='shield-check-outline' size={20} color='#6abce2'/>
         <Text style={{fontWeight: 'bold', fontSize: 15, color: '#6abce2'}}>Policy</Text>
