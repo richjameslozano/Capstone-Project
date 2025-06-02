@@ -142,39 +142,38 @@ useEffect(() => {
 
    //expiry
     useEffect(() => {
-    const fetchExpiryItems = async () => {
-      const inventoryRef = collection(db, "inventory");
-      const snapshot = await getDocs(inventoryRef);
+  const fetchExpiryItems = async () => {
+    const inventoryRef = collection(db, "inventory");
+    const inventorySnapshot = await getDocs(inventoryRef);
 
-      const today = new Date();
-      const EXPIRY_SOON_DAYS = 7;
+    const today = new Date();
+    const EXPIRY_SOON_DAYS = 7;
 
-      const expired = [];
-      const expiringSoon = [];
+    const expired = [];
+    const expiringSoon = [];
 
-      snapshot.forEach((doc) => {
-  const data = doc.data();
+    for (const itemDoc of inventorySnapshot.docs) {
+      const data = itemDoc.data();
+      const stockLogRef = collection(db, "inventory", itemDoc.id, "stockLog");
+      const stockSnapshot = await getDocs(stockLogRef);
 
-  // Check if expiryDate exists and is valid
-  if (!data.expiryDate) {
-    return; // skip this item, no expiry
-  }
+      stockSnapshot.forEach((logDoc) => {
+        const logData = logDoc.data();
+        const expiryRaw = logData.expiryDate;
 
-  // Convert Firestore Timestamp or string to Date
-        const expiryDate = data.expiryDate?.toDate
-          ? data.expiryDate.toDate()
-          : new Date(data.expiryDate);
+        if (!expiryRaw) return;
 
-        if (isNaN(expiryDate.getTime())) {
-          return; // skip invalid date
-        }
+        const expiryDate = typeof expiryRaw === "string"
+          ? new Date(expiryRaw)
+          : expiryRaw?.toDate?.() || new Date(expiryRaw);
 
-        const today = new Date();
+        if (isNaN(expiryDate.getTime())) return;
+
         const diffTime = expiryDate - today;
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
         const itemInfo = {
-          key: doc.id,
+          key: `${itemDoc.id}_${logDoc.id}`,
           itemName: data.itemName,
           expiryDate: expiryDate.toDateString(),
           category: data.category || "N/A",
@@ -186,12 +185,14 @@ useEffect(() => {
           expiringSoon.push(itemInfo);
         }
       });
-      setExpiredItems(expired);
-      setExpiringSoonItems(expiringSoon);
-    };
+    }
 
-    fetchExpiryItems();
-  }, []);
+    setExpiredItems(expired);
+    setExpiringSoonItems(expiringSoon);
+  };
+
+  fetchExpiryItems();
+}, []);
 
   //for item condition
   useEffect(() => {
@@ -598,5 +599,7 @@ useEffect(() => {
      </Layout>
    );
  };
+
+ //force push
  
  export default Dashboard;
