@@ -38,14 +38,30 @@ const PendingRequest = () => {
  const [pRequests, setPRequests] = useState([]);
 const [loading, setLoading] = useState(true);
 
+// const filteredRequests = requests.filter((request) => {
+//   const searchLower = searchTerm.toLowerCase();
+//   return (
+//     request.userName?.toLowerCase().includes(searchLower) ||
+//     request.room?.toLowerCase().includes(searchLower) ||
+//     request.course?.toLowerCase().includes(searchLower) ||
+//     request.courseDescription?.toLowerCase().includes(searchLower)
+//   );
+// });
+ const [selectedFilter, setSelectedFilter] = useState('All');
 const filteredRequests = requests.filter((request) => {
+  // Filter by usage type
+  const matchesFilter =
+    selectedFilter === 'All' || request.usageType === selectedFilter;
+
+  // Filter by search term
   const searchLower = searchTerm.toLowerCase();
-  return (
+  const matchesSearch =
     request.userName?.toLowerCase().includes(searchLower) ||
     request.room?.toLowerCase().includes(searchLower) ||
     request.course?.toLowerCase().includes(searchLower) ||
-    request.courseDescription?.toLowerCase().includes(searchLower)
-  );
+    request.courseDescription?.toLowerCase().includes(searchLower);
+
+  return matchesFilter && matchesSearch;
 });
 useEffect(() => {
   const userRequestRef = collection(db, "userrequests");
@@ -1824,7 +1840,7 @@ const toggleGroup = (label) => {
     });
   }, [groupedRequests]);
 
- const [selectedFilter, setSelectedFilter] = useState('All');
+
 
 const getFilteredRequests = () => {
   
