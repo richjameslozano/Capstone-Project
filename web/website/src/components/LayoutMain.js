@@ -527,14 +527,14 @@ const LayoutMain = () => {
       ? superUserMenuItems
       : userMenuItems;
 
-const SIDEBAR_WIDTH = 220;
+const SIDEBAR_WIDTH = 250;
 const COLLAPSED_WIDTH = isMobile ? 0 : 80;
 const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
 
 
   return (
-    <Layout style={{ minHeight: "100vh",  marginLeft: 20, transition: 'margin-left 0.2s' }}>
+    <Layout style={{ minHeight: "100vh",  marginLeft: 50, transition: 'margin-left 0.2s' }}>
             <Sider
               trigger={null}
               collapsible
