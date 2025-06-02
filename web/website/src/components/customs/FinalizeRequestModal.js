@@ -65,6 +65,7 @@ const FinalizeRequestModal = ({
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Item Description</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Category</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Quantity</th>
+              <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Unit</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Lab Room</th>
               <th style={{ borderBottom: "1px solid #ccc", padding: "8px" }}>Status</th>
             </tr>
@@ -76,6 +77,9 @@ const FinalizeRequestModal = ({
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.itemDetails}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.category}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.quantity}</td>
+                <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>
+                  {["Chemical", "Reagent"].includes(item.category) ? (item.unit || "N/A") : "N/A"}
+                </td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.labRoom}</td>
                 <td style={{ borderBottom: "1px solid #eee", padding: "8px" }}>{item.status}</td>
               </tr>

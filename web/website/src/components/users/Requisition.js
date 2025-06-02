@@ -10,9 +10,6 @@ import { db } from "../../backend/firebase/FirebaseConfig";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/usersStyle/Requisition.css";
-
-
-
 import SuccessModal from "../customs/SuccessModal";
 import PoliciesModal from "../Policies";
 import FinalizeRequestModal from "../customs/FinalizeRequestModal";
@@ -145,16 +142,29 @@ const Requisition = () => {
 ];
 
   useEffect(() => {
-   const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
+  //  const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
+  //     item.itemName &&
+  //     item.itemDetails &&
+  //     item.category &&
+  //     item.quantity &&
+  //     item.labRoom &&
+  //     item.status &&
+  //     item.condition &&
+  //     item.department &&
+  //     item.category
+  //   );
+
+    const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
       item.itemName &&
       item.itemDetails &&
       item.category &&
       item.quantity &&
       item.labRoom &&
       item.status &&
-      item.condition &&
+      // Only require condition if category is NOT Chemical or Reagent
+      (item.category === "Chemical" || item.category === "Reagent" ? true : item.condition) &&
       item.department &&
-      item.category
+      (["Chemical", "Reagent"].includes(item.category) ? (item.unit && item.unit.trim() !== "") : true)
     );
   
     const timeValid = timeFrom && timeTo &&
@@ -695,7 +705,7 @@ const Requisition = () => {
     const filteredMergedData = mergedData.filter(item =>
       // item.itemName && item.category && item.quantity && item.labRoom &&
       item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
-      item.status && item.condition && item.department
+      item.status && item.condition && item.department && item.unit
     );
 
     // Show a warning if all items are incomplete
@@ -996,6 +1006,7 @@ const Requisition = () => {
       status: selectedItem.status,
       condition: selectedItem.condition,
       department: selectedItem.department,
+      unit: selectedItem.unit || null,
     };
 
     // Update tableData
@@ -1043,6 +1054,7 @@ const Requisition = () => {
           quantity: newRow.quantity,
           // volume: newRow.volume, // <-- explicitly save volume here
           timestamp: Timestamp.fromDate(new Date()),
+          unit: selectedItem.unit || null,
         });
 
         setNotificationMessage("Item updated in temporary list.");
@@ -1067,151 +1079,6 @@ const Requisition = () => {
     mergeData();
   }, [requestList, tableData]);
   
-  // const columns = [
-  //   {
-  //     title: "Item Name",
-  //     dataIndex: "selectedItemId",
-  //     key: "selectedItemId",
-  //     render: (value, record, index) => {
-  //       // Get all selected item IDs except the current row
-  //       const selectedIds = mergedData
-  //         .filter((_, i) => i !== index)
-  //         .map((row) => row.selectedItemId);
-  
-  //       return (
-  //         <Select
-  //           showSearch
-  //           placeholder="Select item"
-  //           style={{ width: 100 }}
-  //           dropdownStyle={{ width: 700 }}
-  //           optionFilterProp="label"
-  //           labelInValue
-  //           value={record.selectedItem || undefined}
-  //           onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
-  //           filterOption={(input, option) =>
-  //             option?.label?.toLowerCase().includes(input.toLowerCase())
-  //           }
-  //         >
-  //           {/* Map through filtered items instead of the entire items list */}
-  //           {filteredItems.map((item) => {
-  //             // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
-  //             // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
-  //             const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-  //             const isDisabled = selectedIds.includes(item.id);
-  
-  //             return (
-  //               <Select.Option
-  //                 key={item.id}
-  //                 value={item.id}
-  //                 label={item.itemName}
-  //                 disabled={isDisabled}
-  //               >
-  //                 {label}
-  //               </Select.Option>
-  //             );
-  //           })}
-  //         </Select>
-  //       );
-  //     },
-  //   },
-  //   {
-  //     title: "Category",
-  //     dataIndex: "category",
-  //     key: "category",
-  //   },
-  //   {
-  //     title: "Quantity",
-  //     dataIndex: "quantity",
-  //     key: "quantity",
-  //     render: (value, record) => (
-  //       <Input
-  //         type="number"
-  //         min={1}
-  //         value={record.quantity}
-  //         onChange={async (e) => {
-  //           const newQuantity = Number(e.target.value);
-
-  //           // Fetch inventory details to validate the quantity
-  //           const inventoryRef = collection(db, "inventory");
-  //           const inventorySnapshot = await getDocs(inventoryRef);
-  //           const inventoryItem = inventorySnapshot.docs.find(doc => doc.id === record.selectedItemId);
-
-  //           // Check if inventory item exists and compare the quantity
-  //           if (inventoryItem) {
-  //             const availableQuantity = inventoryItem.data().quantity; // Assuming the quantity field exists in inventory
-
-  //             if (newQuantity <= availableQuantity) {
-  //               // Update local tableData if valid
-  //               const updated = tableData.map((row) =>
-  //                 row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
-  //               );
-                
-  //               setTableData(updated);
-
-  //               // Update requestList too
-  //               const updatedRequestList = requestList.map((row) =>
-  //                 row.selectedItemId === record.selectedItemId ? { ...row, quantity: newQuantity } : row
-  //               );
-
-  //               setRequestList(updatedRequestList);
-  //               localStorage.setItem("requestList", JSON.stringify(updatedRequestList));
-
-  //               // Update Firestore
-  //               const userId = localStorage.getItem("userId");
-  //               if (userId) {
-  //                 const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-
-  //                 // Find the doc with this item's ID
-  //                 const snapshot = await getDocs(tempRequestRef);
-  //                 const docToUpdate = snapshot.docs.find(doc => doc.data().selectedItemId === record.selectedItemId);
-
-  //                 if (docToUpdate) {
-  //                   await updateDoc(doc(db, "accounts", userId, "temporaryRequests", docToUpdate.id), {
-  //                     quantity: newQuantity,
-  //                   });
-  //                 }
-  //               }
-
-  //             } else {
-  //               // Use the custom notification modal
-  //               handleOpenModal(`Cannot request more than the available quantity (${availableQuantity})`);
-  //             }
-
-  //           } else {
-  //             console.error("Inventory item not found.");
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   },
-  //   {
-  //     title: "Lab Room",
-  //     dataIndex: "labRoom",
-  //     key: "labRoom",
-  //   },
-  //   {
-  //     title: "Status",
-  //     dataIndex: "status",
-  //     key: "status",
-  //   },
-  //   {
-  //     title: "Department",
-  //     dataIndex: "department",
-  //     key: "department",
-  //   },
-  //   {
-  //     title: "Action",
-  //     key: "action",
-  //     render: (_, record) => (
-  //       <Button
-  //         type="text"
-  //         danger
-  //         icon={<DeleteOutlined />}
-  //         onClick={() => removeFromList(record.selectedItemId)}
-  //       />
-  //     ),
-  //   },
-  // ];
   const courseDescriptions = {
     MLSACHML: "ANALYTICAL CHEMISTRY",
     MLSBIEPC: "BIOSTATISTICS AND EPIDEMIOLOGY",
@@ -1251,7 +1118,10 @@ const Requisition = () => {
             }>
             {/* Map through filtered items instead of the entire items list */}
             {filteredItems.map((item) => {
-              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+              // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+              } | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
@@ -1346,6 +1216,18 @@ const Requisition = () => {
           }}
         />
       ),
+    },
+    {
+      title: "Unit",
+      dataIndex: "unit",
+      key: "unit",
+      render: (text, record) => {
+        // Show unit only if category is Chemical or Reagent
+        if (["Chemical", "Reagent"].includes(record.category)) {
+          return text || "N/A";
+        }
+        return "-";
+      }
     },
     {
       title: "Lab Room",
@@ -1476,7 +1358,7 @@ const Requisition = () => {
                 return {
                   ...item,
                   itemIdFromInventory: itemId,
-                  volume: item.volume ?? "N/A", 
+                  // volume: item.volume ?? "N/A", 
                 };
               })
             );
