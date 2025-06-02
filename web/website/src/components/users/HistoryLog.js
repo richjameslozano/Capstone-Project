@@ -496,6 +496,9 @@ const HistoryLog = () => {
                           <strong>{item.itemName}</strong>
                           <ul style={{ marginLeft: 20 }}>
                             <li>Quantity: {item.quantity}</li>
+                            {(item.category === "Chemical" || item.category === "Reagent") && item.unit && (
+                              <li>Unit: {item.unit}</li>
+                            )}
                             {/* {item.category && <li>Category: {item.category}</li>} */}
                             {item.category && <li>Category: {item.category}</li>}
                             {item.category === "Glasswares" && item.volume && (
@@ -519,8 +522,14 @@ const HistoryLog = () => {
                             {/* {selectedLog.action === "Request Rejected" && item.reason && (
                               <li><strong>Rejection Reason:</strong> {item.reason}</li>
                             )} */}
-                            {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
+                            {/* {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
                               <li><strong>Rejection Reason:</strong> {item.rejectionReason || item.reason}</li>
+                            )} */}
+                            {selectedLog.action === "Request Rejected" && (item.reason || item.rejectionReason) && (
+                              <>
+                                {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
+                                {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+                              </>
                             )}
                           </ul>
                         </li>

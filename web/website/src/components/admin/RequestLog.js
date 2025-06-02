@@ -546,6 +546,7 @@ const printPdf = () => {
                     itemDescription: item.itemName,
                     itemDetails: item.itemDetails,
                     quantity: item.quantity,
+                    unit: item.unit,
                     rejectionReason:
                       item.reason ||  item.rejectionReason ||
                       selectedRequest.raw?.reason || selectedRequest.raw?.rejectionReason ||
@@ -572,6 +573,12 @@ const printPdf = () => {
                     title: "Quantity",
                     dataIndex: "quantity",
                     key: "quantity",
+                  },
+                  {
+                    title: "Unit",
+                    dataIndex: "unit",
+                    key: "unit",
+                    render: (unit) => unit || "N/A",
                   },
                   ...(selectedRequest.raw?.status === "Rejected"
                     ? [

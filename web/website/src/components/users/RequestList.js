@@ -427,6 +427,12 @@ const RequestList = () => {
       key: "quantity",
     },
     {
+      title: "Unit",
+      dataIndex: "unit",
+      key: "unit",
+      render: (unit) => unit || "N/A", 
+    },
+    {
       title: "Department",
       dataIndex: "department",
       key: "department",
