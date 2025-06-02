@@ -35,7 +35,7 @@
 }
 
 .card-count{
-  color: rgb(88, 61, 61);
+  color: white;
   font-weight: 700;
   font-size: 45px;
   margin-bottom: 0px;
@@ -43,7 +43,7 @@
 
 .card-title{
   font-size: 17px;
-  color: rgb(87, 66, 66);
+  color: white;
   font-weight: bold;
 
 }
@@ -136,7 +136,9 @@ align-self: center;
 }
 
 .summary-card-icon {
-  font-size: 30px;
+  font-size: 40px;
+  color: white;
+  padding: 10px;
 }
 
 

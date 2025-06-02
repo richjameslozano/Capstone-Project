@@ -7,7 +7,27 @@ import SuccessModal from "./customs/SuccessModal";
 import CustomCalendar from "./customs/CustomCalendar";
 import PoliciesModal from "./Policies";
 import "./styles/Dashboard.css";
- 
+import {
+  UserOutlined,
+  DashboardOutlined,
+  UnorderedListOutlined,
+  FileTextOutlined,
+  AppstoreOutlined,
+  HistoryOutlined,
+  LogoutOutlined,
+  FileDoneOutlined,
+  SnippetsOutlined,
+  ClockCircleOutlined,
+  SearchOutlined,
+  ShoppingCartOutlined,
+  DollarCircleOutlined,
+  RollbackOutlined,
+  ShoppingOutlined,
+  DatabaseOutlined,
+  HomeOutlined,
+  UserSwitchOutlined,
+  IdcardOutlined,
+} from '@ant-design/icons';
  const { Content } = Layout;
  
  const Dashboard = () => {
@@ -30,28 +50,6 @@ import "./styles/Dashboard.css";
    const [damagedItems, setDamagedItems] = useState([]);
    const [criticalStockList, setCriticalStockList] = useState([]);
 
-
-
-
- 
-   const [topProducts, setTopProducts] = useState([
-     { title: "Raspberry Pi", sold: 6, quantity: 10 },
-     { title: "Arduino Nano", sold: 4, quantity: 4 },
-     { title: "DHT Sensor", sold: 3, quantity: 3 },
-     { title: "PIR Passive Infrared Sensor", sold: 1, quantity: 5 },
-     { title: "Electronics Project Enclosure Case Box", sold: 1, quantity: 5 },
-   ]);
- 
-   const [latestSales, setLatestSales] = useState([
-     { key: 1, name: "Arduino Nano", date: "2019-02-03", total: "$10.00" },
-     { key: 2, name: "Raspberry Pi", date: "2019-02-03", total: "$100.00" },
-     { key: 3, name: "Electronics Project Enclosure Case Box", date: "2019-02-03", total: "$30.00" },
-     { key: 4, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
-     { key: 5, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
-     { key: 6, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
-     { key: 7, name: "PIR Passive Infrared Sensor", date: "2019-02-03", total: "$6.00" },
-        
-   ]);
 
 
    const expiryColumns = [
@@ -399,10 +397,10 @@ useEffect(() => {
   };
  
    const summaryCards = [
-     { title: "Pending Requests", count: pendingRequestCount, color: "#94d39f", icon: "📄" },
-     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#d1d394", icon: "📋" },
-     { title: "Inventory", count: dataSource, color: "#94b9d3", icon: "🛒" },
-     { title: "Request Log", count: historyData, color: "#d08b87", icon: "💵" },
+     { title: "Pending Requests", count: pendingRequestCount, color: "#2596be", icon: <FileTextOutlined/> },
+     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#165a72", icon: <ShoppingOutlined/> },
+     { title: "Inventory", count: dataSource, color: "#0b2d39", icon: <UnorderedListOutlined/> },
+     { title: "Request Log", count: historyData, color: "#000000", icon: <DatabaseOutlined/> },
    ];
 
   const lightenColor = (hex, percent) => {
