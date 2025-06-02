@@ -1787,6 +1787,7 @@ const Requisition = () => {
                     style={{
                       width: "100%",
                       marginTop: "8px",
+                      padding: 8
                     }}
                   />
                   {dateRequired && (
@@ -1796,58 +1797,7 @@ const Requisition = () => {
                   )}
                 </div>
 
-                  <div className="time-required">
-                    <strong>Time Needed:</strong>
-                    <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
-                      <TimePicker
-                      minuteStep={10}
-                      value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
-                        placeholder="From"
-                        onChange={(time, timeString) => {
-                          setTimeFrom(timeString);
-                          setTimeTo(null);
-                        }}
-                        format="HH:mm"
-                        use12Hours={false}
-                        style={{ width: "50%" }}
-                      />
-
-                      <TimePicker
-                      minuteStep={10}
-                        value={timeTo ? dayjs(timeTo, "HH:mm") : null}
-                        placeholder="To"
-                        onChange={(time, timeString) => setTimeTo(timeString)}
-                        format="HH:mm"
-                        use12Hours={false}
-                        disabled={!timeFrom}
-                        style={{ width: "50%" }}
-                        disabledHours={() => {
-                          if (!timeFrom) return [];
-                          const [startHour] = timeFrom.split(":").map(Number);
-                          return Array.from({ length: startHour }, (_, i) => i);
-                        }}
-                        disabledMinutes={(selectedHour) => {
-                          if (!timeFrom) return [];
-                          const [startHour, startMinute] = timeFrom.split(":").map(Number);
-
-                          if (selectedHour === startHour) {
-                            return Array.from({ length: startMinute }, (_, i) => i);
-                          }
-                          return [];
-                        }}
-                      />
-                    </div>
-
-                    {timeFrom && timeTo && (
-                      <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
-                        Time Needed: {dayjs(timeFrom, "HH:mm").format("h:mm A")} - {dayjs(timeTo, "HH:mm").format("h:mm A")}
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                <div className="program-room-container">
-                  <div className="program-container">
+                                  <div className="program-container">
                     <strong>Program:</strong>
                     <select
                       value={program}
@@ -1873,7 +1823,86 @@ const Requisition = () => {
                     )}
                   </div>
 
+
+                </div>
+
+                <div className="program-room-container">
+                                    <div className="time-required">
+                    <strong>Time Needed:</strong>
+                    <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
+                      <TimePicker
+                      minuteStep={10}
+                      value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
+                        placeholder="From"
+                        onChange={(time, timeString) => {
+                          setTimeFrom(timeString);
+                          setTimeTo(null);
+                        }}
+                        format="HH:mm"
+                        use12Hours={false}
+                        style={{ width: "50%" }}
+                      />
+
+                      <TimePicker
+                      minuteStep={10}
+                        value={timeTo ? dayjs(timeTo, "HH:mm") : null}
+                        placeholder="To"
+                        onChange={(time, timeString) => setTimeTo(timeString)}
+                        format="HH:mm"
+                        use12Hours={false}
+                        disabled={!timeFrom}
+                        style={{ width: "50%", padding: 8}}
+                        disabledHours={() => {
+                          if (!timeFrom) return [];
+                          const [startHour] = timeFrom.split(":").map(Number);
+                          return Array.from({ length: startHour }, (_, i) => i);
+                        }}
+                        disabledMinutes={(selectedHour) => {
+                          if (!timeFrom) return [];
+                          const [startHour, startMinute] = timeFrom.split(":").map(Number);
+
+                          if (selectedHour === startHour) {
+                            return Array.from({ length: startMinute }, (_, i) => i);
+                          }
+                          return [];
+                        }}
+                      />
+                    </div>
+
+                    {timeFrom && timeTo && (
+                      <p style={{ marginTop: "8px", fontWeight: "bold", color: "blue" }}>
+                        Time Needed: {dayjs(timeFrom, "HH:mm").format("h:mm A")} - {dayjs(timeTo, "HH:mm").format("h:mm A")}
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="room-container">
+                    <strong>Room:</strong>
+                    <Input
+                      type="number"
+                      value={room}
+                      onChange={(e) => setRoom(e.target.value)}
+                      placeholder="Enter room number"
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid #ccc",
+                        marginTop: "8px",
+                      }}
+                    />
+                    {roomError && (
+                      <p style={{ color: "red", marginTop: "5px" }}>
+                        Please enter the room before finalizing.
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                  <div className="usage-container">
+
                   <div className="program-container">
+                
                     <strong>Course Code:</strong>
                     <select
                         value={course}
@@ -1926,31 +1955,8 @@ const Requisition = () => {
                       />
 
                   </div>
-
-                  <div className="room-container">
-                    <strong>Room:</strong>
-                    <Input
-                      type="number"
-                      value={room}
-                      onChange={(e) => setRoom(e.target.value)}
-                      placeholder="Enter room number"
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "1px solid #ccc",
-                        marginTop: "8px",
-                      }}
-                    />
-                    {roomError && (
-                      <p style={{ color: "red", marginTop: "5px" }}>
-                        Please enter the room before finalizing.
-                      </p>
-                    )}
-                  </div>
-                </div>
-
-                  <div className="usage-container">
+                  
+                  <div style={{}}>
                     <strong>Usage Type:</strong>
                     <select
                       value={usageType}
@@ -1993,6 +1999,7 @@ const Requisition = () => {
                         }}
                       />
                     )}
+                    </div>
                   </div>
             </div>
             
@@ -2135,7 +2142,7 @@ const Requisition = () => {
           </div>
           
 
-        <div className="section requests-list">
+        {/* <div className="section requests-list">
           
           <Title level={2}>Requests List</Title>
             {loading ? (
@@ -2209,9 +2216,9 @@ const Requisition = () => {
               <p>Are you sure you want to cancel this request?</p>
             </Modal>
      
-          </div>
+          </div> */}
 
-           <div className="section activity-log">
+           {/* <div className="section activity-log">
             <Title level={2} style={{marginTop:"8px"}}>Activity Log</Title>
             <div>
                <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
@@ -2279,7 +2286,7 @@ const Requisition = () => {
               
                               <Descriptions.Item label="Program">
                                 {selectedLog.program || "N/A"}
-                              </Descriptions.Item>
+                              </Descriptions.Item> */}
               
                               {/* <Descriptions.Item label="Items Requested">
                                 {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
@@ -2306,19 +2313,19 @@ const Requisition = () => {
                                 )}
                               </Descriptions.Item> */}
               
-                              <Descriptions.Item label="Items Requested">
+                              {/* <Descriptions.Item label="Items Requested">
                                 {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
                                   <ul style={{ paddingLeft: 20 }}>
                                     {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
                                       <li key={index} style={{ marginBottom: 10 }}>
                                         <strong>{item.itemName}</strong>
                                         <ul style={{ marginLeft: 20 }}>
-                                          <li>Quantity: {item.quantity}</li>
+                                          <li>Quantity: {item.quantity}</li> */}
                                           {/* {item.category && <li>Category: {item.category}</li>} */}
-                                          {item.category && <li>Category: {item.category}</li>}
+                                          {/* {item.category && <li>Category: {item.category}</li>}
                                           {item.category === "Glasswares" && item.volume && (
                                             <li>Volume: {item.volume}</li>
-                                          )}
+                                          )} */}
                                           {/* {item.condition && <li>Condition: {item.condition}</li>} */}
                                           {/* {item.condition && (
                                             <li>
@@ -2330,14 +2337,14 @@ const Requisition = () => {
                                               </ul>
                                             </li>
                                           )} */}
-                                          {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                                          {/* {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
                                           {item.usageType && <li>Usage Type: {item.usageType}</li>}
                                           {item.itemType && <li>Item Type: {item.itemType}</li>}
-                                          {item.department && <li>Department: {item.department}</li>}
+                                          {item.department && <li>Department: {item.department}</li>} */}
                                           {/* {selectedLog.action === "Request Rejected" && item.reason && (
                                             <li><strong>Rejection Reason:</strong> {item.reason}</li>
                                           )} */}
-                                          {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
+                                          {/* {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
                                             <li><strong>Rejection Reason:</strong> {item.rejectionReason || item.reason}</li>
                                           )}
                                         </ul>
@@ -2374,7 +2381,7 @@ const Requisition = () => {
 
 
             </div>
-          </div>
+          </div> */}
 
  
       </Layout>
