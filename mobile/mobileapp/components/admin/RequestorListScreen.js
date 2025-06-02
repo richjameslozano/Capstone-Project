@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert } from "react-native";
+import React, { useState, useEffect, useCallback } from "react";
+import { View, Text, FlatList, TouchableOpacity, Alert, StatusBar, Dimensions } from "react-native";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import styles from "../styles/adminStyle/RequestorListStyle";
 import Header from '../Header';
+import { useFocusEffect } from "@react-navigation/native";
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const getTodayDate = () => {
   const today = new Date();
@@ -12,6 +14,7 @@ const getTodayDate = () => {
   const day = today.getDate().toString().padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
+
 
 const RequestorListScreen = ({ navigation }) => {
   const [requestors, setRequestors] = useState([]);
@@ -56,9 +59,35 @@ const RequestorListScreen = ({ navigation }) => {
     navigation.navigate("RequestedItemsScreen", { userName });
   };
 
+        const [headerHeight, setHeaderHeight] = useState(0);
+      const handleHeaderLayout = (event) => {
+        const { height } = event.nativeEvent.layout;
+        setHeaderHeight(height);
+      };
+    useFocusEffect(
+      useCallback(() => {
+        StatusBar.setBarStyle('dark-content');
+        StatusBar.setBackgroundColor('transparent'); // Android only
+        StatusBar.setTranslucent(true)
+      }, [])
+    );
+
   return (
     <View style={styles.container}>
-      <Header/>
+      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+          <TouchableOpacity onPress={() => navigation.navigate('QRScanScreen')} style={styles.backButton}>
+                          <Icon name="keyboard-backspace" size={28} color="black" />
+                        </TouchableOpacity>
+
+        <View>
+          <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Deploy/Return Items</Text>
+          <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Scan Item to Deploy/Return</Text>
+        </View>
+
+          <TouchableOpacity style={{padding: 2}}>
+            <Icon name="information-outline" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
       <Text style={styles.title}>Requestors for Today</Text>
 
       <FlatList
@@ -77,7 +106,7 @@ const RequestorListScreen = ({ navigation }) => {
         }
       />
 
-      <Text style={styles.debugText}>Component is rendering</Text>
+      {/* <Text style={styles.debugText}>Component is rendering</Text> */}
     </View>
   );
 };

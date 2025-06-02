@@ -90,7 +90,7 @@ const CameraUpdateItems = ({ onClose }) => {
     };
 
     const handleBackButton = () => {
-        navigation.navigate('QRScanScreen');
+        navigation.navigate('ItemListScreen');
     };
 
     const logRequestOrReturn = async (userId, userName, action) => {

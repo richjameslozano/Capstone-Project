@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Dimensions } from "react-native";
 import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import CameraScreen from "./CameraScreen";
 import styles from "../styles/adminStyle/RequestedItemsStyle";
 import Header from '../Header';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const getTodayDate = () => {
   const today = new Date();
@@ -70,9 +71,16 @@ const RequestedItemsScreen = ({ route, navigation }) => {
     setSelectedItem(null);
   };
 
+    const [headerHeight, setHeaderHeight] = useState(0);
+  const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
+
+
   return (
     <View style={styles.container}>
-      <Header />
+
       
       {showScanner && selectedItem ? (
           <CameraScreen
@@ -81,6 +89,20 @@ const RequestedItemsScreen = ({ route, navigation }) => {
           />
         ) : (
         <>
+              <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+          <TouchableOpacity onPress={() => navigation.navigate('RequestorListScreen')} style={styles.backButton}>
+                          <Icon name="keyboard-backspace" size={28} color="black" />
+                        </TouchableOpacity>
+
+        <View>
+          <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Deploy/Return Items</Text>
+          <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Scan Item to Deploy/Return</Text>
+        </View>
+
+          <TouchableOpacity style={{padding: 2}}>
+            <Icon name="information-outline" size={24} color="#000" />
+          </TouchableOpacity>
+        </View>
           <Text style={styles.title}>Requested Items for {userName}</Text>
           <FlatList
             data={requestedItems}
