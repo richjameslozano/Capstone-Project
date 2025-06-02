@@ -673,10 +673,17 @@ const LabRoomQR = () => {
     document.body.removeChild(downloadLink);
   };
 
-  const filteredRooms = labRooms.filter((room) =>
-    room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRooms = labRooms.filter((room) => {
+    const roomMatch =
+      room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      room.roomNumber.toLowerCase().includes(searchTerm.toLowerCase());
+
+    const itemMatch = room.items.some((item) =>
+      item.itemName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    return roomMatch || itemMatch;
+  });
 
   return (
     <div className="labroom-container">
