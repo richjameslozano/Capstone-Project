@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,16 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
+  StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext'; 
 import styles from '../styles/userStyle/ActivityLogStyle';
 import Header from '../Header';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 const UserActivityLogScreen = () => {
   const { user } = useAuth();
@@ -22,57 +26,21 @@ const UserActivityLogScreen = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [headerHeight, setHeaderHeight] = useState(0);
+const navigation = useNavigation()
   
-  const handleHeaderLayout = (event) => {
-    const { height } = event.nativeEvent.layout;
-    setHeaderHeight(height);
-  };
-  // const fetchActivityLogs = async () => {
-  //   try {
-  //     const activityRef = collection(db, `accounts/${user.id}/activitylog`);
-  //     const snapshot = await getDocs(activityRef);
-  //     const logsData = snapshot.docs.map((doc, index) => {
-  //       const data = doc.data();
-  //       const logDate =
-  //         data.cancelledAt?.toDate?.() ||
-  //         data.timestamp?.toDate?.() ||
-  //         new Date();
-
-  //       return {
-  //         key: doc.id || index.toString(),
-  //         date: logDate.toLocaleString(),
-  //         action:
-  //           data.status === 'CANCELLED'
-  //             ? 'Cancelled a request'
-  //             : data.action || 'Modified a request',
-  //         by: data.userName || 'Unknown User',
-  //         fullData: data,
-  //       };
-  //     });
-
-  //     logsData.sort((a, b) => {
-  //       const aDate =
-  //         a.fullData.timestamp?.toDate?.() || a.fullData.cancelledAt?.toDate?.() || 0;
-  //       const bDate =
-  //         b.fullData.timestamp?.toDate?.() || b.fullData.cancelledAt?.toDate?.() || 0;
-  //       return bDate - aDate;
-  //     });
-
-  //     setLogs(logsData);
-  //     setFilteredLogs(logsData);
-      
-  //   } catch (err) {
-  //     console.error('Failed to fetch activity logs:', err);
-
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchActivityLogs();
-  // }, []);
+    const [headerHeight, setHeaderHeight] = useState(0);
+    const handleHeaderLayout = (event) => {
+      const { height } = event.nativeEvent.layout;
+      setHeaderHeight(height);
+    };
+  
+    useFocusEffect(
+      useCallback(() => {
+        StatusBar.setBarStyle('dark-content');
+        StatusBar.setBackgroundColor('transparent'); // Android only
+        StatusBar.setTranslucent(true)
+      }, [])
+    );
 
   const fetchActivityLogs = () => {
     try {
@@ -159,29 +127,32 @@ const UserActivityLogScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header onLayout={handleHeaderLayout} />
+      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                                <Icon name="keyboard-backspace" size={28} color="black" />
+                              </TouchableOpacity>
+
+              <View>
+                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>CAPEX Request</Text>
+                <Text style={{ fontWeight: 300, fontSize: 13}}>Capital Expenditure Proposal</Text>
+              </View>
+
+                <TouchableOpacity style={{padding: 2}}>
+                  <Icon name="information-outline" size={24} color="#000" />
+                </TouchableOpacity>
+              </View>
+
         <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
-      
-
-      <Text style={styles.title}>⏰ Activity Log</Text>
-
-      <TextInput
-        placeholder="Search"
-        value={searchQuery}
-        onChangeText={setSearchQuery}
-        style={styles.searchInput}
-      />
 
       {loading ? (
         <ActivityIndicator size="large" color="#1890ff" />
       ) : (
         <View style={styles.table}>
-          <View style={styles.tableHeader}>
-            <Text style={[styles.tableCell, styles.headerCell]}>Date</Text>
-            <Text style={[styles.tableCell, styles.headerCell]}>Time</Text>
-            <Text style={[styles.tableCell, styles.headerCell]}>Action</Text>
-            <Text style={[styles.tableCell, styles.headerCell]}>Approved by</Text>
-          </View>
+<View style={styles.tableHeader}>
+  <Text style={[styles.tableCell, styles.headerCell]}>Date</Text>
+  <Text style={[styles.tableCell, styles.headerCell]}>Action</Text>
+  <Text style={[styles.tableCell, styles.headerCell]}>Approved by</Text>
+</View>
 
           <FlatList
             data={filteredLogs}

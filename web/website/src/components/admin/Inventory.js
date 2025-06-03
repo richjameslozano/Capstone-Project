@@ -425,6 +425,7 @@ const printPdf = () => {
       entryCurrentDate,
       expiryDate,
       timestamp,
+      criticalLevel,
       category: values.category,
       labRoom: values.labRoom,
       quantity: Number(values.quantity),
@@ -433,7 +434,7 @@ const printPdf = () => {
       status: "Available",
       ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
       rawTimestamp: new Date(),
-      criticalLevel:criticalLevel,
+
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
         condition: {
           Good: quantityNumber,
@@ -935,8 +936,8 @@ useEffect(() => {
                 
                 <Col span={8}>
                   <Form.Item
-                    name="Critical Level"
-                    label="criticalLevel"
+                    name="criticalLevel"
+                    label="Critical Level"
                     rules={[{ required: true, message: "Please enter desired Critical Stock!" }]}
                   >
                     <InputNumber min={1} placeholder="Enter Critical Stock" style={{ width: "100%" }} />
