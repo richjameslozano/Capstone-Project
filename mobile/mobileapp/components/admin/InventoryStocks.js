@@ -39,29 +39,54 @@ export default function InventoryStocks({ }) {
     setIsOpen(prev => (prev === id ? null : id));
   };
 
+  // useEffect(() => {
+  //   const fetchInventory = () => {
+  //     try {
+  //       // Set up the real-time listener using onSnapshot
+  //       const inventoryCollection = collection(db, 'inventory');
+  
+  //       const unsubscribe = onSnapshot(inventoryCollection, (snapshot) => {
+  //         const inventoryList = snapshot.docs.map(doc => ({
+  //           id: doc.id,
+  //           ...doc.data(),
+  //         }));
+  
+  //         // Update the state with the latest inventory data
+  //         setInventoryItems(inventoryList);
+  //       });
+  
+  //       // Cleanup listener when the component unmounts
+  //       return () => unsubscribe();
+  //     } catch (error) {
+  //       console.error("Error fetching inventory: ", error);
+  //     }
+  //   };
+  
+  //   fetchInventory();
+  // }, []);
+
   useEffect(() => {
     const fetchInventory = () => {
       try {
-        // Set up the real-time listener using onSnapshot
         const inventoryCollection = collection(db, 'inventory');
-  
+
         const unsubscribe = onSnapshot(inventoryCollection, (snapshot) => {
-          const inventoryList = snapshot.docs.map(doc => ({
-            id: doc.id,
-            ...doc.data(),
-          }));
-  
-          // Update the state with the latest inventory data
+          const inventoryList = snapshot.docs
+            .map(doc => ({
+              id: doc.id,
+              ...doc.data(),
+            }))
+            .sort((a, b) => a.itemName.localeCompare(b.itemName)); // alphabetically by itemName
+
           setInventoryItems(inventoryList);
         });
-  
-        // Cleanup listener when the component unmounts
+
         return () => unsubscribe();
       } catch (error) {
         console.error("Error fetching inventory: ", error);
       }
     };
-  
+
     fetchInventory();
   }, []);
 
@@ -255,6 +280,13 @@ const formatCondition = (cond) => {
                 <Text style={styles.cardLabel}>Type: </Text>
                 <Text style={styles.cardValueNum}>{item.type}</Text>
                 </View>
+
+                {["Chemical", "Reagent"].includes(item.category) && item.unit && (
+                  <View style={styles.row}>
+                    <Text style={styles.cardLabel}>Unit: </Text>
+                    <Text style={styles.cardValueNum}>{item.unit}</Text>
+                  </View>
+                )}
 
                 <View style={styles.row}>
                 {/* <Text style={styles.cardLabel}>Inventory Balance:  </Text>
