@@ -37,7 +37,7 @@ export default StyleSheet.create({
     gap: 5
   },
 
-      searchFilter:{
+  searchFilter:{
     width: '100%',
     alignSelf: 'center', 
     padding: 5,
@@ -174,6 +174,19 @@ export default StyleSheet.create({
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
+  cancelButton1: {
+    flex: 1,
+    marginTop: 25,
+    backgroundColor: '#ff4d4f',
+    padding: 5,
+    borderRadius: 6,
+    alignItems: 'center',
+    color: '#fff',
+    fontWeight: 'bold',
   },
   
   closeButton: {
@@ -182,6 +195,7 @@ export default StyleSheet.create({
     padding: 12,
     borderRadius: 6,
     alignItems: 'center',
+    
   },
   
   cancelText: {
@@ -192,6 +206,18 @@ export default StyleSheet.create({
   closeText: {
     color: '#fff',
     fontWeight: 'bold',
+  },
+
+  closeText1: {
+    flex: 1,
+    paddingLeft: 12,
+    paddingRight: 12,
+    paddingTop: 1,
+    paddingBottom: 1,
+    marginTop: 5,
+    borderRadius: 6,
+    alignItems: 'center',
+    color: '#fff',
   },
 
   table: {
@@ -297,7 +323,7 @@ modalValue: {
 },
 
 closeButton: {
-  marginTop: 20,
+  marginTop: 25,
   backgroundColor: '#333',
   paddingVertical: 10,
   borderRadius: 8,
