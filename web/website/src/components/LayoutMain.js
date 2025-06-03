@@ -367,16 +367,17 @@ const LayoutMain = () => {
           icon: <FileDoneOutlined />,
           label: "Requisition",
         },
+                {
+          key: "/main/orders",
+          icon: <ShoppingCartOutlined />,
+          label: "Orders",
+        },
         {
           key: "/main/return-items",
           icon: <RollbackOutlined />,
           label: "Return Items",
         },
-        {
-          key: "/main/orders",
-          icon: <ShoppingCartOutlined />,
-          label: "Orders",
-        },
+
       ],
     },
     {
@@ -495,14 +496,14 @@ const LayoutMain = () => {
       label: "Orders",      
     },
     {
-      key: "/main/capex-request",
-      icon: <DollarCircleOutlined />,
-      label: "Capex Request",
-    },
-    {
       key: "/main/return-items",
       icon: <RollbackOutlined />,
       label: "Return Items",
+    },
+        {
+      key: "/main/capex-request",
+      icon: <DollarCircleOutlined />,
+      label: "Capex Request",
     },
         {
       key: "/main/activity-log",
