@@ -95,6 +95,8 @@ const Inventory = () => {
     return () => observer.disconnect();
   }, []);
 
+  
+
   useEffect(() => {
     const inventoryRef = collection(db, "inventory");
 
@@ -112,6 +114,7 @@ const Inventory = () => {
               id: index + 1,
               itemId: data.itemId,
               item: data.itemName,
+              category:data.category,
               entryDate,
               expiryDate,
               qrCode: data.qrCode,
@@ -166,20 +169,26 @@ const Inventory = () => {
     }
   }, [isEditModalVisible]);
 
-  const filteredData = dataSource.filter((item) => {
-    const matchesSearch = searchText
-      ? Object.values(item).some((val) =>
-          String(val).toLowerCase().includes(searchText.toLowerCase())
-        )
-      : true;
-  
-    return (
-      (!filterCategory || item.category === filterCategory) &&
-      (!filterItemType || item.type === filterItemType) &&
-      // (!filterUsageType || item.usageType === filterUsageType) &&
-      matchesSearch
-    );
-  });  
+  const isExpired = (expiryDate) => {
+  if (!expiryDate) return false; // no expiry date means not expired
+  return dayjs(expiryDate).isBefore(dayjs().add(1,'day').startOf('day'));
+
+};
+
+const filteredData = dataSource.filter((item) => {
+  const matchesSearch = searchText
+    ? Object.values(item).some((val) =>
+        String(val).toLowerCase().includes(searchText.toLowerCase())
+      )
+    : true;
+
+  return (
+    (!filterCategory || item.category === filterCategory) &&
+    (!filterItemType || item.type === filterItemType) &&
+    matchesSearch &&
+    !isExpired(item.expiryDate) // Exclude expired items
+  );
+});
 
   const handleCategoryChange = (value) => {
     let type = "";
@@ -716,6 +725,9 @@ useEffect(() => {
       sortDirections: ['ascend', 'descend'],
       defaultSortOrder: 'ascend', 
     },
+    { title: "Category", dataIndex: "category", key: "category", 
+
+    },
     { title: "Item Description", dataIndex: "itemDetails", key: "itemDetails" },
     {
       title: "Inventory Balance",
@@ -829,14 +841,7 @@ useEffect(() => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
-            // onRow={(record) => {
-            //   return {
-            //     onClick: () => {
-            //       setSelectedRow(record);
-            //       setIsRowModalVisible(true); // Show the "View Details" modal
-            //     },
-            //   };
-            // }}
+    
             onRow={(record) => {
               return {
                 onClick: () => {
@@ -1075,7 +1080,6 @@ useEffect(() => {
                           <th>Item Name</th>
                           <td>{selectedRow.itemName}</td>
                         </tr>
-
                         <tr>
                           <th>Item Description</th>
                           <td>{selectedRow.itemDetails}</td>
@@ -1133,6 +1137,11 @@ useEffect(() => {
                         </tr>
 
                         <tr>
+                          <th>Critical Level</th>
+                          <td>{selectedRow.criticalLevel || 'N/A'}</td>
+                        </tr>
+                        <tr>
+
                           <th>Condition</th>
                           <td>{formatCondition(selectedRow.condition, selectedRow.category)}</td>
                         </tr>
@@ -1142,10 +1151,7 @@ useEffect(() => {
                           <td>{selectedRow.labRoom}</td>
                         </tr>
                         
-                        <tr>
-                          <th>Date of Expiry</th>
-                          <td>{selectedRow.expiryDate || 'N/A'}</td>
-                        </tr>
+                      
                       </tbody>
                     </table>
                     </div>

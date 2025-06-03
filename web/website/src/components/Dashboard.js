@@ -711,8 +711,6 @@ const criticalColumns = [
     render: (text) => text ?? 0,
   },
 ];
-
-
 //critical stock
 const getCriticalStockItems = (inventoryItems) => {
   if (!inventoryItems || inventoryItems.length === 0) return [];
@@ -724,10 +722,6 @@ const getCriticalStockItems = (inventoryItems) => {
     return quantity <= criticalLevel;
   });
 };
-
-
-
-
 // critical stock 
 useEffect(() => {
   const inventoryRef = collection(db, "inventory");
@@ -746,14 +740,15 @@ useEffect(() => {
 }, []);
 
 
-
    //expiry
     useEffect(() => {
   const fetchExpiryItems = async () => {
     const inventoryRef = collection(db, "inventory");
     const inventorySnapshot = await getDocs(inventoryRef);
 
-    const today = new Date();
+    const now = new Date();
+    const tomorrowStart = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+
     const EXPIRY_SOON_DAYS = 7;
 
     const expired = [];
@@ -776,8 +771,8 @@ useEffect(() => {
 
         if (isNaN(expiryDate.getTime())) return;
 
-        const diffTime = expiryDate - today;
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const diffTime = expiryDate - tomorrowStart;
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
 
         const itemInfo = {
           key: `${itemDoc.id}_${logDoc.id}`,
@@ -1108,7 +1103,6 @@ useEffect(() => {
         <Row gutter={16}>
 
           <Col xs={24} md={12}>
-            {/* Item Expiry */}
             <Card title="Item Expiry" className="item-expiry-card" style={{ marginBottom: '24px' }}>
               <h4>Expired Items</h4>
               <Table
@@ -1131,29 +1125,31 @@ useEffect(() => {
             </Card>
 
             {/* Critical Stocks */}
-           <Card title="Critical Stocks" className="critical-card" style={{ marginBottom: "24px" }}>
+          <Card title="Critical Stocks" className="critical-card" style={{ marginBottom: '24px' }}>
             <List
               dataSource={criticalStockList}
-              locale={{ emptyText: "No data" }}
-              style={{ maxHeight: 250, overflowY: "auto" }}
-              renderItem={(item) => (
-                <List.Item>
-                  <List.Item.Meta
-                    title={
-                      <Text strong>
-                        {item.itemName} (ID: {item.itemId})
-                      </Text>
-                    }
-                    description={
-                      <>
-                        <Text>Critical Level: {item.criticalLevel ?? 0}</Text>
-                        <br />
-                        <Text>Inventory Balance: {item.quantity ?? 0}</Text>
-                      </>
-                    }
-                  />
-                </List.Item>
-              )}
+              locale={{ emptyText: 'No data' }}
+              style={{ maxHeight: 250, overflowY: 'auto' }}
+              renderItem={(item) => {
+                const isBelowCritical = (item.quantity ?? 0) <= (item.criticalLevel ?? 0);
+                return (
+                  <List.Item>
+                    <List.Item.Meta
+                      title={
+                        <Text strong>
+                          {item.itemName} (ID: {item.itemId})
+                        </Text>
+                      }
+                      description={
+                        <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
+                          Remaining Stock: {item.quantity ?? 0}
+
+                        </Text>
+                      }
+                    />
+                  </List.Item>
+                );
+              }}
             />
           </Card>
 
@@ -1181,22 +1177,36 @@ useEffect(() => {
                 </div>
             </Card>
                         {/* Damaged / Defective Items */}
-            <Card title="Damaged / Defective Items" className="damaged-card" style={{ marginBottom: '24px' }}>
-              <Table
-                dataSource={damagedItems}
-                scroll={{ x: 'max-content', y: 100 }}
-                columns={[
-                  { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
-                  { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
-                  { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
-                  { title: "Damaged", dataIndex: "damageQty", key: "damageQty", width: 100 },
-                  { title: "Defective", dataIndex: "defectQty", key: "defectQty", width: 100 },
-                ]}
-                pagination={{ pageSize: 5 }}
-                size="small"
-                locale={{ emptyText: "No damaged items" }}
-              />
-            </Card>
+           <Card title="Items for Replace" className="damaged-card" style={{ marginBottom: 24 }}>
+            <Table
+              dataSource={damagedItems.filter(item => item.damageQty > 0)}
+              columns={[
+                { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
+                { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
+                { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
+                { title: "Damaged", dataIndex: "damageQty", key: "damageQty", width: 100 },
+              ]}
+              pagination={{ pageSize: 5 }}
+              size="small"
+              locale={{ emptyText: "No damaged items" }}
+            />
+          </Card>
+
+          <Card title="Items for Repair" className="defective-card">
+            <Table
+              dataSource={damagedItems.filter(item => item.defectQty > 0)}
+              columns={[
+                { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
+                { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
+                { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
+                { title: "Defective", dataIndex: "defectQty", key: "defectQty", width: 100 },
+              ]}
+              pagination={{ pageSize: 5 }}
+              size="small"
+              locale={{ emptyText: "No defective items" }}
+            />
+          </Card>
+
           </Col>
         </Row>
       </div>
