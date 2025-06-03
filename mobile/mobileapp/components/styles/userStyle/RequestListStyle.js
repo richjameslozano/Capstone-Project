@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
@@ -8,6 +8,23 @@ export default StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 45,
   },
+
+    inventoryStocksHeader:{
+      position: 'absolute',
+          backgroundColor: '#fff',
+          flex: 1,
+          paddingTop: StatusBar.currentHeight+15,
+          left: 0,
+          right:0,
+          flexDirection: 'row',
+          paddingBottom: 10,
+          paddingHorizontal: 15,
+          alignItems: 'center',
+          justifyContent:'space-between',
+          borderBottomWidth: 1,
+          borderColor: '#e9ecee'
+    },
+  
 
   listContent: {
     paddingBottom: 40,
@@ -42,6 +59,11 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
+  },
+
+  sublabel:{
+    fontSize: 13,
+    fontWeight: 300
   },
 
   emptyText: {
@@ -221,21 +243,28 @@ export default StyleSheet.create({
   },
   
   tableRow: {
+    width: '100%',
     flexDirection: 'row',
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderColor: '#eee',
+    gap: 10,
   },
   
   tableCellHeader: {
     fontWeight: 'bold',
     paddingHorizontal: 8,
     fontSize: 14,
+    width: 65,
+    textAlign: 'center'
   },
   
   tableCell: {
     paddingHorizontal: 8,
     fontSize: 14,
+    textAlign:'center',
+    backgroundColor: 'white',
+    width: 65
   },
 
   bottomNav:{
@@ -251,5 +280,115 @@ export default StyleSheet.create({
     borderTopWidth: 1,
     borderColor: '#e9ecee'
   },  
+
+  modalBackground: {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+},
+
+confirmationModalContainer: {
+  backgroundColor: '#ffffff',
+  borderRadius: 16,
+  padding: 20,
+  width: '100%',
+  maxHeight: '90%',
+  elevation: 10,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 4,
+},
+
+confirmationModalTitle: {
+  fontSize: 20,
+  fontWeight: 'bold',
+  color: '#0f3c4c',
+  marginBottom: 12,
+  textAlign: 'center',
+},
+
+confirmationInfoSection: {
+  marginBottom: 16,
+},
+
+confirmationLabel: {
+  fontWeight: '600',
+  color: '#1e7898',
+  marginTop: 8,
+},
+
+confirmationValue: {
+  color: '#000',
+  marginBottom: 4,
+},
+
+confirmationSubtitle: {
+  fontSize: 16,
+  fontWeight: 'bold',
+  color: '#0f3c4c',
+  marginBottom: 8,
+},
+
+confirmationTableHeader: {
+  flexDirection: 'row',
+  backgroundColor: '#7cc0d8',
+  borderTopLeftRadius: 5,
+  borderTopRightRadius: 5,
+  paddingVertical: 8,
+  paddingHorizontal: 4,
+},
+
+confirmationTableHeaderText: {
+  fontWeight: 'bold',
+  color: '#ffffff',
+},
+
+confirmationTableRow: {
+  flexDirection: 'row',
+  backgroundColor: '#f9f9f9',
+  paddingVertical: 8,
+  paddingHorizontal: 4,
+},
+
+confirmationTableCell: {
+  color: '#000000',
+},
+
+modalActions: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginTop: 20,
+},
+
+cancelButton: {
+  flex: 1,
+  marginRight: 10,
+  backgroundColor: '#eeeeee',
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: 'center',
+},
+
+cancelButtonText: {
+  color: '#0f3c4c',
+  fontWeight: '600',
+},
+
+confirmButton: {
+  flex: 1,
+  backgroundColor: '#1e7898',
+  paddingVertical: 12,
+  borderRadius: 8,
+  alignItems: 'center',
+},
+
+confirmButtonText: {
+  color: '#ffffff',
+  fontWeight: '600',
+},
+
   
 });

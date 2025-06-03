@@ -370,6 +370,14 @@ const printPdf = () => {
       setIsNotificationVisible(true);
       return;
     }
+    const itemCategoryPrefixMap = {
+      Chemical: "CHEM",
+      Equipment: "EQP",
+      Reagent: "RGT",
+      Glasswares: "GLS",
+      Materials: "MAT",
+    };
+    
 
     // Generate suffix for similar items with same base name but different details
     let similarItemCount = sameNameItems.length + 1;
@@ -378,19 +386,19 @@ const printPdf = () => {
 
     const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
 
-    const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
+    const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
     const inventoryRef = collection(db, "inventory");
-    const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
+    const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
     const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
 
-    let departmentCount = deptQuerySnapshot.size + 1;
-    let generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+    let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
+    let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
     let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
 
     // 🔁 Keep trying until we find a unique ID
     while (!idQuerySnapshot.empty) {
-      departmentCount++;
-      generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+      ItemCategoryCount++;
+      generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
       idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
     }
 
@@ -423,9 +431,7 @@ const printPdf = () => {
       department: values.department,
       type: values.type,
       status: "Available",
-      unit: ["Chemical", "Reagent"].includes(values.category)
-      ? values.unit
-      : undefined,
+      ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {

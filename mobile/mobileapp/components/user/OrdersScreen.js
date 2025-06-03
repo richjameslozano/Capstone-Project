@@ -26,7 +26,7 @@ import {
   where,
   onSnapshot
 } from 'firebase/firestore';
-
+import moment from 'moment'
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/RequestStyle';
@@ -367,11 +367,15 @@ const handleSearch = (query) => {
 
   // Interpolate the border position
   const borderTranslateX = position.interpolate({
-  inputRange: [0, 1],
-  outputRange: [0, 142], // Adjust 150 to match your tab width
-});
+    inputRange: [0, 1],
+    outputRange: [0, 142], // Adjust 150 to match your tab width
+  });
 
-const pagerRef = useRef(null);
+  const hasUnitColumn = (selectedLog?.filteredMergedData || selectedLog?.requestList)?.some(
+    (item) => ["Chemical", "Reagent"].includes(item.category)
+  );
+
+  const pagerRef = useRef(null);
 
   return (
     
@@ -439,20 +443,20 @@ const pagerRef = useRef(null);
               </View>
       
               <View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{paddingTop: 10}}>
                 {['All', 'Approved', 'Rejected', 'Cancelled', 'Deployed'].map((status) => (
                   <TouchableOpacity
                     key={status}
                     style={{
                       paddingVertical: 6,
                       paddingHorizontal: 14,
-                      backgroundColor: statusFilter === status ? '#007BFF' : '#e0e0e0',
+                      backgroundColor: statusFilter === status ? '#1a6985' : '#e0e0e0',
                       borderRadius: 20,
                       marginRight: 8,
                     }}
                     onPress={() => setStatusFilter(status)}
                   >
-                    <Text style={{ color: statusFilter === status ? '#fff' : '#333', fontWeight: '500' }}>
+                    <Text style={{ color: statusFilter === status ? '#fff' : '#333', fontWeight: 500, }}>
                       {status}
                     </Text>
                   </TouchableOpacity>
@@ -461,13 +465,13 @@ const pagerRef = useRef(null);
             </View>
             </View>
 
-          <FlatList
+          {/* <FlatList
           data={requests}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           contentContainerStyle={styles.listContainer}
         />
-            
+             */}
       
             {/* Table Header */}
             <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
@@ -479,86 +483,104 @@ const pagerRef = useRef(null);
             <ScrollView style={styles.content}>
               {filteredData.map((log, index) => (
                 <TouchableOpacity
+
                   key={log.key}
                   onPress={() => handleRowPress(log)}
-                  style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}
+                  style={[index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd, {padding: 10, paddingVertical: 15, backgroundColor: '#fff', borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#ececec'}]}
                 >
                   <View style={{ flexDirection: 'row' }}>
-                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.date}</Text>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>
+                    {log.date.slice(0, 12)}
+                  </Text>
+
+
                     <Text style={[styles.tableCell, { flex: 1 }]}>{log.action}</Text>
                     <Text style={[styles.tableCell, { flex: 1 }]}>{log.by}</Text>
                   </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
-      
-            <Modal visible={modalVisible} transparent animationType="fade">
-          <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>
-              {selectedLog?.status === 'CANCELLED'
-                ? 'Cancelled a Request'
-                : selectedLog?.action || 'Modified a Request'}
-            </Text>
-      
-            <ScrollView style={{ maxHeight: 400, width: '100%' }}>
-              <Text style={styles.modalText}>By: {selectedLog?.userName || 'Unknown User'}</Text>
-              <Text style={styles.modalText}>Program: {selectedLog?.program || 'N/A'}</Text>
-              <Text style={styles.modalText}>Course: {selectedLog?.course || 'N/A'}</Text>
-              <Text style={styles.modalText}>Reason: {selectedLog?.reason || 'N/A'}</Text>
-              <Text style={styles.modalText}>Room: {selectedLog?.room || 'N/A'}</Text>
-              <Text style={styles.modalText}>
-                Time:{' '}
-                {selectedLog?.timeFrom && selectedLog?.timeTo
-                  ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-                  : 'N/A'}
-              </Text>
-              <Text style={styles.modalText}>Date Required: {selectedLog?.dateRequired || 'N/A'}</Text>
-      
-              <Text style={[styles.modalText, { fontWeight: 'bold', marginTop: 10 }]}>Items:</Text>
-      
-              {(selectedLog?.filteredMergedData || selectedLog?.requestList)?.length > 0 ? (
-                <View style={{ marginTop: 10 }}>
-                  <View style={[styles.tableHeader, { flexDirection: 'row', borderTopLeftRadius: 5, borderTopRightRadius: 5 }]}>
-                    <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item</Text>
-                    <Text style={[styles.tableHeaderText, { flex: 2 }]}>Item Description</Text>
-                    <Text style={[styles.tableHeaderText, { flex: 1 }]}>Qty</Text>
-                    <Text style={[styles.tableHeaderText, { flex: 1 }]}>Category</Text>
-                    {/* <Text style={[styles.tableHeaderText, { flex: 1 }]}>Condition</Text> */}
-                  </View>
-      
-                  {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
-                    <View
-                      key={index}
-                      style={[
-                        index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
-                        { flexDirection: 'row', paddingVertical: 8, paddingHorizontal: 4 },
-                      ]}
-                    >
-                      <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemName}</Text>
-                      <Text style={[styles.tableCell, { flex: 2 }]}>{item.itemDetails}</Text>
-                      <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
-                      <Text style={[styles.tableCell, { flex: 1 }]}>{item.category || '—'}</Text>
-                      {/* <Text style={[styles.tableCell, { flex: 1 }]}>{item.condition || '—'}</Text> */}
-                      {/* <Text style={[styles.tableCell, { flex: 1 }]}>
-                        {typeof item.condition === 'object'
-                          ? `Good: ${item.condition.Good ?? 0}, Defect: ${item.condition.Defect ?? 0}, Damage: ${item.condition.Damage ?? 0}`
-                          : item.condition || '—'}
-                      </Text> */}
-                    </View>
-                  ))}
-                </View>
-              ) : (
-                <Text style={styles.modalText}>None</Text>
-              )}
-            </ScrollView>
-      
-            <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-              <Text style={styles.closeButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
+<Modal visible={modalVisible} transparent animationType="fade">
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalCard}>
+      <Text style={styles.modalTitle}>
+        {selectedLog?.status === 'CANCELLED'
+          ? 'Cancelled a Request'
+          : selectedLog?.action || 'Modified a Request'}
+      </Text>
+
+      <ScrollView style={styles.modalScroll}>
+        <View style={styles.infoSection}>
+          <Text style={styles.modalLabel}>By:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.userName || 'Unknown User'}</Text>
+
+          <Text style={styles.modalLabel}>Program:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.program || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Course:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.course || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Note:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.reason || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Room:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.room || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Time:</Text>
+          <Text style={styles.modalValue}>
+            {selectedLog?.timeFrom && selectedLog?.timeTo
+              ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+              : 'N/A'}
+          </Text>
+
+          <Text style={styles.modalLabel}>Date Required:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.dateRequired || 'N/A'}</Text>
         </View>
-      </Modal>
+
+        <Text style={styles.modalSubtitle}>Items</Text>
+
+        {(selectedLog?.filteredMergedData || selectedLog?.requestList)?.length > 0 ? (
+          <View style={styles.table}>
+            <View style={styles.tableHeader2}>
+              <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Item</Text>
+              <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Description</Text>
+              <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Qty</Text>
+              {hasUnitColumn && <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Unit</Text>}
+              <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Category</Text>
+            </View>
+
+            {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
+              <View
+                key={index}
+                style={[
+                  styles.tableRow,
+                  index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
+                ]}
+              >
+                <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemName}</Text>
+                <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemDetails}</Text>
+                <Text style={[styles.tableCell2, { flex: 1 }]}>{item.quantity}</Text>
+                {hasUnitColumn && (
+                  <Text style={[styles.tableCell2, { flex: 1 }]}>
+                    {["Chemical", "Reagent"].includes(item.category) ? item.unit || "—" : "—"}
+                  </Text>
+                )}
+                <Text style={[styles.tableCell2, { flex: 1 }]}>{item.category || '—'}</Text>
+              </View>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.modalValue}>None</Text>
+        )}
+      </ScrollView>
+
+      <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+        <Text style={styles.closeButtonText}>Close</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+
 
       </View>
 
@@ -598,6 +620,7 @@ const pagerRef = useRef(null);
             <Text><Text style={styles.label}>Course Code:</Text> {selectedRequest?.course}</Text>
             <Text><Text style={styles.label}>Course Description:</Text> {selectedRequest?.courseDescription}</Text>
             <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.labRoom}</Text>
+            <Text style={styles.tableCell}>{selectedRequest?.usageType}</Text>
 
             <Text style={styles.subTitle}>Requested Items:</Text>
               <View style={styles.table}>
@@ -606,8 +629,8 @@ const pagerRef = useRef(null);
                   <Text style={styles.tableHeaderCell}>Item Name</Text>
                   <Text style={styles.tableHeaderCell}>Item Description</Text>
                   <Text style={styles.tableHeaderCell}>Qty</Text>
+                  {hasUnitColumn && <Text style={styles.tableHeaderCell}>Unit</Text>}
                   <Text style={styles.tableHeaderCell}>Dept</Text>
-                  <Text style={styles.tableHeaderCell}>Usage</Text>
                 </View>
                 
                 {selectedRequest?.items.map((item, idx) => (
@@ -616,8 +639,12 @@ const pagerRef = useRef(null);
                     <Text style={styles.tableCell}>{item.itemName}</Text>
                     <Text style={styles.tableCell}>{item.itemDetails}</Text>
                     <Text style={styles.tableCell}>{item.quantity}</Text>
+                    {hasUnitColumn && (
+                      <Text style={styles.tableCell}>
+                        {["Chemical", "Reagent"].includes(item.category) ? item.unit || '—' : '—'}
+                      </Text>
+                    )}
                     <Text style={styles.tableCell}>{item.department}</Text>
-                    <Text style={styles.tableCell}>{item.usageType}</Text>
                   </View>
                 ))}
               </View>
