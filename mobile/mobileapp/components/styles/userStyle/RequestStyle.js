@@ -203,10 +203,20 @@ export default StyleSheet.create({
   
   tableHeader: {
     flexDirection: 'row',
-    backgroundColor: '#1890ff',
+    backgroundColor: '#134b5f',
     paddingVertical: 8,
     borderTopLeftRadius: 6,
     borderTopRightRadius: 6,
+  },
+
+  content:{
+    padding: 0
+  },
+  tableHeaderText:{
+    color: '#fff',
+    fontSize: 13,
+    fontWeight: 500,
+    textAlign: 'center'
   },
   
   tableHeaderCell: {
@@ -230,4 +240,108 @@ export default StyleSheet.create({
     fontSize: 12,
   },
   
+  modalOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: 20,
+},
+
+modalCard: {
+  backgroundColor: 'white',
+  borderRadius: 16,
+  padding: 20,
+  width: '100%',
+  maxHeight: '90%',
+  elevation: 10,
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 4,
+},
+
+modalTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 10,
+  color: '#333',
+  textAlign: 'center',
+},
+
+modalSubtitle: {
+  fontSize: 16,
+  fontWeight: '600',
+  marginTop: 20,
+  marginBottom: 10,
+  color: '#555',
+},
+
+modalScroll: {
+  width: '100%',
+},
+
+infoSection: {
+  marginBottom: 10,
+},
+
+modalLabel: {
+  fontWeight: '600',
+  color: '#444',
+  marginTop: 6,
+},
+
+modalValue: {
+  color: '#333',
+  marginBottom: 4,
+},
+
+closeButton: {
+  marginTop: 20,
+  backgroundColor: '#333',
+  paddingVertical: 10,
+  borderRadius: 8,
+  alignItems: 'center',
+},
+
+closeButtonText: {
+  color: 'white',
+  fontWeight: '600',
+},
+
+table: {
+  marginTop: 10,
+},
+
+tableHeader2: {
+  flexDirection: 'row',
+  backgroundColor: '#eee',
+  padding: 8,
+  borderTopLeftRadius: 5,
+  borderTopRightRadius: 5,
+},
+
+tableHeaderText2: {
+  fontWeight: 'bold',
+  color: '#333',
+},
+
+tableRow: {
+  flexDirection: 'row',
+  paddingVertical: 8,
+  paddingHorizontal: 4,
+},
+
+tableRowEven: {
+  backgroundColor: '#f9f9f9',
+},
+
+tableRowOdd: {
+  backgroundColor: '#fff',
+},
+
+tableCell2: {
+  color: '#333',
+},
+
 });
