@@ -235,7 +235,7 @@
 //         setPendingRequestCount(querySnapshot.size);
   
 //       }, (error) => {
-//         console.error("Error fetching pending requests:", error);
+
 //       });
   
 //       // Cleanup the listener on unmount
@@ -250,7 +250,7 @@
 //         setBorrowCAtalogCount(querySnapshot.size);
   
 //       }, (error) => {
-//         console.error("Error fetching pending requests:", error);
+
 //       });
   
 //       // Cleanup the listener on unmount
@@ -265,7 +265,7 @@
 //         setHistoryData(querySnapshot.size);
   
 //       }, (error) => {
-//         console.error("Error fetching pending requests:", error);
+
 //       });
   
 //       // Cleanup the listener on unmount
@@ -280,7 +280,7 @@
 //         setDataSource(querySnapshot.size);
   
 //       }, (error) => {
-//         console.error("Error fetching pending requests:", error);
+
 //       });
   
 //       // Cleanup the listener on unmount
@@ -844,7 +844,7 @@ useEffect(() => {
         setPendingRequestCount(querySnapshot.size);
   
       }, (error) => {
-        console.error("Error fetching pending requests:", error);
+
       });
   
       // Cleanup the listener on unmount
@@ -859,7 +859,7 @@ useEffect(() => {
         setBorrowCAtalogCount(querySnapshot.size);
   
       }, (error) => {
-        console.error("Error fetching pending requests:", error);
+
       });
   
       // Cleanup the listener on unmount
@@ -874,7 +874,7 @@ useEffect(() => {
         setHistoryData(querySnapshot.size);
   
       }, (error) => {
-        console.error("Error fetching pending requests:", error);
+
       });
   
       // Cleanup the listener on unmount
@@ -889,7 +889,7 @@ useEffect(() => {
         setDataSource(querySnapshot.size);
   
       }, (error) => {
-        console.error("Error fetching pending requests:", error);
+
       });
   
       // Cleanup the listener on unmount
