@@ -89,7 +89,7 @@ useEffect(() => {
                   itemId = invDoc.data().itemId || "N/A";
                 }
               } catch (err) {
-                console.error(`Error fetching inventory item ${inventoryId}:`, err);
+              
               }
             }
 
@@ -113,7 +113,7 @@ useEffect(() => {
       setLoading(false); // End loading
     },
     (error) => {
-      console.error("Error fetching requests in real-time: ", error);
+     
       setLoading(false);
     }
   );
@@ -161,11 +161,11 @@ useEffect(() => {
         }
         
       } else {
-        console.warn("Account not found for validation.");
+      
       }
 
     } catch (error) {
-      console.error("Error checking account status:", error);
+
       setNotificationMessage("Error verifying account status. Please try again.");
       setIsNotificationVisible(true);
       return;
@@ -186,7 +186,7 @@ useEffect(() => {
               }
 
             } catch (err) {
-              console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+    
             }
           }
   
@@ -216,7 +216,7 @@ useEffect(() => {
         }
 
       } catch (error) {
-        console.error("Error fetching user name:", error);
+
       }
   
       const requestLogEntry = {
@@ -315,7 +315,7 @@ useEffect(() => {
         );
       }
 
-      console.log("Starting inventory update loop...");
+
 
 
 try {
@@ -325,19 +325,19 @@ try {
           const labRoomId = item.labRoom;
 
           if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+           
             continue;
           }
 
           if (!labRoomId) {
-            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+         
             continue;
           }
 
           const inventoryRef = doc(db, "inventory", inventoryId);
           const inventorySnap = await getDoc(inventoryRef);
           if (!inventorySnap.exists()) {
-            console.warn(`Inventory not found for ID: ${inventoryId}`);
+           
             continue;
           }
 
@@ -345,7 +345,7 @@ try {
           const currentQty = Number(data.quantity || 0);
           const newQty = Math.max(currentQty - requestedQty, 0);
           await updateDoc(inventoryRef, { quantity: newQty });
-          console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+         
 
           // ⚙️ Update inventory condition breakdown
           let remaining = requestedQty;
@@ -381,7 +381,7 @@ try {
             'condition.Defect': newDefect
           });
 
-          console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
+         
 
 
           // 🔁 Update labRoom item quantity
@@ -391,7 +391,7 @@ try {
           const querySnapshot = await getDocs(q);
 
           if (querySnapshot.empty) {
-            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+           
             return;
           }
 
@@ -406,7 +406,7 @@ try {
           const itemSnapshot = await getDocs(itemQuery);
 
           if (itemSnapshot.empty) {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+          
             return;
           }
 
@@ -419,7 +419,7 @@ try {
           const currentLabQty = Number(labData.quantity || 0);
           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
           await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+        
 
           // Update condition breakdown
           let labGood = labData.condition?.Good ?? 0;
@@ -452,11 +452,11 @@ try {
             'condition.Defect': labDefect
           });
 
-          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+        
         }
         
       } catch (err) {
-        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+       
       }
     
       await addDoc(collection(db, "requestlog"), requestLogEntry);
@@ -534,7 +534,7 @@ try {
         );
   
         if (match) {
-          console.log("✅ Deleting from subcollection:", docSnap.id);
+        
           await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
         }
       });
@@ -552,7 +552,7 @@ try {
       });
   
     } catch (error) {
-      console.error("Error processing approval after rejection confirmation:", error);
+      
       notification.error({
         message: "Error",
         description: "Failed to process the request after rejection confirmation.",
@@ -582,11 +582,11 @@ try {
         }
         
       } else {
-        console.warn("Account not found for validation.");
+      
       }
 
     } catch (error) {
-      console.error("Error checking account status:", error);
+     
       setNotificationMessage("Error verifying account status. Please try again.");
       setIsNotificationVisible(true);
       return;
@@ -605,7 +605,7 @@ try {
                 itemType = inventoryDoc.data().type || "Unknown";
               }
             } catch (err) {
-              console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+            
             }
           }
       
@@ -638,7 +638,7 @@ try {
         }
 
       } catch (error) {
-        console.error("Error fetching user name:", error);
+       
       }
   
       const requestLogEntry = {
@@ -740,7 +740,7 @@ try {
         );
       }
 
-      console.log("Starting inventory update loop...");
+   
    
 try {
         for (const item of enrichedItems) {
@@ -749,19 +749,19 @@ try {
           const labRoomId = item.labRoom;
 
           if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+           
             continue;
           }
 
           if (!labRoomId) {
-            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+           
             continue;
           }
 
           const inventoryRef = doc(db, "inventory", inventoryId);
           const inventorySnap = await getDoc(inventoryRef);
           if (!inventorySnap.exists()) {
-            console.warn(`Inventory not found for ID: ${inventoryId}`);
+           
             continue;
           }
 
@@ -769,7 +769,7 @@ try {
           const currentQty = Number(data.quantity || 0);
           const newQty = Math.max(currentQty - requestedQty, 0);
           await updateDoc(inventoryRef, { quantity: newQty });
-          console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+      
 
           // ⚙️ Update inventory condition breakdown
           let remaining = requestedQty;
@@ -805,8 +805,7 @@ try {
             'condition.Defect': newDefect
           });
 
-          console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
-
+      
           
           // 🔁 Update labRoom item quantity
           const roomNumber = item.labRoom; // e.g. "0930"
@@ -815,7 +814,7 @@ try {
           const querySnapshot = await getDocs(q);
 
           if (querySnapshot.empty) {
-            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+          
             return;
           }
 
@@ -830,7 +829,7 @@ try {
           const itemSnapshot = await getDocs(itemQuery);
 
           if (itemSnapshot.empty) {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+           
             return;
           }
 
@@ -843,7 +842,7 @@ try {
           const currentLabQty = Number(labData.quantity || 0);
           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
           await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+         
 
           // Update condition breakdown
           let labGood = labData.condition?.Good ?? 0;
@@ -876,11 +875,11 @@ try {
             'condition.Defect': labDefect
           });
 
-          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+          
         }
         
       } catch (err) {
-        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+       
       }  
 
       // await addDoc(collection(db, "requestlog"), requestLogEntry);
@@ -960,7 +959,7 @@ try {
         );
   
         if (match) {
-          console.log("✅ Deleting from subcollection:", docSnap.id);
+      
           await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
         }
       });
@@ -978,7 +977,7 @@ try {
       });
   
     } catch (error) {
-      console.error("Error processing approval after rejection confirmation:", error);
+    
       notification.error({
         message: "Error",
         description: "Failed to process the request after rejection confirmation.",
@@ -1014,11 +1013,11 @@ try {
         }
         
       } else {
-        console.warn("Account not found for validation.");
+      
       }
 
     } catch (error) {
-      console.error("Error checking account status:", error);
+     
       setNotificationMessage("Error verifying account status. Please try again.");
       setIsNotificationVisible(true);
       return;
@@ -1036,7 +1035,8 @@ try {
       return;
     }
     
-    console.log("Filtered Items:", filteredItems);
+
+
     const enrichedItems = await Promise.all(
       filteredItems.map(async (item) => {
         const selectedItemId = item.selectedItemId || item.selectedItem?.value;
@@ -1051,7 +1051,7 @@ try {
             }
 
           } catch (err) {
-            console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+          
           }
         }
 
@@ -1062,7 +1062,7 @@ try {
           // volume: item.volume ?? "N/A", // <-- add this
         };
     
-        console.log("Enriched item:", enriched); // ✅ Individual log
+      
         return enriched;
       })
     );
@@ -1078,7 +1078,7 @@ try {
 
 
     if (uncheckedItems.length > 0) {
-      console.log("Enriched Items before multi rejection modal:", enrichedItems); 
+     
       setPendingApprovalData({
         enrichedItems,
         uncheckedItems,
@@ -1102,7 +1102,7 @@ try {
             }
 
           } catch (err) {
-            console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+        
           }
         }
 
@@ -1132,7 +1132,7 @@ try {
       }
 
     } catch (error) {
-      console.error("Error fetching user name:", error);
+
     }
 
     const requestLogEntry = {
@@ -1240,19 +1240,19 @@ try {
           const labRoomId = item.labRoom;
 
           if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-            console.warn(`⛔ Skipping invalid item: ID=${inventoryId}, quantity=${item.quantity}`);
+        
             continue;
           }
 
           if (!labRoomId) {
-            console.warn(`⚠️ labRoomId missing for item with inventoryId: ${inventoryId}`);
+
             continue;
           }
 
           const inventoryRef = doc(db, "inventory", inventoryId);
           const inventorySnap = await getDoc(inventoryRef);
           if (!inventorySnap.exists()) {
-            console.warn(`Inventory not found for ID: ${inventoryId}`);
+      
             continue;
           }
 
@@ -1260,7 +1260,7 @@ try {
           const currentQty = Number(data.quantity || 0);
           const newQty = Math.max(currentQty - requestedQty, 0);
           await updateDoc(inventoryRef, { quantity: newQty });
-          console.log(`✅ Inventory quantity updated for ${inventoryId}: ${currentQty} → ${newQty}`);
+        
 
           // ⚙️ Update inventory condition breakdown
           let remaining = requestedQty;
@@ -1296,8 +1296,7 @@ try {
             'condition.Defect': newDefect
           });
 
-          console.log(`✅ Condition updated for ${inventoryId}: Good(${good}→${newGood}), Damage(${damage}→${newDamage}), Defect(${defect}→${newDefect})`);
-
+         
            
 
           // 🔁 Update labRoom item quantity
@@ -1307,7 +1306,8 @@ try {
           const querySnapshot = await getDocs(q);
 
           if (querySnapshot.empty) {
-            console.warn(`⚠️ No labRoom found with roomNumber: ${roomNumber}`);
+          
+
             return;
           }
 
@@ -1322,7 +1322,7 @@ try {
           const itemSnapshot = await getDocs(itemQuery);
 
           if (itemSnapshot.empty) {
-            console.warn(`⚠️ labRoom item not found for ${itemId} in room ${roomNumber} (${labRoomDocId})`);
+       
             return;
           }
 
@@ -1335,7 +1335,7 @@ try {
           const currentLabQty = Number(labData.quantity || 0);
           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
           await updateDoc(labRoomItemRef, { quantity: newLabQty });
-          console.log(`✅ labRoom item updated for ${itemId} in room ${roomNumber} (${labRoomDocId}): ${currentLabQty} → ${newLabQty}`);
+         
 
           // Update condition breakdown
           let labGood = labData.condition?.Good ?? 0;
@@ -1368,11 +1368,11 @@ try {
             'condition.Defect': labDefect
           });
 
-          console.log(`✅ labRoom condition updated for ${itemId}: Good(${labData.condition.Good}→${labGood}), Damage(${labData.condition.Damage}→${labDamage}), Defect(${labData.condition.Defect}→${labDefect})`);   
+          
         }
         
       } catch (err) {
-        console.error("💥 Failed updating inventory or labRoom items:", err.message);
+
       }
     
 
@@ -1457,7 +1457,7 @@ try {
           );
 
           if (match) {
-            console.log("✅ Deleting from subcollection:", docSnap.id);
+       
             await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
           }
         });
@@ -1475,7 +1475,7 @@ try {
         });
 
       } catch (error) {
-        console.error("Error adding to requestlog:", error);
+     
         notification.error({
           message: "Approval Failed",
           description: "There was an error logging the approved request.",
@@ -1541,7 +1541,7 @@ try {
                 itemType = inventoryDoc.data().type || "Unknown";
               }
             } catch (err) {
-              console.error(`Failed to fetch type for inventory item ${selectedItemId}:`, err);
+            
             }
           }
   
@@ -1569,7 +1569,7 @@ try {
           userName = userData.name || "Unknown";
         }
       } catch (error) {
-        console.error("Error fetching user name:", error);
+
       }
   
       const rejectLogEntry = {
@@ -1618,7 +1618,7 @@ try {
           );
 
           if (match) {
-            console.log("✅ Deleting from subcollection:", docSnap.id);
+            
             await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
           }
         });
@@ -1636,7 +1636,7 @@ try {
         });
 
       } catch (error) {
-        console.error("Error adding rejection log:", error);
+
         notification.error({
           message: "Rejection Failed",
           description: "There was an error logging the rejected request.",

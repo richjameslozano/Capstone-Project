@@ -82,7 +82,7 @@
 //         return () => unsubscribe();
         
 //       } catch (error) {
-//         console.error("Error fetching borrow catalog:", error);
+//        
 //       }
 //     };
 
@@ -178,7 +178,7 @@
 //   ];
 
 //   const handleViewDetails = (record) => {
-//     console.log("Selected Record:", record);
+//     
 //     setSelectedRequest(record);
 //     setIsModalVisible(true);
 //   };
@@ -370,7 +370,7 @@
 //         return () => unsubscribe();
         
 //       } catch (error) {
-//         console.error("Error fetching borrow catalog:", error);
+//        
 //       }
 //     };
 
@@ -466,7 +466,7 @@
 //   ];
 
 //   const handleViewDetails = (record) => {
-//     console.log("Selected Record:", record);
+//    
 //     setSelectedRequest(record);
 //     setIsModalVisible(true);
 //   };
@@ -653,7 +653,7 @@ const BorrowCatalog = () => {
   //       setCatalog(sortedCatalogData);
 
   //     } catch (error) {
-  //       console.error("Error fetching borrow catalog:", error);
+  //     
   //     }
   //   };
 
@@ -726,7 +726,7 @@ const BorrowCatalog = () => {
         return () => unsubscribe();
         
       } catch (error) {
-        console.error("Error fetching borrow catalog:", error);
+        
       }
     };
 
@@ -826,7 +826,8 @@ const BorrowCatalog = () => {
   ];
 
   const handleViewDetails = (record) => {
-    console.log("Selected Record:", record);
+  
+
     setSelectedRequest(record);
     setIsModalVisible(true);
   };

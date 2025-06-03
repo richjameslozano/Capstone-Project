@@ -124,11 +124,11 @@ const Inventory = () => {
         setCount(items.length);
         
       } catch (error) {
-        console.error("Error processing inventory snapshot: ", error);
+       
       }
 
     }, (error) => {
-      console.error("Error fetching inventory with onSnapshot: ", error);
+     
     });
 
     return () => unsubscribe(); // Clean up the listener on unmount

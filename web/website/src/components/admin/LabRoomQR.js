@@ -64,7 +64,7 @@
 //         unsubscribeFunctions.push(labRoomUnsub);
 
 //       } catch (error) {
-//         console.error("Error setting up real-time listeners:", error);
+//        
 //       }
 //     };
 
@@ -226,7 +226,8 @@
 
 //         setLabRooms(roomsWithItems);
 //       } catch (error) {
-//         console.error("Error fetching lab rooms and items:", error);
+//      
+
 //       }
 //     };
 
@@ -372,7 +373,7 @@
 
 //       unsubscribeFunctions.push(labRoomUnsub);
 //     } catch (error) {
-//       console.error("Error setting up real-time listeners:", error);
+//      
 //     }
 //   };
 
@@ -573,7 +574,7 @@ const LabRoomQR = () => {
         unsubscribeFunctions.push(labRoomUnsub);
 
       } catch (error) {
-        console.error("Error setting up real-time listeners:", error);
+        
       }
     };
 
@@ -651,10 +652,10 @@ const LabRoomQR = () => {
         [roomId]: newRoomNumber,
       }));
 
-      console.log(`✅ Updated labRoom ${roomId} to ${newRoomNumber} and synced all items/inventory.`);
+    
       
     } catch (error) {
-      console.error("❌ Error updating lab room and related data:", error);
+   
     }
   };
 
