@@ -2020,7 +2020,7 @@ useEffect(() => {
         <div style={{ margin: 0 }}>
           <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
           <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
-          <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>(course code)(course description)</p>
+          <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.course}{request.courseDescription}</p>
         </div>
       </div>
     </div>

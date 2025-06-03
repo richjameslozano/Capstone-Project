@@ -34,8 +34,6 @@ import dayjs from 'dayjs';
 import StockLog from '../customs/StockLog.js'
 import { FileTextOutlined  } from '@ant-design/icons';
 
-
-
 const { Content } = Layout;
 const { Option } = Select;
 
@@ -212,21 +210,6 @@ const Inventory = () => {
   const showModal = () => setIsModalVisible(true);
   const handleCancel = () => setIsModalVisible(false);
 
-  // const exportToExcel = () => {
-  //   const worksheet = XLSX.utils.json_to_sheet(filteredData);
-  //   const workbook = XLSX.utils.book_new();
-
-  //   XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
-
-  //   const excelBuffer = XLSX.write(workbook, {
-  //     bookType: "xlsx",
-  //     type: "array",
-  //   });
-
-  //   const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-  //   saveAs(data, "Filtered_Inventory.xlsx");
-  // };
-
     const exportToExcel = () => {
     const flattenedData = filteredData.map((item) => ({
       ItemID: item.itemId || "",
@@ -239,6 +222,7 @@ const Inventory = () => {
       Condition: item.condition
         ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
         : "",
+      unit: item.unit || "",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(flattenedData);
@@ -305,7 +289,8 @@ const Inventory = () => {
     item.status || "",
     item.condition
       ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
-      : ""
+      : "",
+    item.unit || "",
   ]);
 
   doc.autoTable({
@@ -354,337 +339,6 @@ const printPdf = () => {
     window.open(doc.output("bloburl"), "_blank");
   }
 };
-
-  // const handleAdd = async (values) => {
-  //   if (!itemName || !values.department || itemDetails) {
-  //     alert("Please fill up the form!");
-  //     return;
-  //   }
-
-  //   // const isDuplicate = dataSource.some(
-  //   //   (item) => item.item.toLowerCase() === itemName.trim().toLowerCase()
-  //   // );
-
-  //   // if (isDuplicate) {
-  //   //   setNotificationMessage("An item with the same description already exists in the inventory.");
-  //   //   setIsNotificationVisible(true);
-  //   //   return;
-  //   // }
-
-  //   const trimmedName = itemName.trim();
-  //   const normalizedInputName = trimmedName.toLowerCase();
-  //   const normalizedInputDetails = itemDetails.trim().toLowerCase();
-
-  //   // Find items with the same name (case-insensitive)
-  //   const sameNameItems = dataSource.filter(
-  //     (item) => item.item.toLowerCase().startsWith(normalizedInputName)
-  //   );
-
-  //   // Check if same name AND same details already exists
-  //   const exactMatch = sameNameItems.find((item) => {
-  //     const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
-  //     const itemNameSafe = item.item ? item.item.toLowerCase() : "";
-  //     return (
-  //       itemDetailsSafe === normalizedInputDetails &&
-  //       itemNameSafe === normalizedInputName
-  //     );
-  //   });
-
-  //   if (exactMatch) {
-  //     setNotificationMessage("An item with the same name and details already exists in the inventory.");
-  //     setIsNotificationVisible(true);
-  //     return;
-  //   }
-
-  //   // Generate suffix for similar items with same base name but different details
-  //   let similarItemCount = sameNameItems.length + 1;
-  //   const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
-  //   const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
-
-  //   const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
-
-  //   const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
-  //   const inventoryRef = collection(db, "inventory");
-  //   const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
-  //   const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
-  //   // const departmentCount = deptQuerySnapshot.size + 1;
-  //   // const generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
-
-  //   // const idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-  //   // if (!idQuerySnapshot.empty) {
-  //   //   setNotificationMessage("Item ID already exists. Please try again.");
-  //   //   setIsNotificationVisible(true);
-  //   //   return;
-  //   // }
-
-  //   let departmentCount = deptQuerySnapshot.size + 1;
-  //   let generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
-  //   let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-
-  //   // 🔁 Keep trying until we find a unique ID
-  //   while (!idQuerySnapshot.empty) {
-  //     departmentCount++;
-  //     generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
-  //     idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-  //   }
-
-  //   setItemId(generatedItemId); 
-
-  
-  //   const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
-  //   const expiryDate = values.type === "Fixed" 
-  //     ? null 
-  //     : values.expiryDate 
-  //     ? values.expiryDate.format("YYYY-MM-DD")
-  //     : null;
-
-  //   const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-  //   const timestamp = new Date();
-
-  //   const quantityNumber = Number(values.quantity);
-
-  //   // const inventoryItem = {
-  //   //   itemId: generatedItemId,
-  //   //   itemName,
-  //   //   entryCurrentDate,
-  //   //   expiryDate,
-  //   //   timestamp,
-  //   //   category: values.category,
-  //   //   labRoom: values.labRoom,
-  //   //   quantity: Number(values.quantity),
-  //   //   department: values.department,
-  //   //   type: values.type,
-  //   //   status: "Available",
-  //   //   condition: {
-  //   //     Good: quantityNumber,
-  //   //     Defect: 0,
-  //   //     Damage: 0,
-  //   //   },
-  //   //   unit: values.unit || null,
-  //   //   // usageType: values.usageType,
-  //   //   volume: values.category === "Glasswares" ? values.volume : null,
-  //   //   rawTimestamp: new Date(),
-  //   //   ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-  //   //     condition: {
-  //   //       Good: quantityNumber,
-  //   //       Defect: 0,
-  //   //       Damage: 0,
-  //   //     },
-  //   //   }),
-  //   // };
-
-  //   const inventoryItem = {
-  //     itemId: generatedItemId,
-  //     // itemName,
-  //     itemName: finalItemName,
-  //     itemDetails,
-  //     entryCurrentDate,
-  //     expiryDate,
-  //     timestamp,
-  //     category: values.category,
-  //     labRoom: values.labRoom,
-  //     department: values.department,
-  //     type: values.type,
-  //     status: "Available",
-  //     // condition: {
-  //     //   Good: quantityNumber,
-  //     //   Defect: 0,
-  //     //   Damage: 0,
-  //     // },
-  //     // unit: values.unit || null,
-  //     // volume: values.category === "Glasswares" ? values.volume : null,
-  //     rawTimestamp: new Date(),
-  //     criticalLevel:criticalLevel,
-  //     ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-  //       condition: {
-  //         Good: quantityNumber,
-  //         Defect: 0,
-  //         Damage: 0,
-  //       },
-  //     }),
-  //   };
-
-  //   const encryptedData = CryptoJS.AES.encrypt(
-  //     JSON.stringify(inventoryItem),
-  //     SECRET_KEY
-  //   ).toString();
-    
-  //   const newItem = {
-  //     id: count + 1,
-  //     itemId: generatedItemId,
-  //     // item: itemName,
-  //     item: finalItemName,
-  //     itemDetails: itemDetails,
-  //     entryDate: entryCurrentDate, 
-  //     expiryDate: expiryDate, 
-  //     qrCode: encryptedData,
-  //     ...inventoryItem,
-  //     // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
-  //   };
-
-  //   // try {
-  //   //   await addDoc(collection(db, "inventory"), {
-  //   //     ...inventoryItem,
-  //   //     qrCode: encryptedData,
-  //   //   });
-
-  //   //   // 🔽 NEW: Ensure labRoom document exists
-  //   //   const labRoomRef = doc(db, "labRoom", values.labRoom);
-  //   //   const labRoomSnap = await getDoc(labRoomRef);
-
-  //   //   // 🔽 Create labRoom doc if it doesn't exist
-  //   //   if (!labRoomSnap.exists()) {
-  //   //     await setDoc(labRoomRef, {
-  //   //       createdAt: new Date(),
-  //   //     });
-  //   //   }
-
-  //   //   // 🔽 Add full item details to subcollection under labRoom
-  //   //   await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
-  //   //     ...inventoryItem,
-  //   //     qrCode: encryptedData,
-  //   //   });
-
-  //   //    // 🔽 Generate Lab Room QR Code containing all items
-  //   //   const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-  //   //   const allLabRoomItems = [];
-  //   //   labRoomItemsSnap.forEach((docItem) => {
-  //   //     const itemData = docItem.data();
-  //   //     const quantityNumbers = Number(itemData.quantity); 
-  //   //     allLabRoomItems.push({
-  //   //       itemId: itemData.itemId,
-  //   //       itemName: itemData.itemName,
-  //   //       quantity: itemData.quantity,
-  //   //       condition: {
-  //   //         Good: quantityNumbers,
-  //   //         Defect: 0,
-  //   //         Damage: 0,
-  //   //       },
-  //   //       status: itemData.status,
-  //   //     });
-  //   //   });
-
-  //   //   const labRoomQRData = CryptoJS.AES.encrypt(
-  //   //     JSON.stringify({
-  //   //       labRoom: values.labRoom,
-  //   //       items: allLabRoomItems,
-  //   //     }),
-  //   //     SECRET_KEY
-  //   //   ).toString();
-
-  //   //   // 🔽 Store labRoom QR code on the labRoom document
-  //   //   await updateDoc(labRoomRef, {
-  //   //     qrCode: labRoomQRData,
-  //   //     updatedAt: new Date(),
-  //   //   });
-
-  //   //   setDataSource([...dataSource, newItem]);
-  //   //   setCount(count + 1);
-  //   //   form.resetFields();
-  //   //   setItemName("");
-  //   //   setItemId("");
-  //   //   setIsModalVisible(false);
-
-  //   // } catch (error) {
-  //   //   console.error("Error adding document to Firestore:", error);
-  //   // }
-
-  //    try {
-  //     // 🔽 Add to inventory collection
-  //     await addDoc(collection(db, "inventory"), {
-  //       ...inventoryItem,
-  //       qrCode: encryptedData,
-  //     });
-
-  //     // 🔽 Check if labRoom with the given room number already exists
-  //     const labRoomQuery = query(
-  //       collection(db, "labRoom"),
-  //       where("roomNumber", "==", values.labRoom)
-  //     );
-  //     const labRoomSnapshot = await getDocs(labRoomQuery);
-
-  //     let labRoomRef;
-
-  //     if (labRoomSnapshot.empty) {
-  //       // 🔽 Create new labRoom document with generated ID
-  //       labRoomRef = await addDoc(collection(db, "labRoom"), {
-  //         roomNumber: values.labRoom,
-  //         createdAt: new Date(),
-  //       });
-
-  //     } else {
-  //       // 🔽 Use existing labRoom document
-  //       labRoomRef = labRoomSnapshot.docs[0].ref;
-  //     }
-
-  //     // 🔽 Add item to the labRoom's subcollection
-  //     await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
-  //       ...inventoryItem,
-  //       qrCode: encryptedData,
-  //       roomNumber: values.labRoom,
-  //     });
-
-  //     // 🔽 Fetch all items under this labRoom
-  //     // const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-  //     // const allLabRoomItems = [];
-  //     // labRoomItemsSnap.forEach((docItem) => {
-  //     //   const itemData = docItem.data();
-  //     //   const quantityNumbers = Number(itemData.quantity);
-  //     //   allLabRoomItems.push({
-  //     //     itemId: itemData.itemId,
-  //     //     itemName: itemData.itemName,
-  //     //     itemDetails: itemData.itemDetails,
-  //     //     quantity: itemData.quantity,
-  //     //     condition: {
-  //     //       Good: quantityNumbers,
-  //     //       Defect: 0,
-  //     //       Damage: 0,
-  //     //     },
-  //     //     status: itemData.status,
-  //     //   });
-  //     // });
-
-  //     // // 🔽 Generate encrypted QR code with labRoom data
-  //     // const labRoomQRData = CryptoJS.AES.encrypt(
-  //     //   JSON.stringify({
-  //     //     labRoom: values.labRoom,
-  //     //     items: allLabRoomItems,
-  //     //   }),
-  //     //   SECRET_KEY
-  //     // ).toString();
-
-  //     // // 🔽 Update labRoom document with the generated QR code
-  //     // await updateDoc(labRoomRef, {
-  //     //   qrCode: labRoomQRData,
-  //     //   updatedAt: new Date(),
-  //     // });
-
-  //     const labRoomQRData = CryptoJS.AES.encrypt(
-  //       JSON.stringify({
-  //         labRoomId: labRoomRef.id,
-  //       }),
-  //       SECRET_KEY
-  //     ).toString();
-
-  //     // Update labRoom document with the generated QR code
-  //     await updateDoc(labRoomRef, {
-  //       qrCode: labRoomQRData,
-  //       updatedAt: new Date(),
-  //     });
-
-  //     setDataSource([...dataSource, newItem]);
-  //     setCount(count + 1);
-  //     setLogRefreshKey(prev => prev + 1);
-  //     form.resetFields();
-  //     setItemName("");
-  //     setItemDetails("")
-  //     setItemId("");
-  //     setIsModalVisible(false);
-
-  //   } catch (error) {
-  //     console.error("Error adding document to Firestore:", error);
-  //   }
-  // };
 
    const handleAdd = async (values) => {
     if (!itemName || !values.department || !itemDetails) {
@@ -778,8 +432,8 @@ const printPdf = () => {
       type: values.type,
       status: "Available",
       unit: ["Chemical", "Reagent"].includes(values.category)
-      ? `${values.unit} ${values.unitType}`
-      : null,
+      ? values.unit
+      : undefined,
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
@@ -806,7 +460,6 @@ const printPdf = () => {
       expiryDate: expiryDate, 
       qrCode: encryptedData,
       ...inventoryItem,
-      // ...(values.type !== "Consumable" && { qrCode: encryptedData }),
     };
 
      try {
@@ -892,28 +545,6 @@ const printPdf = () => {
     }
   };
 
-  // const editItem = (record) => {
-  //   editForm.resetFields();
-  //   setEditingItem(record);
-  //   setSelectedCategory(record.category);
-
-  //   editForm.setFieldsValue({
-  //     // category: record.category,
-  //     // labRoom: record.labRoom,
-  //     quantity: record.quantity,
-  //     // status: record.status,
-  //     condition: {
-  //       Good: record.condition?.Good ?? 0,
-  //       Defect: record.condition?.Defect ?? 0,
-  //       Damage: record.condition?.Damage ?? 0,
-  //     },
-  //     // condition: record.condition, 
-  //     // usageType: record.usageType,
-  //   });
-
-  //   setIsEditModalVisible(true);
-  // };
-
   const editItem = (record, clearFields = true) => {
   editForm.resetFields();
   setEditingItem(record);
@@ -936,273 +567,6 @@ const printPdf = () => {
 
   setIsEditModalVisible(true);
 };
-
-
-    
-  // const updateItem = async (values) => {
-  //   const safeValues = {
-  //     category: values.category ?? "",
-  //     // labRoom: values.labRoom ?? "",
-  //     labRoom: "", 
-  //     quantity: values.quantity ?? 0,
-  //     status: values.status ?? "Available",
-  //     condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
-  //     // condition: values.condition ?? "Good",
-  //     // usageType: values.usageType ?? "",
-  //   };
-
-  //   // try {
-  //   //   const snapshot = await getDocs(collection(db, "inventory"));
-
-  //   //   snapshot.forEach(async (docItem) => {
-  //   //     const data = docItem.data();
-
-  //   //     if (data.itemId === editingItem.itemId) {
-  //   //       const inventoryId = docItem.id;
-  //   //       const itemRef = doc(db, "inventory", inventoryId);
-
-  //   //       await updateDoc(itemRef, safeValues);
-
-  //   //       setIsNotificationVisible(true);
-  //   //       setNotificationMessage("Item updated successfully!");
-
-  //   //       const updatedItem = {
-  //   //         ...editingItem,
-  //   //         ...safeValues,
-  //   //       };
-
-  //   //       setDataSource((prevData) =>
-  //   //         prevData.map((item) =>
-  //   //           item.id === editingItem.id ? updatedItem : item
-  //   //         )
-  //   //       );
-
-  //   //       const labRoomId = safeValues.labRoom;
-  //   //       const itemId = data.itemId;
-
-  //   //       if (labRoomId && itemId) {
-  //   //         const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-  //   //         const labRoomSnap = await getDoc(labRoomItemRef);
-
-  //   //         if (labRoomSnap.exists()) {
-  //   //           await updateDoc(labRoomItemRef, safeValues);
-  //   //           console.log(`🏫 labRoom/${labRoomId}/items/${itemId} updated successfully`);
-
-  //   //         } else {
-  //   //           console.warn(`⚠️ labRoom item not found for itemId: ${itemId} in labRoom: ${labRoomId}`);
-  //   //         }
-  //   //       }
-
-  //   //       setIsEditModalVisible(false);
-  //   //       setIsRowModalVisible(false)
-  //   //       setEditingItem(null);
-  //   //       form.resetFields();
-  //   //     }
-  //   //   });
-      
-  //   // } catch (error) {
-  //   //   console.error("Error updating document in Firestore:", error);
-  //   // }
-
-  //   try {
-  //     const snapshot = await getDocs(collection(db, "inventory"));
-
-  //     snapshot.forEach(async (docItem) => {
-  //       const data = docItem.data();
-
-  //       if (data.itemId === editingItem.itemId) {
-  //         const inventoryId = docItem.id;
-  //         const itemRef = doc(db, "inventory", inventoryId);
-
-  //         // Use the labRoom from the existing Firestore document
-  //         const existingLabRoom = data.labRoom;
-  //         if (!existingLabRoom) {
-  //           console.warn("❌ Existing item has no labRoom, cannot update labRoom items subcollection.");
-  //           return;
-  //         }
-
-  //         // Add labRoom to safeValues here from existing data
-  //         safeValues.labRoom = existingLabRoom;
-
-  //         // Update inventory doc with safeValues (including labRoom from Firestore)
-  //         await updateDoc(itemRef, safeValues);
-
-  //         setIsNotificationVisible(true);
-  //         setNotificationMessage("Item updated successfully!");
-
-  //         const updatedItem = {
-  //           ...editingItem,
-  //           ...safeValues,
-  //         };
-
-  //         setDataSource((prevData) =>
-  //           prevData.map((item) =>
-  //             item.id === editingItem.id ? updatedItem : item
-  //           )
-  //         );
-
-  //         // Now get the roomNumber string for query (padStart if needed)
-  //         const roomNumber = existingLabRoom.toString().padStart(4, '0');
-
-  //         const itemId = data.itemId;
-
-  //         console.log("🧪 Matching roomNumber:", roomNumber);
-  //         console.log("🆔 Matching itemId:", itemId);
-
-  //         // Query labRoom collection for the matching roomNumber
-  //         const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
-  //         const labRoomSnapshot = await getDocs(labRoomQuery);
-
-  //         if (!labRoomSnapshot.empty) {
-  //           const labRoomDoc = labRoomSnapshot.docs[0];
-  //           const labRoomRef = labRoomDoc.ref;
-
-  //           // Reference to the item inside labRoom/items/itemId
-  //           const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
-  //           const labRoomItemSnap = await getDoc(labRoomItemRef);
-
-  //           if (labRoomItemSnap.exists()) {
-  //             await updateDoc(labRoomItemRef, safeValues);
-  //             console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
-
-  //           } else {
-  //             console.warn(`⚠️ Item ${itemId} not found in labRoom`);
-  //           }
-
-  //         } else {
-  //           console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
-  //         }
-
-  //         setIsEditModalVisible(false);
-  //         setIsRowModalVisible(false);
-  //         setEditingItem(null);
-  //         form.resetFields();
-  //       }
-  //     });
-
-  //   } catch (error) {
-  //     console.error("Error updating document in Firestore:", error);
-  //   }
-  // };
-
-  // const updateItem = async (values) => {
-  //   console.log("✅ Raw incoming values:", values);
-
-  //   let totalQty = 0;
-
-  //   if (Array.isArray(values.quantity)) {
-  //     totalQty = values.quantity
-  //       .filter(entry => entry && typeof entry.qty !== 'undefined') // ✅ safe filtering
-  //       .reduce((sum, entry) => {
-  //         const qty = parseInt(entry.qty);
-  //         return sum + (isNaN(qty) ? 0 : qty);
-  //       }, 0);
-
-  //     values.condition = {
-  //       Good: totalQty,
-  //       Defect: 0,
-  //       Damage: 0,
-  //     };
-      
-  //   } else {
-  //     // fallback if quantity is not an array (maybe it's an object)
-  //     const qty = parseInt(values.quantity?.qty ?? 0);
-  //     totalQty = isNaN(qty) ? 0 : qty;
-
-  //     values.condition = {
-  //       Good: totalQty,
-  //       Defect: 0,
-  //       Damage: 0,
-  //     };
-  //   }
-
-  //   const safeValues = {
-  //     quantity: values.quantity ?? 0, // preserve full structure (array or object)
-  //     condition: values.condition ?? { Good: 0, Defect: 0, Damage: 0 },
-  //     ...(values.volume !== undefined && { volume: values.volume }),
-  //     ...(values.qty !== undefined && { qty: values.qty }),
-  //   };
-
-  //   try {
-  //     const snapshot = await getDocs(collection(db, "inventory"));
-
-  //     snapshot.forEach(async (docItem) => {
-  //       const data = docItem.data();
-
-  //       if (data.itemId === editingItem.itemId) {
-  //         const inventoryId = docItem.id;
-  //         const itemRef = doc(db, "inventory", inventoryId);
-
-  //         const existingLabRoom = data.labRoom;
-  //         if (!existingLabRoom) {
-  //           console.warn("❌ Existing item has no labRoom, cannot update labRoom items subcollection.");
-  //           return;
-  //         }
-
-  //         safeValues.labRoom = existingLabRoom;
-
-  //         await updateDoc(itemRef, safeValues);
-
-  //         setIsNotificationVisible(true);
-  //         setNotificationMessage("Item updated successfully!");
-
-  //         const updatedItem = {
-  //           ...editingItem,
-  //           ...safeValues,
-  //         };
-
-  //        // setDataSource((prevData) =>
-  //         //   prevData.map((item) =>
-  //         //     item.id === editingItem.id ? updatedItem : item
-  //         //   )
-  //         // );
-
-  //         setDataSource((prevData) =>
-  //           prevData.map((item) =>
-  //             item.itemId === editingItem.itemId ? { ...item, ...updatedItem } : item
-  //           )
-  //         );
-
-  //         const roomNumber = existingLabRoom.toString().padStart(4, '0');
-  //         const itemId = data.itemId;
-
-  //         const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
-  //         const labRoomSnapshot = await getDocs(labRoomQuery);
-
-  //         if (!labRoomSnapshot.empty) {
-  //           const labRoomDoc = labRoomSnapshot.docs[0];
-  //           const labRoomRef = labRoomDoc.ref;
-
-  //           const labRoomItemRef = doc(collection(labRoomRef, "items"), itemId);
-  //           const labRoomItemSnap = await getDoc(labRoomItemRef);
-
-  //           if (labRoomItemSnap.exists()) {
-  //             await updateDoc(labRoomItemRef, safeValues);
-  //             console.log(`✅ Updated labRoom/${labRoomRef.id}/items/${itemId}`);
-
-  //           } else {
-  //             console.warn(`⚠️ Item ${itemId} not found in labRoom`);
-  //           }
-
-  //         } else {
-  //           console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
-  //         }
-
-  //         setIsEditModalVisible(false);
-  //         setIsRowModalVisible(false);
-  //         setEditingItem(null);
-  //         form.resetFields();
-  //       }
-  //     });
-
-  //   } catch (error) {
-  //     console.error("🔥 Error updating document in Firestore:", error);
-  //   }
-  // };
-
-   // Refactored inventory update logic: Adds new stock to existing stock and tracks expiry dates.
-
-// Refactored inventory update logic: Adds new stock to existing stock and tracks expiry dates (with numeric fix).
 
 const updateItem = async (values) => {
   console.log("✅ Raw incoming values:", values);
@@ -1320,7 +684,6 @@ const updateItem = async (values) => {
   }
 };
 
-
 useEffect(() => {
   if (isEditModalVisible) {
     form.setFieldsValue({
@@ -1359,53 +722,8 @@ useEffect(() => {
       title: "Inventory Balance",
       dataIndex: "quantity",
       key: "quantity",
-      // render: (text, record) => {
-      //   const { category, unit, volume } = record;
-      //   if (["Chemical", "Reagent"].includes(category)) {
-      //     return `${text} pcs / ${unit || ""} ML `;
-      //   }
-
-      //   if (category === "Glasswares" && volume) {
-      //     return `${text} pcs / ${volume} ML`;
-      //   }
-
-      //   return text;
-      // },
     },
-    // { title: "Usage Type", dataIndex: "usageType", key: "usageType" }, 
     { title: "Status", dataIndex: "status", key: "status" },   
-    // {
-    //   title: "Actions",
-    //   dataIndex: "actions",
-    //   key: "actions",
-    //   render: (_, record) => (
-    //     <Space direction="vertical" size="small">
-    //       <Button
-    //         icon={<EyeOutlined />} 
-    //         onClick={(e) => {
-    //           e.stopPropagation(); 
-    //           setSelectedRow(record);
-    //           setIsRowModalVisible(true);
-    //         }}
-    //       >
-    //         View
-    //       </Button>
-
-    //       <Button
-    //         type="link"
-    //         icon={<EditOutlined />}
-    //         onClick={(e) => {
-    //           e.stopPropagation(); 
-    //           setSelectedRow(record);
-    //           setIsEditModalVisible(true);
-    //           editItem(record)
-    //         }}
-    //       >
-    //         Edit
-    //       </Button>
-    //     </Space>
-    //   ),
-    // }    
   ];
 
   const disabledDate = (current) => {
@@ -1440,198 +758,6 @@ useEffect(() => {
 
       <Layout>
         <Content className="content inventory-container">
-          {/* <div className="form-container">
-            <Form layout="vertical" form={form} onFinish={handleAdd}>         
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="Item Name"
-                    label="Item Name"
-                    rules={[{ required: true, message: "Please enter Item Name!" }]}
-                  >
-                    <Input
-                      placeholder="Enter Item Name"
-                      value={itemName}
-                      onChange={(e) => setItemName(e.target.value)}
-                      style={{ width: "100%" }}
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item
-                    name="quantity"
-                    label="Quantity"
-                    rules={[{ required: true, message: "Please enter Quantity!" }]}
-                  >
-                      <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }}/>
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="category"
-                    label="Category"
-                    rules={[{ required: true, message: "Please select a category!" }]}
-                  >
-                    <Select placeholder="Select Category" onChange={handleCategoryChange}>
-                      <Option value="Chemical">Chemical</Option>
-                      <Option value="Reagent">Reagent</Option>
-                      <Option value="Materials">Materials</Option>
-                      <Option value="Equipment">Equipment</Option>
-                      <Option value="Glasswares">Glasswares</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
-                  <Col span={8}>
-                    <Form.Item
-                      name="unit"
-                      label="Unit"
-                      rules={[{ required: true, message: "Please select a unit!" }]}
-                    >
-                      <Select placeholder="Select Unit">
-                        <Option value="ML">ML</Option>
-                        <Option value="L">L</Option>
-                        <Option value="GALLON">GALLON</Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                )}
-
-                <Col span={8}>
-                  <Form.Item
-                    name="entryDate"
-                    label="Date of Entry"
-                    // rules={[{ required: true, message: "Please select a date of entry!" }]}
-                    disabled
-                  >
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      style={{ width: "100%" }}
-                      placeholder="Select Date of Entry"
-                      disabledDate={disabledDate}
-                      defaultValue={dayjs()} // ✅ Correct format
-                      initialValue={dayjs()} 
-                      disabled
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item
-                    name="expiryDate"
-                    label="Date of Expiry"
-                    rules={[{ required: false, message: "Please select a date of expiry!" }]}
-                  >
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      style={{ width: "100%" }}
-                      placeholder="Select Date of Expiry"
-                      disabledDate={disabledExpiryDate}
-                      disabled={disableExpiryDate}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="type"
-                    label="Item Type"
-                    rules={[{ required: true, message: "Please select Item Type!" }]}
-                  >
-                    <Select
-                      value={itemType}
-                      onChange={(value) => setItemType(value)}
-                      disabled 
-                      placeholder="Select Item Type"
-                    >
-                      <Option value="Fixed">Fixed</Option>
-                      <Option value="Consumable">Consumable</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item
-                    name="labRoom"
-                    label="Lab/Stock Room"
-                    rules={[{ required: true, message: "Please enter Lab/Stock Room!" }]}
-                  >
-                    <Input placeholder="Enter Lab/Stock Room" />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item name="department" label="Department">
-                    <Input placeholder="Enter department" />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.Item>
-                <Button type="primary" htmlType="submit" className="add-btn">
-                  Add to Inventory
-                </Button>
-              </Form.Item>
-            </Form>
-          </div>
-
-          <div className="inventory-header">
-            <Space wrap>
-              <Input.Search
-                placeholder="Search"
-                className="search-bar"
-                style={{ width: 200 }}
-                allowClear
-                onChange={(e) => setSearchText(e.target.value)}
-              />
-
-              <Select
-                allowClear
-                placeholder="Filter by Category"
-                style={{ width: 160 }}
-                onChange={(value) => setFilterCategory(value)}
-              >
-                <Option value="Chemical">Chemical</Option>
-                <Option value="Reagent">Reagent</Option>
-                <Option value="Materials">Materials</Option>
-                <Option value="Equipment">Equipment</Option>
-                <Option value="Glasswares">Glasswares</Option>
-              </Select>
-
-              <Select
-                allowClear
-                placeholder="Filter by Item Type"
-                style={{ width: 160 }}
-                onChange={(value) => setFilterItemType(value)}
-              >
-                <Option value="Fixed">Fixed</Option>
-                <Option value="Consumable">Consumable</Option>
-              </Select>
-
-              <Button
-                onClick={() => {
-                  setFilterCategory(null);
-                  setFilterItemType(null);
-                  // setFilterUsageType(null);
-                  setSearchText('');
-                }}
-              >
-                Reset Filters
-              </Button>
-
-              <Button type="primary" onClick={exportToExcel}>
-                Export to Excel
-              </Button>
-
-            </Space>
-          </div> */}
     
           <div style={{ marginBottom: 16 }}>
             <Button type="primary" onClick={showModal}>
@@ -1781,44 +907,6 @@ useEffect(() => {
                     </Select>
                   </Form.Item>
                 </Col>
-
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
-                  <Col span={8}>
-                    <Form.Item
-                      name="unit"
-                      label="Unit"
-                      rules={[{ required: true, message: "Please select a unit!" }]}
-                    >
-                      <Input
-                        type="number"
-                        addonAfter={
-                          <Form.Item name="unitType" noStyle rules={[{ required: true }]}>
-                            <Select style={{ width: 70 }}>
-                              <Select.Option value="ml">ml</Select.Option>
-                              <Select.Option value="g">g</Select.Option>
-                            </Select>
-                          </Form.Item>
-                        }
-                      />
-                    </Form.Item>
-                  </Col>
-                )}
-
-                {/* {["Chemical", "Reagent"].includes(selectedCategory) && (
-                  <Col span={8}>
-                    <Form.Item
-                      name="unit"
-                      label="Unit"
-                      rules={[{ required: true, message: "Please select a unit!" }]}
-                    >
-                      <Input 
-                      type="number"
-                      addonAfter="ML"
-                      value="ML"/>
-                    </Form.Item>
-                  </Col>
-                )} */}
-
               </Row>
 
               <Row gutter={16}>                
@@ -1831,6 +919,21 @@ useEffect(() => {
                     <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
                   </Form.Item>
                 </Col>
+
+                {["Chemical", "Reagent"].includes(selectedCategory) && (
+                  <Col span={8}>
+                    <Form.Item
+                      name="unit"
+                      label="Unit"
+                      rules={[{ required: true, message: "Please select a unit!" }]}
+                    >
+                      <Select placeholder="Select unit">
+                        <Select.Option value="ml">ml</Select.Option>
+                        <Select.Option value="g">g</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                )}
                 
                 <Col span={8}>
                   <Form.Item

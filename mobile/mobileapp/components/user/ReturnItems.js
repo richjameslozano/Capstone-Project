@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
 import {
   View, Text, TouchableOpacity, Modal,
-  Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView, TouchableWithoutFeedback } from 'react-native';
+  Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, 
+  StatusBar} from 'react-native';
 import {
   collection, getDocs, doc, updateDoc, getDoc, deleteDoc,
   setDoc, addDoc, serverTimestamp, onSnapshot, query, where
@@ -11,6 +12,8 @@ import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/ReturnItemsStyle';
 import Header from '../Header';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 const ReturnItems = () => {
   const { user } = useAuth();
@@ -22,6 +25,8 @@ const ReturnItems = () => {
   const [returnQuantities, setReturnQuantities] = useState({});
   const [itemConditions, setItemConditions] = useState({});
   const [itemUnitConditions, setItemUnitConditions] = useState({});
+
+  const navigation = useNavigation()
 
   useEffect(() => {
     console.log("Updated conditions state:", itemConditions);
@@ -282,24 +287,50 @@ const ReturnItems = () => {
   const filteredData =
     filterStatus === "All" ? historyData : historyData.filter((item) => item.status === filterStatus);
 
+        const [headerHeight, setHeaderHeight] = useState(0);
+      const handleHeaderLayout = (event) => {
+        const { height } = event.nativeEvent.layout;
+        setHeaderHeight(height);
+      };
+    useFocusEffect(
+      useCallback(() => {
+        StatusBar.setBarStyle('dark-content');
+        StatusBar.setBackgroundColor('transparent'); // Android only
+        StatusBar.setTranslucent(true)
+      }, [])
+    );
+    
   return (
     <View style={styles.container}>
-      <Header />
+            <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                                <Icon name="keyboard-backspace" size={28} color="black" />
+                              </TouchableOpacity>
       
-      <View style={styles.filterContainer}>
+              <View>
+                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Return Items</Text>
+                <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Return Your Borrowed Items</Text>
+              </View>
+      
+                <TouchableOpacity style={{padding: 2}}>
+                  <Icon name="information-outline" size={24} color="#000" />
+                </TouchableOpacity>
+              </View>
+      
+      <View style={[styles.filterContainer, {marginTop: headerHeight}]}>
         {["All", "Approved", "Deployed"].map((status) => (
           <TouchableOpacity
             key={status}
             style={[styles.filterButton, filterStatus === status && styles.activeButton]}
             onPress={() => setFilterStatus(status)}
           >
-            <Text style={styles.filterText}>{status}</Text>
+            <Text style={[styles.filterText, filterStatus === status && styles.activeText]}>{status}</Text>
           </TouchableOpacity>
         ))}
       </View>
 
         <View style={styles.tableContainer1}>
-          <ScrollView style={{ maxHeight: 500 }}>
+          <ScrollView style={{ maxHeight: 500, padding: 5, }}>
             {/* Header */}
             <View style={[styles.tableRow, styles.tableHeader]}>
               <Text style={[styles.cell, { flex: 2 }]}>Date</Text>
@@ -310,8 +341,8 @@ const ReturnItems = () => {
             {/* Data Rows */}
             {filteredData.map((item) => (
               <View key={item.id} style={styles.tableRow}>
-                <Text style={[styles.cell, { flex: 2 }]}>{item.rawTimestamp}</Text>
-                <Text style={[styles.cell, { flex: 2 }]}>{item.status}</Text>
+                <Text style={[{ flex: 2 }]}>{item.rawTimestamp}</Text>
+                <Text style={[{ flex: 2 }]}>{item.status}</Text>
                 <TouchableOpacity style={{ flex: 1 }} onPress={() => handleViewDetails(item)}>
                   <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
                 </TouchableOpacity>
@@ -338,9 +369,9 @@ const ReturnItems = () => {
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                   >
-                    <Text style={styles.modalTitle}>📄 Requisition Slip</Text>
-                    <Text>Name: {selectedRequest?.raw?.userName}</Text>
-                    <Text>Requisition ID: {selectedRequest?.requisitionId}</Text>
+                    <Text style={styles.modalTitle}>Returning Items</Text>
+                    {/* <Text>Name: {selectedRequest?.raw?.userName}</Text>
+                    <Text>Requisition ID: {selectedRequest?.requisitionId}</Text> */}
                     <Text>Request Date: {selectedRequest?.timestamp}</Text>
 
                     <Text style={styles.boldText}>Requested Items:</Text>
