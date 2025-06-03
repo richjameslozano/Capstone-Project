@@ -82,8 +82,9 @@ position: 'absolute',
   },
 
   statusFilterContainer: {
-    marginVertical: 10,
+    paddingVertical: 10,
     paddingHorizontal: 5,
+    backgroundColor: 'white'
   },
 
   statusFilterButton: {

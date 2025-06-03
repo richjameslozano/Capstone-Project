@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler } from 'react-native';
+import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler, Alert } from 'react-native';
 import { Input, Text, Icon } from 'react-native-elements';
 import { TextInput, Card, HelperText, Menu, Provider, Button, Checkbox  } from 'react-native-paper';
 import { useAuth } from '../components/contexts/AuthContext';
@@ -14,7 +14,6 @@ import TermsModal from './customs/TermsModal';
 import {Animated} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-
 
 export default function LoginScreen({navigation}) {
   const [showPassword, setShowPassword] = useState(false);
@@ -470,6 +469,8 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setJobTitle("");
           setDepartment("");
           setError("");
+
+          Alert.alert("Sign Up Succesfull!");
       
         } catch (error) {
           console.error("Sign up error:", error.message);
@@ -690,56 +691,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               </Menu>
               </View>
                 
-
-                {/* Password Inputs */}
-                {/* <Text style={styles.label}>Password:<Text style={{color:'red'}}>*</Text></Text>
-                  <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%' }]}>
-                <Input
-                  placeholder="Password"
-                  leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
-                  rightIcon={
-                    <Icon
-                      type="material"
-                      name={secureTextEntry ? 'visibility' : 'visibility-off'}
-                      color="#9CA3AF"
-                      onPress={() => setSecureTextEntry(!secureTextEntry)}
-                    />
-                  }
-                  value={signUpPassword}
-                  onChangeText={setSignUpPassword}
-                  secureTextEntry={secureTextEntry}
-                  onFocus={() => handleFocus('password')}
-                onBlur={() => handleBlur('password')}
-                  inputContainerStyle={[styles.inputContainer]} // removes underline
-                inputStyle={styles.inputText}
-                />
-                </Animated.View>
-
-
-                <Text style={styles.label}>Confirm Password:<Text style={{color:'red'}}>*</Text></Text>
-                
-                 <Animated.View style={[styles.animatedInputContainer, { borderColor: confirmPasswordBorderColor, width: '100%' }]}>
-                <Input
-                  placeholder="confirm password"
-                  leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
-                  rightIcon={
-                    <Icon
-                      type="material"
-                      name={secureTextEntry ? 'visibility' : 'visibility-off'}
-                      color="#9CA3AF"
-                      onPress={() => setSecureTextEntry(!secureTextEntry)}
-                    />
-                  }
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry={secureTextEntry}
-                 onFocus={() => handleFocus('confirmPassword')}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  inputContainerStyle={[styles.inputContainer]} // removes underline
-                inputStyle={styles.inputText}
-                />
-                </Animated.View> */}
-
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                   <Checkbox
                     status={agreedToTerms ? 'checked' : 'unchecked'}

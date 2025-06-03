@@ -180,15 +180,17 @@ const BorrowCatalogScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={{flex: 1, marginTop: headerHeight, backgroundColor: '#fff', borderRadius: 5, padding: 10, gap: 5}}>
+      <View style={{flex: 1, marginTop: headerHeight, backgroundColor: '#e9ecee', borderRadius: 5, gap: 5}}>
+
+    <View style={{backgroundColor: '#fff', padding: 10, borderRadius: 5, elevation: 3}}>
       <TextInput
         placeholder="Search"
         value={searchQuery}
         onChangeText={handleSearch}
         style={styles.searchInput}
       />
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.statusFilterContainer}>
+  <View  style={styles.statusFilterContainer}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
         {['All', 'Borrowed', 'Returned', 'Approved', 'Deployed'].map((status) => (
           <TouchableOpacity
             key={status}
@@ -209,6 +211,8 @@ const BorrowCatalogScreen = () => {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      </View>
+    </View>
 
       <FlatList
         data={filteredCatalog}
