@@ -36,7 +36,6 @@ const StockLog = ({ inventoryDocId }) => {
         },
         (err) => {
         setError('Failed to fetch stock logs');
-        console.error(err);
         setLoading(false);
         }
     );

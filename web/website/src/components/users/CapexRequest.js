@@ -192,7 +192,7 @@ const CapexRequest = () => {
     }
   
     if (!Array.isArray(itemsToPrint) || itemsToPrint.length === 0) {
-      console.error("No items to print. `selectedRowDetails.items` is missing or not an array.");
+      
       return;
     }
   
@@ -291,7 +291,7 @@ const CapexRequest = () => {
       calculateTotalPrice(); // Recalculate total price without modifying the state directly
   
     } catch (error) {
-      console.error("Error saving item to Firestore:", error);
+     
       setNotificationMessage("Failed to save Item");
       setNotificationVisible(true);
     }
@@ -316,7 +316,7 @@ const CapexRequest = () => {
       ]);
 
     } catch (error) {
-      console.error("Error deleting item from Firestore:", error);
+    
       setNotificationMessage("Failed to delete Item");
       setNotificationVisible(true);
     }
@@ -376,7 +376,7 @@ const CapexRequest = () => {
       setIsFinalizeModalVisible(false);
   
     } catch (error) {
-      console.error("Error submitting CAPEX request:", error);
+    
       setNotificationMessage("Failed to submit CAPEX request");
       setNotificationVisible(true);
     }

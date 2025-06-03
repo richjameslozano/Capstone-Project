@@ -90,7 +90,6 @@ const ActivityLog = () => {
   //       setActivityData(logs);
 
   //     } catch (error) {
-  //       console.error("Failed to fetch activity logs:", error);
   //     }
   //   };
 
@@ -142,7 +141,7 @@ const ActivityLog = () => {
         setActivityData(logs);
       },
       (error) => {
-        console.error("Real-time activity log listener failed:", error);
+    
       }
     );
 

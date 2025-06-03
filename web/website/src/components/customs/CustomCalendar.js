@@ -42,7 +42,7 @@ const CustomCalendar = ({ onSelectDate }) => {
   //       setApprovedRequests(requests);
   //     },
   //     (error) => {
-  //       console.error("Error in real-time listener:", error);
+
   //     }
   //   );
 
@@ -79,7 +79,6 @@ const CustomCalendar = ({ onSelectDate }) => {
         setApprovedRequests(Object.values(groupedRequests));
       },
       (error) => {
-        console.error("Error in real-time listener:", error);
       }
     );
 
@@ -87,8 +86,7 @@ const CustomCalendar = ({ onSelectDate }) => {
   }, []);
 
   useEffect(() => {
-    console.log("Filter program:", filterProgram);
-    console.log("Filtered requests:", filteredApprovedRequests);
+
   }, [filterStatus, filterProgram, approvedRequests]);
 
 
