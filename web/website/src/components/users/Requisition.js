@@ -1207,8 +1207,8 @@ const Requisition = () => {
       }
   
       // Notify user whether the item was successfully removed from Firestore
-      setNotificationMessage(foundInFirestore ? "Item removed from the list" : "Item not found in Firestore.");
-      setIsNotificationVisible(true);
+      // setNotificationMessage(foundInFirestore ? "Item removed from the list" : "Item not found in Firestore.");
+      // setIsNotificationVisible(true);
   
     } catch (error) {
 
@@ -1373,8 +1373,8 @@ const Requisition = () => {
           unit: selectedItem.unit || null,
         });
 
-        setNotificationMessage("Item updated in temporary list.");
-        setIsNotificationVisible(true);
+        // setNotificationMessage("Item updated in temporary list.");
+        // setIsNotificationVisible(true);
 
       } catch (error) {
 
