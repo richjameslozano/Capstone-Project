@@ -581,10 +581,13 @@ export default function InventoryScreen({ navigation }) {
       <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
         }}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <TouchableOpacity onPress={!isComplete ? () => navigation.goBack(): ()=> setIsComplete(false)} style={styles.backButton}>
                 <Icon name="keyboard-backspace" size={28} color="white" />
               </TouchableOpacity>
+              <View style={{alignItems: 'center'}}>
                 <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white'}}>Requisition Slip</Text>
+                <Text style={{color: 'white', fontWeight: 300, fontSize: 13}}>Request Items</Text>
+                </View>
               <TouchableOpacity style={{padding: 2}}>
                 <Icon name="dots-vertical" size={24} color="#fff" />
               </TouchableOpacity>
