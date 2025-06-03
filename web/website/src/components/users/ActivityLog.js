@@ -175,7 +175,7 @@ const ActivityLog = () => {
           <Input
             placeholder="Search"
             prefix={<SearchOutlined />}
-            className="activity-search"
+            className="pending-search"
             allowClear
             onChange={(e) => setSearchQuery(e.target.value)}
           />
