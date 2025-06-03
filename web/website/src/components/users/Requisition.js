@@ -2525,7 +2525,15 @@ const Requisition = () => {
             </div>
           </div> */}
 
- 
+        <NotificationModal
+          isVisible={isNotificationVisible}
+          onClose={() => setIsNotificationVisible(false)}
+          message={notificationMessage}
+        />
+
+        <SuccessModal isVisible={showModal} onClose={closeModal} />
+
+        <PoliciesModal isOpen={showPolicies} onClose={closePolicies} />
       </Layout>
       
       
