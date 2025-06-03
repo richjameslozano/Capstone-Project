@@ -299,6 +299,7 @@ export default function InventoryScreen({ navigation }) {
       if(item.category === 'Chemical') return 'flask-outline';
       if(item.category === 'Materials') return 'layers-outline';
       if(item.category === 'Reagent') return 'test-tube';
+      if(item.category === 'Glasswares') return 'beaker-outline';
     }
     
     return (
@@ -996,6 +997,11 @@ export default function InventoryScreen({ navigation }) {
                   <Icon name='test-tube' size={16} color={'gray'}/>
                   <Text style={{fontWeight: 300, fontSize: 11}} >- Reagent</Text>
                   </View>
+                </View>
+
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Icon name='beaker-outline' size={16} color={'gray'}/>
+                <Text style={{fontWeight: 300, fontSize: 11}} >- Glasswares</Text>
                 </View>
             </View>
 

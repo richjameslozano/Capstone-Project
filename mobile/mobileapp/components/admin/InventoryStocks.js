@@ -212,6 +212,11 @@ const formatCondition = (cond) => {
                 <Icon name='test-tube' size={16} color={'gray'}/>
                 <Text style={{fontWeight: 300, fontSize: 11}} >- Reagent</Text>
                 </View>
+
+                <View style={{flexDirection: 'row', alignItems: 'center'}}>
+                <Icon name='beaker-outline' size={16} color={'gray'}/>
+                <Text style={{fontWeight: 300, fontSize: 11}} >- Glasswares</Text>
+                </View>
       
               </View>
             </View>
