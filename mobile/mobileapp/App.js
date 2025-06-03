@@ -348,12 +348,6 @@ const CustomSuperUserDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Inventory</Title>
       </TouchableOpacity>
 
-
-      <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
-        <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Activity Log</Title>
-      </TouchableOpacity>
-
       <TouchableOpacity onPress={() => navigation.navigate('RequestLogScreen')} style={styles.drawerItem}>
         <Icon2 name="book-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Request Log</Title>
@@ -363,6 +357,11 @@ const CustomSuperUserDrawerContent = ({ navigation }) => {
       <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
         <Icon2 name="hand-extended-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Borrow Catalog</Title>
+      </TouchableOpacity>
+
+            <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
+        <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Activity Log</Title>
       </TouchableOpacity>
 </View>
 
