@@ -277,6 +277,7 @@ export default function InventoryScreen({ navigation }) {
         timestamp: Timestamp.fromDate(new Date()),
         type: item.type || '',
         usageType: finalUsageType || '',
+        unit: item.unit || '',
       });
   
       alert('Item successfully added to temporaryRequests.');
@@ -1057,6 +1058,11 @@ export default function InventoryScreen({ navigation }) {
                 </Text>
                 <Text style={styles.itemType}>Status: {selectedItem?.status}</Text>
                 <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text>
+                {["Chemical", "Reagent"].includes(selectedItem?.category) && selectedItem?.unit && (
+                  <Text style={styles.itemType}>
+                    Unit: {selectedItem.unit}
+                  </Text>
+                )}
                 {/* <Text style={styles.itemType}>
                   Available Quantity: {selectedItem?.quantity}
                   {["Glasswares", "Chemical", "Reagent"].includes(selectedItem?.category) && " pcs"}

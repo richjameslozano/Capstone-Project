@@ -423,6 +423,10 @@ const RequestListScreen = ({navigation}) => {
                 />
 
                 <Text style={styles.modalDetail}>
+                  <Text style={styles.bold}>Unit:</Text> {selectedItem.unit}
+                </Text>
+
+                <Text style={styles.modalDetail}>
                   <Text style={styles.bold}>Category:</Text> {selectedItem.category}
                 </Text>
 
@@ -483,10 +487,10 @@ const RequestListScreen = ({navigation}) => {
                       {/* Table Header */}
                       <View style={styles.tableRowHeader}>
                         <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Name</Text>
-                        <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Description</Text>
+                        <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Details</Text>
                         <Text style={[styles.tableCellHeader, { width: 100 }]}>Qty</Text>
-                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Category</Text>
-                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Status</Text>
+                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Unit</Text>
+                        {/* <Text style={[styles.tableCellHeader, { width: 120 }]}>Status</Text> */}
                       </View>
 
                       {/* Table Rows */}
@@ -495,8 +499,8 @@ const RequestListScreen = ({navigation}) => {
                           <Text style={[styles.tableCell, { width: 150 }]}>{item.selectedItem?.label}</Text>
                           <Text style={[styles.tableCell, { width: 100 }]}>{item.itemDetails}</Text>
                           <Text style={[styles.tableCell, { width: 100 }]}>{item.quantity}</Text>
-                          <Text style={[styles.tableCell, { width: 120 }]}>{item.category}</Text>
-                          <Text style={[styles.tableCell, { width: 120 }]}>{item.status}</Text>
+                          <Text style={[styles.tableCell, { width: 120 }]}>{item.unit}</Text>
+                          {/* <Text style={[styles.tableCell, { width: 120 }]}>{item.status}</Text> */}
                         </View>
                       ))}
                     </View>
