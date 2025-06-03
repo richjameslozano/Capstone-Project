@@ -431,9 +431,7 @@ const printPdf = () => {
       department: values.department,
       type: values.type,
       status: "Available",
-      unit: ["Chemical", "Reagent"].includes(values.category)
-      ? values.unit
-      : undefined,
+      ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
       rawTimestamp: new Date(),
       criticalLevel:criticalLevel,
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
