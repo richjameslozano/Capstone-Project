@@ -73,6 +73,11 @@ const Inventory = () => {
   const [hasExpiryDate, setHasExpiryDate] = useState(false);
   const db = getFirestore();
 
+
+  const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
+  const [fullEditForm] = Form.useForm();
+
+
   const [headerHeight, setHeaderHeight] = useState(0);
   const headerRef = useRef(null);
 
@@ -158,6 +163,117 @@ const Inventory = () => {
 
   //   fetchInventory();
   // }, []);
+
+  //FULL EDIT
+
+  // Open full edit modal and prefill
+const openFullEditModal = (record) => {
+  fullEditForm.resetFields();
+  setEditingItem(record);
+  setSelectedCategory(record.category);
+
+  const hasExpiry = record.category === "Chemical" || record.category === "Reagent";
+  setHasExpiryDate(hasExpiry);
+
+  fullEditForm.setFieldsValue({
+    itemName: record.itemName,
+    itemDetails: record.itemDetails,
+    category: record.category,
+    department: record.department,
+    criticalLevel: record.criticalLevel,
+    labRoom: record.labRoom,
+    status: record.status,
+    type: record.type,
+    unit: record.unit,
+     condition: ["Glasswares", "Equipment", "Materials"].includes(record.category)
+      ? {
+          Good: record.condition?.Good ?? 0,
+          Defect: record.condition?.Defect ?? 0,
+          Damage: record.condition?.Damage ?? 0,
+        }
+      : undefined,
+  });
+
+  setIsFullEditModalVisible(true);
+};
+
+const handleFullUpdate = async (values) => {
+  try {
+    if (!editingItem || !editingItem.docId) {
+      console.error("No item selected or docId missing.");
+      return;
+    }
+
+    const itemRef = doc(db, "inventory", editingItem.docId);
+
+    const updatedData = {
+      itemName: values.itemName,
+      itemDetails: values.itemDetails,
+      category: values.category,
+      department: values.department,
+      criticalLevel: Number(values.criticalLevel),
+      labRoom: values.labRoom,
+      status: values.status,
+      unit: values.unit || null,
+    };
+
+    if (["Glasswares", "Equipment", "Materials"].includes(values.category)) {
+      const good = Number(values.condition?.Good) ?? 0;
+      const defect = Number(values.condition?.Defect) ?? 0;
+      const damage = Number(values.condition?.Damage) ?? 0;
+
+      updatedData.condition = { Good: good, Defect: defect, Damage: damage };
+      updatedData.quantity = good; // Good is recalculated in form
+    }
+
+    // Update main inventory doc
+    await updateDoc(itemRef, updatedData);
+
+    // Update labRoom subcollection item
+    const labRoomNumber = updatedData.labRoom ? updatedData.labRoom.toString().padStart(4, "0") : null;
+
+    if (labRoomNumber) {
+      const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", labRoomNumber));
+      const labRoomSnapshot = await getDocs(labRoomQuery);
+
+      if (!labRoomSnapshot.empty) {
+        const labRoomDoc = labRoomSnapshot.docs[0];
+        const labRoomRef = labRoomDoc.ref;
+        const labRoomItemRef = doc(collection(labRoomRef, "items"), editingItem.itemId);
+        const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+        if (labRoomItemSnap.exists()) {
+          await updateDoc(labRoomItemRef, updatedData);
+        } else {
+          console.warn(`Item ${editingItem.itemId} not found in labRoom ${labRoomNumber}/items`);
+        }
+      } else {
+        console.warn(`No labRoom found with roomNumber "${labRoomNumber}"`);
+      }
+    }
+
+    setDataSource((prevData) =>
+      prevData.map((item) =>
+        item.docId === editingItem.docId ? { ...item, ...updatedData } : item
+      )
+    );
+
+    setNotificationMessage("Item updated successfully!");
+    setIsNotificationVisible(true);
+    setIsFullEditModalVisible(false);
+    setIsRowModalVisible(false);
+    setEditingItem(null);
+    fullEditForm.resetFields();
+  } catch (error) {
+    console.error("Error updating item:", error);
+    setNotificationMessage("Failed to update item. Please try again.");
+    setIsNotificationVisible(true);
+  }
+};
+
+
+
+
 
 
   useEffect(() => {
@@ -1049,6 +1165,157 @@ useEffect(() => {
           </Modal>
 
           <Modal
+            title="Edit Item Details"
+            visible={isFullEditModalVisible}
+            onCancel={() => setIsFullEditModalVisible(false)}
+            onOk={() => fullEditForm.submit()}
+            width={800}
+            zIndex={1030}
+          >
+            <Form form={fullEditForm} layout="vertical" onFinish={handleFullUpdate}
+            onValuesChange={(changedValues, allValues) => {
+  if ('condition' in changedValues) {
+    const condition = allValues.condition || {};
+    const originalGood = editingItem.condition?.Good ?? 0;
+
+    const defect = Number(condition.Defect) || 0;
+    const damage = Number(condition.Damage) || 0;
+
+    const newGood = originalGood - defect - damage;
+
+    if (newGood < 0) {
+      fullEditForm.setFields([
+        {
+          name: ['condition', 'Defect'],
+          errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+        },
+        {
+          name: ['condition', 'Damage'],
+          errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+        },
+      ]);
+    } else {
+      fullEditForm.setFields([
+        { name: ['condition', 'Defect'], errors: [] },
+        { name: ['condition', 'Damage'], errors: [] },
+      ]);
+      const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
+      if (currentGood !== newGood) {
+        fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
+      }
+    }
+  }
+}}
+
+              >
+                <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Item Name"
+                  name="itemName"
+                  rules={[{ required: true, message: "Please enter Item Name!" }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item label="Item Description" name="itemDetails">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item
+                  label="Category"
+                  name="category"
+                  rules={[{ required: true, message: "Please select category!" }]}
+                >
+                  <Select>
+                    <Option value="Chemical">Chemical</Option>
+                    <Option value="Reagent">Reagent</Option>
+                    <Option value="Materials">Materials</Option>
+                    <Option value="Equipment">Equipment</Option>
+                    <Option value="Glasswares">Glasswares</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item label="Department" name="department">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Critical Level" name="criticalLevel">
+                  <InputNumber min={0} style={{ width: "100%" }} />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item label="Lab/ Stock Room" name="labRoom">
+                  <Input />
+                </Form.Item>
+              </Col>
+            </Row>
+
+            <Row gutter={16}>
+              <Col span={12}>
+                <Form.Item label="Status" name="status">
+                  <Select>
+                    <Option value="Available">Available</Option>
+                    <Option value="In Use">In Use</Option>
+                    <Option value="Damaged">Damaged</Option>
+                  </Select>
+                </Form.Item>
+              </Col>
+                {["Chemical", "Reagent"].includes(selectedCategory) && (
+                <Col span={12}>
+                  <Form.Item label="Unit" name="unit">
+                    <Select>
+                      <Option value="ml">ml</Option>
+                      <Option value="g">g</Option>
+                    </Select>
+                  </Form.Item>
+                </Col>
+            )}
+            </Row>
+             {(selectedCategory === "Glasswares" || selectedCategory === "Equipment"|| selectedCategory ==="Materials") && (
+                   <Row gutter={16}>
+                    <Form.Item
+                      label="Good"
+                      name={['condition', 'Good']}
+                      rules={[{ required: true, message: "Please enter Good quantity" }]}
+                    >
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Defect"
+                      name={['condition', 'Defect']}
+                      rules={[{ required: true, message: "Please enter Defect quantity" }]}
+                    >
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Damage"
+                      name={['condition', 'Damage']}
+                      rules={[{ required: true, message: "Please enter Damage quantity" }]}
+                    >
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+                  </Row>
+                )}
+            </Form>
+          </Modal>
+           
+
+          <Modal
             visible={isRowModalVisible}
             footer={null}
             onCancel={() => setIsRowModalVisible(false)}
@@ -1063,9 +1330,9 @@ useEffect(() => {
                   
                   <h1 style={{color: "white"  , margin: 0}}><FileTextOutlined style={{color: 'white', fontSize: 27, marginRight: 20}}/>Item Details - {selectedRow.itemName}</h1>
                 </div>
-                <div style={{flexDirection: 'row', display: 'flex', justifyContent: 'space-between'}}>
                 
-
+                <div style={{flexDirection: 'row', display: 'flex', justifyContent: 'space-between'}}>
+              
                 <div style={{marginTop: headerHeight || 70, borderRadius: 10, flexDirection: 'row', display: 'flex', width: '70%', gap: 50, marginLeft: 20  }}>
 
                 <div className="table-wrapper">
@@ -1188,6 +1455,9 @@ useEffect(() => {
                   >
                     Update Stock
                   </Button>
+                    <Button type="primary" onClick={() => openFullEditModal(selectedRow)}>
+                      Edit Item
+                    </Button>
 
                     </div>
                   </div>
