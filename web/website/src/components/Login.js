@@ -446,7 +446,17 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
-  
+
+    // Step 2.1: Validate department if jobTitle is not 'Laboratory Custodian'
+    if (
+      jobTitle.toLowerCase() !== "laboratory custodian" &&
+      (!department || department.trim() === "")
+    ) {
+      setError("Please select a department.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Step 3: Check if the employeeId already exists in Firestore in both 'pendingaccounts' and 'accounts'
       const employeeQueryPending = query(
@@ -732,8 +742,8 @@ const Login = () => {
                       name="department"
                       value={signUpData.department}
                       onChange={handleSignUpChange}
-                      required
-                      disabled={!signUpData.jobTitle} 
+                      required={signUpData.jobTitle !== "Laboratory Custodian"}
+                      disabled={!signUpData.jobTitle || signUpData.jobTitle === "Laboratory Custodian"}
                     >
                       <option value="">Select Department</option>
                         {currentDepartments.map((dept) => (
@@ -742,7 +752,6 @@ const Login = () => {
                       ))}
                     </select>
                   </div>
-  
                 </div>
                   
                   {/* <div className="form-group password-group">
