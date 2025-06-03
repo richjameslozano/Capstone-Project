@@ -6,18 +6,31 @@ import {
   Button,
   Modal,
   TouchableOpacity,
+  StatusBar,
 } from "react-native";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
 import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/adminStyle/CapexListStyle";
 import Header from '../Header';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from "@react-navigation/native";
+
 
 const CapexRequestList = () => {
   const [requests, setRequests] = useState([]);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedRowDetails, setSelectedRowDetails] = useState(null);
   const { user } = useAuth();
+
+    const navigation = useNavigation()
+  
+    const [headerHeight, setHeaderHeight] = useState(0);
+    const handleHeaderLayout = (event) => {
+      const { height } = event.nativeEvent.layout;
+      setHeaderHeight(height);
+    };
+  
 
   useEffect(() => {
     if (!user?.id) return; // Ensure user is logged in before fetching requests
@@ -90,12 +103,26 @@ const CapexRequestList = () => {
 
   return (
     <View style={styles.container}>
-      <Header/>
+      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                                     <Icon name="keyboard-backspace" size={28} color="black" />
+                                   </TouchableOpacity>
+
+                    <View>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Capex Requests</Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>View Requests for Capital Expenditure</Text>
+                    </View>
+
+                     <TouchableOpacity style={{padding: 2}}>
+                       <Icon name="information-outline" size={24} color="#000" />
+                     </TouchableOpacity>
+                   </View>
       <Text style={styles.title}>List of Requests</Text>
 
       <FlatList
         data={requests}
-        keyExtractor={(item) => item.id}
+        showsVerticalScrollIndicator={false}
+        keyExtractor={(item) => item.id} 
         renderItem={({ item, index }) => (
           <View style={styles.row}>
             <Text style={styles.rowText}>

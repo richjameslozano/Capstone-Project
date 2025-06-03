@@ -372,17 +372,6 @@ export default function InventoryScreen({ navigation }) {
     return `${paddedHour}:${paddedMinute}`;
   };
 
-  // const convertTo24Hour = ({ hour, minute, period }) => {
-  //   let hours = parseInt(hour);
-  //   if (period === 'PM' && hours !== 12) hours += 12;
-  //   if (period === 'AM' && hours === 12) hours = 0;
-  
-  //   // Format to HH:mm (24-hour format)
-  //   const formattedHour = hours.toString().padStart(2, '0'); // Add leading zero if necessary
-  //   const formattedMinute = minute.toString().padStart(2, '0'); // Add leading zero if necessary
-  //   return `${formattedHour}:${formattedMinute}`;
-  // };  
-
   const convertTo24Hour = ({ hour, minute, period }) => {
     let hours = parseInt(hour);
     if (period === 'PM' && hours !== 12) hours += 12;
@@ -428,34 +417,6 @@ export default function InventoryScreen({ navigation }) {
     room: false,
     usageType: false,
   });
-  
-  // const handleNext = () => {
-  //   const newErrors = {
-  //     date: !selectedDate,
-  //     startTime: !selectedStartTime,
-  //     endTime: !selectedEndTime,
-  //     program: !program,
-  //     room: !room,
-  //     usageType: !selectedUsageTypeInput,
-  //   };
-
-  //   setErrors(newErrors);
-
-  //   const hasErrors = Object.values(newErrors).some(Boolean);
-  //   if (!hasErrors) {
-  //     setMetadata({
-  //       dateRequired: selectedDate,
-  //       timeFrom: formatTime(selectedStartTime),
-  //       timeTo: formatTime(selectedEndTime),
-  //       program,
-  //       room,
-  //       usageType: selectedUsageTypeInput,
-  //       reason
-  //     });
-      
-  //     setIsComplete(true);
-  //   }
-  // };
 
   const isRoomTimeConflict = async (room, timeFrom, timeTo, dateRequired) => {
     const roomLower = room.toLowerCase();
@@ -530,29 +491,6 @@ export default function InventoryScreen({ navigation }) {
       return; 
     }
 
-    // setMetadata({
-    //   dateRequired: selectedDate,
-    //   timeFrom: formattedStartTime,
-    //   timeTo: formattedEndTime,
-    //   program,
-    //   course,
-    //   room,
-    //   usageType: selectedUsageTypeInput,
-    //   reason
-    // });
-
-    // setMetadata((prev) => ({
-    //   ...prev,
-    //   dateRequired: selectedDate,
-    //   timeFrom: formattedStartTime,
-    //   timeTo: formattedEndTime,
-    //   program,
-    //   course,
-    //   room,
-    //   usageType: selectedUsageTypeInput,
-    //   reason,
-    // }));
-
     const finalUsageType =
       selectedUsageTypeInput === 'Others'
         ? metadata?.usageTypeOther || ''
@@ -574,6 +512,8 @@ export default function InventoryScreen({ navigation }) {
   };
    const [selectedCode, setSelectedCode] = useState("");
   const [description, setDescription] = useState("");
+
+  const [isSelected, setIsSelected] = useState(false)
 
   return (
     <View style={styles.container}>
@@ -668,19 +608,23 @@ export default function InventoryScreen({ navigation }) {
                   errors.course && { borderColor: 'red', borderWidth: 1 }
                 ]}
               >
-                  <Picker
-                    selectedValue={course}
-                    onValueChange={(itemValue) => {
-                      setCourse(itemValue);
-                      setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
-                      setDescription(courseMap[itemValue]);
-                    }}
-                  >
-                    <Picker.Item label="Select Course Code" value="" />
-                    {Object.entries(courseMap).map(([code, desc]) => (
-                      <Picker.Item key={code} label={code} value={code} />
-                    ))}
-                  </Picker>
+            <Picker
+              selectedValue={course}
+              onValueChange={(itemValue) => {
+                setCourse(itemValue);
+                setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
+                setDescription(courseMap[itemValue]);
+              }}
+              style={{
+                color: course ? 'white' : 'black', // White when selected, black when placeholder
+              }}
+            >
+              <Picker.Item label="Select Course Code" value="" />
+              {Object.entries(courseMap).map(([code, desc]) => (
+                <Picker.Item key={code} label={code} value={code} />
+              ))}
+            </Picker>
+
 
                   <Icon2
                     name="chevron-down"
