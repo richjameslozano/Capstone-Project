@@ -716,6 +716,14 @@ const printPdf = () => {
       setIsNotificationVisible(true);
       return;
     }
+    const itemCategoryPrefixMap = {
+      Chemical: "CHEM",
+      Equipment: "EQP",
+      Reagent: "RGT",
+      Glassware: "GLS",
+      Materials: "MAT",
+    };
+    
 
     // Generate suffix for similar items with same base name but different details
     let similarItemCount = sameNameItems.length + 1;
@@ -724,19 +732,19 @@ const printPdf = () => {
 
     const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
 
-    const departmentPrefix = values.department.replace(/\s+/g, "").toUpperCase();
+    const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
     const inventoryRef = collection(db, "inventory");
-    const deptQuerySnapshot = await getDocs(query(inventoryRef, where("department", "==", values.department)));
+    const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
     const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
 
-    let departmentCount = deptQuerySnapshot.size + 1;
-    let generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+    let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
+    let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
     let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
 
     // 🔁 Keep trying until we find a unique ID
     while (!idQuerySnapshot.empty) {
-      departmentCount++;
-      generatedItemId = `${departmentPrefix}${departmentCount.toString().padStart(2, "0")}`;
+      ItemCategoryCount++;
+      generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
       idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
     }
 
@@ -1719,156 +1727,6 @@ useEffect(() => {
               };
             }}
           />
-
-          {/* <Modal
-            title="Add Item to Inventory"
-            open={isModalVisible}
-            onCancel={handleCancel}
-            footer={null}
-            width={1000}
-            zIndex={1024}
-          >
-            <Form layout="vertical" form={form} onFinish={handleAdd}>
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="Item Name"
-                    label="Item Name"
-                    rules={[{ required: true, message: "Please enter Item Name!" }]}
-                  >
-                    <Input
-                      placeholder="Enter Item Name"
-                      value={itemName}
-                      onChange={(e) => setItemName(e.target.value)}
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item
-                    name="quantity"
-                    label="Quantity"
-                    rules={[{ required: true, message: "Please enter Quantity!" }]}
-                  >
-                    <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="category"
-                    label="Category"
-                    rules={[{ required: true, message: "Please select a category!" }]}
-                  >
-                    <Select placeholder="Select Category" onChange={handleCategoryChange}>
-                      <Option value="Chemical">Chemical</Option>
-                      <Option value="Reagent">Reagent</Option>
-                      <Option value="Materials">Materials</Option>
-                      <Option value="Equipment">Equipment</Option>
-                      <Option value="Glasswares">Glasswares</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
-                  <Col span={8}>
-                    <Form.Item
-                      name="unit"
-                      label="Unit"
-                      rules={[{ required: true, message: "Please select a unit!" }]}
-                    >
-                      <Input 
-                      type="number"
-                      addonAfter="ML"
-                      value="ML"/>
-                    </Form.Item>
-                  </Col>
-                )}
-
-                {selectedCategory === "Glasswares" && (
-                  <Col span={8}>
-                    <Form.Item
-                      name="volume"
-                      label="Volume"
-                      rules={[{ required: true, message: "Please enter the volume!" }]}
-                    >
-                      <Input
-                        type="number"
-                        addonAfter="ML"
-                        placeholder="Enter volume"
-                      />
-                    </Form.Item>
-                  </Col>
-                )}
-
-                <Col span={8}>
-                  <Form.Item name="entryDate" label="Date of Entry" disabled>
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      style={{ width: "100%" }}
-                      defaultValue={dayjs()}
-                      disabled
-                    />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item name="expiryDate" label="Date of Expiry">
-                    <DatePicker
-                      format="YYYY-MM-DD"
-                      style={{ width: "100%" }}
-                      disabledDate={disabledExpiryDate}
-                      disabled={disableExpiryDate}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="type"
-                    label="Item Type"
-                    rules={[{ required: true, message: "Please select Item Type!" }]}
-                  >
-                    <Select
-                      value={itemType}
-                      onChange={(value) => setItemType(value)}
-                      disabled
-                      placeholder="Select Item Type"
-                    >
-                      <Option value="Fixed">Fixed</Option>
-                      <Option value="Consumable">Consumable</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item
-                    name="labRoom"
-                    label="Lab/Stock Room"
-                    rules={[{ required: true, message: "Please enter Lab/Stock Room!" }]}
-                  >
-                    <Input placeholder="Enter Lab/Stock Room" />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item name="department" label="Department">
-                    <Input placeholder="Enter department" />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.Item>
-                <Button type="primary" htmlType="submit" className="add-btn">
-                  Add to Inventory
-                </Button>
-              </Form.Item>
-            </Form>
-          </Modal> */}
 
           <Modal
             title="Add Item to Inventory"
