@@ -513,6 +513,8 @@ export default function InventoryScreen({ navigation }) {
    const [selectedCode, setSelectedCode] = useState("");
   const [description, setDescription] = useState("");
 
+  const [isSelected, setIsSelected] = useState(false)
+
   return (
     <View style={styles.container}>
       
@@ -606,19 +608,23 @@ export default function InventoryScreen({ navigation }) {
                   errors.course && { borderColor: 'red', borderWidth: 1 }
                 ]}
               >
-                  <Picker
-                    selectedValue={course}
-                    onValueChange={(itemValue) => {
-                      setCourse(itemValue);
-                      setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
-                      setDescription(courseMap[itemValue]);
-                    }}
-                  >
-                    <Picker.Item label="Select Course Code" value="" />
-                    {Object.entries(courseMap).map(([code, desc]) => (
-                      <Picker.Item key={code} label={code} value={code} />
-                    ))}
-                  </Picker>
+            <Picker
+              selectedValue={course}
+              onValueChange={(itemValue) => {
+                setCourse(itemValue);
+                setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
+                setDescription(courseMap[itemValue]);
+              }}
+              style={{
+                color: course ? 'white' : 'black', // White when selected, black when placeholder
+              }}
+            >
+              <Picker.Item label="Select Course Code" value="" />
+              {Object.entries(courseMap).map(([code, desc]) => (
+                <Picker.Item key={code} label={code} value={code} />
+              ))}
+            </Picker>
+
 
                   <Icon2
                     name="chevron-down"
