@@ -27,6 +27,7 @@ import {
   onSnapshot
 } from 'firebase/firestore';
 import moment from 'moment'
+import { Picker } from '@react-native-picker/picker';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/userStyle/RequestStyle';
@@ -46,6 +47,14 @@ export default function RequestScreen() {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedLog, setSelectedLog] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
+  const statusOptions = [
+    { label: 'All', value: 'All' },
+    { label: 'Approved', value: 'Request Approved' },
+    { label: 'Rejected', value: 'Request Rejected' },
+    { label: 'Cancelled', value: 'Cancelled a request' },
+    { label: 'Deployed', value: 'Deployed' },
+    { label: 'Returned', value: 'Returned' },
+  ];
   const { user } = useAuth();
 
   const [headerHeight, setHeaderHeight] = useState(0);
@@ -130,24 +139,41 @@ export default function RequestScreen() {
       handleSearch(searchQuery);
     }, [statusFilter]);
 
+  // const handleSearch = (query) => {
+  //   setSearchQuery(query);
 
-const handleSearch = (query) => {
-  setSearchQuery(query);
+  //   const filtered = activityData.filter((item) => {
+  //     const matchesQuery =
+  //       item.date.includes(query) ||
+  //       item.action.toLowerCase().includes(query.toLowerCase()) ||
+  //       item.by.toLowerCase().includes(query.toLowerCase());
 
-  const filtered = activityData.filter((item) => {
-    const matchesQuery =
-      item.date.includes(query) ||
-      item.action.toLowerCase().includes(query.toLowerCase()) ||
-      item.by.toLowerCase().includes(query.toLowerCase());
+  //     const matchesStatus =
+  //       statusFilter === 'All' || item.action === statusFilter;
 
-    const matchesStatus =
-      statusFilter === 'All' || item.action === statusFilter;
+  //     return matchesQuery && matchesStatus;
+  //   });
 
-    return matchesQuery && matchesStatus;
-  });
+  //   setFilteredData(filtered);
+  // };
 
-  setFilteredData(filtered);
-};
+    const handleSearch = (query) => {
+      setSearchQuery(query);
+
+      const filtered = activityData.filter((item) => {
+        const matchesQuery =
+          item.date.includes(query) ||
+          item.action.toLowerCase().includes(query.toLowerCase()) ||
+          item.by.toLowerCase().includes(query.toLowerCase());
+
+        const matchesStatus =
+          statusFilter === 'All' || item.action === statusFilter;
+
+        return matchesQuery && matchesStatus;
+      });
+
+      setFilteredData(filtered);
+    };
   
     const handleRowPress = (log) => {
       setSelectedLog(log.fullData);
@@ -443,7 +469,7 @@ const handleSearch = (query) => {
               </View>
       
               <View>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{paddingTop: 10}}>
+              {/* <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{paddingTop: 10}}>
                 {['All', 'Approved', 'Rejected', 'Cancelled', 'Deployed'].map((status) => (
                   <TouchableOpacity
                     key={status}
@@ -461,7 +487,49 @@ const handleSearch = (query) => {
                     </Text>
                   </TouchableOpacity>
                 ))}
+              </ScrollView> */}
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingTop: 10 }}>
+                {[
+                  { label: 'All', value: 'All' },
+                  { label: 'Approved', value: 'Request Approved' },
+                  { label: 'Rejected', value: 'Request Rejected' },
+                  { label: 'Cancelled', value: 'Cancelled a request' },
+                  { label: 'Deployed', value: 'Deployed' },
+                  { label: 'Returned', value: 'Returned' },
+                ].map((status) => (
+                  <TouchableOpacity
+                    key={status.value}
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 14,
+                      backgroundColor: statusFilter === status.value ? '#1a6985' : '#e0e0e0',
+                      borderRadius: 20,
+                      marginRight: 8,
+                    }}
+                    onPress={() => setStatusFilter(status.value)}
+                  >
+                    <Text
+                      style={{
+                        color: statusFilter === status.value ? '#fff' : '#333',
+                        fontWeight: '500',
+                      }}
+                    >
+                      {status.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
               </ScrollView>
+              
+              {/* <Picker
+                selectedValue={statusFilter}
+                onValueChange={(itemValue) => setStatusFilter(itemValue)}
+                style={{ height: 50, width: 200 }}
+              >
+                {['All', 'Request Approved', 'Request Rejected', 'Cancelled a request', 'Deployed', 'Returned'].map((status) => (
+                  <Picker.Item key={status} label={status} value={status} />
+                ))}
+              </Picker> */}
             </View>
             </View>
 
