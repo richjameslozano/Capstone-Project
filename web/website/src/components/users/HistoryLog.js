@@ -74,20 +74,20 @@ const HistoryLog = () => {
   
   const renderPendingTab = () => (
     <Content className="pending-content">
-      <div className="pending-header">
-        <Title level={3}>
-          <span className="icon-pending">⏳</span> Requests List
+            <div className="activity-header">
+        <Title level={3} style={{fontSize:'36px'}}>
+          <span className="icon-activity"></span> Request List
         </Title>
       </div>
-      <div className="search-container">
+ 
         <Input
           placeholder="Search requests..."
           prefix={<SearchOutlined />}
           className="pending-search"
           allowClear
         />
-      </div>
-      <div className="pending-main">
+
+      
         {loading ? (
           <Spin size="large" />
         ) : (
@@ -99,7 +99,7 @@ const HistoryLog = () => {
             className="pending-table"
           />
         )}
-      </div>
+      
       <Modal
         className="request-list-modal"
         open={viewDetailsModalVisible}
@@ -484,23 +484,15 @@ const HistoryLog = () => {
 const renderProcessedTab = () => (
     <Content className="activity-content">
       <div className="activity-header">
-        <Title level={3}>
-          <span className="icon-activity">⏰</span> Processed Request
+        <Title level={3} style={{fontSize:'36px'}}>
+          <span className="icon-activity"></span> Processed Request
         </Title>
       </div>
-      <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
-        <Input
-          placeholder="Search"
-          prefix={<SearchOutlined />}
-          className="activity-search"
-          allowClear
-          onChange={(e) => setSearchQuery(e.target.value)}
-          style={{ width: "60%" }}
-        />
-        <Select
+      <div className="activity-controls">
+         <Select
           value={actionFilter}
           onChange={(value) => setActionFilter(value)}
-          style={{ width: 200 }}
+          className="activity-filter"
           allowClear
           placeholder="Filter by Action"
         >
@@ -510,6 +502,14 @@ const renderProcessedTab = () => (
           <Option value="Cancelled a request">Request Cancelled</Option>
           <Option value="Deployed">Deployed</Option>
         </Select>
+        <Input
+          placeholder="Search"
+          prefix={<SearchOutlined />}
+          className="activity-search"
+          allowClear
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+       
       </div>
       <Table
         columns={columns2}
@@ -528,80 +528,135 @@ const renderProcessedTab = () => (
         }}
       />
       <Modal
-        title="Activity Details"
-        open={modalVisible}
-        zIndex={1015}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-      >
-        {selectedActivityLog && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Action">
-              {selectedActivityLog.status === "CANCELLED"
-                ? "Cancelled a request"
-                : selectedActivityLog.action || "Modified a request"}
-            </Descriptions.Item>
-            <Descriptions.Item label="By">
-              {selectedActivityLog.userName || "Unknown User"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Program">
-              {selectedActivityLog.program || "N/A"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Items Requested">
-              {(selectedActivityLog.filteredMergedData || selectedActivityLog.requestList)?.length > 0 ? (
-                <ul style={{ paddingLeft: 20 }}>
-                  {(selectedActivityLog.filteredMergedData || selectedActivityLog.requestList).map((item, index) => (
-                    <li key={index} style={{ marginBottom: 10 }}>
-                      <strong>{item.itemName}</strong>
-                      <ul style={{ marginLeft: 20 }}>
-                        <li>Quantity: {item.quantity}</li>
-                        {(item.category === "Chemical" || item.category === "Reagent") && item.unit && <li>Unit: {item.unit}</li>}
-                        {item.category && <li>Category: {item.category}</li>}
-                        {item.category === "Glasswares" && item.volume && <li>Volume: {item.volume}</li>}
-                        {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                        {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                        {item.itemType && <li>Item Type: {item.itemType}</li>}
-                        {item.department && <li>Department: {item.department}</li>}
-                        {selectedActivityLog.action === "Request Rejected" && (item.reason || item.rejectionReason) && (
-                          <>
-                            {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
-                            {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
-                          </>
-                        )}
-                      </ul>
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                "None"
-              )}
-            </Descriptions.Item>
-            {selectedActivityLog.action !== "Request Rejected" && (
-              <Descriptions.Item label="Reason">
-                {selectedActivityLog.reason || "N/A"}
-              </Descriptions.Item>
+            title="Activity Details"
+            visible={modalVisible}
+            zIndex={1015}
+            onCancel={() => setModalVisible(false)}
+            footer={null}
+          >
+            {selectedLog && (
+              <Descriptions column={1} bordered size="small">
+                <Descriptions.Item label="Action">
+                  {selectedLog.status === "CANCELLED"
+                    ? "Cancelled a request"
+                    : selectedLog.action || "Modified a request"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="By">
+                  {selectedLog.userName || "Unknown User"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Program">
+                  {selectedLog.program || "N/A"}
+                </Descriptions.Item>
+
+                {/* <Descriptions.Item label="Items Requested">
+                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+                    <ul style={{ paddingLeft: 20 }}>
+                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+                        <li key={index} style={{ marginBottom: 10 }}>
+                          <strong>{item.itemName}</strong>
+                          <ul style={{ marginLeft: 20 }}>
+                            <li>Quantity: {item.quantity}</li>
+                            {item.category && <li>Category: {item.category}</li>}
+                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
+                            {item.itemType && <li>Item Type: {item.itemType}</li>}
+                            {item.department && <li>Department: {item.department}</li>}
+                            {selectedLog.action === "Request Rejected" && item.reason && (
+                              <li><strong>Rejection Reason:</strong> {item.reason}</li>
+                            )}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "None"
+                  )}
+                </Descriptions.Item> */}
+
+                <Descriptions.Item label="Items Requested">
+                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+                    <ul style={{ paddingLeft: 20 }}>
+                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+                        <li key={index} style={{ marginBottom: 10 }}>
+                          <strong>{item.itemName}</strong>
+                          <ul style={{ marginLeft: 20 }}>
+                            <li>Quantity: {item.quantity}</li>
+                            {(item.category === "Chemical" || item.category === "Reagent") && item.unit && (
+                              <li>Unit: {item.unit}</li>
+                            )}
+                            {/* {item.category && <li>Category: {item.category}</li>} */}
+                            {item.category && <li>Category: {item.category}</li>}
+                            {item.category === "Glasswares" && item.volume && (
+                              <li>Volume: {item.volume}</li>
+                            )}
+                            {/* {item.condition && <li>Condition: {item.condition}</li>} */}
+                            {/* {item.condition && (
+                              <li>
+                                Condition:
+                                <ul>
+                                  <li>Good: {item.condition.Good ?? 0}</li>
+                                  <li>Defect: {item.condition.Defect ?? 0}</li>
+                                  <li>Damage: {item.condition.Damage ?? 0}</li>
+                                </ul>
+                              </li>
+                            )} */}
+                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
+                            {item.itemType && <li>Item Type: {item.itemType}</li>}
+                            {item.department && <li>Department: {item.department}</li>}
+                            {/* {selectedLog.action === "Request Rejected" && item.reason && (
+                              <li><strong>Rejection Reason:</strong> {item.reason}</li>
+                            )} */}
+                            {/* {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
+                              <li><strong>Rejection Reason:</strong> {item.rejectionReason || item.reason}</li>
+                            )} */}
+                            {selectedLog.action === "Request Rejected" && (item.reason || item.rejectionReason) && (
+                              <>
+                                {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
+                                {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+                              </>
+                            )}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    "None"
+                  )}
+                </Descriptions.Item>
+
+                {selectedLog.action !== "Request Rejected" && (
+                  <Descriptions.Item label="Reason">
+                    {selectedLog.reason || "N/A"}
+                  </Descriptions.Item>
+                )}
+
+                <Descriptions.Item label="Room">
+                  {selectedLog.room || "N/A"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Time">
+                  {selectedLog.timeFrom && selectedLog.timeTo
+                    ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+                    : "N/A"}
+                </Descriptions.Item>
+
+                <Descriptions.Item label="Date Required">
+                  {selectedLog.dateRequired || "N/A"}
+                </Descriptions.Item>
+              </Descriptions>
             )}
-            <Descriptions.Item label="Room">
-              {selectedActivityLog.room || "N/A"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Time">
-              {selectedActivityLog.timeFrom && selectedActivityLog.timeTo
-                ? `${selectedActivityLog.timeFrom} - ${selectedActivityLog.timeTo}`
-                : "N/A"}
-            </Descriptions.Item>
-            <Descriptions.Item label="Date Required">
-              {selectedActivityLog.dateRequired || "N/A"}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
+          </Modal>
     </Content>
   );
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ minHeight: "100vh"}}>
       <Tabs
         activeKey={activeTabKey}
         onChange={(key) => setActiveTabKey(key)}
+        className="custom-tabs"
         items={[
           { label: "Pending Requests", key: "pending", children: renderPendingTab() },
           { label: "Processed Requests", key: "processed", children: renderProcessedTab() },

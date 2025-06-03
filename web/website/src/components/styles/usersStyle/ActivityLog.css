@@ -1,56 +1,209 @@
-.activity-content {
-  padding: 20px;
-  background-color: #f0f2f5;
+/* General Layout */
+.pending-content, .activity-content {
+  padding: 10px;
+  background: linear-gradient(135deg, #ffffff, #ffffff);
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 24px;
+}
+/* Headers */
+.pending-header, .activity-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
-.activity-table {
-  backdrop-filter: blur(10px);
-  background: rgba(255, 255, 255, 0.6);
+.activity-title {
+  font-size: 28px !important;
+  font-weight: 700 !important;
+  color: #012257;
+  margin-bottom: 12px;
+}
+.icon-activity {
+  font-size: 26px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+.icon-pending {
+  font-size: 22px;
+  margin-right: 8px;
+  
+}
+.activity-filter {
+  width: 200px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.activity-search {
+  flex: 1;
+  min-width: 350px;
+  max-width: 100%;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.activity-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  width: 100%;
+  max-width: 900px;
+}
+
+/* Search Bar */
+.search-container {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.pending-search,
+.activity-search {
+  max-width: 550px;
+  width: 100%;
+  border-radius: 10px;
+  padding: 6px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Table Styling */
+.pending-table, .activity-table {
+  background: white;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
 }
 
 .ant-table-thead > tr > th {
-  background-color: rgba(9, 38, 133, 0.8) !important;
+  background-color: #081538 !important;
   color: #fff !important;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ant-table-tbody > tr:hover {
+  background-color: #e6f7ff !important;
 }
 
 .ant-table-tbody > tr:nth-child(odd) {
-  background-color: rgba(255, 255, 255, 0.4);
+  background-color: #fafafa;
 }
 
 .ant-table-tbody > tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.6);
+  background-color: #ffffff;
 }
 
+/* Buttons */
+.status-btn {
+  font-weight: bold;
+  color: #012257;
+  background-color: #e6f4ff;
+  border-radius: 6px;
+  padding: 4px 10px;
+}
+
+/* Modal Enhancements */
+.request-list-modal .ant-modal-content {
+  background: #f5faff;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.request-details-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.request-details-whole {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 20px;
+}
+
+.request-details-left,
+.request-details-right {
+  flex: 1;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.request-details-left p,
+.request-details-right p {
+  margin: 0;
+  padding: 4px 0;
+}
+
+.details-table {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+/* Responsive */
 @media screen and (max-width: 768px) {
-  .activity-content {
-    padding: 10px;
-  }
-
-  .activity-header {
+  .request-details-whole {
     flex-direction: column;
-    align-items: flex-start;
   }
 
-  .activity-search {
+  .request-details-left,
+  .request-details-right {
     width: 100%;
   }
 
   .ant-table {
-    font-size: 12px;
+    font-size: 13px;
   }
 
-  .ant-table-thead > tr > th,
-  .ant-table-tbody > tr > td {
-    padding: 8px;
+  .pending-header,
+  .activity-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
+}
 
-  .activity-table {
-    overflow-x: auto;
-  }
+/* Tabs Container */
+.custom-tabs .ant-tabs-nav {
+  background: white;
+  padding: 8px 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+}
+
+/* Tab Labels */
+.custom-tabs .ant-tabs-tab {
+  font-size: 16px;
+  font-weight: 600;
+  color: #012257;
+  padding: 10px 20px;
+  margin-right: 12px;
+  border-radius: 8px;
+  transition: background 0.3s, color 0.3s;
+}
+
+.custom-tabs .ant-tabs-tab:hover {
+  background-color: #f0f4ff;
+  color: #012257;
+}
+
+/* Active Tab */
+.custom-tabs .ant-tabs-tab-active {
+  background-color: #012257;
+  color: white !important;
+}
+
+.custom-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: white !important;
+}
+
+/* Remove default indicator bar */
+.custom-tabs .ant-tabs-ink-bar {
+  background: transparent;
 }
