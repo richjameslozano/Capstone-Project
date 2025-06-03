@@ -30,13 +30,10 @@ useFocusEffect(
     // { title: 'Inventory', subtitle: 'Materials & Supplies', icon: 'clipboard-list', color: '#4CAF50', screen: 'InventoryStocks' },
    { title: 'Requisition', subtitle: 'Request Items', icon: 'clipboard-list-outline', color: 'purple', screen: 'InventoryScreen' },
    { title: 'My Orders', subtitle: 'Monitor Your Orders', icon: 'file-document-outline', screen: 'OrdersScreen', color: '#1A4572' }, 
+       { title: 'Return Items', subtitle: 'Return Borrowed Items', icon: 'keyboard-return', color: '#FFC107', screen: 'ReturnItemsScreen' },
     // { title: 'Pending Requests', subtitle: 'View and Manage', icon: 'progress-clock', color: '#D32F2F', screen: 'PendingRequestScreen' },
     // { title: 'Activity Log', subtitle: 'History', icon: 'file-document-outline', screen: 'ActivityLogScreen', color: '#1A4572' }, 
     
-    
-    // { title: 'QR Scanner', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'QRScanScreen' }, 
-    // { title: 'Borrow Catalog', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'BorrowCatalogScreen' },
-    // { title: 'Capex Request List', subtitle: 'Asset Monitoring', icon: 'qrcode-scan', color: '#FFC107', screen: 'CapexRequestListScreen' },
   ];
 
   const renderItem = ({ item }) => (

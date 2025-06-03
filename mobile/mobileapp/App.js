@@ -420,6 +420,7 @@ const AdminDrawer = () => {
       <Drawer.Screen name="CameraShowItems" component={CameraShowItems} />
       <Drawer.Screen name="QRScanScreen" component={QRScanScreen} />
       <Drawer.Screen name="CameraUpdateItems" component={CameraUpdateItems} />
+      <Drawer.Screen name="ReturnItemsScreen" component={ReturnItems} />
     </Drawer.Navigator>
   );
 };
