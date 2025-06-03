@@ -1,28 +1,54 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
+    padding: 7,
     backgroundColor: '#f9f9f9',
+    gap: 7,
   },
+
+      inventoryStocksHeader:{
+        position: 'absolute',
+            backgroundColor: '#fff',
+            flex: 1,
+            paddingTop: StatusBar.currentHeight+15,
+            left: 0,
+            right:0,
+            flexDirection: 'row',
+            paddingBottom: 10,
+            paddingHorizontal: 15,
+            alignItems: 'center',
+            justifyContent:'space-between',
+            borderBottomWidth: 1,
+            borderColor: '#e9ecee',
+            zIndex: 999,
+      },
 
   filterContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginVertical: 12,
-    marginTop: 100,
+    backgroundColor: '#fff',
+    padding: 10,
+    justifyContent: 'center',
+    gap: 20,
+    borderRadius: 10,
+    elevation: 3,
+
   },
 
   filterButton: {
     paddingVertical: 10,
     paddingHorizontal: 18,
-    backgroundColor: '#dcdcdc',
+    backgroundColor: '#dfdfdf',
     borderRadius: 20,
   },
 
   activeButton: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#2187ab',
+  },
+
+  activeText:{
+    color: '#fff'
   },
 
   filterText: {
@@ -53,15 +79,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     backgroundColor: '#e8e8e8',
     paddingVertical: 12,
-    paddingHorizontal: 8,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
+    paddingHorizontal: 10,
+    borderTopLeftRadius: 5,
+    borderTopRightRadius: 5,
   },
+
+ 
 
   tableRow: {
     flexDirection: 'row',
     paddingVertical: 8,
-    paddingHorizontal: 6,
+    paddingHorizontal: 10,
     borderBottomWidth: 1,
     borderColor: '#eee',
   },
