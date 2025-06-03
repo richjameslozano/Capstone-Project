@@ -1,4 +1,4 @@
-import { StyleSheet } from "react-native";
+import { StatusBar, StyleSheet } from "react-native";
 
 const styles = StyleSheet.create({
   container: {
@@ -6,6 +6,23 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   
+    inventoryStocksHeader:{
+      position: 'absolute',
+          backgroundColor: '#fff',
+          flex: 1,
+          paddingTop: StatusBar.currentHeight+15,
+          left: 0,
+          right:0,
+          flexDirection: 'row',
+          paddingBottom: 10,
+          paddingHorizontal: 15,
+          alignItems: 'center',
+          justifyContent:'space-between',
+          borderBottomWidth: 1,
+          borderColor: '#e9ecee',
+          zIndex: 999
+    },
+
   title: {
     fontSize: 24,
     fontWeight: "bold",
@@ -19,6 +36,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 8,
+    backgroundColor: '#fff'
   },
 
   rowText: {
@@ -27,7 +45,7 @@ const styles = StyleSheet.create({
   },
   
   viewButton: {
-    backgroundColor: "#4CAF50",
+    backgroundColor: "#134b5f",
     padding: 10,
     marginTop: 10,
     borderRadius: 5,
