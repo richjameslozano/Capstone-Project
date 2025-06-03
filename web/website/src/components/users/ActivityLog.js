@@ -165,19 +165,7 @@ const ActivityLog = () => {
     <Layout style={{ minHeight: "100vh" }}>
       <Layout className="site-layout">
         <Content className="activity-content">
-          <div className="activity-header">
-            <Title level={3}>
-              <span className="icon-activity">⏰</span> Activity Log
-            </Title>
-          </div>
-
-          <Input
-            placeholder="Search"
-            prefix={<SearchOutlined />}
-            className="pending-search"
-            allowClear
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
+      
 
           <Table
             columns={columns}
