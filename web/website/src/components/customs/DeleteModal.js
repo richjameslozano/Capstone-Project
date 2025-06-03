@@ -23,6 +23,16 @@ const DeleteModal = ({ visible, onClose, item, onDeleteSuccess, setDataSource })
             archivedAt: new Date(),
           });
 
+          // Step 1.5: Delete subcollection (stockLog) if it exists
+          const stockLogRef = collection(db, 'inventory', inventoryId, 'stockLog');
+          const stockLogSnapshot = await getDocs(stockLogRef);
+
+          const stockLogDeletions = stockLogSnapshot.docs.map((doc) =>
+            deleteDoc(doc.ref)
+          );
+          
+          await Promise.all(stockLogDeletions);
+
           // Step 2: Delete from inventory
           await deleteDoc(doc(db, 'inventory', inventoryId));
 
