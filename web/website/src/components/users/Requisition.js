@@ -232,7 +232,7 @@ const Requisition = () => {
   //         localStorage.setItem("requestList", JSON.stringify(tempRequestList));
   
   //       } catch (error) {
-  //         console.error("Error fetching request list:", error);
+  //  
   //       }
   //     }
   //   };
@@ -264,7 +264,7 @@ const Requisition = () => {
         localStorage.setItem("requestList", JSON.stringify(tempRequestList));
       },
       (error) => {
-        console.error("Error fetching request list:", error);
+       
       }
     );
 
@@ -296,7 +296,7 @@ const Requisition = () => {
   //         localStorage.setItem("requestList", JSON.stringify(tempRequestList));
 
   //       } catch (error) {
-  //         console.error("Error fetching request list:", error);
+  //         
   //       }
   //     }
   //   };
@@ -322,7 +322,7 @@ const Requisition = () => {
   //       setRequestList(tempRequestList);
   //       localStorage.setItem("requestList", JSON.stringify(tempRequestList));
   //     }, (error) => {
-  //       console.error("Real-time listener error:", error);
+  //   
   //     });
   //   }
 
@@ -345,7 +345,7 @@ const Requisition = () => {
         setFilteredItems(itemList);
 
       } catch (error) {
-        console.error("Error fetching inventory:", error);
+        
       }
     };
   
@@ -420,7 +420,7 @@ const Requisition = () => {
       ...tableData,
       ...requestList.filter(item => !tableData.some(t => t.selectedItemId === item.selectedItemId)),
     ];
-    console.log("Merged Data:", merged);
+
     setMergedData(merged);
   }, [tableData, requestList]); // <- dependencies added
   
@@ -504,7 +504,7 @@ const Requisition = () => {
   //     isValid = false;
   //   }
 
-  //   console.log("Original mergedData:", mergedData);
+ 
   //   // Filter out incomplete items from mergedData
   //   const filteredMergedData = mergedData.filter(item =>
   //     item.itemName && item.category && item.quantity && item.labRoom &&
@@ -517,7 +517,7 @@ const Requisition = () => {
   //     setIsNotificationVisible(true);
   //     isValid = false;
   //   }
-  //   console.log("Filtered mergedData:", filteredMergedData);
+
 
   //   if (isValid) {
   //     try {
@@ -618,8 +618,7 @@ const Requisition = () => {
   //         setRequestList([]);
   //         setMergedData([]);
   //         setTableData([]); 
-  //         console.log("MergedData after finalize:", mergedData);
-  //         console.log("TableData after finalize:", tableData);
+
 
   //         localStorage.removeItem('requestList');
 
@@ -628,7 +627,7 @@ const Requisition = () => {
   //       }
   
   //     } catch (error) {
-  //       console.error("Error finalizing the requisition:", error);
+
   //       message.error("Failed to send requisition. Please try again.");
   //     }
   //   }
@@ -700,7 +699,7 @@ const Requisition = () => {
   //     isValid = false;
   //   }
 
-  //   console.log("Original mergedData:", mergedData);
+
   //   // Filter out incomplete items from mergedData
   //   const filteredMergedData = mergedData.filter(item =>
   //     // item.itemName && item.category && item.quantity && item.labRoom &&
@@ -714,7 +713,7 @@ const Requisition = () => {
   //     setIsNotificationVisible(true);
   //     isValid = false;
   //   }
-  //   console.log("Filtered mergedData:", filteredMergedData);
+
 
   // // for (const item of filteredMergedData) {
   // //   if (item.category.toLowerCase() === "glasswares") {
@@ -835,8 +834,7 @@ const Requisition = () => {
   //         setRequestList([]);
   //         setMergedData([]);
   //         setTableData([]); 
-  //         console.log("MergedData after finalize:", mergedData);
-  //         console.log("TableData after finalize:", tableData);
+
 
   //         localStorage.removeItem('requestList');
 
@@ -845,7 +843,6 @@ const Requisition = () => {
   //       }
   
   //     } catch (error) {
-  //       console.error("Error finalizing the requisition:", error);
   //       message.error("Failed to send requisition. Please try again.");
   //     }
   //   }
@@ -917,7 +914,6 @@ const Requisition = () => {
       isValid = false;
     }
 
-    console.log("Original mergedData:", mergedData);
     // Filter out incomplete items from mergedData
     // const filteredMergedData = mergedData.filter(item =>
     //   // item.itemName && item.category && item.quantity && item.labRoom &&
@@ -938,7 +934,6 @@ const Requisition = () => {
       return item;
     });
 
-  console.log("Normalized mergedData:", normalizedData);
 
   const filteredMergedData = normalizedData.filter(item => {
     const basicFieldsValid =
@@ -959,7 +954,7 @@ const Requisition = () => {
     }
   });
 
-  console.log("Filtered mergedData:", filteredMergedData);
+
 
   // for (const item of filteredMergedData) {
   //   if (item.category.toLowerCase() === "glasswares") {
@@ -1102,8 +1097,7 @@ const Requisition = () => {
           setRequestList([]);
           setMergedData([]);
           setTableData([]); 
-          console.log("MergedData after finalize:", mergedData);
-          console.log("TableData after finalize:", tableData);
+
 
           localStorage.removeItem('requestList');
 
@@ -1112,7 +1106,7 @@ const Requisition = () => {
         }
   
       } catch (error) {
-        console.error("Error finalizing the requisition:", error);
+
         message.error("Failed to send requisition. Please try again.");
       }
     }
@@ -1129,8 +1123,7 @@ const Requisition = () => {
       setTableData(updatedTableData);
   
       // Log current state
-      console.log("Attempting to remove ID:", id);
-      console.log("Current requestList:", updatedList);
+
   
       // Update localStorage
       localStorage.setItem("requestList", JSON.stringify(updatedList));
@@ -1138,7 +1131,7 @@ const Requisition = () => {
   
       const userId = localStorage.getItem("userId"); 
       if (!userId) {
-        console.warn("User ID not found in localStorage.");
+
         return;
       }
   
@@ -1162,7 +1155,7 @@ const Requisition = () => {
       setIsNotificationVisible(true);
   
     } catch (error) {
-      console.error("Error removing item:", error);
+
       setNotificationMessage("Something went wrong while removing the item.");
       setIsNotificationVisible(true);
     }
@@ -1241,7 +1234,7 @@ const Requisition = () => {
   //       setIsNotificationVisible(true);
   
   //     } catch (error) {
-  //       console.error("Error updating item in temporary list:", error);
+
   //       setNotificationMessage("Failed to update item in temporary list.");
   //       setIsNotificationVisible(true);
   //     }
@@ -1328,7 +1321,7 @@ const Requisition = () => {
         setIsNotificationVisible(true);
 
       } catch (error) {
-        console.error("Error updating item in temporary list:", error);
+
         setNotificationMessage("Failed to update item in temporary list.");
         setIsNotificationVisible(true);
       }
@@ -1478,7 +1471,7 @@ const Requisition = () => {
               }
 
             } else {
-              console.error("Inventory item not found.");
+
             }
           }}
         />
@@ -1618,7 +1611,7 @@ const Requisition = () => {
                     }
     
                   } catch (err) {
-                    console.error(`Error fetching inventory item ${inventoryId}:`, err);
+         
                   }
                 }
     
@@ -1658,7 +1651,7 @@ const Requisition = () => {
           setRequests(sortedByDate);
     
         }, (error) => {
-          console.error("Error fetching user requests in real-time: ", error);
+
           setNotificationMessage("Failed to fetch user requests.");
           setNotificationVisible(true);
         });
@@ -1667,7 +1660,7 @@ const Requisition = () => {
         return () => unsubscribe();
   
       } catch (err) {
-        console.error("Error fetching requests:", err);
+
         setNotificationMessage("Failed to fetch user requests.");
         setNotificationVisible(true);
         
@@ -1732,7 +1725,7 @@ const Requisition = () => {
         fetchRequests();
   
       } catch (err) {
-        console.error("Error canceling request:", err);
+  
         setNotificationMessage("Failed to cancel the request.");
         setNotificationVisible(true);
       }
@@ -1837,7 +1830,7 @@ const Requisition = () => {
           setActivityData(sortedLogs);
         },
         (error) => {
-          console.error("Real-time activity log listener failed:", error);
+         
         }
       );
     

@@ -40,7 +40,7 @@ const DeleteModal = ({ visible, onClose, item, onDeleteSuccess, setDataSource })
           // if (data.labRoom && data.itemId) {
           //   const labRoomRef = doc(db, "labRoom", data.labRoom, "items", data.itemId);
           //   await deleteDoc(labRoomRef);
-          //   console.log(`✅ Removed from labRoom/${data.labRoom}/items/${data.itemId}`);
+ 
           // }
 
           if (data.labRoom && data.itemId) {
@@ -53,8 +53,6 @@ const DeleteModal = ({ visible, onClose, item, onDeleteSuccess, setDataSource })
 
               const labRoomItemRef = doc(collection(labRoomRef, "items"), data.itemId);
               await deleteDoc(labRoomItemRef);
-
-              console.log(`✅ Removed from labRoom/${labRoomRef.id}/items/${data.itemId}`);
             }
           }
         }
@@ -105,7 +103,6 @@ const DeleteModal = ({ visible, onClose, item, onDeleteSuccess, setDataSource })
       onClose();
 
     } catch (error) {
-      console.error('Error archiving item:', error);
       message.error('Failed to archive item');
     }
   };

@@ -7,7 +7,6 @@ const PoliciesModal = ({ visible, onClose }) => {
 
   const handleAgree = () => {
     // Logic to handle user's agreement to the policies
-    console.log('User agreed to the policies');
     onClose(); // Close modal after agreement
     // Optional: Redirect to a different page (e.g., dashboard)
     // history.push('/dashboard');
@@ -15,7 +14,6 @@ const PoliciesModal = ({ visible, onClose }) => {
 
   const handleDisagree = () => {
     // Logic for handling disagreement (optional)
-    console.log('User disagreed with the policies');
     onClose(); // Close modal after disagreement
   };
 

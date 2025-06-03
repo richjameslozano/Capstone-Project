@@ -37,7 +37,6 @@ const PendingAccounts = () => {
 
         setRequests(fetched);
       } catch (error) {
-        console.error("Error fetching requests: ", error);
       }
     };
 
@@ -66,7 +65,7 @@ const PendingAccounts = () => {
         body: JSON.stringify({ to, subject, text, html }),
       });
     } catch (error) {
-      console.error("Error sending email notification:", error);
+
     }
   };
 
@@ -85,7 +84,7 @@ const PendingAccounts = () => {
           const requestData = requestSnapshot.data();
 
           if (!requestData) {
-            console.warn(`No data found for request ID: ${requestId}`);
+
             return;
           }
 
@@ -94,7 +93,7 @@ const PendingAccounts = () => {
           const q = query(accountsRef, where("email", "==", requestData.email));
           const querySnapshot = await getDocs(q);
           if (!querySnapshot.empty) {
-            console.log("User already exists in accounts. Skipping...");
+
             return;
           }
 
@@ -134,7 +133,7 @@ const PendingAccounts = () => {
       setSelectedRequests([]); // Clear selected rows
 
     } catch (error) {
-      console.error("Error approving request: ", error);
+
       notification.error({
         message: "Error",
         description: "Failed to approve the selected requests.",
@@ -175,7 +174,7 @@ const PendingAccounts = () => {
       setSelectedRequests([]); // Clear selected 
       
     } catch (error) {
-      console.error("Error rejecting request: ", error);
+
       notification.error({
         message: "Error",
         description: "Failed to reject the selected requests.",

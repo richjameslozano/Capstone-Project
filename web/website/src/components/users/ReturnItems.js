@@ -22,7 +22,7 @@
 //   useEffect(() => {
 //     const userId = localStorage.getItem("userId");
 //     if (!userId) {
-//       console.error("User ID not found");
+
 //       return;
 //     }
 
@@ -45,7 +45,7 @@
 //               });
 
 //             } catch (e) {
-//               console.warn(`Error formatting rawTimestamp for doc ${doc.id}:`, e);
+//           
 //             }
 //           }
 
@@ -56,7 +56,7 @@
 //               });
 
 //             } catch (e) {
-//               console.warn(`Error formatting timestamp for doc ${doc.id}:`, e);
+//         
 //             }
 //           }
 
@@ -89,11 +89,11 @@
 //         setHistoryData(logs);
 
 //       } catch (error) {
-//         console.error("Error processing request logs snapshot: ", error);
+//       
 //       }
 
 //     }, (error) => {
-//       console.error("Error fetching request logs with onSnapshot: ", error);
+// 
 //     });
 
 //     return () => unsubscribe(); // Clean up the listener on unmount
@@ -155,7 +155,7 @@
 //         });
 //       });
 //     } catch (err) {
-//       console.error("Error fetching inventory:", err);
+//
 //     }
 
 //     setInventoryData(inventoryMap);
@@ -173,7 +173,7 @@
 //     try {
 //       const userId = localStorage.getItem("userId");
 //       if (!userId || !selectedRequest) {
-//         console.error("Missing user ID or request data");
+//        
 //         return;
 //       }
   
@@ -234,9 +234,9 @@
 //         const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
         
 //         await setDoc(borrowDocRef, fullReturnData, { merge: true });
-//         console.log("Successfully updated the borrowcatalog document.");
+//      
 //       } else {
-//         console.error("⚠️ No matching document found in borrowcatalog.");
+//     
 //       }
 
 //       // 🗑️ Delete from userrequestlog
@@ -263,11 +263,11 @@
 //         date: currentDateString,
 //       });
   
-//       console.log("Returned items processed, removed from userRequests, added to history log.");
+//    
 //       closeModal();
   
 //     } catch (error) {
-//       console.error("Error saving returned item details:", error);
+//    
 //     }
 //   };  
   
@@ -502,7 +502,7 @@ const ReturnItems = () => {
   //             });
 
   //           } catch (e) {
-  //             console.warn(`Error formatting rawTimestamp for doc ${doc.id}:`, e);
+
   //           }
   //         }
 
@@ -513,7 +513,7 @@ const ReturnItems = () => {
   //             });
               
   //           } catch (e) {
-  //             console.warn(`Error formatting timestamp for doc ${doc.id}:`, e);
+
   //           }
   //         }
 
@@ -546,7 +546,7 @@ const ReturnItems = () => {
   //       setHistoryData(logs);
         
   //     } catch (error) {
-  //       console.error("Error fetching request logs: ", error);
+
   //     }
   //   };
 
@@ -556,7 +556,7 @@ const ReturnItems = () => {
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) {
-      console.error("User ID not found");
+
       return;
     }
 
@@ -579,7 +579,7 @@ const ReturnItems = () => {
               });
 
             } catch (e) {
-              console.warn(`Error formatting rawTimestamp for doc ${doc.id}:`, e);
+       
             }
           }
 
@@ -590,7 +590,7 @@ const ReturnItems = () => {
               });
 
             } catch (e) {
-              console.warn(`Error formatting timestamp for doc ${doc.id}:`, e);
+ 
             }
           }
 
@@ -620,16 +620,15 @@ const ReturnItems = () => {
           return timeB - timeA;
         });
 
-    console.log("raw data:", logs);
-      console.log("Request List:", logs);
+
         setHistoryData(logs);
 
       } catch (error) {
-        console.error("Error processing request logs snapshot: ", error);
+
       }
 
     }, (error) => {
-      console.error("Error fetching request logs with onSnapshot: ", error);
+
     });
 
     return () => unsubscribe(); // Clean up the listener on unmount
@@ -691,7 +690,7 @@ const ReturnItems = () => {
         });
       });
     } catch (err) {
-      console.error("Error fetching inventory:", err);
+
     }
 
     setInventoryData(inventoryMap);
@@ -709,15 +708,13 @@ const ReturnItems = () => {
   //   try {
   //     const userId = localStorage.getItem("userId");
   //     if (!userId || !selectedRequest) {
-  //       console.error("Missing user ID or request data");
+
   //       return;
   //     }
   
   //     const timestamp = serverTimestamp();
   //     const currentDateString = new Date().toISOString();
 
-  //     console.log("Selected Request Raw:", selectedRequest.raw);
-  //     console.log("Request List:", selectedRequest.raw?.requestList);
 
   
   //     const fullReturnData = {
@@ -750,7 +747,7 @@ const ReturnItems = () => {
   //         };
   //       }),
   //     };
-  //     console.log("Saving fullReturnData:", JSON.stringify(fullReturnData, null, 2));
+
 
 
   //     // Update condition counts in the Borrow Catalog (inventory)
@@ -810,9 +807,9 @@ const ReturnItems = () => {
   //         requestList: fullReturnData.requestList,
   //         status: "Returned",
   //       });
-  //       console.log("Successfully updated the borrowcatalog document.");
+
   //     } else {
-  //       console.error("⚠️ No matching document found in borrowcatalog.");
+
   //     }
 
   //     // 🗑️ Delete from userrequestlog
@@ -838,12 +835,11 @@ const ReturnItems = () => {
   //       action: "Returned",
   //       date: currentDateString,
   //     });
-  
-  //     console.log("Returned items processed, removed from userRequests, added to history log.");
+
   //     closeModal();
   
   //   } catch (error) {
-  //     console.error("Error saving returned item details:", error);
+
   //   }
   // };  
 
@@ -851,15 +847,14 @@ const ReturnItems = () => {
     try {
       const userId = localStorage.getItem("userId");
       if (!userId || !selectedRequest) {
-        console.error("Missing user ID or request data");
+
         return;
       }
   
       const timestamp = serverTimestamp();
       const currentDateString = new Date().toISOString();
 
-      console.log("Selected Request Raw:", selectedRequest.raw);
-      console.log("Request List:", selectedRequest.raw?.requestList);
+
 
   
       const fullReturnData = {
@@ -892,7 +887,7 @@ const ReturnItems = () => {
           };
         }),
       };
-      console.log("Saving fullReturnData:", JSON.stringify(fullReturnData, null, 2));
+
 
 
       // Update condition counts in the Borrow Catalog (inventory)
@@ -952,9 +947,9 @@ const ReturnItems = () => {
           requestList: fullReturnData.requestList,
           status: "Returned",
         });
-        console.log("Successfully updated the borrowcatalog document.");
+
       } else {
-        console.error("⚠️ No matching document found in borrowcatalog.");
+
       }
 
       // 🗑️ Delete from userrequestlog
@@ -981,11 +976,11 @@ const ReturnItems = () => {
         date: currentDateString,
       });
   
-      console.log("Returned items processed, removed from userRequests, added to history log.");
+
       closeModal();
   
     } catch (error) {
-      console.error("Error saving returned item details:", error);
+
     }
   };  
   

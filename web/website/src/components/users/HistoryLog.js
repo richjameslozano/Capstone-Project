@@ -102,7 +102,7 @@ const HistoryLog = () => {
                   }
   
                 } catch (err) {
-                  console.error(`Error fetching inventory item ${inventoryId}:`, err);
+                 
                 }
               }
   
@@ -142,7 +142,7 @@ const HistoryLog = () => {
         setRequests(sortedByDate);
   
       }, (error) => {
-        console.error("Error fetching user requests in real-time: ", error);
+        
         setNotificationMessage("Failed to fetch user requests.");
         setNotificationVisible(true);
       });
@@ -151,7 +151,7 @@ const HistoryLog = () => {
       return () => unsubscribe();
 
     } catch (err) {
-      console.error("Error fetching requests:", err);
+      
       setNotificationMessage("Failed to fetch user requests.");
       setNotificationVisible(true);
       
@@ -216,7 +216,7 @@ const HistoryLog = () => {
       fetchRequests();
 
     } catch (err) {
-      console.error("Error canceling request:", err);
+    
       setNotificationMessage("Failed to cancel the request.");
       setNotificationVisible(true);
     }
@@ -320,7 +320,7 @@ const HistoryLog = () => {
         setActivityData(sortedLogs);
       },
       (error) => {
-        console.error("Real-time activity log listener failed:", error);
+     
       }
     );
   

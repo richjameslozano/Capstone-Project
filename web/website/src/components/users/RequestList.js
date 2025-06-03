@@ -72,7 +72,7 @@ const RequestList = () => {
   //               }
 
   //             } catch (err) {
-  //               console.error(`Error fetching inventory item ${inventoryId}:`, err);
+  //           
   //             }
   //           }
 
@@ -110,7 +110,7 @@ const RequestList = () => {
   //     setRequests(sortedByDate);      
 
   //   } catch (err) {
-  //     console.error("Error fetching requests:", err);
+  //    
   //     setNotificationMessage("Failed to fetch user requests.");
   //     setNotificationVisible(true);
       
@@ -147,7 +147,7 @@ const RequestList = () => {
   //                 }
   
   //               } catch (err) {
-  //                 console.error(`Error fetching inventory item ${inventoryId}:`, err);
+  //               
   //               }
   //             }
   
@@ -186,7 +186,7 @@ const RequestList = () => {
   //       setRequests(sortedByDate);
   
   //     }, (error) => {
-  //       console.error("Error fetching user requests in real-time: ", error);
+  //       
   //       setNotificationMessage("Failed to fetch user requests.");
   //       setNotificationVisible(true);
   //     });
@@ -194,7 +194,7 @@ const RequestList = () => {
   //     // Cleanup listener on unmount
   //     return () => unsubscribe();
   //   } catch (err) {
-  //     console.error("Error fetching requests:", err);
+  //     
   //     setNotificationMessage("Failed to fetch user requests.");
   //     setNotificationVisible(true);
   //   } finally {
@@ -229,7 +229,7 @@ const RequestList = () => {
                     itemId = invDoc.data().itemId || "N/A";
                   }
                 } catch (err) {
-                  console.error(`Error fetching inventory item ${inventoryId}:`, err);
+                 
                 }
               }
 
@@ -268,7 +268,7 @@ const RequestList = () => {
 
         setRequests(sortedByDate);
       }, (error) => {
-        console.error("Error fetching user requests in real-time: ", error);
+       
         setNotificationMessage("Failed to fetch user requests.");
         setNotificationVisible(true);
       });
@@ -277,7 +277,7 @@ const RequestList = () => {
       return () => unsubscribe();
       
     } catch (err) {
-      console.error("Error fetching requests:", err);
+     
       setNotificationMessage("Failed to fetch user requests.");
       setNotificationVisible(true);
 
@@ -342,7 +342,7 @@ const RequestList = () => {
       fetchRequests();
 
     } catch (err) {
-      console.error("Error canceling request:", err);
+      
       setNotificationMessage("Failed to cancel the request.");
       setNotificationVisible(true);
     }
