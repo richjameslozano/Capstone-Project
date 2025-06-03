@@ -1,14 +1,14 @@
 {
   "expo": {
-    "name": "NULS-MOA",
-    "slug": "NULS-MOA",
+    "name": "NULS MOA",
+    "slug": "NULS",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/NULS_LOGO.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -17,7 +17,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/NULS_LOGO.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.nuls.numoa"
