@@ -65,29 +65,91 @@ export default function SearchItemsScreen({ }) {
   //   fetchInventory();
   // }, []);
 
+  // VERSION NI BERLENE NO DATE EXPIRY CONDITION
+  // useEffect(() => {
+  //   const fetchInventory = () => {
+  //     try {
+  //       const inventoryCollection = collection(db, 'inventory');
+
+  //       const unsubscribe = onSnapshot(inventoryCollection, (snapshot) => {
+  //         const inventoryList = snapshot.docs
+  //           .map(doc => ({
+  //             id: doc.id,
+  //             ...doc.data(),
+  //           }))
+  //           .sort((a, b) => a.itemName.localeCompare(b.itemName)); // alphabetically by itemName
+
+  //         setInventoryItems(inventoryList);
+  //       });
+
+  //       return () => unsubscribe();
+  //     } catch (error) {
+  //       console.error("Error fetching inventory: ", error);
+  //     }
+  //   };
+
+  //   fetchInventory();
+  // }, []);
+
+  // VERSION NI RICH WITH DATE EXPIRY CONDITION
   useEffect(() => {
-    const fetchInventory = () => {
-      try {
-        const inventoryCollection = collection(db, 'inventory');
+    const inventoryCollection = collection(db, "inventory");
 
-        const unsubscribe = onSnapshot(inventoryCollection, (snapshot) => {
-          const inventoryList = snapshot.docs
-            .map(doc => ({
-              id: doc.id,
-              ...doc.data(),
-            }))
-            .sort((a, b) => a.itemName.localeCompare(b.itemName)); // alphabetically by itemName
+    // Subscribe to inventory collection changes
+    const unsubscribe = onSnapshot(
+      inventoryCollection,
+      async (snapshot) => {
+        const now = new Date();
+        const validItems = [];
 
-          setInventoryItems(inventoryList);
-        });
+        // We need to await all stockLog queries, so use Promise.all
+        await Promise.all(
+          snapshot.docs.map(async (doc) => {
+            const data = doc.data();
+            const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+            const stockSnapshot = await getDocs(stockLogRef);
 
-        return () => unsubscribe();
-      } catch (error) {
+            let hasValidStock = false;
+
+            for (const logDoc of stockSnapshot.docs) {
+              const logData = logDoc.data();
+              const expiryRaw = logData.expiryDate;
+
+              if (!expiryRaw) {
+                hasValidStock = true;
+                break;
+              }
+
+              const expiryDate = typeof expiryRaw === "string"
+                ? new Date(expiryRaw)
+                : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+              if (isNaN(expiryDate.getTime())) continue;
+
+              if (expiryDate >= now) {
+                hasValidStock = true;
+                break;
+              }
+            }
+
+            if (hasValidStock) {
+              validItems.push({
+                id: doc.id,
+                ...data,
+              });
+            }
+          })
+        );
+
+        validItems.sort((a, b) => (a.itemName || "").localeCompare(b.itemName || ""));
+        setInventoryItems(validItems);
+      },
+      (error) => {
         console.error("Error fetching inventory: ", error);
       }
-    };
+    );
 
-    fetchInventory();
+    return () => unsubscribe();
   }, []);
 
     const handleIcon =(item)=>{

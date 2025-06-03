@@ -89,34 +89,103 @@ export default function InventoryScreen({ navigation }) {
     }, [])
   );
    
-  useEffect(() => {
-    const inventoryCollection = collection(db, 'inventory');  
+  // VERSION NI BERLENE NO DATE EXPIRY CONDITION
+  // useEffect(() => {
+  //   const inventoryCollection = collection(db, 'inventory');  
   
+  //   const unsubscribe = onSnapshot(
+  //     inventoryCollection,
+  //     (inventorySnapshot) => {
+  //       const inventoryList = inventorySnapshot.docs.map((doc) => ({
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       }));
+  
+  //       setInventoryItems(inventoryList);
+  
+  //       const categoriesList = ['All', ...new Set(inventoryList.map((item) => item.type))];
+  //       const departmentsList = ['All', ...new Set(inventoryList.map((item) => item.department))];
+  //       const usageTypesList = ['All', ...new Set(inventoryList.map((item) => item.usageType))];
+  
+  //       setCategories(categoriesList);
+  //       setDepartments(departmentsList);
+  //       setUsageTypes(usageTypesList);
+  //     },
+      
+  //     (error) => {
+  //       console.error('Error fetching inventory in real-time: ', error);
+  //     }
+  //   );
+  
+  //   return () => unsubscribe(); // Clean up the listener on unmount
+  // }, []);
+  
+  // VERSION NI RICH WITH DATE EXPIRY CONDITION
+  useEffect(() => {
+    const inventoryCollection = collection(db, 'inventory');
+
     const unsubscribe = onSnapshot(
       inventoryCollection,
-      (inventorySnapshot) => {
-        const inventoryList = inventorySnapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-  
-        setInventoryItems(inventoryList);
-  
-        const categoriesList = ['All', ...new Set(inventoryList.map((item) => item.type))];
-        const departmentsList = ['All', ...new Set(inventoryList.map((item) => item.department))];
-        const usageTypesList = ['All', ...new Set(inventoryList.map((item) => item.usageType))];
-  
-        setCategories(categoriesList);
-        setDepartments(departmentsList);
-        setUsageTypes(usageTypesList);
+      async (inventorySnapshot) => {
+        const now = new Date();
+        const validItems = [];
+
+        // Wait for all stockLog checks in parallel
+        await Promise.all(
+          inventorySnapshot.docs.map(async (doc) => {
+            const data = doc.data();
+            const stockLogRef = collection(db, 'inventory', doc.id, 'stockLog');
+            const stockSnapshot = await getDocs(stockLogRef);
+
+            let hasValidStock = false;
+
+            for (const logDoc of stockSnapshot.docs) {
+              const logData = logDoc.data();
+              const expiryRaw = logData.expiryDate;
+
+              if (!expiryRaw) {
+                hasValidStock = true;
+                break;
+              }
+
+              const expiryDate = typeof expiryRaw === 'string'
+                ? new Date(expiryRaw)
+                : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+              if (isNaN(expiryDate.getTime())) continue;
+
+              if (expiryDate >= now) {
+                hasValidStock = true;
+                break;
+              }
+            }
+
+            if (hasValidStock) {
+              validItems.push({
+                id: doc.id,
+                ...data,
+              });
+            }
+          })
+        );
+
+        // Sort alphabetically by itemName (case-insensitive)
+        validItems.sort((a, b) =>
+          (a.itemName || '').toLowerCase().localeCompare((b.itemName || '').toLowerCase())
+        );
+
+        setInventoryItems(validItems);
+
+        setCategories(['All', ...new Set(validItems.map(item => item.type))]);
+        setDepartments(['All', ...new Set(validItems.map(item => item.department))]);
+        setUsageTypes(['All', ...new Set(validItems.map(item => item.usageType))]);
       },
-      
       (error) => {
         console.error('Error fetching inventory in real-time: ', error);
       }
     );
-  
-    return () => unsubscribe(); // Clean up the listener on unmount
+
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
