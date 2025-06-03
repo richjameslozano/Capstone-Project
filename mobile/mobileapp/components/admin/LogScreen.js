@@ -36,7 +36,10 @@ const LogScreen = () => {
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "requestlog"), (querySnapshot) => {
       const logs = querySnapshot.docs.map((doc) => {
+        
         const data = doc.data();
+
+        console.log("Request List Items:", data.requestList);
         const timeFrom = data.timeFrom || "N/A";
         const timeTo = data.timeTo || "N/A";
         const rawTimestamp = data.rawTimestamp;
@@ -72,6 +75,7 @@ const LogScreen = () => {
           raw: data,
           timeFrom,
           timeTo,
+          unit: data.requestList?.[0]?.unit ?? "N/A",
         };
       });
 
@@ -97,6 +101,16 @@ const LogScreen = () => {
     setModalVisible(false);
     setSelectedRequest(null);
   };
+
+  // Assuming selectedRequest.raw.items is the array of requested items
+// Determine if any item is "chemical" or "reagent"
+  const items = selectedRequest?.raw?.requestList || [];
+
+  const isChemicalOrReagent = items.some(
+    (item) =>
+      item.itemType?.toLowerCase() === "chemical" ||
+      item.itemType?.toLowerCase() === "reagent"
+  );
 
   return (
     <View style={styles.container}>
@@ -214,7 +228,8 @@ const LogScreen = () => {
                     <View style={[styles.tableRow, styles.itemHeader]}>
                       <Text style={[styles.tableHeader, { flex: 1.5 }]}>Item ID</Text>
                       <Text style={[styles.tableHeader, { flex: 3 }]}>Item Name</Text>
-                      <Text style={[styles.tableHeader, { flex: 1 }]}>Quantity</Text>
+                      <Text style={[styles.tableHeader, { flex: 1 }]}>QTY</Text>
+                      <Text style={[styles.tableHeader, { flex: 1 }]}>Unit</Text>
                       <Text style={[styles.tableHeader, { flex: 3 }]}>Details</Text>
                       {selectedRequest.raw.status === "Rejected" && (
                         <Text style={[styles.tableHeader, { flex: 3 }]}>Reason</Text>
@@ -236,6 +251,11 @@ const LogScreen = () => {
                         </Text>
                         <Text style={[styles.tableCell, { flex: 3 }]}>{item.itemName}</Text>
                         <Text style={[styles.tableCell, { flex: 1 }]}>{item.quantity}</Text>
+                        {["chemical", "reagent"].includes(item.category?.toLowerCase()) ? (
+                          <Text style={[styles.tableCell, { flex: 1 }]}>{item.unit || "N/A"}</Text>
+                        ) : (
+                          <Text style={[styles.tableCell, { flex: 1 }]}>N/A</Text>
+                        )}
                         <Text style={[styles.tableCell, { flex: 3, fontSize: 12, color: "gray" }]}>
                           {item.itemDetails}
                         </Text>
