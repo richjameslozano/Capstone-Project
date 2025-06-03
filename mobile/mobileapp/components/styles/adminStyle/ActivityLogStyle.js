@@ -1,11 +1,30 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
-    backgroundColor: '#f6f9fc',
+    padding: 7,
+    backgroundColor: '#e9ecee',
+    paddingBottom: 10
   },
+
+  inventoryStocksHeader:{
+    position: 'absolute',
+        backgroundColor: '#fff',
+        flex: 1,
+        paddingTop: StatusBar.currentHeight+15,
+        left: 0,
+        right:0,
+        flexDirection: 'row',
+        paddingBottom: 10,
+        paddingHorizontal: 15,
+        alignItems: 'center',
+        justifyContent:'space-between',
+        borderBottomWidth: 1,
+        borderColor: '#e9ecee',
+        zIndex: 999
+  },
+
 
   title: {
     fontSize: 24,
@@ -91,6 +110,7 @@ export default StyleSheet.create({
 
   table: {
     marginTop: 10,
+    paddingBottom: 10
   },
   
   tableHeader: {
@@ -114,12 +134,14 @@ export default StyleSheet.create({
     flex: 1,
     paddingHorizontal: 4,
     color: '#333',
-    fontSize: 14,
+    fontSize: 13,
+    fontWeight: 300
   },
   
   headerCell: {
     color: '#fff',
     fontWeight: 'bold',
+    
   },
 
   tableRowEven: {
