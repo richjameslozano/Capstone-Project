@@ -1,4 +1,4 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
@@ -8,6 +8,23 @@ export default StyleSheet.create({
     paddingTop: 0,
     paddingBottom: 45,
   },
+
+    inventoryStocksHeader:{
+      position: 'absolute',
+          backgroundColor: '#fff',
+          flex: 1,
+          paddingTop: StatusBar.currentHeight+15,
+          left: 0,
+          right:0,
+          flexDirection: 'row',
+          paddingBottom: 10,
+          paddingHorizontal: 15,
+          alignItems: 'center',
+          justifyContent:'space-between',
+          borderBottomWidth: 1,
+          borderColor: '#e9ecee'
+    },
+  
 
   listContent: {
     paddingBottom: 40,
@@ -42,6 +59,11 @@ export default StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 4,
+  },
+
+  sublabel:{
+    fontSize: 13,
+    fontWeight: 300
   },
 
   emptyText: {

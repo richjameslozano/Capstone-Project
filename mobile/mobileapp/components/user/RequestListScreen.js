@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   Alert,
   TouchableWithoutFeedback,
   ScrollView,
+  StatusBar,
 } from 'react-native';
 import { collection, getDocs, deleteDoc, doc, onSnapshot, Timestamp, setDoc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
@@ -17,11 +18,12 @@ import { useAuth } from '../contexts/AuthContext';
 import { useRequestMetadata } from '../contexts/RequestMetadataContext';
 import styles from '../styles/userStyle/RequestListStyle';
 import Header from '../Header';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { Checkbox  } from 'react-native-paper';
+import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons';
 
-const RequestListScreen = ({navigation}) => {
+const RequestListScreen = ({}) => {
   const { user } = useAuth();
   const [requestList, setRequestList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -32,12 +34,23 @@ const RequestListScreen = ({navigation}) => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false); 
   const [confirmationData, setConfirmationData] = useState(null);
   const [tempDocIdsToDelete, setTempDocIdsToDelete] = useState([]);
+
+    const navigation = useNavigation()
+  
   const [headerHeight, setHeaderHeight] = useState(0);
 
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
     setHeaderHeight(height);
   };
+
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle('dark-content');
+      StatusBar.setBackgroundColor('transparent'); // Android only
+      StatusBar.setTranslucent(true)
+    }, [])
+  );
 
   
   useEffect(() => {
@@ -323,6 +336,17 @@ const RequestListScreen = ({navigation}) => {
       { cancelable: true }
     );
   };  
+  const modalText = {
+  fontSize: 14,
+  marginBottom: 8,
+  color: '#000000',
+};
+
+const boldLabel = {
+  fontWeight: 'bold',
+  color: '#0f3c4c',
+};
+
 
   const renderItem = ({ item }) => (
     <View style={{flex: 1, flexDirection: 'row', marginBottom: 5, elevation: 1, backgroundColor: 'white', borderRadius: 10}}>
@@ -330,9 +354,9 @@ const RequestListScreen = ({navigation}) => {
       <View style={styles.card}>
         <View style={styles.cardHeader}>
           <Text style={styles.title}>{item.selectedItem?.label}</Text>
-          <Text>Quantity: {item.quantity}</Text>
-        <Text>Category: {item.category}</Text>
-        <Text>Status: {item.status}</Text>
+          <Text style={styles.sublabel}>Quantity: {item.quantity}</Text>
+        <Text style={styles.sublabel}>Category: {item.category}</Text>
+        <Text style={styles.sublabel}>Status: {item.status}</Text>
       </View>
         </View>
     </TouchableOpacity>
@@ -350,9 +374,24 @@ const RequestListScreen = ({navigation}) => {
     );
   }
 
+
   return (
     <View style={[styles.container]}>
-       <Header onLayout={handleHeaderLayout} />
+      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                                     <Icon2 name="keyboard-backspace" size={28} color="black" />
+                                   </TouchableOpacity>
+
+                    <View>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Item List</Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13}}>Finalize Your Requisition</Text>
+                    </View>
+
+                     <TouchableOpacity style={{padding: 2}}>
+                       <Icon2 name="information-outline" size={24} color="#000" />
+                     </TouchableOpacity>
+                   </View>
+
         <FlatList
         style={{ paddingHorizontal: 5, marginTop: headerHeight+5, paddingTop: 10, backgroundColor:'#fff', borderRadius: 10}}
         showsVerticalScrollIndicator={false}
@@ -395,75 +434,89 @@ const RequestListScreen = ({navigation}) => {
       
       </View>
 
-      <Modal animationType="slide" transparent visible={modalVisible} onRequestClose={closeModal}>
-        <View style={styles.modalBackground}>
-          <View style={styles.modalContainer}>
-            <Text style={styles.title}>Request Details</Text>
+   <Modal animationType="fade" transparent visible={modalVisible} onRequestClose={closeModal}>
+  <View style={{ flex: 1, backgroundColor: 'rgba(0, 0, 0, 0.4)', justifyContent: 'center', alignItems: 'center' }}>
+    <View style={{
+      width: '90%',
+      backgroundColor: '#ffffff',
+      borderRadius: 12,
+      padding: 20,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      elevation: 5,
+      maxHeight: '80%',
+    }}>
+      <Text style={{
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginBottom: 15,
+        color: '#0f3c4c',
+        textAlign: 'center',
+      }}>
+        Request Details
+      </Text>
 
-                     {selectedItem && (
-              <>
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Item:</Text> {selectedItem.selectedItem?.label}
-                </Text>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {selectedItem && (
+          <>
+            <Text style={modalText}><Text style={boldLabel}>Item:</Text> {selectedItem.selectedItem?.label}</Text>
+            <Text style={modalText}><Text style={boldLabel}>Item Description:</Text> {selectedItem.itemDetails}</Text>
 
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Item Description:</Text> {selectedItem.itemDetails}
-                </Text>
+            <Text style={modalText}><Text style={boldLabel}>Quantity:</Text></Text>
+            <TextInput
+              style={{
+                borderWidth: 1,
+                borderColor: '#7cc0d8',
+                borderRadius: 8,
+                padding: 10,
+                marginBottom: 10,
+              }}
+              value={quantity}
+              onChangeText={handleQuantityChange}
+              keyboardType="numeric"
+              placeholder="Enter quantity"
+              placeholderTextColor="#aaa"
+            />
 
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Quantity:</Text>
-                </Text>
+            <Text style={modalText}><Text style={boldLabel}>Unit:</Text> {selectedItem.unit}</Text>
+            <Text style={modalText}><Text style={boldLabel}>Category:</Text> {selectedItem.category}</Text>
+            <Text style={modalText}><Text style={boldLabel}>Usage Type:</Text> {selectedItem.usageType}</Text>
+            <Text style={modalText}><Text style={boldLabel}>Item Type:</Text> {selectedItem.type}</Text>
+            <Text style={modalText}><Text style={boldLabel}>Lab Room:</Text> {selectedItem.labRoom}</Text>
+            <Text style={modalText}><Text style={boldLabel}>Department:</Text> {selectedItem.department}</Text>
+          </>
+        )}
+      </ScrollView>
 
-                <TextInput
-                  style={styles.inputQuantity}
-                  value={quantity}
-                  onChangeText={handleQuantityChange}
-                  keyboardType="numeric"
-                  placeholder="Enter quantity"
-                />
-
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Unit:</Text> {selectedItem.unit}
-                </Text>
-
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Category:</Text> {selectedItem.category}
-                </Text>
-
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Usage Type:</Text> {selectedItem.usageType}
-                </Text>
-
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Item Type:</Text> {selectedItem.type}
-                </Text>
-
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Lab Room:</Text> {selectedItem.labRoom}
-                </Text>
-
-                {/* <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Condition:</Text> {selectedItem.condition}
-                </Text> */}
-
-                <Text style={styles.modalDetail}>
-                  <Text style={styles.bold}>Department:</Text> {selectedItem.department}
-                </Text>
-              </>
-            )}
-
-            <TouchableOpacity style={styles.requestButtonModal} onPress={closeModal}>
-              <Text style={styles.requestButtonText}>Close</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <TouchableOpacity
+        style={{
+          backgroundColor: '#1e7898',
+          paddingVertical: 12,
+          borderRadius: 10,
+          marginTop: 20,
+        }}
+        onPress={closeModal}
+      >
+        <Text style={{
+          color: '#ffffff',
+          fontWeight: 'bold',
+          textAlign: 'center',
+          fontSize: 16,
+        }}>
+          Close
+        </Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
 
      {showConfirmationModal && (
 <Modal
   visible={showConfirmationModal}
   transparent
-  animationType="slide"
+  animationType="fade"
   onRequestClose={() => setShowConfirmationModal(false)}
 >
   <TouchableWithoutFeedback onPress={() => setShowConfirmationModal(false)}>
