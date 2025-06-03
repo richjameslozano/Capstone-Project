@@ -332,23 +332,79 @@ const Requisition = () => {
   //   };
   // }, []);
 
+  // VERSION NI BERLENE NO DATE OF EXPIRY CONDITION
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const querySnapshot = await getDocs(collection(db, "inventory"));
+  //       const itemList = querySnapshot.docs.map(doc => ({
+  //         id: doc.id,
+  //         ...doc.data()
+  //       }));
+  
+  //       setItems(itemList);
+  //       setFilteredItems(itemList);
+
+  //     } catch (error) {
+        
+  //     }
+  //   };
+  
+  //   fetchItems();
+  // }, []);
+
+  // VERSION NI RICH WITH DATE OF EXPIRY CONDITION
   useEffect(() => {
     const fetchItems = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "inventory"));
-        const itemList = querySnapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-  
-        setItems(itemList);
-        setFilteredItems(itemList);
+        const inventorySnapshot = await getDocs(collection(db, "inventory"));
+        const now = new Date();
 
+        const validItems = [];
+
+        for (const doc of inventorySnapshot.docs) {
+          const itemData = doc.data();
+          const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+          const stockSnapshot = await getDocs(stockLogRef);
+
+          let hasValidStock = false;
+
+          for (const logDoc of stockSnapshot.docs) {
+            const logData = logDoc.data();
+            const expiryRaw = logData.expiryDate;
+
+            if (!expiryRaw) {
+              hasValidStock = true;
+              break;
+            }
+
+            const expiryDate = typeof expiryRaw === "string"
+              ? new Date(expiryRaw)
+              : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+            if (isNaN(expiryDate.getTime())) continue;
+
+            if (expiryDate >= now) {
+              hasValidStock = true;
+              break;
+            }
+          }
+
+          if (hasValidStock) {
+            validItems.push({
+              id: doc.id,
+              ...itemData
+            });
+          }
+        }
+
+        setItems(validItems);
+        setFilteredItems(validItems);
       } catch (error) {
-        
+        console.error("Error fetching inventory with expiry filtering:", error);
       }
     };
-  
+
     fetchItems();
   }, []);
 
@@ -1151,8 +1207,8 @@ const Requisition = () => {
       }
   
       // Notify user whether the item was successfully removed from Firestore
-      setNotificationMessage(foundInFirestore ? "Item removed from the list" : "Item not found in Firestore.");
-      setIsNotificationVisible(true);
+      // setNotificationMessage(foundInFirestore ? "Item removed from the list" : "Item not found in Firestore.");
+      // setIsNotificationVisible(true);
   
     } catch (error) {
 
@@ -1317,8 +1373,8 @@ const Requisition = () => {
           unit: selectedItem.unit || null,
         });
 
-        setNotificationMessage("Item updated in temporary list.");
-        setIsNotificationVisible(true);
+        // setNotificationMessage("Item updated in temporary list.");
+        // setIsNotificationVisible(true);
 
       } catch (error) {
 
@@ -2261,6 +2317,7 @@ const Requisition = () => {
             >
               Finalize
             </Button>
+            
          <FinalizeRequestModal
           visible={isFinalizeModalVisible}
           onOk={() => {
@@ -2525,7 +2582,15 @@ const Requisition = () => {
             </div>
           </div> */}
 
- 
+        <NotificationModal
+          isVisible={isNotificationVisible}
+          onClose={() => setIsNotificationVisible(false)}
+          message={notificationMessage}
+        />
+
+        <SuccessModal isVisible={showModal} onClose={closeModal} />
+
+        <PoliciesModal isOpen={showPolicies} onClose={closePolicies} />
       </Layout>
       
       

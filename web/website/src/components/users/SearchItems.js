@@ -207,40 +207,102 @@ const SearchItems = () => {
   //   fetchInventory();
   // }, []);
 
-  useEffect(() => {
-    const fetchInventory = () => {
-      try {
-        // Set up real-time listener using onSnapshot
-        const inventoryRef = collection(db, "inventory");
+  // VERSION NI BERLENE NO EXPIRY DATE CONDITION
+  // useEffect(() => {
+  //   const fetchInventory = () => {
+  //     try {
+  //       // Set up real-time listener using onSnapshot
+  //       const inventoryRef = collection(db, "inventory");
 
-        const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
-          const items = snapshot.docs.map((doc) => {
-            const data = doc.data();
-            return {
+  //       const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
+  //         const items = snapshot.docs.map((doc) => {
+  //           const data = doc.data();
+  //           return {
+  //             key: doc.id,
+  //             description: data.itemName || "Unnamed Item",
+  //             quantity: data.quantity || 0,
+  //             status: data.status || "Unknown",
+  //             category: data.category || "Uncategorized",
+  //             room: data.labRoom || "No Room Info",
+  //             ...data, // Include all data for modal use
+  //           };
+  //         });
+
+  //         setInventoryData(items);
+  //         setFilteredData(items); // You can implement additional filtering if needed
+  //       });
+
+  //       // Cleanup listener when component unmounts
+  //       return () => unsubscribe();
+        
+  //     } catch (err) {
+
+  //     }
+  //   };
+
+  //   fetchInventory();
+  // }, []); 
+
+  // VERSION NI RICH WITH EXPIRY DATE CONDITION
+  useEffect(() => {
+    const fetchInventory = async () => {
+      try {
+        const inventoryRef = collection(db, "inventory");
+        const snapshot = await getDocs(inventoryRef);
+        const now = new Date();
+
+        const validItems = [];
+
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+          const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+          const stockSnapshot = await getDocs(stockLogRef);
+
+          let hasValidStock = false;
+
+          for (const logDoc of stockSnapshot.docs) {
+            const logData = logDoc.data();
+            const expiryRaw = logData.expiryDate;
+
+            if (!expiryRaw) {
+              hasValidStock = true; // If no expiryDate, include the item
+              break;
+            }
+
+            const expiryDate = typeof expiryRaw === "string"
+              ? new Date(expiryRaw)
+              : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+            if (isNaN(expiryDate.getTime())) continue;
+
+            if (expiryDate >= now) {
+              hasValidStock = true;
+              break;
+            }
+          }
+
+          if (hasValidStock) {
+            validItems.push({
               key: doc.id,
               description: data.itemName || "Unnamed Item",
               quantity: data.quantity || 0,
               status: data.status || "Unknown",
               category: data.category || "Uncategorized",
               room: data.labRoom || "No Room Info",
-              ...data, // Include all data for modal use
-            };
-          });
+              ...data, // Keep full data for modals/details
+            });
+          }
+        }
 
-          setInventoryData(items);
-          setFilteredData(items); // You can implement additional filtering if needed
-        });
-
-        // Cleanup listener when component unmounts
-        return () => unsubscribe();
-        
+        setInventoryData(validItems);
+        setFilteredData(validItems);
       } catch (err) {
-
+        console.error("Error fetching inventory with expiry filter:", err);
       }
     };
 
     fetchInventory();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     let data = [...inventoryData];

@@ -285,7 +285,7 @@ const handleFullUpdate = async (values) => {
     }
   }, [isEditModalVisible]);
 
-  const isExpired = (expiryDate) => {
+const isExpired = (expiryDate) => {
   if (!expiryDate) return false; // no expiry date means not expired
   return dayjs(expiryDate).isBefore(dayjs().add(1,'day').startOf('day'));
 

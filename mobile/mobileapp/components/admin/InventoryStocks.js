@@ -65,25 +65,89 @@ export default function InventoryStocks({ }) {
   //   fetchInventory();
   // }, []);
 
+
+  // VERSION NI BERLENE NO DATE EXPIRY CONDITION
+  // useEffect(() => {
+  //   const fetchInventory = () => {
+  //     try {
+  //       const inventoryCollection = collection(db, 'inventory');
+
+  //       const unsubscribe = onSnapshot(inventoryCollection, (snapshot) => {
+  //         const inventoryList = snapshot.docs
+  //           .map(doc => ({
+  //             id: doc.id,
+  //             ...doc.data(),
+  //           }))
+  //           .sort((a, b) => a.itemName.localeCompare(b.itemName)); // alphabetically by itemName
+
+  //         setInventoryItems(inventoryList);
+  //       });
+
+  //       return () => unsubscribe();
+  //     } catch (error) {
+  //       console.error("Error fetching inventory: ", error);
+  //     }
+  //   };
+
+  //   fetchInventory();
+  // }, []);
+
+  // VERSION NI RICH WITH DATE EXPIRY CONDITION
   useEffect(() => {
-    const fetchInventory = () => {
+    const fetchInventory = async () => {
       try {
-        const inventoryCollection = collection(db, 'inventory');
+        const inventoryRef = collection(db, "inventory");
+        const snapshot = await getDocs(inventoryRef);
+        const now = new Date();
 
-        const unsubscribe = onSnapshot(inventoryCollection, (snapshot) => {
-          const inventoryList = snapshot.docs
-            .map(doc => ({
+        const validItems = [];
+
+        for (const doc of snapshot.docs) {
+          const data = doc.data();
+
+          // Fetch stockLog subcollection for this inventory item
+          const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+          const stockSnapshot = await getDocs(stockLogRef);
+
+          let hasValidStock = false;
+
+          for (const logDoc of stockSnapshot.docs) {
+            const logData = logDoc.data();
+            const expiryRaw = logData.expiryDate;
+
+            if (!expiryRaw) {
+              // No expiry date means valid stock
+              hasValidStock = true;
+              break;
+            }
+
+            // Convert Firestore timestamp or string to JS Date
+            const expiryDate = typeof expiryRaw === "string"
+              ? new Date(expiryRaw)
+              : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+            if (isNaN(expiryDate.getTime())) continue;
+
+            if (expiryDate >= now) {
+              hasValidStock = true;
+              break;
+            }
+          }
+
+          if (hasValidStock) {
+            validItems.push({
               id: doc.id,
-              ...doc.data(),
-            }))
-            .sort((a, b) => a.itemName.localeCompare(b.itemName)); // alphabetically by itemName
+              ...data,
+            });
+          }
+        }
 
-          setInventoryItems(inventoryList);
-        });
+        // Sort alphabetically by itemName
+        validItems.sort((a, b) => (a.itemName || "").localeCompare(b.itemName || ""));
 
-        return () => unsubscribe();
-      } catch (error) {
-        console.error("Error fetching inventory: ", error);
+        setInventoryItems(validItems);
+      } catch (err) {
+        console.error("Error fetching inventory with expiry filter:", err);
       }
     };
 

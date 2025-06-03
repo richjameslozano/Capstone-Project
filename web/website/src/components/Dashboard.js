@@ -1,3 +1,4 @@
+// VERSION 1
 // import React, { useState, useEffect } from "react";
 // import { useNavigate,  useLocation } from "react-router-dom";
 // import { Layout, Card, Col, Row, Table, List, Modal } from "antd";
@@ -602,7 +603,7 @@
  
 //  export default Dashboard;
 
-
+// VERSION 2
 import React, { useState, useEffect } from "react";
 import { useNavigate,  useLocation } from "react-router-dom";
 import { Layout, Card, Col, Row, Table, List, Modal,Typography } from "antd";
@@ -722,6 +723,7 @@ const getCriticalStockItems = (inventoryItems) => {
     return quantity <= criticalLevel;
   });
 };
+
 // critical stock 
 useEffect(() => {
   const inventoryRef = collection(db, "inventory");
