@@ -80,6 +80,34 @@ position: 'absolute',
     color: "#007bff",
     marginTop: 8,
   },
+
+  statusFilterContainer: {
+    paddingVertical: 10,
+    paddingHorizontal: 5,
+    backgroundColor: 'white'
+  },
+
+  statusFilterButton: {
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 20,
+    marginRight: 8,
+  },
+
+  activeStatusFilterButton: {
+    backgroundColor: '#1a6985',
+  },
+
+  statusFilterText: {
+    color: '#333',
+    fontWeight: '500',
+  },
+
+  activeStatusFilterText: {
+    color: '#fff',
+  },
+
 });
 
 export default styles;

@@ -21,7 +21,6 @@ const Profile = () => {
         const userEmail = localStorage.getItem("userEmail");
 
         if (!userEmail) {
-          console.error("No logged-in user found.");
           return;
         }
 
@@ -43,11 +42,11 @@ const Profile = () => {
           }
 
         } else {
-          console.error("No user data found.");
+
         }
 
       } catch (error) {
-        console.error("Error fetching user data:", error);
+
       }
     };
 
@@ -65,10 +64,10 @@ const Profile = () => {
       (snapshot) => {
         const progress =
           (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-        console.log("Upload is " + progress + "% done");
+
       },
       (error) => {
-        console.error("Error uploading image:", error);
+
         message.error("Failed to upload image.");
       },
       async () => {
@@ -87,7 +86,7 @@ const Profile = () => {
           }
           
         } catch (error) {
-          console.error("Error fetching download URL:", error);
+
           message.error("Failed to update profile image.");
         }
       }

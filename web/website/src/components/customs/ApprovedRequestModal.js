@@ -15,10 +15,10 @@
 // }) => {
 //   // fallback to empty array if undefined
 //   const requestList = selectedApprovedRequest?.requestList || [];
-//   console.log("requestList in Modal:", requestList);
+//  
 
 //   if (selectedApprovedRequest) {
-//     console.log("Raw timestamp value:", selectedApprovedRequest.timestamp);
+//     
 //   }
 
 //   // Define your own columns for the modal
@@ -49,7 +49,8 @@
 //   //   try {
 //   //     const requisitionId = selectedApprovedRequest?.id;
 //   //     if (!requisitionId) {
-//   //       console.error("Missing requisition ID");
+//   //     
+
 //   //       return;
 //   //     }
   
@@ -84,7 +85,7 @@
 //   //           });
 
 //   //         } else {
-//   //           console.warn(`Inventory item not found for ID: ${inventoryId}`);
+//   //         
 //   //         }
 //   //       }
 //   //     }
@@ -112,12 +113,12 @@
 //   //       approvedBy: approverName,
 //   //     });
   
-//   //     console.log("Return approved and inventory updated.");
+//   //   
 //   //     setIsApprovedModalVisible(false);
 //   //     setSelectedApprovedRequest(null);
   
 //   //   } catch (error) {
-//   //     console.error("Error approving return and updating inventory:", error);
+//   //    
 //   //   }
 //   // };  
 
@@ -133,7 +134,8 @@
 //     alert("Request successfully deployed!");
 //     setIsApprovedModalVisible(false);
 //   } catch (error) {
-//     console.error("Error updating document:", error);
+//    
+
 //     alert("Failed to deploy request.");
 //   }
 // };
@@ -142,7 +144,7 @@
 //     try {
 //       const requisitionId = selectedApprovedRequest?.id;
 //       if (!requisitionId) {
-//         console.error("Missing requisition ID");
+//      
 //         return;
 //       }
   
@@ -179,7 +181,7 @@
 //             await updateDoc(inventoryDocRef, {
 //               quantity: newInventoryQty,
 //             });
-//             console.log(`✅ Inventory updated: ${currentInventoryQty} → ${newInventoryQty}`);
+//            
 
 //             // Update labRoom item quantity
 //             const itemId = inventoryData.itemId;
@@ -195,16 +197,16 @@
 //                   quantity: newLabQty,
 //                 });
 
-//                 console.log(`🏫 LabRoom item updated: ${currentLabQty} → ${newLabQty} for itemId ${itemId} in labRoom ${labRoomId}`);
+//               
 //               } else {
-//                 console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+//             
 //               }
 //             } else {
-//               console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+//            
 //             }
 
 //           } else {
-//             console.warn(`Inventory item not found for ID: ${inventoryId}`);
+//    
 //           }
 //         }
 //       }
@@ -232,12 +234,12 @@
 //         approvedBy: approverName,
 //       });
   
-//       console.log("Return approved and inventory updated.");
+//      
 //       setIsApprovedModalVisible(false);
 //       setSelectedApprovedRequest(null);
   
 //     } catch (error) {
-//       console.error("Error approving return and updating inventory:", error);
+//      
 //     }
 //   };  
 
@@ -332,7 +334,6 @@ const ApprovedRequestModal = ({
   
   // fallback to empty array if undefined
 const requestList = selectedApprovedRequest?.requestList || [];
-console.log("requestList in Modal:", requestList);
 
   const conditionCounts = requestList.reduce((acc, item) => {
     const condition = item.condition;
@@ -346,7 +347,7 @@ console.log("requestList in Modal:", requestList);
   }, {});
 
   if (selectedApprovedRequest) {
-    console.log("Raw timestamp value:", selectedApprovedRequest.timestamp);
+  
   }
 
   // Define your own columns for the modal
@@ -434,7 +435,7 @@ function getConditionSummary(conditionsArray) {
   //     setIsApprovedModalVisible(false);
 
   //   } catch (error) {
-  //     console.error("Error updating document:", error);
+  //    
   //     alert("Failed to deploy request.");
   //   }
   // };
@@ -472,7 +473,7 @@ function getConditionSummary(conditionsArray) {
   //     setIsApprovedModalVisible(false);
       
   //   } catch (error) {
-  //     console.error("Error updating document or logging activity:", error);
+  //    
   //     alert("Failed to deploy request.");
   //   }
   // };
@@ -504,7 +505,7 @@ function getConditionSummary(conditionsArray) {
   //     setIsApprovedModalVisible(false);
 
   //   } catch (error) {
-  //     console.error("Error updating document or logging activity:", error);
+  //     
   //     alert("Failed to deploy request.");
   //   }
   // };
@@ -536,13 +537,13 @@ function getConditionSummary(conditionsArray) {
   //     setIsApprovedModalVisible(false);
 
   //   } catch (error) {
-  //     console.error("Error updating document or logging activity:", error);
+  //    
   //     alert("Failed to deploy request.");
   //   }
   // };
 
   const handleDeploy = async () => {
-    console.log("🚀 Selected Record:", selectedApprovedRequest);
+  
 
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName");
@@ -552,7 +553,7 @@ function getConditionSummary(conditionsArray) {
     try {
       // Fallback: if accountId is missing, fetch it using userId
       if (!requestorAccountId && selectedApprovedRequest.accountId) {
-        console.warn("⚠️ accountId missing. Trying to fetch via userId...");
+      
 
         const accountsQuery = query(
           collection(db, "accounts"),
@@ -562,7 +563,7 @@ function getConditionSummary(conditionsArray) {
         const accountsSnapshot = await getDocs(accountsQuery);
         if (!accountsSnapshot.empty) {
           requestorAccountId = accountsSnapshot.docs[0].accountId;
-          console.log("✅ accountId fetched:", requestorAccountId);
+   
 
         } else {
           throw new Error("No account found for userId");
@@ -570,7 +571,7 @@ function getConditionSummary(conditionsArray) {
       }
 
       if (!requestorAccountId) {
-        console.error("❌ Cannot update userrequestlog: accountId is missing");
+      
         alert("Cannot update user request log. accountId is missing.");
         return;
       }
@@ -599,7 +600,7 @@ function getConditionSummary(conditionsArray) {
       );
 
       const userRequestSnapshot = await getDocs(userRequestQuery);
-      console.log("📄 userrequestlog found:", userRequestSnapshot.docs.length); 
+     
 
       for (const docSnap of userRequestSnapshot.docs) {
         const docData = docSnap.data();
@@ -619,16 +620,7 @@ function getConditionSummary(conditionsArray) {
             docData.timeFrom === requestorLogData.timeFrom &&
             docData.timeTo === requestorLogData.timeTo;
 
-          console.log("🔍 Comparing item:");
-          console.log("  itemName:", item.itemName, "==", selectedItem?.itemName);
-          console.log("  itemDetails:", item.itemDetails, "==", selectedItem?.itemDetails);
-          console.log("  selectedItemId:", item.selectedItemId, "==", selectedItem?.selectedItemId);
-          console.log("  labRoom:", item.labRoom, "==", selectedItem?.labRoom);
-          console.log("  quantity:", item.quantity, "==", selectedItem?.quantity);
-          console.log("  program:", docData.program, "==", requestorLogData.program);
-          console.log("  timeFrom:", docData.timeFrom, "==", requestorLogData.timeFrom);
-          console.log("  timeTo:", docData.timeTo, "==", requestorLogData.timeTo);
-          console.log("  ➤ Matches:", matches);
+
 
           if (matches) {
             hasMatchingItem = true;
@@ -637,7 +629,7 @@ function getConditionSummary(conditionsArray) {
               status: 'Deployed'
             });
 
-            console.log("✅ userrequestlog updated to 'Deployed'");
+           
           } 
         });
       }
@@ -646,7 +638,6 @@ function getConditionSummary(conditionsArray) {
       setIsApprovedModalVisible(false);
 
     } catch (error) {
-      console.error("❌ Error during deployment:", error.message || error);
       alert("Deployment failed. Check console for details.");
     }
   };
@@ -655,7 +646,7 @@ function getConditionSummary(conditionsArray) {
   //   try {
   //     const requisitionId = selectedApprovedRequest?.id;
   //     if (!requisitionId) {
-  //       console.error("Missing requisition ID");
+  //       
   //       return;
   //     }
   
@@ -692,7 +683,7 @@ function getConditionSummary(conditionsArray) {
   //           await updateDoc(inventoryDocRef, {
   //             quantity: newInventoryQty,
   //           });
-  //           console.log(`✅ Inventory updated: ${currentInventoryQty} → ${newInventoryQty}`);
+  //           
 
   //           // Update labRoom item quantity
   //           const itemId = inventoryData.itemId;
@@ -708,18 +699,18 @@ function getConditionSummary(conditionsArray) {
   //                 quantity: newLabQty,
   //               });
 
-  //               console.log(`🏫 LabRoom item updated: ${currentLabQty} → ${newLabQty} for itemId ${itemId} in labRoom ${labRoomId}`);
+  //               
 
   //             } else {
-  //               console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+  //              
   //             }
               
   //           } else {
-  //             console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+  //             
   //           }
 
   //         } else {
-  //           console.warn(`Inventory item not found for ID: ${inventoryId}`);
+  //           
   //         }
   //       }
   //     }
@@ -747,12 +738,12 @@ function getConditionSummary(conditionsArray) {
   //       approvedBy: approverName,
   //     });
   
-  //     console.log("Return approved and inventory updated.");
+  //     
   //     setIsApprovedModalVisible(false);
   //     setSelectedApprovedRequest(null);
   
   //   } catch (error) {
-  //     console.error("Error approving return and updating inventory:", error);
+  //    
   //   }
   // };  
 
@@ -760,7 +751,7 @@ function getConditionSummary(conditionsArray) {
   //   try {
   //     const requisitionId = selectedApprovedRequest?.id;
   //     if (!requisitionId) {
-  //       console.error("Missing requisition ID");
+  //   
   //       return;
   //     }
   
@@ -822,15 +813,15 @@ function getConditionSummary(conditionsArray) {
   //             });
 
   //             } else {
-  //               console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+  //             
   //             }
               
   //           } else {
-  //             console.warn(`⚠️ Missing labRoomId or itemId for inventoryId ${inventoryId}`);
+  //           
   //           }
 
   //         } else {
-  //           console.warn(`Inventory item not found for ID: ${inventoryId}`);
+  //        
   //         }
           
   //       }
@@ -859,12 +850,12 @@ function getConditionSummary(conditionsArray) {
   //       approvedBy: approverName,
   //     });
   
-  //     console.log("Return approved and inventory updated.");
+  //     
   //     setIsApprovedModalVisible(false);
   //     setSelectedApprovedRequest(null);
   
   //   } catch (error) {
-  //     console.error("Error approving return and updating inventory:", error);
+  //  
   //   }
   // };  
 
@@ -872,7 +863,7 @@ function getConditionSummary(conditionsArray) {
     try {
       const requisitionId = selectedApprovedRequest?.id;
       if (!requisitionId) {
-        console.error("Missing requisition ID");
+      
         return;
       }
   
@@ -926,7 +917,7 @@ function getConditionSummary(conditionsArray) {
             const labRoomSnapshot = await getDocs(labRoomQuery);
 
             if (labRoomSnapshot.empty) {
-              console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomNumber}`);
+             
               continue;
             }
 
@@ -940,7 +931,7 @@ function getConditionSummary(conditionsArray) {
             const itemSnapshot = await getDocs(itemQuery);
 
             if (itemSnapshot.empty) {
-              console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+             
               continue;
             }
 
@@ -959,10 +950,10 @@ function getConditionSummary(conditionsArray) {
               [`condition.${conditionReturned}`]: labCondQty + returnedQty,
             });
 
-            console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
+           
 
           } else {
-            console.warn(`⚠️ Inventory item not found for ID: ${inventoryId}`);
+    
           } 
         }
       }
@@ -1014,18 +1005,16 @@ function getConditionSummary(conditionsArray) {
           timestamp: serverTimestamp(),
         });
 
-        console.log("✅ Requestlog status updated to 'Returned'");
+    
         
       } else {
-        console.warn("⚠️ No matching requestlog document found for accountId:", selectedApprovedRequest.accountId);
+       
       }
-
-      console.log("Return approved and inventory updated.");
       setIsApprovedModalVisible(false);
       setSelectedApprovedRequest(null);
   
     } catch (error) {
-      console.error("Error approving return and updating inventory:", error);
+     
     }
   };  
 

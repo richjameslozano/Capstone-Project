@@ -88,7 +88,7 @@ const AdminActivityLog = () => {
 
   //       setActivityData(logs);
   //     } catch (error) {
-  //       console.error("Failed to fetch activity logs:", error);
+  //      
   //     }
   //   };
 
@@ -144,7 +144,7 @@ const AdminActivityLog = () => {
         return () => unsubscribe();
         
       } catch (error) {
-        console.error("Failed to fetch activity logs:", error);
+        
       }
     };
 

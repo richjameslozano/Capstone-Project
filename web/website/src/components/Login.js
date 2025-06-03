@@ -90,7 +90,7 @@ const Login = () => {
         setDepartmentsAll(deptList);
       },
       (error) => {
-        console.error("Error fetching departments in real-time: ", error);
+     
         message.error("Failed to load departments.");
       }
     );
@@ -218,7 +218,6 @@ const Login = () => {
       //       blockedUntil: null,
       //     });
           
-      //     console.log("Account unblocked successfully.");
       //   }
       // }
   
@@ -276,7 +275,6 @@ const Login = () => {
           // localStorage.setItem("userPosition", userData.role || "User");
           localStorage.setItem("userPosition", role);
           localStorage.setItem("userJobTitle", userData.jobTitle || "User");
-          console.log(localStorage.getItem("userPosition"));
 
           await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
             action: "User Logged In (Website)",
@@ -303,7 +301,6 @@ const Login = () => {
           }
   
         } catch (authError) {
-          console.error("Firebase Auth login failed:", authError.message);
   
           const newAttempts = (userData.loginAttempts || 0) + 1;
   
@@ -326,7 +323,6 @@ const Login = () => {
       }
   
     } catch (error) {
-      console.error("Error during login:", error.message);
       setError("Unexpected error. Please try again.");
 
     } finally {
@@ -354,11 +350,11 @@ const Login = () => {
         const role = (userData.role || "user").toLowerCase();
         const normalizedRole = role === "admin1" || role === "admin2" ? "admin" : role;
   
-        console.log("Creating Firebase Auth user...");
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
   
-        console.log("Saving UID to Firestore (not password):", firebaseUser.uid);
+
         await updateDoc(userDoc.ref, {
           uid: firebaseUser.uid
           // ❌ remove this: password: password
@@ -394,7 +390,6 @@ const Login = () => {
         }
   
         setIsNewUser(false);
-        console.log("User registered and redirected:", normalizedRole);
   
       } else {
         setError("User record not found in Firestore.");
@@ -402,7 +397,6 @@ const Login = () => {
       }
   
     } catch (error) {
-      console.error("Error setting password and UID:", error.message);
       if (error.code === "auth/email-already-in-use") {
         setError("Email already in use. Try logging in instead.");
         setIsLoading(false);
@@ -558,7 +552,7 @@ const Login = () => {
       });
   
     } catch (error) {
-      console.error("Sign up error:", error.message);
+
 
       if (error.code === "auth/email-already-in-use") {
         setError("Email already in use.");
@@ -601,7 +595,6 @@ const Login = () => {
       }, 50);
 
     } catch (error) {
-      console.error("Error sending reset email:", error.message);
       setForgotPasswordError("Failed to send reset link. Please check the email.");
       setForgotPasswordSuccess("");
       setTimeout(() => {

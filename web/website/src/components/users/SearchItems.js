@@ -200,7 +200,7 @@ const SearchItems = () => {
   //       setFilteredData(items);
         
   //     } catch (err) {
-  //       console.error("Error fetching inventory data:", err);
+
   //     }
   //   };
 
@@ -235,7 +235,7 @@ const SearchItems = () => {
         return () => unsubscribe();
         
       } catch (err) {
-        console.error("Error fetching inventory data:", err);
+
       }
     };
 

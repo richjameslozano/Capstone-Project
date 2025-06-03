@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Modal,
   Button,
+  ScrollView
 } from "react-native";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -21,8 +22,8 @@ const BorrowCatalogScreen = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
-
-    const [headerHeight, setHeaderHeight] = useState(0);
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [headerHeight, setHeaderHeight] = useState(0);
 
   const navigation = useNavigation()
   const handleHeaderLayout = (event) => {
@@ -112,15 +113,27 @@ const BorrowCatalogScreen = () => {
     setSelectedRequest(null); // clear request
   };
 
-  const filteredCatalog = catalog.filter((item) =>
-    item.requestor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.courseDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.dateRequired.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  // const filteredCatalog = catalog.filter((item) =>
+  //   item.requestor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   item.courseDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   item.dateRequired.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
+
+  const filteredCatalog = catalog.filter((item) => {
+    const matchesSearch =
+      item.requestor.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.courseDescription.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.dateRequired.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesStatus =
+      statusFilter === 'All' || item.status.toLowerCase() === statusFilter.toLowerCase();
+
+    return matchesSearch && matchesStatus;
+  });
 
   const capitalizeName = (name) => {
-  return name.replace(/\b\w/g, char => char.toUpperCase());
-};
+    return name.replace(/\b\w/g, char => char.toUpperCase());
+  };
 
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => handleViewDetails(item)} style={styles.card}>
@@ -130,11 +143,24 @@ const BorrowCatalogScreen = () => {
       </View>
       <Text style={styles.description}>Room {item.room}</Text>
       
-      <Text
+      {/* <Text
         style={[styles.status, item.status === "Approved" ? styles.approved : styles.pending]}
       >
         {item.status}
+      </Text> */}
+
+      <Text
+        style={[
+          styles.status,
+          item.status === "Approved" ? styles.approved :
+          item.status === "Returned" ? styles.returned :
+          item.status === "Deployed" ? styles.deployed :
+          styles.pending
+        ]}
+      >
+        {item.status}
       </Text>
+
     </TouchableOpacity>
   );
 
@@ -154,13 +180,39 @@ const BorrowCatalogScreen = () => {
         </TouchableOpacity>
       </View>
 
-      <View style={{flex: 1, marginTop: headerHeight, backgroundColor: '#fff', borderRadius: 5, padding: 10, gap: 5}}>
+      <View style={{flex: 1, marginTop: headerHeight, backgroundColor: '#e9ecee', borderRadius: 5, gap: 5}}>
+
+    <View style={{backgroundColor: '#fff', padding: 10, borderRadius: 5, elevation: 3}}>
       <TextInput
         placeholder="Search"
         value={searchQuery}
         onChangeText={handleSearch}
         style={styles.searchInput}
       />
+  <View  style={styles.statusFilterContainer}>
+      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+        {['All', 'Borrowed', 'Returned', 'Approved', 'Deployed'].map((status) => (
+          <TouchableOpacity
+            key={status}
+            style={[
+              styles.statusFilterButton,
+              statusFilter === status && styles.activeStatusFilterButton,
+            ]}
+            onPress={() => setStatusFilter(status)}
+          >
+            <Text
+              style={[
+                styles.statusFilterText,
+                statusFilter === status && styles.activeStatusFilterText,
+              ]}
+            >
+              {status}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+      </View>
+    </View>
 
       <FlatList
         data={filteredCatalog}

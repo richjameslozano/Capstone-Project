@@ -36,7 +36,6 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
         if (userData.profileImage) setProfileImage(userData.profileImage);
       }
     } catch (error) {
-      console.error("Error fetching user data:", error);
     }
   }, []);
 

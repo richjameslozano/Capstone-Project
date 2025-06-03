@@ -14,9 +14,7 @@ import { Navigate, Outlet } from "react-router-dom";
 const ProtectedRoute = ({ allowedRoles = ["user", "admin", "super-admin", "super-user"] }) => {
   const userEmail = localStorage.getItem("userEmail");
   const userRole = (localStorage.getItem("userPosition") || "").trim().toLowerCase();
-  console.log("Allowed roles:", allowedRoles);
-  console.log("Role Check:", allowedRoles.includes(userRole)); 
-  console.log("userRole:", userRole);
+
 
   if (!userEmail || !userRole) {
     return <Navigate to="/" replace />;

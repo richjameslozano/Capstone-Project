@@ -66,7 +66,7 @@ export function TimeoutProvider({ children }) {
             timestamp: serverTimestamp(),
             });
         } catch (error) {
-            console.error("Error logging logout:", error);
+
         }
         }
 

@@ -103,7 +103,6 @@ const AccountManagement = () => {
       },
 
       (error) => {
-        console.error("Error fetching accounts in real-time: ", error);
         message.error("Failed to load accounts.");
       }
     );
@@ -123,7 +122,7 @@ const AccountManagement = () => {
         setDepartmentsAll(deptList); // full objects
       },
       (error) => {
-        console.error("Error fetching departments in real-time: ", error);
+
         message.error("Failed to load departments.");
       }
     );
@@ -243,12 +242,12 @@ const AccountManagement = () => {
         setAdminCredentials(adminData);
 
       } else {
-        console.error("No super admin credentials found.");
+
         message.error("Super admin credentials not found!");
       }
 
     } catch (error) {
-      console.error("Error fetching super admin credentials:", error);
+
       message.error("Failed to load admin credentials.");
     }
   };
@@ -352,7 +351,7 @@ const AccountManagement = () => {
       setIsNotificationVisible(true);
 
     } catch (error) {
-      console.error("Error handling account:", error);
+
       setModalMessage("Failed to update account.");
       setIsNotificationVisible(true);
     }
@@ -377,7 +376,7 @@ const AccountManagement = () => {
       setIsNotificationVisible(true);
 
     } catch (error) {
-      console.error("Error disabling account:", error);
+
       message.error("Failed to disable account.");
     }
   };
@@ -397,7 +396,6 @@ const AccountManagement = () => {
       setIsNotificationVisible(true);
 
     } catch (error) {
-      console.error("Error enabling account:", error);
       message.error("Failed to enable account.");
     }
   };  
@@ -465,7 +463,6 @@ const AccountManagement = () => {
       setNewDepartment("");
 
     } catch (error) {
-      console.error("Failed to add department: ", error);
       message.error("Failed to add department.");
     }
   };
