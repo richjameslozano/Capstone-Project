@@ -374,7 +374,7 @@ const printPdf = () => {
       Chemical: "CHEM",
       Equipment: "EQP",
       Reagent: "RGT",
-      Glassware: "GLS",
+      Glasswares: "GLS",
       Materials: "MAT",
     };
     
