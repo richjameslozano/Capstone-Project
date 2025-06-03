@@ -111,8 +111,14 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
       if (!decryptedData) throw new Error("Invalid QR Code");
 
+      // const parsedData = JSON.parse(decryptedData);
+      // const { itemName } = parsedData;
+
       const parsedData = JSON.parse(decryptedData);
-      const { itemName } = parsedData;
+      const { itemName, itemDetails, selectedItemId, labRoom, quantity, program, timeFrom, timeTo } = parsedData;
+      console.log("Parsed QR data:", parsedData);
+
+
 
       const todayDate = getTodayDate();
       const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));

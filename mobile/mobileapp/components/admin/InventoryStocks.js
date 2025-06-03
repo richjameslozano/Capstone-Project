@@ -120,16 +120,30 @@ export default function InventoryStocks({ }) {
     item.itemName?.toLowerCase().includes(searchQuery.toLowerCase()) &&
     (filterType === 'All' || item.type === filterType) &&
     (filterCategory === 'All' || item.category === filterCategory) 
-   
   );   
 
-    const filteredItems = inventoryItems.filter((item) => {
-    const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
-    const isSearchMatch = !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
+  // const filteredItems = inventoryItems.filter((item) => {
+  //   const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
+  //   const isSearchMatch = !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
   
-    return isCategoryMatch && isSearchMatch;
-  });  
+  //   return isCategoryMatch && isSearchMatch;
+  // }); 
+  
+  const filteredItems = inventoryItems.filter((item) => {
+    const isCategoryMatch =
+      selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
 
+    const lowerQuery = searchQuery.toLowerCase();
+
+    const isSearchMatch =
+      !searchQuery ||
+      item.itemName?.toLowerCase().includes(lowerQuery) ||
+      item.itemDetails?.toLowerCase().includes(lowerQuery) ||
+      item.brand?.toLowerCase().includes(lowerQuery) ||
+      item.itemCode?.toLowerCase().includes(lowerQuery);
+
+    return isCategoryMatch && isSearchMatch;
+  });
   
   const openDetailsModal = (item) => {
     setSelectedItem(item);
@@ -168,7 +182,7 @@ const formatCondition = (cond) => {
                   <Icon name="magnify" size={20} color="#888"  />
                   <TextInput
                     style={styles.searchInput}
-                    placeholder="Search by item name"
+                    placeholder="Search by item name, category"
                     value={searchQuery}
                     onChangeText={setSearchQuery}
                   />
