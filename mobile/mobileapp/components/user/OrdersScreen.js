@@ -367,11 +367,15 @@ const handleSearch = (query) => {
 
   // Interpolate the border position
   const borderTranslateX = position.interpolate({
-  inputRange: [0, 1],
-  outputRange: [0, 142], // Adjust 150 to match your tab width
-});
+    inputRange: [0, 1],
+    outputRange: [0, 142], // Adjust 150 to match your tab width
+  });
 
-const pagerRef = useRef(null);
+  const hasUnitColumn = (selectedLog?.filteredMergedData || selectedLog?.requestList)?.some(
+    (item) => ["Chemical", "Reagent"].includes(item.category)
+  );
+
+  const pagerRef = useRef(null);
 
   return (
     
@@ -541,6 +545,7 @@ const pagerRef = useRef(null);
               <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Item</Text>
               <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Description</Text>
               <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Qty</Text>
+              {hasUnitColumn && <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Unit</Text>}
               <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Category</Text>
             </View>
 
@@ -555,6 +560,11 @@ const pagerRef = useRef(null);
                 <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemName}</Text>
                 <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemDetails}</Text>
                 <Text style={[styles.tableCell2, { flex: 1 }]}>{item.quantity}</Text>
+                {hasUnitColumn && (
+                  <Text style={[styles.tableCell2, { flex: 1 }]}>
+                    {["Chemical", "Reagent"].includes(item.category) ? item.unit || "—" : "—"}
+                  </Text>
+                )}
                 <Text style={[styles.tableCell2, { flex: 1 }]}>{item.category || '—'}</Text>
               </View>
             ))}
@@ -610,6 +620,7 @@ const pagerRef = useRef(null);
             <Text><Text style={styles.label}>Course Code:</Text> {selectedRequest?.course}</Text>
             <Text><Text style={styles.label}>Course Description:</Text> {selectedRequest?.courseDescription}</Text>
             <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.labRoom}</Text>
+            <Text style={styles.tableCell}>{selectedRequest?.usageType}</Text>
 
             <Text style={styles.subTitle}>Requested Items:</Text>
               <View style={styles.table}>
@@ -618,8 +629,8 @@ const pagerRef = useRef(null);
                   <Text style={styles.tableHeaderCell}>Item Name</Text>
                   <Text style={styles.tableHeaderCell}>Item Description</Text>
                   <Text style={styles.tableHeaderCell}>Qty</Text>
+                  {hasUnitColumn && <Text style={styles.tableHeaderCell}>Unit</Text>}
                   <Text style={styles.tableHeaderCell}>Dept</Text>
-                  <Text style={styles.tableHeaderCell}>Usage</Text>
                 </View>
                 
                 {selectedRequest?.items.map((item, idx) => (
@@ -628,8 +639,12 @@ const pagerRef = useRef(null);
                     <Text style={styles.tableCell}>{item.itemName}</Text>
                     <Text style={styles.tableCell}>{item.itemDetails}</Text>
                     <Text style={styles.tableCell}>{item.quantity}</Text>
+                    {hasUnitColumn && (
+                      <Text style={styles.tableCell}>
+                        {["Chemical", "Reagent"].includes(item.category) ? item.unit || '—' : '—'}
+                      </Text>
+                    )}
                     <Text style={styles.tableCell}>{item.department}</Text>
-                    <Text style={styles.tableCell}>{item.usageType}</Text>
                   </View>
                 ))}
               </View>
