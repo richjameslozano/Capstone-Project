@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -7,12 +7,16 @@ import {
   Modal,
   Pressable,
   ActivityIndicator,
+  StatusBar,
+  TouchableOpacity,
 } from 'react-native';
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/adminStyle/ActivityLogStyle';
 import Header from '../Header';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 
 const ActivityLogScreen = () => {
   const { user } = useAuth();
@@ -23,50 +27,23 @@ const ActivityLogScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // const fetchActivityLogs = async () => {
-  //   try {
-  //     const activityRef = collection(db, `accounts/${user.id}/activitylog`);
-  //     const snapshot = await getDocs(activityRef);
+  const [headerHeight, setHeaderHeight] = useState(0);
 
-  //     const logsData = snapshot.docs.map((doc, index) => {
-  //       const data = doc.data();
-  //       const logDate =
-  //         data.cancelledAt?.toDate?.() ||
-  //         data.timestamp?.toDate?.() ||
-  //         new Date();
+const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
 
-  //       return {
-  //         key: doc.id || index.toString(),
-  //         date: logDate.toLocaleString(),
-  //         action:
-  //           data.status === 'CANCELLED'
-  //             ? 'Cancelled a request'
-  //             : data.action || 'Modified a request',
-  //         by: data.userName || 'Unknown User',
-  //         fullData: data,
-  //       };
-  //     });
+    const navigation = useNavigation()
 
-  //     logsData.sort((a, b) => {
-  //       const aDate =
-  //         a.fullData.timestamp?.toDate?.() || a.fullData.cancelledAt?.toDate?.() || 0;
-  //       const bDate =
-  //         b.fullData.timestamp?.toDate?.() || b.fullData.cancelledAt?.toDate?.() || 0;
-  //       return bDate - aDate;
-  //     });
-
-  //     setLogs(logsData);
-  //     setFilteredLogs(logsData);
-  //   } catch (err) {
-  //     console.error('Failed to fetch activity logs:', err);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // useEffect(() => {
-  //   fetchActivityLogs();
-  // }, []);
+  useFocusEffect(
+    useCallback(() => {
+      StatusBar.setBarStyle('dark-content');
+      StatusBar.setBackgroundColor('transparent'); // Android only
+      StatusBar.setTranslucent(true)
+    }, [])
+  );
+  
 
   const fetchActivityLogs = () => {
     try {
@@ -132,7 +109,7 @@ const ActivityLogScreen = () => {
 
   const renderItem = ({ item, index }) => (
     <Pressable
-      style={index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd}
+      style={[index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd]}
       onPress={() => {
         setSelectedLog(item.fullData);
         setModalVisible(true);
@@ -146,17 +123,28 @@ const ActivityLogScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Header />
+      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+                                     <Icon name="keyboard-backspace" size={28} color="black" />
+                                   </TouchableOpacity>
 
-      <Text style={styles.title}>⏰ Activity Log</Text>
+                    <View>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Activity Log</Text>
+                      <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Action History</Text>
+                    </View>
 
-      <TextInput
+                     <TouchableOpacity style={{padding: 2}}>
+                       <Icon name="information-outline" size={24} color="#000" />
+                     </TouchableOpacity>
+                   </View>
+
+      {/* <TextInput
         placeholder="Search"
         value={searchQuery}
         onChangeText={setSearchQuery}
         style={styles.searchInput}
-      />
-
+      /> */}
+      <View style={{flex: 1, backgroundColor: 'white', padding: 10, marginTop: headerHeight, paddingBottom: 10}}>
       {loading ? (
         <ActivityIndicator size="large" color="#1890ff" />
       ) : (
@@ -174,9 +162,12 @@ const ActivityLogScreen = () => {
             ListEmptyComponent={
               <Text style={styles.emptyText}>No activity found.</Text>
             }
+            contentContainerStyle={{paddingBottom: 30}}
+            style={{paddingBottom: 20}}
           />
         </View>
       )}
+    </View>
 
       <Modal
         visible={modalVisible}
