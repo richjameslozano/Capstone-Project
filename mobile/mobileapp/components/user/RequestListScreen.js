@@ -460,86 +460,103 @@ const RequestListScreen = ({navigation}) => {
       </Modal>
 
      {showConfirmationModal && (
-        <Modal
-          visible={showConfirmationModal}
-          transparent
-          animationType="slide"
-          onRequestClose={() => setShowConfirmationModal(false)}
-        >
-          <TouchableWithoutFeedback onPress={() => setShowConfirmationModal(false)}>
-            <View style={styles.modalBackground}>
-              <TouchableWithoutFeedback>
-                <View style={styles.modalContainer}>
-                  <Text style={styles.modalTitle}>Confirm Request</Text>
-                  <Text style={styles.modalText}>Date Required: {confirmationData?.dateRequired}</Text>
+<Modal
+  visible={showConfirmationModal}
+  transparent
+  animationType="slide"
+  onRequestClose={() => setShowConfirmationModal(false)}
+>
+  <TouchableWithoutFeedback onPress={() => setShowConfirmationModal(false)}>
+    <View style={styles.modalBackground}>
+      <TouchableWithoutFeedback>
+        <View style={styles.confirmationModalContainer}>
+          <Text style={styles.confirmationModalTitle}>Confirm Request</Text>
 
-                  {/* Use the formatted time strings directly */}
-                  <Text>Time From: {metadata.timeFrom}</Text>
-                  <Text>Time To: {metadata.timeTo}</Text>
+          <View style={styles.confirmationInfoSection}>
+            <Text style={styles.confirmationLabel}>Date Required:</Text>
+            <Text style={styles.confirmationValue}>{confirmationData?.dateRequired || 'N/A'}</Text>
 
-                  <Text style={styles.modalText}>Program: {confirmationData?.program}</Text>
-                  <Text style={styles.modalText}>Course: {confirmationData?.course}</Text>
-                  <Text style={styles.modalText}>Room: {confirmationData?.room}</Text>
-                  <Text style={styles.modalText}>Reason: {confirmationData?.reason}</Text>
+            <Text style={styles.confirmationLabel}>Time:</Text>
+            <Text style={styles.confirmationValue}>
+              {metadata.timeFrom || 'N/A'} - {metadata.timeTo || 'N/A'}
+            </Text>
 
-                  <ScrollView horizontal>
-                    <View>
-                      {/* Table Header */}
+            <Text style={styles.confirmationLabel}>Program:</Text>
+            <Text style={styles.confirmationValue}>{confirmationData?.program || 'N/A'}</Text>
+
+            <Text style={styles.confirmationLabel}>Course:</Text>
+            <Text style={styles.confirmationValue}>{confirmationData?.course || 'N/A'}</Text>
+
+            <Text style={styles.confirmationLabel}>Room:</Text>
+            <Text style={styles.confirmationValue}>{confirmationData?.room || 'N/A'}</Text>
+
+            <Text style={styles.confirmationLabel}>Reason:</Text>
+            <Text style={styles.confirmationValue}>{confirmationData?.reason || 'N/A'}</Text>
+          </View>
+
+          <Text style={styles.confirmationSubtitle}>Items</Text>
+
+
+          <View >
+                  <ScrollView
+                    horizontal={true}
+                    contentContainerStyle={{ minWidth: 600, flexGrow: 1}}
+                    showsHorizontalScrollIndicator={true}
+                  >
+                    <View style={{flex: 1}}>
+                      {/* Header */}
                       <View style={styles.tableRowHeader}>
-                        <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Name</Text>
-                        <Text style={[styles.tableCellHeader, { width: 150 }]}>Item Details</Text>
-                        <Text style={[styles.tableCellHeader, { width: 100 }]}>Qty</Text>
-                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Unit</Text>
-                        {/* <Text style={[styles.tableCellHeader, { width: 120 }]}>Status</Text> */}
+                        <Text style={[styles.tableCellHeader,]}>Name</Text>
+                        <Text style={[styles.tableCellHeader, ]}>Details</Text>
+                        <Text style={[styles.tableCellHeader,]}>Qty</Text>
+                        <Text style={[styles.tableCellHeader,]}>Unit</Text>
                       </View>
 
-                      {/* Table Rows */}
-                      {requestList.map((item) => (
-                        <View key={item.id} style={styles.tableRow}>
-                          <Text style={[styles.tableCell, { width: 150 }]}>{item.selectedItem?.label}</Text>
-                          <Text style={[styles.tableCell, { width: 100 }]}>{item.itemDetails}</Text>
-                          <Text style={[styles.tableCell, { width: 100 }]}>{item.quantity}</Text>
-                          <Text style={[styles.tableCell, { width: 120 }]}>{item.unit}</Text>
-                          {/* <Text style={[styles.tableCell, { width: 120 }]}>{item.status}</Text> */}
+                      {/* Rows */}
+                      {requestList.map((item, index) => (
+                        <View key={index} style={styles.tableRow}>
+                          <Text style={[styles.tableCell,]}>{item.selectedItem?.label}</Text>
+                          <Text style={[styles.tableCell, ]}>{item.itemDetails}</Text>
+                          <Text style={[styles.tableCell,]}>{item.quantity}</Text>
+                          <Text style={[styles.tableCell, ]}>{item.unit}</Text>
                         </View>
                       ))}
                     </View>
                   </ScrollView>
-
-                  <View style={styles.modalActions}>
-                    <TouchableOpacity
-                      style={styles.cancelButton}
-                      onPress={() => setShowConfirmationModal(false)}
-                    >
-                      <Text style={styles.cancelButtonText}>Cancel</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                      style={styles.confirmButton}
-                      onPress={async () => {
-                        console.log('Confirm button pressed');
-
-                        const requestSuccess = await submitRequest(); // Await submitRequest to finish
-
-                        if (requestSuccess) {
-                          console.log('Request successfully submitted. Closing modal.');
-                          alert('Request Submitted Successfully!');
-                          setShowConfirmationModal(false); // Close the modal only if the request was successful
-                          navigation.goBack();
-                        } else {
-                          alert('There was a problem processing your request. Try again later.');
-                          console.log('Request submission failed. Not closing modal.');
-                        }
-                      }}
-                    >
-                      <Text style={styles.confirmButtonText}>Confirm</Text>
-                    </TouchableOpacity>
-                  </View>
                 </View>
-              </TouchableWithoutFeedback>
-            </View>
-          </TouchableWithoutFeedback>
-        </Modal>
+
+
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity
+              style={styles.cancelButton}
+              onPress={() => setShowConfirmationModal(false)}
+            >
+              <Text style={styles.cancelButtonText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.confirmButton}
+              onPress={async () => {
+                const requestSuccess = await submitRequest();
+                if (requestSuccess) {
+                  alert('Request Submitted Successfully!');
+                  setShowConfirmationModal(false);
+                  navigation.goBack();
+                } else {
+                  alert('There was a problem processing your request. Try again later.');
+                }
+              }}
+            >
+              <Text style={styles.confirmButtonText}>Confirm</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </TouchableWithoutFeedback>
+    </View>
+  </TouchableWithoutFeedback>
+</Modal>
+
       )}
     </View>
   );
