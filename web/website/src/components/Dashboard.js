@@ -722,6 +722,7 @@ const getCriticalStockItems = (inventoryItems) => {
     return quantity <= criticalLevel;
   });
 };
+
 // critical stock 
 useEffect(() => {
   const inventoryRef = collection(db, "inventory");
