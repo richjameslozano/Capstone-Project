@@ -646,13 +646,16 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               <Route path="/capex-request-list" element={<CapexList/>} />
             </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
+              <Route path="/capex-request" element={<CapexRequest />} />
+            </Route>
+
             {/* User-only routes */}
             <Route element={<ProtectedRoute allowedRoles={["user", "admin"]} />}>
               <Route path="/requisition" element={<Requisition />} />
               <Route path="/request-list" element={<RequestList />} />
               <Route path="/search-items" element={<SearchItems />} />
               <Route path="/return-items" element={<ReturnItems />} />
-              <Route path="/capex-request" element={<CapexRequest />} />
             </Route>
 
             <Route path="/not-authorized" element={<NotAuthorized />} />
