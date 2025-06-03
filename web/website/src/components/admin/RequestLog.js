@@ -120,7 +120,7 @@ const RequestLog = () => {
                   timeZone: "Asia/Manila",
                 });
               } catch (e) {
-                console.warn(`Error formatting rawTimestamp for doc ${doc.id}:`, e);
+               
               }
             }
 
@@ -130,7 +130,7 @@ const RequestLog = () => {
                   timeZone: "Asia/Manila",
                 });
               } catch (e) {
-                console.warn(`Error formatting timestamp for doc \${doc.id}:`, e);
+            
               }
             }
 
@@ -170,7 +170,7 @@ const RequestLog = () => {
 
         return () => unsubscribe();
       } catch (error) {
-        console.error("Error fetching request logs: ", error);
+       
       }
     };
 

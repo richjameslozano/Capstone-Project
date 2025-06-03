@@ -15,10 +15,10 @@
 // }) => {
 //   // fallback to empty array if undefined
 //   const requestList = selectedApprovedRequest?.requestList || [];
-//   console.log("requestList in Modal:", requestList);
+//  
 
 //   if (selectedApprovedRequest) {
-//     console.log("Raw timestamp value:", selectedApprovedRequest.timestamp);
+//     
 //   }
 
 //   // Define your own columns for the modal
@@ -49,7 +49,8 @@
 //   //   try {
 //   //     const requisitionId = selectedApprovedRequest?.id;
 //   //     if (!requisitionId) {
-//   //       console.error("Missing requisition ID");
+//   //     
+
 //   //       return;
 //   //     }
   
@@ -84,7 +85,7 @@
 //   //           });
 
 //   //         } else {
-//   //           console.warn(`Inventory item not found for ID: ${inventoryId}`);
+//   //         
 //   //         }
 //   //       }
 //   //     }

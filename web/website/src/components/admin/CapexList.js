@@ -56,7 +56,7 @@ const CapexList = () => {
 
         return () => unsubscribe();
       } catch (error) {
-        console.error("Error fetching CAPEX requests:", error);
+    
       }
     };
 
