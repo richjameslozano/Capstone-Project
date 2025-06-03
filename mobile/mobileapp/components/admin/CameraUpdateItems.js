@@ -167,30 +167,130 @@ const CameraUpdateItems = ({ onClose }) => {
 
 
 
-  const handleAddQuantity = async (addedQuantity, expiryDate) => {
+//   const handleAddQuantity = async (addedQuantity, expiryDate) => {
+//   const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
+//   const isChemicalOrReagent = category === "Chemical" || category === "Reagent";
+
+//   try {
+//     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
+//     const snapshot = await getDocs(inventoryQuery);
+
+//     snapshot.forEach(async docSnap => {
+//       const ref = doc(db, 'inventory', docSnap.id);
+//       const existing = docSnap.data();
+
+//       const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+//       const updateData = { quantity: newQty };
+
+//       if (!isChemicalOrReagent) {
+//         const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+//         updateData['condition.Good'] = newGood;
+//       }
+
+//       await updateDoc(ref, updateData);
+//       console.log(`✅ Inventory updated: quantity → ${newQty}${!isChemicalOrReagent ? `, condition.Good → ${updateData['condition.Good']}` : ''}`);
+
+//       // Add to stockLog
+//       const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
+//       const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+//       const latestSnapshot = await getDocs(latestLogQuery);
+
+//       let newDeliveryNumber = "DLV-00001";
+//       if (!latestSnapshot.empty) {
+//         const lastDeliveryNumber = latestSnapshot.docs[0].data().deliveryNumber;
+//         const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+//         if (match) {
+//           const nextNumber = (parseInt(match[1], 10) + 1).toString().padStart(5, "0");
+//           newDeliveryNumber = `DLV-${nextNumber}`;
+//         }
+//       }
+
+//       const logData = {
+//         date: new Date().toISOString().split("T")[0],
+//         noOfItems: addedQuantity,
+//         deliveryNumber: newDeliveryNumber,
+//         createdAt: serverTimestamp(),
+//       };
+
+//       if (isChemicalOrReagent && expiryDate) {
+//         logData.expiryDate = expiryDate;
+//       }
+
+//       await addDoc(stockLogRef, logData);
+//       console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
+//     });
+
+//     // 🔎 Step 1: Find labRoom doc
+//     const labRoomQuery = query(collection(db, 'labRoom'), where('roomNumber', '==', roomNumber));
+//     const labRoomSnap = await getDocs(labRoomQuery);
+
+//     if (labRoomSnap.empty) {
+//       Alert.alert("Error", `Lab room ${roomNumber} not found.`);
+//       return;
+//     }
+
+//     const labRoomDocId = labRoomSnap.docs[0].id;
+//     const itemDocRef = doc(db, `labRoom/${labRoomDocId}/items/${itemId}`);
+//     const itemDocSnap = await getDoc(itemDocRef);
+
+//     if (!itemDocSnap.exists()) {
+//       Alert.alert("Error", `Item ${itemId} not found in labRoom items.`);
+//       return;
+//     }
+
+//     const existing = itemDocSnap.data();
+//     const newQty = (Number(existing.quantity) || 0) + addedQuantity;
+//     const updateRoomData = { quantity: newQty };
+
+//     if (!isChemicalOrReagent) {
+//       const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
+//       updateRoomData['condition.Good'] = newGood;
+//     }
+
+//     await updateDoc(itemDocRef, updateRoomData);
+//     console.log(`✅ labRoom updated: quantity → ${newQty}${!isChemicalOrReagent ? `, condition.Good → ${updateRoomData['condition.Good']}` : ''}`);
+
+//     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+
+//   } catch (err) {
+//     console.error("Quantity update error:", err);
+//     Alert.alert("Error", "Failed to update quantity.");
+//   } finally {
+//     setModalVisible(false);
+//     setScanned(false);
+//   }
+// };
+
+const handleAddQuantity = async (addedQuantity, expiryDate) => {
   const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
   const isChemicalOrReagent = category === "Chemical" || category === "Reagent";
 
   try {
+    // 🔄 Update inventory
     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
     const snapshot = await getDocs(inventoryQuery);
 
     snapshot.forEach(async docSnap => {
       const ref = doc(db, 'inventory', docSnap.id);
-      const existing = docSnap.data();
+      const data = docSnap.data();
 
-      const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-      const updateData = { quantity: newQty };
+      // ✅ Compute updated quantity and condition
+      const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
+      const newCondition = {
+        Good: prevCondition.Good + addedQuantity,
+        Defect: prevCondition.Defect,
+        Damage: prevCondition.Damage,
+      };
 
-      if (!isChemicalOrReagent) {
-        const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
-        updateData['condition.Good'] = newGood;
-      }
+      const updatedData = {
+        quantity: (Number(data.quantity) || 0) + addedQuantity,
+        condition: isChemicalOrReagent ? prevCondition : newCondition,
+      };
 
-      await updateDoc(ref, updateData);
-      console.log(`✅ Inventory updated: quantity → ${newQty}${!isChemicalOrReagent ? `, condition.Good → ${updateData['condition.Good']}` : ''}`);
+      await updateDoc(ref, updatedData);
+      console.log(`✅ Inventory updated: quantity → ${updatedData.quantity}${!isChemicalOrReagent ? `, condition.Good → ${newCondition.Good}` : ''}`);
 
-      // Add to stockLog
+      // ➕ Add stock log entry
       const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
       const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
       const latestSnapshot = await getDocs(latestLogQuery);
@@ -220,7 +320,7 @@ const CameraUpdateItems = ({ onClose }) => {
       console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
     });
 
-    // 🔎 Step 1: Find labRoom doc
+    // 🔄 Update labRoom subcollection
     const labRoomQuery = query(collection(db, 'labRoom'), where('roomNumber', '==', roomNumber));
     const labRoomSnap = await getDocs(labRoomQuery);
 
@@ -238,17 +338,23 @@ const CameraUpdateItems = ({ onClose }) => {
       return;
     }
 
-    const existing = itemDocSnap.data();
-    const newQty = (Number(existing.quantity) || 0) + addedQuantity;
-    const updateRoomData = { quantity: newQty };
+    const data = itemDocSnap.data();
 
-    if (!isChemicalOrReagent) {
-      const newGood = (Number(existing.condition?.Good) || 0) + addedQuantity;
-      updateRoomData['condition.Good'] = newGood;
-    }
+    // ✅ Compute updated quantity and condition for labRoom
+    const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
+    const newCondition = {
+      Good: prevCondition.Good + addedQuantity,
+      Defect: prevCondition.Defect,
+      Damage: prevCondition.Damage,
+    };
 
-    await updateDoc(itemDocRef, updateRoomData);
-    console.log(`✅ labRoom updated: quantity → ${newQty}${!isChemicalOrReagent ? `, condition.Good → ${updateRoomData['condition.Good']}` : ''}`);
+    const updatedRoomData = {
+      quantity: (Number(data.quantity) || 0) + addedQuantity,
+      condition: isChemicalOrReagent ? prevCondition : newCondition,
+    };
+
+    await updateDoc(itemDocRef, updatedRoomData);
+    console.log(`✅ labRoom updated: quantity → ${updatedRoomData.quantity}${!isChemicalOrReagent ? `, condition.Good → ${newCondition.Good}` : ''}`);
 
     Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
 
@@ -260,6 +366,7 @@ const CameraUpdateItems = ({ onClose }) => {
     setScanned(false);
   }
 };
+
 
 const { width, height } = Dimensions.get('window');
 const frameWidth = width * 0.7;
@@ -318,6 +425,7 @@ const sideWidth = (width - frameWidth) / 2;
         visible={modalVisible}
         itemName={currentItem?.itemName}
         category={currentItem?.category} 
+        dateOfExpiry={currentItem?.expiryDate}
         onClose={() => {
           setModalVisible(false);
           setScanned(false);
