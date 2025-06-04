@@ -1972,6 +1972,45 @@ const Requisition = () => {
 
          <div className="section requisition-form">
           <div className="request-details">
+                <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
+                  <Table
+                    className="requisition-table"
+                    dataSource={mergedData}
+                    columns={columns}
+                    pagination={false}
+                  />
+
+                    <Button
+                      type="dashed"
+                      onClick={handleAddRow}
+                      className="add-item-row-btn"
+                      // disabled={tableData.length >= 10}
+                    >
+                      Add Item Row
+                    </Button>
+
+                    <Button 
+                      type="primary"
+                      danger
+                      block
+                      className="finalize-btn"
+                      disabled={!isFormValid}
+                      onClick={async () => {
+                        const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
+
+                        if (hasConflict) {
+                          setModalMessage("This room is already booked for the selected date and time.");
+                          setIsModalVisible(true); 
+                          return;
+                        }
+                        setIsFinalizeModalVisible(true);
+                        
+                      }}
+                    >
+                      Finalize
+                    </Button>
+                </div>
+            
             <div className="whole-section" >
               <div className="left-section">
               <div className="date-time-container">
@@ -2255,7 +2294,7 @@ const Requisition = () => {
             pagination={{ pageSize: 10 }}
             rowKey={(record) => record.key}
           /> */}
-
+{/* 
           <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
           <Table
             className="requisition-table"
@@ -2263,7 +2302,7 @@ const Requisition = () => {
             columns={columns}
             pagination={false}
           />
-        </div>
+        </div> */}
 
 
           <div className="bottom-btns">
@@ -2287,36 +2326,6 @@ const Requisition = () => {
             >
               Add Item Row
             </Button> */}
-
-            <Button
-              type="dashed"
-              onClick={handleAddRow}
-              className="add-item-row-btn"
-              // disabled={tableData.length >= 10}
-            >
-              Add Item Row
-            </Button>
-
-            <Button 
-              type="primary"
-              danger
-              block
-              className="finalize-btn"
-              disabled={!isFormValid}
-              onClick={async () => {
-                const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
-
-                if (hasConflict) {
-                   setModalMessage("This room is already booked for the selected date and time.");
-                  setIsModalVisible(true); 
-                  return;
-                }
-                setIsFinalizeModalVisible(true);
-                
-              }}
-            >
-              Finalize
-            </Button>
             
          <FinalizeRequestModal
           visible={isFinalizeModalVisible}
