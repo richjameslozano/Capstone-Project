@@ -423,6 +423,23 @@ const LayoutMain = () => {
       ],
     },
     {
+      key: 'account-panel',
+      icon: <UserSwitchOutlined />,
+      label: 'Account Panel',
+      children: [
+        {
+          key: "/main/accounts",
+          icon: <UserOutlined />,
+          label: "Accounts",
+        },
+        {
+          key: "/main/pending-accounts",
+          icon: <UserOutlined />,
+          label: "Pending Accounts",
+        },
+      ],
+    },
+    {
       key: "/main/admin-activity-log",
       icon: <HistoryOutlined />,
       label: "Activity Log",
@@ -627,8 +644,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
             {/* Superadmin-only routes */}
             <Route element={<ProtectedRoute allowedRoles={["super-admin"]} />}>
-              <Route path="/accounts" element={<AccountManagement />} />
-              <Route path="/pending-accounts" element={<PendingAccounts />} />
+
             </Route>
 
             {/* Admin-only routes */}
@@ -644,6 +660,8 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />
+              <Route path="/accounts" element={<AccountManagement />} />
+              <Route path="/pending-accounts" element={<PendingAccounts />} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
