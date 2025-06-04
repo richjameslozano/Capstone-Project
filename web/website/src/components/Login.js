@@ -111,7 +111,7 @@ const Login = () => {
 
       if (value === "Faculty") {
         filteredDepts = departmentsAll.map((dept) => dept.name);
-        
+
       } else if (value === "Program Chair") {
         filteredDepts = departmentsAll
           .map((dept) => dept.name)
@@ -127,13 +127,28 @@ const Login = () => {
         department: "" // reset department
       });
 
-      setCurrentDepartments(filteredDepts); 
+      setCurrentDepartments(filteredDepts);
 
     } else {
+      // Set the field value
       setSignUpData({
         ...signUpData,
         [name]: value
       });
+
+      // If the changed field is email, validate the domain
+      if (name === "email") {
+        const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+        const parts = value.split("@");
+        const emailDomain = parts.length > 1 ? parts[1] : "";
+
+        if (!validDomains.includes(emailDomain)) {
+          setError("Only @nu-moa.edu.ph and @students.nu-moa.edu.ph emails are allowed.");
+
+        } else {
+          setError(""); // Clear error if valid
+        }
+      }
     }
   };
 
@@ -686,23 +701,8 @@ const Login = () => {
                       placeholder="enter email (NU account)"
                       required
                     />
+                    {error && <p className="error-message">{error}</p>}
                   </div>
-  
-                  {/* <div className="form-group">
-                    <label>Employee ID</label>
-                    <input
-                      type="text"
-                      value={signUpData.employeeId}
-                      onChange={(e) => {
-                        const rawValue = e.target.value;
-                        if (/^[0-9-]{0,7}$/.test(rawValue)) {
-                          setSignUpData({ ...signUpData, employeeId: rawValue });
-                        }
-                      }}
-                      placeholder="e.g., 12-3456"
-                      required
-                    />
-                  </div> */}
 
                   <div className="form-group">
                     <label>Employee ID</label>
