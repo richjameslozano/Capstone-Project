@@ -71,8 +71,8 @@ const Inventory = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showExpiry, setShowExpiry] = useState(false);
   const [hasExpiryDate, setHasExpiryDate] = useState(false);
+  const [departmentsAll, setDepartmentsAll] = useState([]);
   const db = getFirestore();
-
 
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
   const [fullEditForm] = Form.useForm();
@@ -140,6 +140,24 @@ const Inventory = () => {
     });
 
     return () => unsubscribe(); // Clean up the listener on unmount
+  }, []);
+
+  useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+    const unsubscribe = onSnapshot(
+      departmentsCollection,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error("Error fetching departments in real-time: ", error);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   // useEffect(() => {
@@ -1242,11 +1260,25 @@ useEffect(() => {
                 </Form.Item>
               </Col>
 
-              <Col span={12}>
-                <Form.Item label="Department" name="department">
-                  <Input />
-                </Form.Item>
-              </Col>
+                <Col span={8}>
+                  <Form.Item
+                    name="department"
+                    label="Department"
+                    rules={[{ required: true, message: "Please select a department" }]}
+                  >
+                    <Select
+                      placeholder="Select department"
+                      loading={!departmentsAll.length}
+                      disabled={!departmentsAll.length}
+                    >
+                      {departmentsAll.map((dept) => (
+                        <Select.Option key={dept.id} value={dept.name}>
+                          {dept.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
             </Row>
 
             <Row gutter={16}>
