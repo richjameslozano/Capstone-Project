@@ -331,6 +331,13 @@ const Login = () => {
   };
 
   const handleRegisterPassword = async () => {
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+    if (!passwordRegex.test(formData.password)) {
+      setError("Password must be at least 8 characters long and include at least one letter, one number, and one special character.");
+      return;
+    }
+
     if (formData.password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
@@ -872,6 +879,9 @@ const Login = () => {
                           {showConfirmPassword ? "🔒" : "👁️"}
                         </span>
                       </div>
+                        <small className="password-hint" style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}>
+                          Password must be at least 8 characters and include a letter, a number, and a special character.
+                        </small>
                     </div>
                   )}
                 </>
