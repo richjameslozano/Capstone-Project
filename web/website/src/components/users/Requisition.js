@@ -110,7 +110,8 @@ const Requisition = () => {
     const [viewDetailsModalVisible, setViewDetailsModalVisible] = useState(false);
     const [userName, setUserName] = useState("User");
     const [notificationVisible, setNotificationVisible] = useState(false);
-
+    const [departmentsAll, setDepartmentsAll] = useState([]);
+    const [searchDepartment, setSearchDepartment] = useState("");
 
   const [tableData, setTableData] = useState([
     { key: 0, selectedItemId: null }, 
@@ -452,6 +453,24 @@ const Requisition = () => {
     }
 
   }, [location.state, navigate]);  
+
+    useEffect(() => {
+      const departmentsCollection = collection(db, "departments");
+      const unsubscribe = onSnapshot(
+        departmentsCollection,
+        (querySnapshot) => {
+          const deptList = querySnapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+          setDepartmentsAll(deptList);
+        },
+        (error) => {
+          console.error("Error fetching departments in real-time: ", error);
+        }
+      );
+
+      return () => unsubscribe();
+    }, []);
 
   const closeModal = () => {
     setShowModal(false);         // Close success modal
@@ -1972,6 +1991,64 @@ const Requisition = () => {
 
          <div className="section requisition-form">
           <div className="request-details">
+  <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>
+                {/* Category Dropdown */}
+                <select
+                    value={searchCategory}
+                    onChange={(e) => {
+                      const selectedCategory = e.target.value;
+                      setSearchCategory(selectedCategory);
+                      if (selectedCategory === "") {
+                        setFilteredItems(items);
+                      } else {
+                        const filteredData = items.filter(item => item.category === selectedCategory);
+                        setFilteredItems(filteredData);
+                      }
+                    }}
+                    style={{
+                      width: "200px",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    <option value="">All Categories</option>
+                    <option value="Chemical">Chemical</option>
+                    <option value="Reagent">Reagent</option>
+                    <option value="Materials">Materials</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Glasswares">Glasswares</option>
+                  </select>
+
+                  {/* Department Dropdown from Firestore */}
+                  <select
+                    value={searchDepartment}
+                    onChange={(e) => {
+                      const selectedDept = e.target.value;
+                      setSearchDepartment(selectedDept);
+                      if (selectedDept === "") {
+                        setFilteredItems(items);
+                      } else {
+                        const filteredData = items.filter(item => item.department === selectedDept);
+                        setFilteredItems(filteredData);
+                      }
+                    }}
+                    style={{
+                      width: "200px",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    <option value="">All Departments</option>
+                    {departmentsAll.map((dept) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
                   <Table
                     className="requisition-table"
@@ -2253,36 +2330,6 @@ const Requisition = () => {
                   placeholder="Leave a note for the custodian"
                 />
               </div>
-            </div>
-
-            <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>              
-              <select
-                value={searchCategory}
-                onChange={(e) => {
-                  const selectedCategory = e.target.value;
-                  setSearchCategory(selectedCategory);
-                  if (selectedCategory === "") {
-                    setFilteredItems(items);
-                    
-                  } else {
-                    const filteredData = items.filter((item) => item.category === selectedCategory);
-                    setFilteredItems(filteredData);
-                  }
-                }}
-                style={{
-                  width: "200px",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                }}
-              >
-                <option value="">All Categories</option>
-                <option value="Chemical">Chemical</option>
-                <option value="Reagent">Reagent</option>
-                <option value="Materials">Materials</option>
-                <option value="Equipment">Equipment</option>
-                <option value="Glasswares">Glasswares</option>
-              </select>
             </div>
           </div>
 

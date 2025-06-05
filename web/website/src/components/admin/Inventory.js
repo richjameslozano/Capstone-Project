@@ -1167,9 +1167,29 @@ useEffect(() => {
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                {/* <Col span={8}>
                   <Form.Item name="department" label="Department">
                     <Input placeholder="Enter department" />
+                  </Form.Item>
+                </Col> */}
+                
+                <Col span={8}>
+                  <Form.Item
+                    name="department"
+                    label="Department"
+                    rules={[{ required: true, message: "Please select a department" }]}
+                  >
+                    <Select
+                      placeholder="Select department"
+                      loading={!departmentsAll.length}
+                      disabled={!departmentsAll.length}
+                    >
+                      {departmentsAll.map((dept) => (
+                        <Select.Option key={dept.id} value={dept.name}>
+                          {dept.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
@@ -1192,41 +1212,40 @@ useEffect(() => {
           >
             <Form form={fullEditForm} layout="vertical" onFinish={handleFullUpdate}
             onValuesChange={(changedValues, allValues) => {
-  if ('condition' in changedValues) {
-    const condition = allValues.condition || {};
-    const originalGood = editingItem.condition?.Good ?? 0;
+                if ('condition' in changedValues) {
+                  const condition = allValues.condition || {};
+                  const originalGood = editingItem.condition?.Good ?? 0;
 
-    const defect = Number(condition.Defect) || 0;
-    const damage = Number(condition.Damage) || 0;
+                  const defect = Number(condition.Defect) || 0;
+                  const damage = Number(condition.Damage) || 0;
 
-    const newGood = originalGood - defect - damage;
+                  const newGood = originalGood - defect - damage;
 
-    if (newGood < 0) {
-      fullEditForm.setFields([
-        {
-          name: ['condition', 'Defect'],
-          errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
-        },
-        {
-          name: ['condition', 'Damage'],
-          errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
-        },
-      ]);
-    } else {
-      fullEditForm.setFields([
-        { name: ['condition', 'Defect'], errors: [] },
-        { name: ['condition', 'Damage'], errors: [] },
-      ]);
-      const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
-      if (currentGood !== newGood) {
-        fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
-      }
-    }
-  }
-}}
-
+                  if (newGood < 0) {
+                    fullEditForm.setFields([
+                      {
+                        name: ['condition', 'Defect'],
+                        errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+                      },
+                      {
+                        name: ['condition', 'Damage'],
+                        errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+                      },
+                    ]);
+                  } else {
+                    fullEditForm.setFields([
+                      { name: ['condition', 'Defect'], errors: [] },
+                      { name: ['condition', 'Damage'], errors: [] },
+                    ]);
+                    const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
+                    if (currentGood !== newGood) {
+                      fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
+                    }
+                  }
+                }
+              }}
               >
-                <Row gutter={16}>
+            <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
                   label="Item Name"
