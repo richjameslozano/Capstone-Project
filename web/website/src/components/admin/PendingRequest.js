@@ -34,9 +34,9 @@ const PendingRequest = () => {
   const [isMultiRejectModalVisible, setIsMultiRejectModalVisible] = useState(false);
   const [rejectionReasons, setRejectionReasons] = useState({});
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
-
- const [pRequests, setPRequests] = useState([]);
-const [loading, setLoading] = useState(true);
+  const [firstRequestMap, setFirstRequestMap] = useState({});
+  const [pRequests, setPRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
 // const filteredRequests = requests.filter((request) => {
 //   const searchLower = searchTerm.toLowerCase();
@@ -63,6 +63,65 @@ const filteredRequests = requests.filter((request) => {
 
   return matchesFilter && matchesSearch;
 });
+
+// useEffect(() => {
+//   const userRequestRef = collection(db, "userrequests");
+//   const q = query(userRequestRef, orderBy("timestamp", "desc"));
+
+//   const unsubscribe = onSnapshot(
+//     q,
+//     async (querySnapshot) => {
+//       setLoading(true); // Start loading
+
+//       const fetched = [];
+
+//       for (const docSnap of querySnapshot.docs) {
+//         const data = docSnap.data();
+
+//         const enrichedItems = await Promise.all(
+//           (data.filteredMergedData || []).map(async (item) => {
+//             const inventoryId = item.selectedItemId || item.selectedItem?.value;
+//             let itemId = "N/A";
+
+//             if (inventoryId) {
+//               try {
+//                 const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
+//                 if (invDoc.exists()) {
+//                   itemId = invDoc.data().itemId || "N/A";
+//                 }
+//               } catch (err) {
+              
+//               }
+//             }
+
+//             return {
+//               ...item,
+//               itemIdFromInventory: itemId,
+//             };
+//           })
+//         );
+
+//         fetched.push({
+//           id: docSnap.id,
+//           ...data,
+//           requestList: enrichedItems,
+//           timeFrom: data.timeFrom || "N/A",
+//           timeTo: data.timeTo || "N/A",
+//         });
+//       }
+
+//       setRequests(fetched);
+//       setLoading(false); // End loading
+//     },
+//     (error) => {
+     
+//       setLoading(false);
+//     }
+//   );
+
+//   return () => unsubscribe();
+// }, []);
+
 useEffect(() => {
   const userRequestRef = collection(db, "userrequests");
   const q = query(userRequestRef, orderBy("timestamp", "desc"));
@@ -109,7 +168,36 @@ useEffect(() => {
         });
       }
 
+      // setRequests(fetched);
+
+      // Determine first requests per item per date
+      const firstRequestsMap = {};
+
+      fetched.forEach((req) => {
+        const date = req.dateRequired;
+        const timestamp = req.timestamp?.toDate?.() || new Date(); // make sure it's a Date object
+
+        (req.requestList || []).forEach((item) => {
+          const key = `${item.selectedItemId}_${date}`;
+          
+          // If key is not set or current request is earlier, update it
+          if (!firstRequestsMap[key] || timestamp < firstRequestsMap[key].timestamp) {
+            firstRequestsMap[key] = {
+              requestId: req.id,
+              timestamp,
+            };
+          }
+        });
+      });
+
+      const simpleFirstRequestMap = {};
+      for (const key in firstRequestsMap) {
+        simpleFirstRequestMap[key] = firstRequestsMap[key].requestId;
+      }
+
       setRequests(fetched);
+      setFirstRequestMap(simpleFirstRequestMap);
+
       setLoading(false); // End loading
     },
     (error) => {
@@ -120,6 +208,7 @@ useEffect(() => {
 
   return () => unsubscribe();
 }, []);
+
 
   
   const handleViewDetails = (request) => {
@@ -1969,7 +2058,7 @@ useEffect(() => {
               width: '100%',
             }}
           >
-{group.map((request) => {
+{/* {group.map((request) => {
   const isPastDue = new Date(request.dateRequired) < new Date();
 
   return (
@@ -2031,9 +2120,93 @@ useEffect(() => {
       );
     })}
   </div>
-</Spin>
+</Spin> */}
+
+      {group.map((request) => {
+        const isPastDue = new Date(request.dateRequired) < new Date();
+
+        // Check if this request is the first for any of its items on this date
+      // Disabled if ANY item in this request is not the first request for that item+date
+      const isDisabled = (request.requestList || []).some(item => {
+        const key = `${item.selectedItemId}_${request.dateRequired}`;
+        return firstRequestMap[key] !== request.id;  // different request owns that item+date first
+      });
 
 
+        return (
+          <div
+            key={request.id}
+            onClick={() => !isDisabled && handleViewDetails(request)}
+            className="request-card"
+            style={{
+              opacity: isDisabled ? 0.5 : 1,
+              pointerEvents: isDisabled ? 'none' : 'auto',
+              cursor: isDisabled ? 'not-allowed' : 'pointer',
+              border: isPastDue ? '1px solid rgb(209, 168, 255)' : '1px solid #ccc',
+              backgroundColor: isDisabled ? '#f8f8f8' : 'white',
+            }}
+          >
+            {/* Existing UI content */}
+            <div style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center' }}>
+              <p
+                style={{
+                  fontSize: 20,
+                  padding: 15,
+                  backgroundColor: usageBG(request.usageType),
+                  borderRadius: 5,
+                  color: 'white',
+                  maxWidth: '60px',
+                  textAlign: 'center',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {getInitials(request.usageType)}
+              </p>
+            </div>
+
+            <div style={{ paddingLeft: 10, width: '100%', paddingTop: 0, paddingBottom: 0 }}>
+              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <p style={{ fontSize: 23, fontWeight: 500, marginBottom: 5 }}>{capitalizeName(request.userName)}</p>
+                  <p style={{ fontSize: 18, color: '#707070' }}>{request.program}</p>
+                </div>
+
+                <p
+                  style={{
+                    margin: 0,
+                    fontSize: 15,
+                    padding: 10,
+                    backgroundColor: isPastDue ? '#ffb1a8' : '#e9ecee',
+                    borderRadius: 5,
+                    color: 'black',
+                  }}
+                >
+                  <strong>Required Date:</strong> {request.dateRequired}
+                </p>
+              </div>
+
+              <div style={{ margin: 0 }}>
+                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
+                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
+                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.course}{request.courseDescription}</p>
+              </div>
+
+              {isDisabled && (
+                <div style={{ color: 'red', fontSize: 14, marginTop: 5 }}>
+                  Request blocked (already requested by someone else for this date and item)
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })}
+
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </Spin>
 
         <Modal
           title="Reject Reason"
