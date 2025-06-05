@@ -355,58 +355,108 @@ const Requisition = () => {
   // }, []);
 
   // VERSION NI RICH WITH DATE OF EXPIRY CONDITION
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const inventorySnapshot = await getDocs(collection(db, "inventory"));
+  //       const now = new Date();
+
+  //       const validItems = [];
+
+  //       for (const doc of inventorySnapshot.docs) {
+  //         const itemData = doc.data();
+  //         const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+  //         const stockSnapshot = await getDocs(stockLogRef);
+
+  //         let hasValidStock = false;
+
+  //         for (const logDoc of stockSnapshot.docs) {
+  //           const logData = logDoc.data();
+  //           const expiryRaw = logData.expiryDate;
+
+  //           if (!expiryRaw) {
+  //             hasValidStock = true;
+  //             break;
+  //           }
+
+  //           const expiryDate = typeof expiryRaw === "string"
+  //             ? new Date(expiryRaw)
+  //             : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+  //           if (isNaN(expiryDate.getTime())) continue;
+
+  //           if (expiryDate >= now) {
+  //             hasValidStock = true;
+  //             break;
+  //           }
+  //         }
+
+  //         if (hasValidStock) {
+  //           validItems.push({
+  //             id: doc.id,
+  //             ...itemData
+  //           });
+  //         }
+  //       }
+
+  //       setItems(validItems);
+  //       setFilteredItems(validItems);
+  //     } catch (error) {
+  //       console.error("Error fetching inventory with expiry filtering:", error);
+  //     }
+  //   };
+
+  //   fetchItems();
+  // }, []);
+
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const inventorySnapshot = await getDocs(collection(db, "inventory"));
-        const now = new Date();
+    const unsubscribe = onSnapshot(collection(db, "inventory"), async (inventorySnapshot) => {
+      const now = new Date();
+      const validItems = [];
 
-        const validItems = [];
+      for (const doc of inventorySnapshot.docs) {
+        const itemData = doc.data();
+        const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
 
-        for (const doc of inventorySnapshot.docs) {
-          const itemData = doc.data();
-          const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
-          const stockSnapshot = await getDocs(stockLogRef);
+        // Fetch the stockLog subcollection for this inventory item
+        const stockSnapshot = await getDocs(stockLogRef);
 
-          let hasValidStock = false;
+        let hasValidStock = false;
 
-          for (const logDoc of stockSnapshot.docs) {
-            const logData = logDoc.data();
-            const expiryRaw = logData.expiryDate;
+        for (const logDoc of stockSnapshot.docs) {
+          const logData = logDoc.data();
+          const expiryRaw = logData.expiryDate;
 
-            if (!expiryRaw) {
-              hasValidStock = true;
-              break;
-            }
-
-            const expiryDate = typeof expiryRaw === "string"
-              ? new Date(expiryRaw)
-              : expiryRaw?.toDate?.() || new Date(expiryRaw);
-
-            if (isNaN(expiryDate.getTime())) continue;
-
-            if (expiryDate >= now) {
-              hasValidStock = true;
-              break;
-            }
+          if (!expiryRaw) {
+            hasValidStock = true;
+            break;
           }
 
-          if (hasValidStock) {
-            validItems.push({
-              id: doc.id,
-              ...itemData
-            });
+          const expiryDate = typeof expiryRaw === "string"
+            ? new Date(expiryRaw)
+            : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+          if (isNaN(expiryDate.getTime())) continue;
+
+          if (expiryDate >= now) {
+            hasValidStock = true;
+            break;
           }
         }
 
-        setItems(validItems);
-        setFilteredItems(validItems);
-      } catch (error) {
-        console.error("Error fetching inventory with expiry filtering:", error);
+        if (hasValidStock) {
+          validItems.push({
+            id: doc.id,
+            ...itemData
+          });
+        }
       }
-    };
 
-    fetchItems();
+      setItems(validItems);
+      setFilteredItems(validItems);
+    });
+
+    return () => unsubscribe(); // Cleanup on unmount
   }, []);
 
   useEffect(() => {

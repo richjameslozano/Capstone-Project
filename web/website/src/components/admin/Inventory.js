@@ -483,7 +483,7 @@ const printPdf = () => {
   }
 };
 
-   const handleAdd = async (values) => {
+  const handleAdd = async (values) => {
     if (!itemName || !values.department || !itemDetails) {
       alert("Please fill up the form!");
       return;
