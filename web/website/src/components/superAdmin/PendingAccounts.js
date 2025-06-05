@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Layout, Row, Col, Button, Typography, Space, Table, notification } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, getDoc, setDoc, query, where } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, getDoc, setDoc, query, where, onSnapshot } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 
 const { Content } = Layout;
@@ -12,35 +12,33 @@ const PendingAccounts = () => {
   const [selectedRequests, setSelectedRequests] = useState([]); // Track selected rows
 
   useEffect(() => {
-    const fetchUserRequests = async () => {
-      try {
-        const userRequestRef = collection(db, "pendingaccounts");
-        const querySnapshot = await getDocs(userRequestRef);
+    const userRequestRef = collection(db, "pendingaccounts");
 
-        const fetched = [];
+    const unsubscribe = onSnapshot(userRequestRef, (querySnapshot) => {
+      const fetched = [];
 
-        querySnapshot.forEach((docSnap) => {
-          const data = docSnap.data();
+      querySnapshot.forEach((docSnap) => {
+        const data = docSnap.data();
 
-          fetched.push({
-            id: docSnap.id,
-            userName: data.name,
-            email: data.email,
-            department: data.department,
-            jobTitle: data.jobTitle,
-            role: data.role,
-            status: data.status,
-            createdAt: data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "N/A",
-            // uid: data.uid,
-          });
+        fetched.push({
+          id: docSnap.id,
+          userName: data.name,
+          email: data.email,
+          department: data.department,
+          jobTitle: data.jobTitle,
+          role: data.role,
+          status: data.status,
+          createdAt: data.createdAt ? data.createdAt.toDate().toLocaleDateString() : "N/A",
         });
+      });
 
-        setRequests(fetched);
-      } catch (error) {
-      }
-    };
+      setRequests(fetched);
+    }, (error) => {
+      console.error("Error fetching user requests:", error);
+    });
 
-    fetchUserRequests();
+    // Cleanup the listener when the component unmounts
+    return () => unsubscribe();
   }, []);
 
   const sendEmailNotification = async ({ to, name, status }) => {
