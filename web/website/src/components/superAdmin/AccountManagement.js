@@ -346,6 +346,7 @@ const AccountManagement = () => {
   
         setAccounts([...accounts, newAccount]);
         setModalMessage("Account added successfully!");
+        setIsNotificationVisible(true);
       }
   
       setIsNotificationVisible(true);

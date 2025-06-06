@@ -1,15 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Row, Col, Button, Typography, Space, Table, notification } from "antd";
+import { Layout, Row, Col, Button, Typography, Space, Table, notification, Modal, Popconfirm } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, getDoc, setDoc, query, where, onSnapshot } from "firebase/firestore";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import NotificationModal from "../customs/NotificationModal";
 
 const { Content } = Layout;
 const { Title } = Typography;
 
 const PendingAccounts = () => {
   const [requests, setRequests] = useState([]);
-  const [selectedRequests, setSelectedRequests] = useState([]); // Track selected rows
+  const [selectedRequests, setSelectedRequests] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+  const [modalMessage, setModalMessage] = useState("");
 
   useEffect(() => {
     const userRequestRef = collection(db, "pendingaccounts");
@@ -123,6 +127,9 @@ const PendingAccounts = () => {
         message: "Requests Approved",
         description: "The selected account requests have been approved and moved to the accounts collection.",
       });
+
+      setModalMessage("Account added successfully!");
+      setIsNotificationVisible(true);
 
       // Remove approved requests from UI
       setRequests((prevRequests) =>
@@ -239,17 +246,31 @@ const PendingAccounts = () => {
                   Approve Selected
                 </Button>
 
-                <Button
-                  type="danger"
-                  onClick={handleReject}
+                <Popconfirm
+                  title="Are you sure you want to reject the selected accounts?"
+                  onConfirm={handleReject}
+                  okText="Yes"
+                  cancelText="No"
                   disabled={selectedRequests.length === 0}
                 >
-                  Reject Selected
-                </Button>
+                  <Button
+                    type="primary"
+                    danger
+                    disabled={selectedRequests.length === 0}
+                  >
+                    Reject Selected
+                  </Button>
+                </Popconfirm>
               </Space>
             </Col>
           </Row>
         </Content>
+
+        <NotificationModal  
+          isVisible={isNotificationVisible}
+          onClose={() => setIsNotificationVisible(false)}
+          message={modalMessage}/>
+
       </Layout>
     </Layout>
   );
