@@ -8,6 +8,7 @@ import {
   updatePassword,
   signOut,
   getAuth,
+  sendEmailVerification,
 } from "firebase/auth";
 import { auth, db } from "../backend/firebase/FirebaseConfig";
 import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
@@ -39,6 +40,8 @@ const Login = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [signUpMode, setSignUpMode] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
+  const [passwordTouched, setPasswordTouched] = useState(false);
+  const [emailChecked, setEmailChecked] = useState(false);
   const [signUpData, setSignUpData] = useState({
     
     name: "",
@@ -98,9 +101,167 @@ const Login = () => {
     return () => unsubscribe();
   }, []);
 
-  const handleChange = (e) => {
+  useEffect(() => {
+    if (isNewUser && confirmPassword) {
+      if (formData.password !== confirmPassword) {
+        setError("Passwords do not match.");
+      } else {
+        setError(""); // clear error if they match
+      }
+    }
+  }, [formData.password, confirmPassword, isNewUser]);
+
+  // const handleChange = (e) => {
+  //   const { name, value } = e.target;
+  //   setFormData({ ...formData, [name]: value });
+  // };
+
+  // const handleChange = async (e) => {
+  //   const { name, value } = e.target;
+
+  //   // Update form data first
+  //   if (name === "confirmPassword") {
+  //     setConfirmPassword(value);
+
+  //   } else {
+  //     setFormData((prev) => ({ ...prev, [name]: value }));
+  //   }
+
+  //   // EMAIL CHECK
+  //   if (name === "email") {
+  //     const isValidEmail = /\S+@\S+\.\S+/.test(value);
+  //     if (!isValidEmail) {
+  //       setIsNewUser(false);
+  //       return;
+  //     }
+
+  //     try {
+  //       const usersRef = collection(db, "accounts");
+  //       const q = query(usersRef, where("email", "==", value));
+  //       const querySnapshot = await getDocs(q);
+
+  //       if (!querySnapshot.empty) {
+  //         const userDoc = querySnapshot.docs[0];
+  //         const userData = userDoc.data();
+  //         setIsNewUser(!userData.uid);
+
+  //       } else {
+  //         setIsNewUser(true); // new user
+  //       }
+
+  //     } catch (err) {
+  //       console.error("Error checking user:", err.message);
+  //     }
+  //   }
+
+  //   // PASSWORD VALIDATION
+  //   if (name === "password") {
+  //     const passwordRegex =
+  //       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+  //     if (!passwordRegex.test(value)) {
+  //       setError(
+  //         "Password must be at least 8 characters long and include a letter, a number, and a special character."
+  //       );
+  //       return;
+
+  //     } else {
+  //       setError("");
+  //     }
+
+  //     // check match with confirmPassword
+  //     if (confirmPassword && value !== confirmPassword) {
+  //       setError("Passwords do not match.");
+
+  //     } else {
+  //       setError("");
+  //     }
+  //   }
+
+  //   if (name === "confirmPassword") {
+  //     // Check match after password and confirmPassword are both typed
+  //     if (value !== formData.password) {
+  //       setError("Passwords do not match.");
+
+  //     } else {
+  //       setError("");
+  //     }
+  //   }
+  // };
+
+  const handleChange = async (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+
+    // Update form data first
+    if (name === "confirmPassword") {
+      setConfirmPassword(value);
+
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+
+    // EMAIL CHECK
+    if (name === "email") {
+      const isValidEmail = /\S+@\S+\.\S+/.test(value);
+      if (!isValidEmail) {
+        setIsNewUser(false);
+        setEmailChecked(false); // ❗ reset email checked
+        return;
+      }
+
+      try {
+        const usersRef = collection(db, "accounts");
+        const q = query(usersRef, where("email", "==", value));
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          const userDoc = querySnapshot.docs[0];
+          const userData = userDoc.data();
+          setIsNewUser(!userData.uid);
+          setEmailChecked(true); // ✅ mark email as checked
+
+        } else {
+          setIsNewUser(true); // new user
+          setEmailChecked(true); // ✅ mark email as checked
+        }
+
+      } catch (err) {
+        console.error("Error checking user:", err.message);
+      }
+    }
+
+    // PASSWORD VALIDATION
+    if (name === "password") {
+      const passwordRegex =
+        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+      // if (!passwordRegex.test(value)) {
+      //   setError(
+      //     "Password must be at least 8 characters long and include a letter, a number, and a special character."
+      //   );
+      //   return;
+      // } else {
+      //   setError("");
+      // }
+
+      // check match with confirmPassword
+      if (confirmPassword && value !== confirmPassword) {
+        setError("Passwords do not match.");
+
+      } else {
+        setError("");
+      }
+    }
+
+    if (name === "confirmPassword") {
+      // Check match after password and confirmPassword are both typed
+      if (value !== formData.password) {
+        setError("Passwords do not match.");
+
+      } else {
+        setError("");
+      }
+    }
   };
 
   const handleSignUpChange = (e) => {
@@ -111,7 +272,7 @@ const Login = () => {
 
       if (value === "Faculty") {
         filteredDepts = departmentsAll.map((dept) => dept.name);
-        
+
       } else if (value === "Program Chair") {
         filteredDepts = departmentsAll
           .map((dept) => dept.name)
@@ -127,13 +288,28 @@ const Login = () => {
         department: "" // reset department
       });
 
-      setCurrentDepartments(filteredDepts); 
+      setCurrentDepartments(filteredDepts);
 
     } else {
+      // Set the field value
       setSignUpData({
         ...signUpData,
         [name]: value
       });
+
+      // If the changed field is email, validate the domain
+      if (name === "email") {
+        const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+        const parts = value.split("@");
+        const emailDomain = parts.length > 1 ? parts[1] : "";
+
+        if (!validDomains.includes(emailDomain)) {
+          setError("Only @nu-moa.edu.ph and @students.nu-moa.edu.ph emails are allowed.");
+
+        } else {
+          setError(""); // Clear error if valid
+        }
+      }
     }
   };
 
@@ -330,84 +506,300 @@ const Login = () => {
     }
   };
 
+  // LOGIN WITH VERIFICATION
+  // const checkUserAndLogin = async () => {
+  //   setIsLoading(true);
+
+  //   try {
+  //     const { email, password } = formData;
+  //     const usersRef = collection(db, "accounts");
+  //     const q = query(usersRef, where("email", "==", email));
+  //     const querySnapshot = await getDocs(q);
+
+  //     let userDoc, userData, isSuperAdmin = false;
+
+  //     // Check regular accounts
+  //     if (!querySnapshot.empty) {
+  //       userDoc = querySnapshot.docs[0];
+  //       userData = userDoc.data();
+  //     } else {
+  //       // Check super-admin
+  //       const superAdminRef = collection(db, "super-admin");
+  //       const superAdminQuery = query(superAdminRef, where("email", "==", email));
+  //       const superAdminSnapshot = await getDocs(superAdminQuery);
+
+  //       if (!superAdminSnapshot.empty) {
+  //         userDoc = superAdminSnapshot.docs[0];
+  //         userData = userDoc.data();
+  //         isSuperAdmin = true;
+  //       }
+  //     }
+
+  //     if (!userData) {
+  //       setError("User not found. Please contact admin.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     if (userData.disabled) {
+  //       setError("Your account has been disabled.");
+  //       await signOut(auth);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // New user without password set yet
+  //     if (!isSuperAdmin && !userData.uid) {
+  //       setIsNewUser(true);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     if (isSuperAdmin) {
+  //       // Super-admin login using Firestore-stored password
+  //       if (userData.password === password) {
+  //         await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
+  //         const userName = userData.name || "Super Admin";
+  //         localStorage.setItem("userId", userDoc.id);
+  //         localStorage.setItem("userEmail", userData.email);
+  //         localStorage.setItem("userName", userName);
+  //         localStorage.setItem("userDepartment", userData.department || "Admin");
+  //         localStorage.setItem("userPosition", "super-admin");
+  //         localStorage.setItem("userJobTitle", userData.jobTitle || "User");
+
+  //         navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+
+  //       } else {
+  //         setError("Invalid password.");
+  //       }
+
+  //     } else {
+  //       // Firebase Auth login for regular users/admins
+  //       try {
+  //         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  //         const signedInUser = userCredential.user;
+
+  //         // Force reload to ensure latest email verification status
+  //         await signedInUser.reload();
+  //         const refreshedUser = auth.currentUser;
+
+  //         if (!refreshedUser || !refreshedUser.emailVerified) {
+  //           await signOut(auth);
+  //           setError("Please verify your email before logging in.");
+  //           setIsLoading(false);
+  //           return;
+  //         }
+
+  //         await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
+  //         let role = (userData.role || "user").toLowerCase().trim().replace(/[\s_]/g, '-');
+  //         if (role === "admin1" || role === "admin2") {
+  //           role = "admin";
+  //         }
+
+  //         const userName = userData.name || "User";
+  //         localStorage.setItem("userId", userDoc.id);
+  //         localStorage.setItem("userEmail", userData.email);
+  //         localStorage.setItem("userName", userName);
+  //         localStorage.setItem("userDepartment", userData.department || "");
+  //         localStorage.setItem("userPosition", role);
+  //         localStorage.setItem("userJobTitle", userData.jobTitle || "User");
+
+  //         await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
+  //           action: "User Logged In (Website)",
+  //           userName,
+  //           timestamp: serverTimestamp(),
+  //         });
+
+  //         switch (role) {
+  //           case "admin":
+  //           case "super-user":
+  //             navigate("/main/dashboard", { state: { loginSuccess: true, role } });
+  //             break;
+              
+  //           case "user":
+  //             navigate("/main/requisition", { state: { loginSuccess: true, role } });
+  //             break;
+
+  //           default:
+  //             setError("Unknown role. Please contact admin.");
+  //             break;
+  //         }
+
+  //       } catch (authError) {
+  //         console.error("Firebase Auth login failed:", authError.message);
+  //         setError("Invalid password.");
+  //       }
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error during login:", error.message);
+  //     setError("Unexpected error. Please try again.");
+
+  //   } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  // const handleRegisterPassword = async () => {
+  //   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+  //   if (!passwordRegex.test(formData.password)) {
+  //     setError("Password must be at least 8 characters long and include at least one letter, one number, and one special character.");
+  //     return;
+  //   }
+
+  //   if (formData.password !== confirmPassword) {
+  //     setError("Passwords do not match.");
+  //     return;
+  //   }
+
+  //   setIsLoading(true)
+  
+  //   try {
+  //     const { email, password } = formData;
+  //     const usersRef = collection(db, "accounts");
+  //     const q = query(usersRef, where("email", "==", email.trim().toLowerCase()));
+  //     const querySnapshot = await getDocs(q);
+  
+  //     if (!querySnapshot.empty) {
+  //       const userDoc = querySnapshot.docs[0];
+  //       const userData = userDoc.data();
+  //       const role = (userData.role || "user").toLowerCase();
+  //       const normalizedRole = role === "admin1" || role === "admin2" ? "admin" : role;
+  
+
+  //       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  //       const firebaseUser = userCredential.user;
+  
+
+  //       await updateDoc(userDoc.ref, {
+  //         uid: firebaseUser.uid
+  //         // ❌ remove this: password: password
+  //       });
+  
+  //       const userName = userData.name || "User";
+  //       localStorage.setItem("userEmail", userData.email);
+  //       localStorage.setItem("userName", userName);
+  //       localStorage.setItem("userDepartment", userData.department || "Unknown");
+  //       localStorage.setItem("userPosition", userData.role || "User");
+  //       localStorage.setItem("userJobTitle", userData.jobTitle || "User");
+  
+  //       switch (normalizedRole) {
+  //         case "super-admin":
+  //           navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+  //           break;
+
+  //         case "admin":
+  //           navigate("/main/dashboard", { state: { loginSuccess: true, role: "admin" } });
+  //           break;
+
+  //         case "super-user":
+  //           navigate("/main/dashboard", { state: { loginSuccess: true, role: "admin" } });
+  //           break;
+
+  //         case "user":
+  //           navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
+  //           break;
+
+  //         default:
+  //           setError("Unknown role. Please contact admin.");
+  //           return;
+  //       }
+  
+  //       setIsNewUser(false);
+  
+  //     } else {
+  //       setError("User record not found in Firestore.");
+  //       setIsLoading(false);
+  //     }
+  
+  //   } catch (error) {
+  //     if (error.code === "auth/email-already-in-use") {
+  //       setError("Email already in use. Try logging in instead.");
+  //       setIsLoading(false);
+
+  //     } else {
+  //       setError("Failed to set password. Try again.");
+  //       setIsLoading(false);
+  //     }
+
+  //   } finally {
+  //     setIsLoading(false); 
+  //   }
+  // };
+
   const handleRegisterPassword = async () => {
+    // Password validation regex: min 8 chars, at least one letter, one number, and one special character
+    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+    if (!passwordRegex.test(formData.password)) {
+      setError("Password must be at least 8 characters long and include at least one letter, one number, and one special character.");
+      return;
+    }
+
     if (formData.password !== confirmPassword) {
       setError("Passwords do not match.");
       return;
     }
 
-    setIsLoading(true)
-  
+    setIsLoading(true);
+
     try {
       const { email, password } = formData;
       const usersRef = collection(db, "accounts");
       const q = query(usersRef, where("email", "==", email.trim().toLowerCase()));
       const querySnapshot = await getDocs(q);
-  
+
       if (!querySnapshot.empty) {
         const userDoc = querySnapshot.docs[0];
         const userData = userDoc.data();
-        const role = (userData.role || "user").toLowerCase();
-        const normalizedRole = role === "admin1" || role === "admin2" ? "admin" : role;
-  
 
+        console.log("Creating Firebase Auth user...");
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const firebaseUser = userCredential.user;
-  
 
+        await sendEmailVerification(firebaseUser);
+        console.log("Verification email sent to", firebaseUser.email);
+
+        // Save UID to Firestore (not password)
         await updateDoc(userDoc.ref, {
           uid: firebaseUser.uid
-          // ❌ remove this: password: password
         });
-  
-        const userName = userData.name || "User";
-        localStorage.setItem("userEmail", userData.email);
-        localStorage.setItem("userName", userName);
-        localStorage.setItem("userDepartment", userData.department || "Unknown");
-        localStorage.setItem("userPosition", userData.role || "User");
-        localStorage.setItem("userJobTitle", userData.jobTitle || "User");
-  
-        switch (normalizedRole) {
-          case "super-admin":
-            navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
-            break;
 
-          case "admin":
-            navigate("/main/dashboard", { state: { loginSuccess: true, role: "admin" } });
-            break;
+        // ✅ Immediately sign the user out to prevent auto-login
+        await auth.signOut();
+        console.log("User signed out after registration to await email verification");
 
-          case "super-user":
-            navigate("/main/dashboard", { state: { loginSuccess: true, role: "admin" } });
-            break;
+        // Redirect or show verification message
+        navigate("/", {
+          state: {
+            message: "Registration successful! Please verify your email before logging in.",
+          },
+        });
 
-          case "user":
-            navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
-            break;
+        setModalMessage("Registration successful! Please verify your email before logging in.");
+        setIsModalVisible(true);
 
-          default:
-            setError("Unknown role. Please contact admin.");
-            return;
-        }
-  
         setIsNewUser(false);
-  
+        setFormData((prev) => ({ ...prev, email: "", password: "" }));
+
       } else {
         setError("User record not found in Firestore.");
-        setIsLoading(false);
       }
-  
+
     } catch (error) {
+      console.error("Error setting password and UID:", error.message);
       if (error.code === "auth/email-already-in-use") {
         setError("Email already in use. Try logging in instead.");
-        setIsLoading(false);
 
       } else {
         setError("Failed to set password. Try again.");
-        setIsLoading(false);
       }
 
     } finally {
-      setIsLoading(false); 
+      setIsLoading(false);
     }
   };
 
@@ -446,7 +838,17 @@ const Login = () => {
       setIsLoading(false);
       return;
     }
-  
+
+    // Step 2.1: Validate department if jobTitle is not 'Laboratory Custodian'
+    if (
+      jobTitle.toLowerCase() !== "laboratory custodian" &&
+      (!department || department.trim() === "")
+    ) {
+      setError("Please select a department.");
+      setIsLoading(false);
+      return;
+    }
+
     try {
       // Step 3: Check if the employeeId already exists in Firestore in both 'pendingaccounts' and 'accounts'
       const employeeQueryPending = query(
@@ -537,7 +939,7 @@ const Login = () => {
       });
   
       // Step 7: Set the modal message and show the modal
-      setModalMessage("Successfully Registered! Please check your email for further instructions. Your account is pending approval from the ITSO.");
+      setModalMessage("Successfully Registered! Please check your email junk for the status. Your account is pending approval from the ITSO.");
       setIsModalVisible(true); // Open the modal
   
       // Clear input fields after successful registration
@@ -669,23 +1071,8 @@ const Login = () => {
                       placeholder="enter email (NU account)"
                       required
                     />
+                    {error && <p className="error-message">{error}</p>}
                   </div>
-  
-                  {/* <div className="form-group">
-                    <label>Employee ID</label>
-                    <input
-                      type="text"
-                      value={signUpData.employeeId}
-                      onChange={(e) => {
-                        const rawValue = e.target.value;
-                        if (/^[0-9-]{0,7}$/.test(rawValue)) {
-                          setSignUpData({ ...signUpData, employeeId: rawValue });
-                        }
-                      }}
-                      placeholder="e.g., 12-3456"
-                      required
-                    />
-                  </div> */}
 
                   <div className="form-group">
                     <label>Employee ID</label>
@@ -732,8 +1119,8 @@ const Login = () => {
                       name="department"
                       value={signUpData.department}
                       onChange={handleSignUpChange}
-                      required
-                      disabled={!signUpData.jobTitle} 
+                      required={signUpData.jobTitle !== "Laboratory Custodian"}
+                      disabled={!signUpData.jobTitle || signUpData.jobTitle === "Laboratory Custodian"}
                     >
                       <option value="">Select Department</option>
                         {currentDepartments.map((dept) => (
@@ -742,7 +1129,6 @@ const Login = () => {
                       ))}
                     </select>
                   </div>
-  
                 </div>
                   
                   {/* <div className="form-group password-group">
@@ -802,11 +1188,12 @@ const Login = () => {
                       </span>
                     </label>
 
-                    {error && <p className="error-message">{error}</p>}
+                    {/* {error && <p className="error-message">{error}</p>} */}
                   </div>
                 </>
               ) : (
                 <>
+
                   {/* Login Fields */}
                   <div className="form-group">
                     <label>Email</label>
@@ -820,7 +1207,7 @@ const Login = () => {
                     />
                   </div>
   
-                  <div className="form-group password-group">
+                  {/* <div className="form-group password-group">
                     <label>Password</label>
                     <div className="password-wrapper">
                       <input
@@ -840,9 +1227,62 @@ const Login = () => {
   
                       {error && <p className="error-message">{error}</p>}
                     </div>
+                  </div> */}
+
+                    {/* <div className="form-group password-group">
+                    <label>{isNewUser ? "Set Password" : "Password"}</label>
+                    <div className="password-wrapper">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        placeholder={isNewUser ? "Set your password" : "Enter your password"}
+                      />
+                      <span
+                        className="toggle-password"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? "🔒" : "👁️"}
+                      </span>
+                      {error && <p className="error-message">{error}</p>}
+                    </div>
+                  </div> */}
+
+                  <div className="form-group password-group">
+                    <label>{isNewUser ? "Set Password" : "Password"}</label>
+                    <div className="password-wrapper">
+                      <input
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        required
+                        placeholder={isNewUser ? "Set your password" : "Enter your password"}
+                      />
+                      <span
+                        className="toggle-password"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? "🔒" : "👁️"}
+                      </span>
+                    </div>
+
+                    {error && <p className="error-message">{error}</p>}
+
+                    {/* ✅ Only show if email was checked AND isNewUser is true */}
+                    {isNewUser && emailChecked && formData.password && (
+                        <small
+                          className="password-hint"
+                          style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}
+                        >
+                          Password must be at least 8 characters long and include a letter, a number, and a special character.
+                        </small>
+                      )}
                   </div>
   
-                  {isNewUser && (
+                  {/* {isNewUser && (
                     <div className="form-group password-group">
                       <label>Confirm Password</label>
                       <div className="password-wrapper">
@@ -863,6 +1303,53 @@ const Login = () => {
                           {showConfirmPassword ? "🔒" : "👁️"}
                         </span>
                       </div>
+                        <small className="password-hint" style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}>
+                          Password must be at least 8 characters and include a letter, a number, and a special character.
+                        </small>
+                    </div>
+                  )}
+                </>
+              )} */}
+
+                  {isNewUser && (
+                    <div className="form-group password-group">
+                      <label>Confirm Password</label>
+                      <div className="password-wrapper">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          name="confirmPassword"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          placeholder="Confirm your password"
+                        />
+                        <span
+                          className="toggle-password"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        >
+                          {showConfirmPassword ? "🔒" : "👁️"}
+                        </span>
+                      </div>
+
+                      {/* 🔴 Real-time error display */}
+                      {confirmPassword && error === "Passwords do not match." && (
+                        <small className="error-message" style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+                          {error}
+                        </small>
+                      )}
+
+                      {/* Password hint */}
+                      <small
+                        className="password-hint"
+                        style={{
+                          color: "#888",
+                          fontSize: "12px",
+                          marginTop: "4px",
+                        }}
+                      >
+                        Password must be at least 8 characters and include a letter, a number,
+                        and a special character.
+                      </small>
                     </div>
                   )}
                 </>

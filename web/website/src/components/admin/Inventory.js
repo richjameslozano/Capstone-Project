@@ -21,7 +21,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where, serverTimestamp, orderBy, limit } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where, serverTimestamp, orderBy, limit, writeBatch } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -71,8 +71,8 @@ const Inventory = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [showExpiry, setShowExpiry] = useState(false);
   const [hasExpiryDate, setHasExpiryDate] = useState(false);
+  const [departmentsAll, setDepartmentsAll] = useState([]);
   const db = getFirestore();
-
 
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
   const [fullEditForm] = Form.useForm();
@@ -102,44 +102,151 @@ const Inventory = () => {
 
   
 
+  // useEffect(() => {
+  //   const inventoryRef = collection(db, "inventory");
+
+  //   const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
+  //     try {
+  //       const items = snapshot.docs
+  //         .map((doc, index) => {
+  //           const data = doc.data();
+
+  //           const entryDate = data.entryDate ? data.entryDate : "N/A";
+  //           const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
+
+  //           return {
+  //             docId: doc.id,  
+  //             id: index + 1,
+  //             itemId: data.itemId,
+  //             item: data.itemName,
+  //             category:data.category,
+  //             entryDate,
+  //             expiryDate,
+  //             qrCode: data.qrCode,
+  //             ...data,
+  //           };
+  //         })
+  //         .sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+
+  //       setDataSource(items);
+  //       setCount(items.length);
+        
+  //     } catch (error) {
+       
+  //     }
+
+  //   }, (error) => {
+     
+  //   });
+
+  //   return () => unsubscribe(); // Clean up the listener on unmount
+  // }, []);
+
   useEffect(() => {
     const inventoryRef = collection(db, "inventory");
 
-    const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
-      try {
-        const items = snapshot.docs
-          .map((doc, index) => {
-            const data = doc.data();
+    const unsubscribe = onSnapshot(
+      inventoryRef,
+      async (snapshot) => {
+        try {
+          const batch = writeBatch(db); // use batch to reduce writes
 
-            const entryDate = data.entryDate ? data.entryDate : "N/A";
-            const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
+          const items = await Promise.all(
+            snapshot.docs.map(async (docSnap, index) => {
+              const data = docSnap.data();
+              const docId = docSnap.id;
 
-            return {
-              docId: doc.id,  
-              id: index + 1,
-              itemId: data.itemId,
-              item: data.itemName,
-              category:data.category,
-              entryDate,
-              expiryDate,
-              qrCode: data.qrCode,
-              ...data,
-            };
-          })
-          .sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+              const entryDate = data.entryDate || "N/A";
+              const expiryDate = data.expiryDate || "N/A";
+              const quantity = Number(data.quantity) || 0;
+              const category = (data.category || "").toLowerCase();
 
-        setDataSource(items);
-        setCount(items.length);
-        
-      } catch (error) {
-       
+              let status = data.status || ""; // base status
+              let newStatus = status;
+
+              // Update logic
+              if (quantity === 0) {
+                if (["chemical", "reagent", "materials"].includes(category)) {
+                  newStatus = "out of stock";
+                  
+                } else if (["equipment", "glasswares"].includes(category)) {
+                  newStatus = "in use";
+                }
+              }
+
+              // If status changed in logic, update inventory
+              if (newStatus !== status) {
+                const itemRef = doc(db, "inventory", docId);
+                batch.update(itemRef, { status: newStatus });
+              }
+
+              // 🔁 SYNC TO LABROOM ITEMS
+              const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
+
+              for (const roomDoc of labRoomsSnapshot.docs) {
+                const roomId = roomDoc.id;
+                const itemsRef = collection(db, `labRoom/${roomId}/items`);
+                const itemsSnap = await getDocs(itemsRef);
+
+                itemsSnap.forEach((itemDoc) => {
+                  const itemData = itemDoc.data();
+                  if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
+                    const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
+                    batch.update(labItemRef, { status: newStatus });
+                  }
+                });
+              }
+
+              return {
+                docId,
+                id: index + 1,
+                itemId: data.itemId,
+                item: data.itemName,
+                entryDate,
+                expiryDate,
+                qrCode: data.qrCode,
+                status: newStatus,
+                ...data,
+              };
+            })
+          );
+
+          // ✅ Commit all batched updates
+          await batch.commit();
+
+          // Update state
+          items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+          setDataSource(items);
+          setCount(items.length);
+
+        } catch (error) {
+          console.error("Error processing inventory snapshot: ", error);
+        }
+      },
+      (error) => {
+        console.error("Error fetching inventory with onSnapshot: ", error);
       }
+    );
 
-    }, (error) => {
-     
-    });
+    return () => unsubscribe();
+  }, []);
 
-    return () => unsubscribe(); // Clean up the listener on unmount
+  useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+    const unsubscribe = onSnapshot(
+      departmentsCollection,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error("Error fetching departments in real-time: ", error);
+      }
+    );
+
+    return () => unsubscribe();
   }, []);
 
   // useEffect(() => {
@@ -495,7 +602,7 @@ const printPdf = () => {
   }
 };
 
-   const handleAdd = async (values) => {
+  const handleAdd = async (values) => {
     if (!itemName || !values.department || !itemDetails) {
       alert("Please fill up the form!");
       return;
@@ -1199,9 +1306,29 @@ useEffect(() => {
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                {/* <Col span={8}>
                   <Form.Item name="department" label="Department">
                     <Input placeholder="Enter department" />
+                  </Form.Item>
+                </Col> */}
+                
+                <Col span={8}>
+                  <Form.Item
+                    name="department"
+                    label="Department"
+                    rules={[{ required: true, message: "Please select a department" }]}
+                  >
+                    <Select
+                      placeholder="Select department"
+                      loading={!departmentsAll.length}
+                      disabled={!departmentsAll.length}
+                    >
+                      {departmentsAll.map((dept) => (
+                        <Select.Option key={dept.id} value={dept.name}>
+                          {dept.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
                   </Form.Item>
                 </Col>
               </Row>
@@ -1224,41 +1351,40 @@ useEffect(() => {
           >
             <Form form={fullEditForm} layout="vertical" onFinish={handleFullUpdate}
             onValuesChange={(changedValues, allValues) => {
-  if ('condition' in changedValues) {
-    const condition = allValues.condition || {};
-    const originalGood = editingItem.condition?.Good ?? 0;
+                if ('condition' in changedValues) {
+                  const condition = allValues.condition || {};
+                  const originalGood = editingItem.condition?.Good ?? 0;
 
-    const defect = Number(condition.Defect) || 0;
-    const damage = Number(condition.Damage) || 0;
+                  const defect = Number(condition.Defect) || 0;
+                  const damage = Number(condition.Damage) || 0;
 
-    const newGood = originalGood - defect - damage;
+                  const newGood = originalGood - defect - damage;
 
-    if (newGood < 0) {
-      fullEditForm.setFields([
-        {
-          name: ['condition', 'Defect'],
-          errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
-        },
-        {
-          name: ['condition', 'Damage'],
-          errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
-        },
-      ]);
-    } else {
-      fullEditForm.setFields([
-        { name: ['condition', 'Defect'], errors: [] },
-        { name: ['condition', 'Damage'], errors: [] },
-      ]);
-      const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
-      if (currentGood !== newGood) {
-        fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
-      }
-    }
-  }
-}}
-
+                  if (newGood < 0) {
+                    fullEditForm.setFields([
+                      {
+                        name: ['condition', 'Defect'],
+                        errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+                      },
+                      {
+                        name: ['condition', 'Damage'],
+                        errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+                      },
+                    ]);
+                  } else {
+                    fullEditForm.setFields([
+                      { name: ['condition', 'Defect'], errors: [] },
+                      { name: ['condition', 'Damage'], errors: [] },
+                    ]);
+                    const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
+                    if (currentGood !== newGood) {
+                      fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
+                    }
+                  }
+                }
+              }}
               >
-                <Row gutter={16}>
+            <Row gutter={16}>
               <Col span={12}>
                 <Form.Item
                   label="Item Name"
@@ -1292,11 +1418,25 @@ useEffect(() => {
                 </Form.Item>
               </Col>
 
-              <Col span={12}>
-                <Form.Item label="Department" name="department">
-                  <Input />
-                </Form.Item>
-              </Col>
+                <Col span={8}>
+                  <Form.Item
+                    name="department"
+                    label="Department"
+                    rules={[{ required: true, message: "Please select a department" }]}
+                  >
+                    <Select
+                      placeholder="Select department"
+                      loading={!departmentsAll.length}
+                      disabled={!departmentsAll.length}
+                    >
+                      {departmentsAll.map((dept) => (
+                        <Select.Option key={dept.id} value={dept.name}>
+                          {dept.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
             </Row>
 
             <Row gutter={16}>

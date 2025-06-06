@@ -41,6 +41,7 @@ export default function LoginScreen({navigation}) {
   const [deptOptions, setDeptOptions] = useState([]);
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [isLoginSignup, setIsLoginSignup] = useState(false)
+  const [emailError, setEmailError] = useState('');
   const nameBorderAnim = useRef(new Animated.Value(0)).current;
   const emailBorderAnim = useRef(new Animated.Value(0)).current;
   const employeeIDBorderAnim = useRef(new Animated.Value(0)).current;
@@ -569,7 +570,19 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 <Input
                   placeholder="Enter Email Address (NU account)"
                   value={signUpEmail}
-                  onChangeText={setSignUpEmail}
+                  onChangeText={(text) => {
+                    setSignUpEmail(text);
+
+                    const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+                    const parts = text.split("@");
+                    const domain = parts.length > 1 ? parts[1] : "";
+
+                    if (!validDomains.includes(domain)) {
+                      setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
+                    } else {
+                      setEmailError('');
+                    }
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                    onFocus={() => handleFocus('email')}
@@ -577,9 +590,14 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
                 inputStyle={styles.inputText}
                 />
-                {signUpEmail.length > 0 && !signUpEmail.includes('@') ? (
+                {/* {signUpEmail.length > 0 && !signUpEmail.includes('@') ? (
                 <HelperText type="error" style={{ marginTop: '-25', marginBottom: '10'}}>Enter a valid email address.</HelperText>
-                    ) : null}
+                    ) : null} */}
+                    {emailError !== '' && (
+                      <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                        {emailError}
+                      </HelperText>
+                    )}
               </Animated.View>
 
 

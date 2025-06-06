@@ -110,7 +110,8 @@ const Requisition = () => {
     const [viewDetailsModalVisible, setViewDetailsModalVisible] = useState(false);
     const [userName, setUserName] = useState("User");
     const [notificationVisible, setNotificationVisible] = useState(false);
-
+    const [departmentsAll, setDepartmentsAll] = useState([]);
+    const [searchDepartment, setSearchDepartment] = useState("");
 
   const [tableData, setTableData] = useState([
     { key: 0, selectedItemId: null }, 
@@ -354,58 +355,115 @@ const Requisition = () => {
   // }, []);
 
   // VERSION NI RICH WITH DATE OF EXPIRY CONDITION
+  // useEffect(() => {
+  //   const fetchItems = async () => {
+  //     try {
+  //       const inventorySnapshot = await getDocs(collection(db, "inventory"));
+  //       const now = new Date();
+
+  //       const validItems = [];
+
+  //       for (const doc of inventorySnapshot.docs) {
+  //         const itemData = doc.data();
+  //         const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+  //         const stockSnapshot = await getDocs(stockLogRef);
+
+  //         let hasValidStock = false;
+
+  //         for (const logDoc of stockSnapshot.docs) {
+  //           const logData = logDoc.data();
+  //           const expiryRaw = logData.expiryDate;
+
+  //           if (!expiryRaw) {
+  //             hasValidStock = true;
+  //             break;
+  //           }
+
+  //           const expiryDate = typeof expiryRaw === "string"
+  //             ? new Date(expiryRaw)
+  //             : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+  //           if (isNaN(expiryDate.getTime())) continue;
+
+  //           if (expiryDate >= now) {
+  //             hasValidStock = true;
+  //             break;
+  //           }
+  //         }
+
+  //         if (hasValidStock) {
+  //           validItems.push({
+  //             id: doc.id,
+  //             ...itemData
+  //           });
+  //         }
+  //       }
+
+  //       setItems(validItems);
+  //       setFilteredItems(validItems);
+  //     } catch (error) {
+  //       console.error("Error fetching inventory with expiry filtering:", error);
+  //     }
+  //   };
+
+  //   fetchItems();
+  // }, []);
+
   useEffect(() => {
-    const fetchItems = async () => {
-      try {
-        const inventorySnapshot = await getDocs(collection(db, "inventory"));
-        const now = new Date();
+    const unsubscribe = onSnapshot(collection(db, "inventory"), async (inventorySnapshot) => {
+      const now = new Date();
+      const validItems = [];
 
-        const validItems = [];
+      for (const doc of inventorySnapshot.docs) {
+        const itemData = doc.data();
+        const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
 
-        for (const doc of inventorySnapshot.docs) {
-          const itemData = doc.data();
-          const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
-          const stockSnapshot = await getDocs(stockLogRef);
+        // Fetch the stockLog subcollection for this inventory item
+        const stockSnapshot = await getDocs(stockLogRef);
 
-          let hasValidStock = false;
+        let hasValidStock = false;
 
-          for (const logDoc of stockSnapshot.docs) {
-            const logData = logDoc.data();
-            const expiryRaw = logData.expiryDate;
+        for (const logDoc of stockSnapshot.docs) {
+          const logData = logDoc.data();
+          const expiryRaw = logData.expiryDate;
 
-            if (!expiryRaw) {
-              hasValidStock = true;
-              break;
-            }
-
-            const expiryDate = typeof expiryRaw === "string"
-              ? new Date(expiryRaw)
-              : expiryRaw?.toDate?.() || new Date(expiryRaw);
-
-            if (isNaN(expiryDate.getTime())) continue;
-
-            if (expiryDate >= now) {
-              hasValidStock = true;
-              break;
-            }
+          if (!expiryRaw) {
+            hasValidStock = true;
+            break;
           }
 
-          if (hasValidStock) {
-            validItems.push({
-              id: doc.id,
-              ...itemData
-            });
+          const expiryDate = typeof expiryRaw === "string"
+            ? new Date(expiryRaw)
+            : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+          if (isNaN(expiryDate.getTime())) continue;
+
+          if (expiryDate >= now) {
+            hasValidStock = true;
+            break;
           }
         }
 
-        setItems(validItems);
-        setFilteredItems(validItems);
-      } catch (error) {
-        console.error("Error fetching inventory with expiry filtering:", error);
-      }
-    };
+        // if (hasValidStock) {
+        //   validItems.push({
+        //     id: doc.id,
+        //     ...itemData
+        //   });
+        // }
 
-    fetchItems();
+        if (hasValidStock && itemData.status !== "out of stock" && itemData.status !== "in use") {
+          validItems.push({
+            id: doc.id,
+            ...itemData
+          });
+        }
+      }
+
+      setItems(validItems);
+      setFilteredItems(validItems);
+    });
+
+    return () => unsubscribe(); // Cleanup on unmount
   }, []);
 
   useEffect(() => {
@@ -452,6 +510,24 @@ const Requisition = () => {
     }
 
   }, [location.state, navigate]);  
+
+    useEffect(() => {
+      const departmentsCollection = collection(db, "departments");
+      const unsubscribe = onSnapshot(
+        departmentsCollection,
+        (querySnapshot) => {
+          const deptList = querySnapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data() }))
+            .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+          setDepartmentsAll(deptList);
+        },
+        (error) => {
+          console.error("Error fetching departments in real-time: ", error);
+        }
+      );
+
+      return () => unsubscribe();
+    }, []);
 
   const closeModal = () => {
     setShowModal(false);         // Close success modal
@@ -1010,8 +1086,6 @@ const Requisition = () => {
     }
   });
 
-
-
   // for (const item of filteredMergedData) {
   //   if (item.category.toLowerCase() === "glasswares") {
   //     // Assuming volume property is named "volume" and must be > 0
@@ -1433,7 +1507,7 @@ const Requisition = () => {
               option?.label?.toLowerCase().includes(input.toLowerCase())
             }>
             {/* Map through filtered items instead of the entire items list */}
-            {filteredItems.map((item) => {
+            {/* {filteredItems.map((item) => {
               // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
                 ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
@@ -1443,6 +1517,26 @@ const Requisition = () => {
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
               const isDisabled = selectedIds.includes(item.id);
   
+              return (
+                <Select.Option
+                  key={item.id}
+                  value={item.id}
+                  label={item.itemName}
+                  disabled={isDisabled}
+                >
+                  {label}
+                </Select.Option>
+              );
+            })} */}
+
+            {filteredItems
+            .filter((item) => item.status !== "out of stock" && item.status !== "in use")
+            .map((item) => {
+              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+              } | ${item.status} | ${item.department}`;
+              const isDisabled = selectedIds.includes(item.id);
+
               return (
                 <Select.Option
                   key={item.id}
@@ -1972,6 +2066,103 @@ const Requisition = () => {
 
          <div className="section requisition-form">
           <div className="request-details">
+  <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>
+                {/* Category Dropdown */}
+                <select
+                    value={searchCategory}
+                    onChange={(e) => {
+                      const selectedCategory = e.target.value;
+                      setSearchCategory(selectedCategory);
+                      if (selectedCategory === "") {
+                        setFilteredItems(items);
+                      } else {
+                        const filteredData = items.filter(item => item.category === selectedCategory);
+                        setFilteredItems(filteredData);
+                      }
+                    }}
+                    style={{
+                      width: "200px",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    <option value="">All Categories</option>
+                    <option value="Chemical">Chemical</option>
+                    <option value="Reagent">Reagent</option>
+                    <option value="Materials">Materials</option>
+                    <option value="Equipment">Equipment</option>
+                    <option value="Glasswares">Glasswares</option>
+                  </select>
+
+                  {/* Department Dropdown from Firestore */}
+                  <select
+                    value={searchDepartment}
+                    onChange={(e) => {
+                      const selectedDept = e.target.value;
+                      setSearchDepartment(selectedDept);
+                      if (selectedDept === "") {
+                        setFilteredItems(items);
+                      } else {
+                        const filteredData = items.filter(item => item.department === selectedDept);
+                        setFilteredItems(filteredData);
+                      }
+                    }}
+                    style={{
+                      width: "200px",
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                    }}
+                  >
+                    <option value="">All Departments</option>
+                    {departmentsAll.map((dept) => (
+                      <option key={dept.id} value={dept.name}>
+                        {dept.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
+                  <Table
+                    className="requisition-table"
+                    dataSource={mergedData}
+                    columns={columns}
+                    pagination={false}
+                  />
+
+                    <Button
+                      type="dashed"
+                      onClick={handleAddRow}
+                      className="add-item-row-btn"
+                      // disabled={tableData.length >= 10}
+                    >
+                      Add Item Row
+                    </Button>
+
+                    <Button 
+                      type="primary"
+                      danger
+                      block
+                      className="finalize-btn"
+                      disabled={!isFormValid}
+                      onClick={async () => {
+                        const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
+
+                        if (hasConflict) {
+                          setNotificationMessage("This room is already booked for the selected date and time.");
+                          setIsNotificationVisible(true);
+                          return;
+                        }
+                        setIsFinalizeModalVisible(true);
+                        
+                      }}
+                    >
+                      Finalize
+                    </Button>
+                </div>
+            
             <div className="whole-section" >
               <div className="left-section">
               <div className="date-time-container">
@@ -2215,36 +2406,6 @@ const Requisition = () => {
                 />
               </div>
             </div>
-
-            <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>              
-              <select
-                value={searchCategory}
-                onChange={(e) => {
-                  const selectedCategory = e.target.value;
-                  setSearchCategory(selectedCategory);
-                  if (selectedCategory === "") {
-                    setFilteredItems(items);
-                    
-                  } else {
-                    const filteredData = items.filter((item) => item.category === selectedCategory);
-                    setFilteredItems(filteredData);
-                  }
-                }}
-                style={{
-                  width: "200px",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                }}
-              >
-                <option value="">All Categories</option>
-                <option value="Chemical">Chemical</option>
-                <option value="Reagent">Reagent</option>
-                <option value="Materials">Materials</option>
-                <option value="Equipment">Equipment</option>
-                <option value="Glasswares">Glasswares</option>
-              </select>
-            </div>
           </div>
 
     
@@ -2255,7 +2416,7 @@ const Requisition = () => {
             pagination={{ pageSize: 10 }}
             rowKey={(record) => record.key}
           /> */}
-
+{/* 
           <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
           <Table
             className="requisition-table"
@@ -2263,7 +2424,7 @@ const Requisition = () => {
             columns={columns}
             pagination={false}
           />
-        </div>
+        </div> */}
 
 
           <div className="bottom-btns">
@@ -2287,36 +2448,6 @@ const Requisition = () => {
             >
               Add Item Row
             </Button> */}
-
-            <Button
-              type="dashed"
-              onClick={handleAddRow}
-              className="add-item-row-btn"
-              // disabled={tableData.length >= 10}
-            >
-              Add Item Row
-            </Button>
-
-            <Button 
-              type="primary"
-              danger
-              block
-              className="finalize-btn"
-              disabled={!isFormValid}
-              onClick={async () => {
-                const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
-
-                if (hasConflict) {
-                   setModalMessage("This room is already booked for the selected date and time.");
-                  setIsModalVisible(true); 
-                  return;
-                }
-                setIsFinalizeModalVisible(true);
-                
-              }}
-            >
-              Finalize
-            </Button>
             
          <FinalizeRequestModal
           visible={isFinalizeModalVisible}
