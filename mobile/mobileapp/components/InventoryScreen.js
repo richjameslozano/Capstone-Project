@@ -23,7 +23,7 @@ export default function InventoryScreen({ navigation }) {
   const [categories, setCategories] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('All');
-  const [selectedDepartment, setSelectedDepartment] = useState('');
+  // const [selectedDepartment, setSelectedDepartment] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
@@ -51,6 +51,9 @@ export default function InventoryScreen({ navigation }) {
   const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
   const categoryOptions = ['All', 'Equipment', 'Chemical', 'Materials', 'Reagent', 'Glasswares'];
   const [selectedVolumes, setSelectedVolumes] = React.useState({});
+  const [departmentsAll, setDepartmentsAll] = useState([]);
+  const [isDepartmentModalVisible, setIsDepartmentModalVisible] = useState(false);
+  const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
 
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
@@ -120,7 +123,7 @@ export default function InventoryScreen({ navigation }) {
   //   return () => unsubscribe(); // Clean up the listener on unmount
   // }, []);
   
-  // VERSION NI RICH WITH DATE EXPIRY CONDITION
+  // VERSION NI RICH WITH DATE EXPIRY CONDITION AND HIDE STATUS
   useEffect(() => {
     const inventoryCollection = collection(db, 'inventory');
 
@@ -193,6 +196,24 @@ export default function InventoryScreen({ navigation }) {
       },
       (error) => {
         console.error('Error fetching inventory in real-time: ', error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const departmentsCollection = collection(db, 'departments');
+    const unsubscribe = onSnapshot(
+      departmentsCollection,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error('Error fetching departments in real-time: ', error);
       }
     );
 
@@ -1066,6 +1087,25 @@ export default function InventoryScreen({ navigation }) {
                     <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
                   </TouchableOpacity>
 
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: '#efefef',
+                      flex: 1,
+                      borderRadius: 5,
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      flexDirection: 'row',
+                      gap: 5,
+                      padding: 10,
+                    }}
+                    onPress={() => setIsDepartmentModalVisible(true)} // this should toggle a department modal
+                  >
+                    <Icon name="office-building" size={20} color="#515151" />
+                    <Text style={{ fontWeight: 'bold', color: '#515151' }}>
+                      {selectedDepartment || 'All Departments'}
+                    </Text>
+                  </TouchableOpacity>
+
                 </View>
                   <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5, paddingHorizontal:10}}>
                   <View style={{flexDirection: 'row', alignItems: 'center'}}>
@@ -1130,6 +1170,33 @@ export default function InventoryScreen({ navigation }) {
         )}
 </KeyboardAvoidingView>
 
+      <Modal visible={isDepartmentModalVisible} transparent animationType="slide">
+        <TouchableWithoutFeedback onPress={() => setIsDepartmentModalVisible(false)}>
+          <View style={{ flex: 1, backgroundColor: '#000000aa', justifyContent: 'center' }}>
+            {/* Prevent closing modal when tapping inside this View */}
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={{ backgroundColor: '#fff', margin: 20, borderRadius: 10, padding: 20 }}>
+                <FlatList
+                  data={departmentsAll}
+                  keyExtractor={(item) => item.id}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={{ padding: 10 }}
+                      onPress={() => {
+                        setSelectedDepartment(item.name);
+                        setIsDepartmentModalVisible(false);
+                      }}
+                    >
+                      <Text>{item.name}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={closeModal}>
           <View style={styles.modalBackground}>
@@ -1176,25 +1243,32 @@ export default function InventoryScreen({ navigation }) {
         transparent={true}
         animationType="slide"
       >
-        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
-          <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
-            {categoryOptions.map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={{ paddingVertical: 10 }}
-                onPress={() => {
-                  setSelectedCategory(option);
-                  setIsCategoryModalVisible(false);
-                }}
-              >
-                <Text style={{ fontSize: 16 }}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-            <TouchableOpacity onPress={() => setIsCategoryModalVisible(false)} style={{ marginTop: 10 }}>
-              <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
-            </TouchableOpacity>
+        <TouchableWithoutFeedback onPress={() => setIsCategoryModalVisible(false)}>
+          <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+                {categoryOptions.map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={{ paddingVertical: 10 }}
+                    onPress={() => {
+                      setSelectedCategory(option);
+                      setIsCategoryModalVisible(false);
+                    }}
+                  >
+                    <Text style={{ fontSize: 16 }}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+                <TouchableOpacity
+                  onPress={() => setIsCategoryModalVisible(false)}
+                  style={{ marginTop: 10 }}
+                >
+                  <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableWithoutFeedback>
           </View>
-        </View>
+        </TouchableWithoutFeedback>
       </Modal>
 
       <Modal
