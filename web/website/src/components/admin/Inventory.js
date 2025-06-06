@@ -21,7 +21,7 @@ import AppHeader from "../Header";
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where, serverTimestamp, orderBy, limit } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where, serverTimestamp, orderBy, limit, writeBatch } from "firebase/firestore";
 import CryptoJS from "crypto-js";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
@@ -102,44 +102,133 @@ const Inventory = () => {
 
   
 
+  // useEffect(() => {
+  //   const inventoryRef = collection(db, "inventory");
+
+  //   const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
+  //     try {
+  //       const items = snapshot.docs
+  //         .map((doc, index) => {
+  //           const data = doc.data();
+
+  //           const entryDate = data.entryDate ? data.entryDate : "N/A";
+  //           const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
+
+  //           return {
+  //             docId: doc.id,  
+  //             id: index + 1,
+  //             itemId: data.itemId,
+  //             item: data.itemName,
+  //             category:data.category,
+  //             entryDate,
+  //             expiryDate,
+  //             qrCode: data.qrCode,
+  //             ...data,
+  //           };
+  //         })
+  //         .sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+
+  //       setDataSource(items);
+  //       setCount(items.length);
+        
+  //     } catch (error) {
+       
+  //     }
+
+  //   }, (error) => {
+     
+  //   });
+
+  //   return () => unsubscribe(); // Clean up the listener on unmount
+  // }, []);
+
   useEffect(() => {
     const inventoryRef = collection(db, "inventory");
 
-    const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
-      try {
-        const items = snapshot.docs
-          .map((doc, index) => {
-            const data = doc.data();
+    const unsubscribe = onSnapshot(
+      inventoryRef,
+      async (snapshot) => {
+        try {
+          const batch = writeBatch(db); // use batch to reduce writes
 
-            const entryDate = data.entryDate ? data.entryDate : "N/A";
-            const expiryDate = data.expiryDate ? data.expiryDate : "N/A";
+          const items = await Promise.all(
+            snapshot.docs.map(async (docSnap, index) => {
+              const data = docSnap.data();
+              const docId = docSnap.id;
 
-            return {
-              docId: doc.id,  
-              id: index + 1,
-              itemId: data.itemId,
-              item: data.itemName,
-              category:data.category,
-              entryDate,
-              expiryDate,
-              qrCode: data.qrCode,
-              ...data,
-            };
-          })
-          .sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+              const entryDate = data.entryDate || "N/A";
+              const expiryDate = data.expiryDate || "N/A";
+              const quantity = Number(data.quantity) || 0;
+              const category = (data.category || "").toLowerCase();
 
-        setDataSource(items);
-        setCount(items.length);
-        
-      } catch (error) {
-       
+              let status = data.status || ""; // base status
+              let newStatus = status;
+
+              // Update logic
+              if (quantity === 0) {
+                if (["chemical", "reagent", "materials"].includes(category)) {
+                  newStatus = "out of stock";
+                  
+                } else if (["equipment", "glasswares"].includes(category)) {
+                  newStatus = "in use";
+                }
+              }
+
+              // If status changed in logic, update inventory
+              if (newStatus !== status) {
+                const itemRef = doc(db, "inventory", docId);
+                batch.update(itemRef, { status: newStatus });
+              }
+
+              // 🔁 SYNC TO LABROOM ITEMS
+              const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
+
+              for (const roomDoc of labRoomsSnapshot.docs) {
+                const roomId = roomDoc.id;
+                const itemsRef = collection(db, `labRoom/${roomId}/items`);
+                const itemsSnap = await getDocs(itemsRef);
+
+                itemsSnap.forEach((itemDoc) => {
+                  const itemData = itemDoc.data();
+                  if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
+                    const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
+                    batch.update(labItemRef, { status: newStatus });
+                  }
+                });
+              }
+
+              return {
+                docId,
+                id: index + 1,
+                itemId: data.itemId,
+                item: data.itemName,
+                entryDate,
+                expiryDate,
+                qrCode: data.qrCode,
+                status: newStatus,
+                ...data,
+              };
+            })
+          );
+
+          // ✅ Commit all batched updates
+          await batch.commit();
+
+          // Update state
+          items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+          setDataSource(items);
+          setCount(items.length);
+
+        } catch (error) {
+          console.error("Error processing inventory snapshot: ", error);
+        }
+      },
+      (error) => {
+        console.error("Error fetching inventory with onSnapshot: ", error);
       }
+    );
 
-    }, (error) => {
-     
-    });
-
-    return () => unsubscribe(); // Clean up the listener on unmount
+    return () => unsubscribe();
   }, []);
 
   useEffect(() => {
