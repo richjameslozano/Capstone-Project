@@ -1008,19 +1008,30 @@ const Login = () => {
   return (
     <div className="login-container">
       <div className="login-box">
+        
         <div className="container2">
           <div className="image-div">
             <img src={trybg2} alt="This is the image" />
+              
           </div>
-  
+
           <div className="form-div">
+             {!signUpMode && (
+          <div style={{ display: 'flex', justifyContent: 'center', height: 'auto',justifySelf: 'flex-start'}}>
+            <img src={nulsLogo} alt="NULS Logo" style={{maxHeight: 150}} />
+          </div>
+        )}
+ 
+
             <h2 className={signUpMode ? "create-account-title" : "login-title"}>
               {signUpMode
                 ? "Create an Account"
                 : isNewUser
                 ? "Set Your Password"
-                : "Login"}
+                : "Sign in to your account"} 
             </h2>
+            
+
             <form
               className={signUpMode ? "form-wrapper slide-in" : "form-wrapper slide-in2"}
               onSubmit={(e) => {
@@ -1049,7 +1060,7 @@ const Login = () => {
                       required
                     />
                   </div>
-  
+
                   <div className="form-group">
                     <label>Email</label>
                     <input
@@ -1062,7 +1073,7 @@ const Login = () => {
                     />
                     {error && <p className="error-message">{error}</p>}
                   </div>
-  
+
                   <div className="form-group">
                     <label>Employee ID</label>
                     <input
@@ -1118,7 +1129,6 @@ const Login = () => {
                       ))}
                     </select>
                   </div>
-  
                 </div>
                   
                   {/* <div className="form-group password-group">
@@ -1177,10 +1187,13 @@ const Login = () => {
                         Terms and Conditions
                       </span>
                     </label>
+
+                    {/* {error && <p className="error-message">{error}</p>} */}
                   </div>
                 </>
               ) : (
                 <>
+
                   {/* Login Fields */}
                   <div className="form-group">
                     <label>Email</label>
@@ -1216,7 +1229,7 @@ const Login = () => {
                     </div>
                   </div> */}
 
-                  {/* <div className="form-group password-group">
+                    {/* <div className="form-group password-group">
                     <label>{isNewUser ? "Set Password" : "Password"}</label>
                     <div className="password-wrapper">
                       <input
@@ -1290,46 +1303,13 @@ const Login = () => {
                           {showConfirmPassword ? "🔒" : "👁️"}
                         </span>
                       </div>
-
-                       <small className="password-hint" style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}>
+                        <small className="password-hint" style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}>
                           Password must be at least 8 characters and include a letter, a number, and a special character.
                         </small>
                     </div>
-                  )} */}
-
-                  {/* {isNewUser && (
-                    <div className="form-group password-group">
-                      <label>Confirm Password</label>
-                      <div className="password-wrapper">
-                        <input
-                          type={showConfirmPassword ? "text" : "password"}
-                          name="confirmPassword"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          required
-                          placeholder="Confirm your password"
-                        />
-                        <span
-                          className="toggle-password"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? "🔒" : "👁️"}
-                        </span>
-                      </div>
-
-                      <small
-                        className="password-hint"
-                        style={{
-                          color: "#888",
-                          fontSize: "12px",
-                          marginTop: "4px",
-                        }}
-                      >
-                        Password must be at least 8 characters and include a letter, a number,
-                        and a special character.
-                      </small>
-                    </div>
-                  )} */}
+                  )}
+                </>
+              )} */}
 
                   {isNewUser && (
                     <div className="form-group password-group">
@@ -1372,8 +1352,6 @@ const Login = () => {
                       </small>
                     </div>
                   )}
-
-
                 </>
               )}
   
@@ -1384,12 +1362,14 @@ const Login = () => {
                   <div className="loader"></div>
                 ) : signUpMode ? (
                   "Sign Up"
+                  
                 ) : isNewUser ? (
                   "Set Password"
                 ) : (
                   "Login"
                 )}
               </button>
+               
             </form>
   
             <div className={signUpMode ? "bottom-label-div2" : "bottom-label-div"}>
@@ -1407,7 +1387,7 @@ const Login = () => {
                 {signUpMode ? (
                   <>
                     <label style={{marginTop: '10px'}}>Already have an account?{" "}
-                    <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link" >Login here</span></label>
+                    <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign in here</span></label>
                   </>
                 ) : (
                   <>
