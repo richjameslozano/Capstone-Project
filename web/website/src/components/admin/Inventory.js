@@ -204,36 +204,60 @@ const handleFullUpdate = async (values) => {
       return;
     }
 
-    const itemRef = doc(db, "inventory", editingItem.docId);
+    // Sanitize itemName and itemDetails (trim whitespace, ensure non-empty strings)
+    const sanitizedItemName = values.itemName.trim();
+    const sanitizedItemDetails = values.itemDetails.trim();
 
-    const updatedData = {
-      itemName: values.itemName,
-      itemDetails: values.itemDetails,
-      category: values.category,
-      department: values.department,
-      criticalLevel: Number(values.criticalLevel),
-      labRoom: values.labRoom,
-      status: values.status,
-      unit: values.unit || null,
-    };
-
-    if (["Glasswares", "Equipment", "Materials"].includes(values.category)) {
-      const good = Number(values.condition?.Good) ?? 0;
-      const defect = Number(values.condition?.Defect) ?? 0;
-      const damage = Number(values.condition?.Damage) ?? 0;
-
-      updatedData.condition = { Good: good, Defect: defect, Damage: damage };
-      updatedData.quantity = good; // Good is recalculated in form
+    if (!sanitizedItemName || !sanitizedItemDetails) {
+      console.warn("❌ Item Name and Item Details are required.");
+      return;
     }
 
+    // Sanitize criticalLevel (ensure it's a number and >= 1)
+    const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel), 1);
+
+    // Sanitize category to ensure it's valid
+    const validCategories = ["Glasswares", "Equipment", "Materials", "Chemical", "Reagent"];
+    if (!validCategories.includes(values.category)) {
+      console.warn(`❌ Invalid category: ${values.category}`);
+      return;
+    }
+
+    const sanitizedLabRoom = values.labRoom ? values.labRoom.toString().padStart(4, '0') : null;
+
+    // Handle condition (Good, Defect, Damage)
+    const sanitizedCondition = {
+      Good: Number(values.condition?.Good) || 0,
+      Defect: Number(values.condition?.Defect) || 0,
+      Damage: Number(values.condition?.Damage) || 0,
+    };
+
+    // If the category requires condition, set quantity based on Good stock
+    let sanitizedQuantity = sanitizedCondition.Good;
+    if (["Glasswares", "Equipment", "Materials"].includes(values.category)) {
+      sanitizedQuantity = sanitizedCondition.Good;
+    }
+
+    const updatedData = {
+      itemName: sanitizedItemName,
+      itemDetails: sanitizedItemDetails,
+      category: values.category,
+      department: values.department,
+      criticalLevel: sanitizedCriticalLevel,
+      labRoom: sanitizedLabRoom,
+      status: values.status || "pending", // Default status if not provided
+      unit: values.unit || null,
+      condition: sanitizedCondition,
+      quantity: sanitizedQuantity,
+    };
+
     // Update main inventory doc
+    const itemRef = doc(db, "inventory", editingItem.docId);
     await updateDoc(itemRef, updatedData);
 
-    // Update labRoom subcollection item
-    const labRoomNumber = updatedData.labRoom ? updatedData.labRoom.toString().padStart(4, "0") : null;
-
-    if (labRoomNumber) {
-      const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", labRoomNumber));
+    // Update labRoom subcollection item if labRoom is valid
+    if (sanitizedLabRoom) {
+      const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", sanitizedLabRoom));
       const labRoomSnapshot = await getDocs(labRoomQuery);
 
       if (!labRoomSnapshot.empty) {
@@ -245,10 +269,10 @@ const handleFullUpdate = async (values) => {
         if (labRoomItemSnap.exists()) {
           await updateDoc(labRoomItemRef, updatedData);
         } else {
-          console.warn(`Item ${editingItem.itemId} not found in labRoom ${labRoomNumber}/items`);
+          console.warn(`⚠️ Item ${editingItem.itemId} not found in labRoom ${sanitizedLabRoom}/items`);
         }
       } else {
-        console.warn(`No labRoom found with roomNumber "${labRoomNumber}"`);
+        console.warn(`⚠️ No labRoom found with roomNumber "${sanitizedLabRoom}"`);
       }
     }
 
@@ -271,11 +295,6 @@ const handleFullUpdate = async (values) => {
   }
 };
 
-
-
-
-
-
   useEffect(() => {
     if (isEditModalVisible) {
       const currentCategory = editForm.getFieldValue("category");
@@ -291,13 +310,25 @@ const isExpired = (expiryDate) => {
 
 };
 
+// Utility to sanitize the search term
+const sanitizeSearchInput = (input) => {
+  if (!input) return ""; // If there's no input, return empty string
+  // Remove any unwanted characters (HTML tags or special chars) and trim spaces
+  return input.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
+};
+
 const filteredData = dataSource.filter((item) => {
-  const matchesSearch = searchText
+  // Sanitize the search input to prevent any issues (e.g., XSS, SQL injection)
+  const sanitizedSearchText = sanitizeSearchInput(searchText);
+  
+  // Search logic
+  const matchesSearch = sanitizedSearchText
     ? Object.values(item).some((val) =>
-        String(val).toLowerCase().includes(searchText.toLowerCase())
+        String(val).toLowerCase().includes(sanitizedSearchText.toLowerCase())
       )
     : true;
 
+  // Filter items based on selected category, item type, and expiration status
   return (
     (!filterCategory || item.category === filterCategory) &&
     (!filterItemType || item.type === filterItemType) &&
@@ -306,31 +337,30 @@ const filteredData = dataSource.filter((item) => {
   );
 });
 
-  const handleCategoryChange = (value) => {
-    let type = "";
-    let disableExpiry = false;
+// Handling category change and expiry date
+const handleCategoryChange = (value) => {
+  let type = "";
+  let disableExpiry = false;
 
-    if (["Chemical", "Reagent"].includes(value)) {
-      type = "Consumable";
-      disableExpiry = false;
+  if (["Chemical", "Reagent"].includes(value)) {
+    type = "Consumable";
+    disableExpiry = false;
+  } else if (value === "Materials") {
+    type = "Consumable";
+    disableExpiry = true;
+  } else if (["Equipment", "Glasswares"].includes(value)) {
+    type = "Fixed";
+    disableExpiry = true;
+  }
 
-    } else if (value === "Materials") {
-      type = "Consumable";
-      disableExpiry = true;
+  setItemType(type);
+  setSelectedCategory(value);
+  setDisableExpiryDate(disableExpiry);
 
-    } else if (["Equipment", "Glasswares"].includes(value)) {
-      type = "Fixed";
-      disableExpiry = true;
-    }
-
-    setItemType(type);
-    setSelectedCategory(value);
-    setDisableExpiryDate(disableExpiry);
-
-    // Reset radio + expiry
-    setShowExpiry(false);
-    form.setFieldsValue({ type, expiryDate: null });
-  };
+  // Reset radio + expiry
+  setShowExpiry(false);
+  form.setFieldsValue({ type, expiryDate: null });
+};
 
   const showModal = () => setIsModalVisible(true);
   const handleCancel = () => setIsModalVisible(false);
@@ -698,7 +728,18 @@ const updateItem = async (values) => {
   const isChemicalOrReagent =
     editingItem.category === "Chemical" || editingItem.category === "Reagent";
 
-  const addedQuantity = Number(values.quantity) || 0;
+  // Sanitize quantity
+  const addedQuantity = Number(values.quantity);
+  if (isNaN(addedQuantity) || addedQuantity < 0) {
+    console.warn("❌ Invalid quantity value.");
+    return;
+  }
+
+  // Ensure expiryDate is valid
+  let sanitizedExpiryDate = null;
+  if (isChemicalOrReagent && values.expiryDate) {
+    sanitizedExpiryDate = values.expiryDate.isValid() ? values.expiryDate.format("YYYY-MM-DD") : null;
+  }
 
   try {
     const snapshot = await getDocs(collection(db, "inventory"));
@@ -716,7 +757,7 @@ const updateItem = async (values) => {
           return;
         }
 
-        // ✅ Compute new condition and total quantity
+        // Sanitize and compute new condition
         const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
         const newCondition = {
           Good: prevCondition.Good + addedQuantity,
@@ -724,14 +765,23 @@ const updateItem = async (values) => {
           Damage: prevCondition.Damage,
         };
 
+        // Ensure quantity is valid and sanitize it
+        const prevQuantity = Number(data.quantity) || 0;
+        const newQuantity = prevQuantity + addedQuantity;
+
+        if (newQuantity < 0) {
+          console.warn("❌ Quantity cannot be negative.");
+          return;
+        }
+
         const updatedData = {
           labRoom: existingLabRoom,
-          quantity: (Number(data.quantity) || 0) + addedQuantity,
+          quantity: newQuantity,
           condition: newCondition,
         };
 
-        if (isChemicalOrReagent && values.expiryDate) {
-          updatedData.expiryDate = values.expiryDate.format("YYYY-MM-DD");
+        if (sanitizedExpiryDate) {
+          updatedData.expiryDate = sanitizedExpiryDate;
         }
 
         // 🔄 Update inventory document
@@ -784,8 +834,8 @@ const updateItem = async (values) => {
               deliveryNumber: newDeliveryNumber,
               createdAt: serverTimestamp(),
               noOfItems: addedQuantity,
-              ...(isChemicalOrReagent && values.expiryDate && {
-                expiryDate: values.expiryDate.format("YYYY-MM-DD"),
+              ...(sanitizedExpiryDate && {
+                expiryDate: sanitizedExpiryDate,
               }),
             };
 

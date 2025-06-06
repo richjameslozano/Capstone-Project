@@ -47,22 +47,41 @@ const [loading, setLoading] = useState(true);
 //     request.courseDescription?.toLowerCase().includes(searchLower)
 //   );
 // });
- const [selectedFilter, setSelectedFilter] = useState('All');
+ // Utility function to sanitize the selected filter
+const sanitizeFilterValue = (input) => {
+  if (!input) return "All"; // Default to "All" if input is empty or invalid
+  return input.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
+};
+
+// Utility function to sanitize the search term
+const sanitizeSearchTerm = (term) => {
+  if (!term) return ""; // Default to empty string if no search term is provided
+  return term.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
+};
+
+const [selectedFilter, setSelectedFilter] = useState('All');
+
+// Filtered requests with sanitization applied
 const filteredRequests = requests.filter((request) => {
+  // Sanitize the selected filter value
+  const sanitizedSelectedFilter = sanitizeFilterValue(selectedFilter);
+
   // Filter by usage type
   const matchesFilter =
-    selectedFilter === 'All' || request.usageType === selectedFilter;
+    sanitizedSelectedFilter === 'All' || request.usageType === sanitizedSelectedFilter;
 
-  // Filter by search term
-  const searchLower = searchTerm.toLowerCase();
+  // Sanitize the search term before use
+  const sanitizedSearchTerm = sanitizeSearchTerm(searchTerm);
   const matchesSearch =
-    request.userName?.toLowerCase().includes(searchLower) ||
-    request.room?.toLowerCase().includes(searchLower) ||
-    request.course?.toLowerCase().includes(searchLower) ||
-    request.courseDescription?.toLowerCase().includes(searchLower);
+    request.userName?.toLowerCase().includes(sanitizedSearchTerm) ||
+    request.room?.toLowerCase().includes(sanitizedSearchTerm) ||
+    request.course?.toLowerCase().includes(sanitizedSearchTerm) ||
+    request.courseDescription?.toLowerCase().includes(sanitizedSearchTerm);
 
   return matchesFilter && matchesSearch;
 });
+
+// useEffect to fetch data from Firestore
 useEffect(() => {
   const userRequestRef = collection(db, "userrequests");
   const q = query(userRequestRef, orderBy("timestamp", "desc"));
@@ -89,7 +108,7 @@ useEffect(() => {
                   itemId = invDoc.data().itemId || "N/A";
                 }
               } catch (err) {
-              
+                console.error("Error fetching inventory item:", err);
               }
             }
 
@@ -113,8 +132,8 @@ useEffect(() => {
       setLoading(false); // End loading
     },
     (error) => {
-     
       setLoading(false);
+      console.error("Error fetching user requests:", error);
     }
   );
 
