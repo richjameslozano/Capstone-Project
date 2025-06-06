@@ -160,7 +160,18 @@ export default function InventoryScreen({ navigation }) {
               }
             }
 
-            if (hasValidStock) {
+            // if (hasValidStock) {
+            //   validItems.push({
+            //     id: doc.id,
+            //     ...data,
+            //   });
+            // }
+
+            if (
+              hasValidStock &&
+              data.status !== 'Out of Stock' &&
+              data.status !== 'In Use'
+            ) {
               validItems.push({
                 id: doc.id,
                 ...data,
@@ -218,13 +229,23 @@ export default function InventoryScreen({ navigation }) {
     setMetadata(prev => ({ ...prev, usageTypeOther: usageTypeOtherInput }));
   }, [usageTypeOtherInput]);
 
+  // const filteredItems = inventoryItems.filter((item) => {
+  //   const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
+  //   const isUsageTypeMatch = selectedUsageType === 'All' || selectedUsageType === '' || item.usageType === selectedUsageType;
+  //   const isSearchMatch = !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
+  
+  //   return isCategoryMatch && isUsageTypeMatch && isSearchMatch;
+  // }); 
+  
   const filteredItems = inventoryItems.filter((item) => {
     const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
     const isUsageTypeMatch = selectedUsageType === 'All' || selectedUsageType === '' || item.usageType === selectedUsageType;
     const isSearchMatch = !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
-  
-    return isCategoryMatch && isUsageTypeMatch && isSearchMatch;
-  });  
+    const isStatusValid =
+    !['out of stock', 'in use'].includes((item.status || '').toLowerCase());
+
+    return isCategoryMatch && isUsageTypeMatch && isSearchMatch && isStatusValid;
+  });
 
   const openModal = (item) => {
     setSelectedItem(item);
