@@ -444,7 +444,14 @@ const Requisition = () => {
           }
         }
 
-        if (hasValidStock) {
+        // if (hasValidStock) {
+        //   validItems.push({
+        //     id: doc.id,
+        //     ...itemData
+        //   });
+        // }
+
+        if (hasValidStock && itemData.status !== "out of stock" && itemData.status !== "in use") {
           validItems.push({
             id: doc.id,
             ...itemData
@@ -1502,7 +1509,7 @@ const Requisition = () => {
               option?.label?.toLowerCase().includes(input.toLowerCase())
             }>
             {/* Map through filtered items instead of the entire items list */}
-            {filteredItems.map((item) => {
+            {/* {filteredItems.map((item) => {
               // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
               const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
                 ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
@@ -1512,6 +1519,26 @@ const Requisition = () => {
               // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
               const isDisabled = selectedIds.includes(item.id);
   
+              return (
+                <Select.Option
+                  key={item.id}
+                  value={item.id}
+                  label={item.itemName}
+                  disabled={isDisabled}
+                >
+                  {label}
+                </Select.Option>
+              );
+            })} */}
+
+            {filteredItems
+            .filter((item) => item.status !== "out of stock" && item.status !== "in use")
+            .map((item) => {
+              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+              } | ${item.status} | ${item.department}`;
+              const isDisabled = selectedIds.includes(item.id);
+
               return (
                 <Select.Option
                   key={item.id}
