@@ -498,6 +498,7 @@ const LabRoomQR = () => {
   const [confirmRoomId, setConfirmRoomId] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedRooms, setExpandedRooms] = useState({});
+  const [itemSearchTerms, setItemSearchTerms] = useState({});
   const qrRefs = useRef({});
 
    useEffect(() => {
@@ -825,6 +826,12 @@ const LabRoomQR = () => {
         .map(room => {
           const isExpanded = expandedRooms[room.id];
 
+          const filteredItems = room.items.filter(item =>
+            item.itemName.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase()) ||
+            item.itemDetails.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase()) ||
+            item.category.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase())
+          );
+
           return (
             <div key={room.id} className="labroom-table-wrapper">
               <div className="labroom-title-wrapper" onClick={() => toggleRoomExpansion(room.id)}>
@@ -842,10 +849,11 @@ const LabRoomQR = () => {
                     style={{ marginLeft: "10px", width: "120px" }}
                     onClick={(e) => e.stopPropagation()}
                   />
+
                   <Button
                     type="primary"
                     onClick={(e) => {
-                      e.stopPropagation(); // Prevent collapse toggle when clicking button
+                      e.stopPropagation(); 
                       setConfirmRoomId(room.id);
                       setIsConfirmModalVisible(true);
                     }}
@@ -853,11 +861,21 @@ const LabRoomQR = () => {
                   >
                     Save
                   </Button>
+                  
                 </h3>
                 <span className="dropdown-arrow">{isExpanded ? "▲" : "▼"}</span>
               </div>
 
               {isExpanded && (
+                <>
+                <Input
+                  type="text"
+                  placeholder="Search items in this room"
+                  value={itemSearchTerms[room.id] || ""}
+                  onChange={(e) => setItemSearchTerms(prev => ({ ...prev, [room.id]: e.target.value }))}
+                  style={{ marginBottom: 10, padding: 5, width: "100%" }}
+                />
+
                 <table className="labroom-table">
                   <thead>
                     <tr>
@@ -874,7 +892,7 @@ const LabRoomQR = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {room.items.map((item, index) => (
+                    {/* {room.items.map((item, index) => (
                       <tr key={item.id}>
                         {index === 0 ? (
                           <td
@@ -908,9 +926,46 @@ const LabRoomQR = () => {
                         <td>{item.status}</td>
                         <td>{item.type}</td>
                       </tr>
+                    ))} */}
+
+                    {filteredItems.map((item, index) => (
+                      <tr key={item.id}>
+                        {index === 0 ? (
+                          <td
+                            rowSpan={filteredItems.length}
+                            className="labroom-qr-cell"
+                          >
+                            <div
+                              ref={(el) => (qrRefs.current[room.id] = el)}
+                              className="labroom-qr"
+                            >
+                              <QRCodeSVG
+                                value={room.qrCode || "No QR code available"}
+                                size={128}
+                              />
+                              <button
+                                onClick={() => downloadQRCode(room.id)}
+                                className="labroom-download-button"
+                              >
+                                Download QR
+                              </button>
+                            </div>
+                          </td>
+                        ) : null}
+                        <td>{item.itemName}</td>
+                        <td>{item.itemDetails}</td>
+                        <td>{item.category}</td>
+                        <td>{item.condition}</td>
+                        <td>{item.department}</td>
+                        <td>{item.quantity}</td>
+                        <td>{item.status}</td>
+                        <td>{item.type}</td>
+                        <td>{item.unit}</td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
+                </>
               )}
             </div>
           );
