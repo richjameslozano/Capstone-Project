@@ -1086,8 +1086,6 @@ const Requisition = () => {
     }
   });
 
-
-
   // for (const item of filteredMergedData) {
   //   if (item.category.toLowerCase() === "glasswares") {
   //     // Assuming volume property is named "volume" and must be > 0
@@ -2153,8 +2151,8 @@ const Requisition = () => {
                         const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
 
                         if (hasConflict) {
-                          setModalMessage("This room is already booked for the selected date and time.");
-                          setIsModalVisible(true); 
+                          setNotificationMessage("This room is already booked for the selected date and time.");
+                          setIsNotificationVisible(true);
                           return;
                         }
                         setIsFinalizeModalVisible(true);
