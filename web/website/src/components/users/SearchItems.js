@@ -170,6 +170,12 @@ const columns = [
     sorter: (a, b) => a.room.localeCompare(b.room),
   },
 ];
+const sanitizeInput = (input) => {
+  if (typeof input !== "string") return input; // If not a string, return as is
+  // Remove any HTML tags and unwanted characters (except spaces)
+  return input.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
+};
+
 
 const SearchItems = () => {
   const [inventoryData, setInventoryData] = useState([]);
@@ -180,124 +186,29 @@ const SearchItems = () => {
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
 
-  // useEffect(() => {
-  //   const fetchInventory = async () => {
-  //     try {
-  //       const snapshot = await getDocs(collection(db, "inventory"));
-  //       const items = snapshot.docs.map((doc) => {
-  //         const data = doc.data();
-  //         return {
-  //           key: doc.id,
-  //           description: data.itemName || "Unnamed Item",
-  //           quantity: data.quantity || 0,
-  //           status: data.status || "Unknown",
-  //           category: data.category || "Uncategorized",
-  //           room: data.labRoom || "No Room Info",
-  //           ...data, // Include all data for modal use
-  //         };
-  //       });
-  //       setInventoryData(items);
-  //       setFilteredData(items);
-        
-  //     } catch (err) {
-
-  //     }
-  //   };
-
-  //   fetchInventory();
-  // }, []);
-
-  // VERSION NI BERLENE NO EXPIRY DATE CONDITION
-  // useEffect(() => {
-  //   const fetchInventory = () => {
-  //     try {
-  //       // Set up real-time listener using onSnapshot
-  //       const inventoryRef = collection(db, "inventory");
-
-  //       const unsubscribe = onSnapshot(inventoryRef, (snapshot) => {
-  //         const items = snapshot.docs.map((doc) => {
-  //           const data = doc.data();
-  //           return {
-  //             key: doc.id,
-  //             description: data.itemName || "Unnamed Item",
-  //             quantity: data.quantity || 0,
-  //             status: data.status || "Unknown",
-  //             category: data.category || "Uncategorized",
-  //             room: data.labRoom || "No Room Info",
-  //             ...data, // Include all data for modal use
-  //           };
-  //         });
-
-  //         setInventoryData(items);
-  //         setFilteredData(items); // You can implement additional filtering if needed
-  //       });
-
-  //       // Cleanup listener when component unmounts
-  //       return () => unsubscribe();
-        
-  //     } catch (err) {
-
-  //     }
-  //   };
-
-  //   fetchInventory();
-  // }, []); 
-
-  // VERSION NI RICH WITH EXPIRY DATE CONDITION
   useEffect(() => {
     const fetchInventory = async () => {
       try {
         const inventoryRef = collection(db, "inventory");
         const snapshot = await getDocs(inventoryRef);
-        const now = new Date();
 
-        const validItems = [];
-
-        for (const doc of snapshot.docs) {
+        const validItems = snapshot.docs.map((doc) => {
           const data = doc.data();
-          const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
-          const stockSnapshot = await getDocs(stockLogRef);
-
-          let hasValidStock = false;
-
-          for (const logDoc of stockSnapshot.docs) {
-            const logData = logDoc.data();
-            const expiryRaw = logData.expiryDate;
-
-            if (!expiryRaw) {
-              hasValidStock = true; // If no expiryDate, include the item
-              break;
-            }
-
-            const expiryDate = typeof expiryRaw === "string"
-              ? new Date(expiryRaw)
-              : expiryRaw?.toDate?.() || new Date(expiryRaw);
-
-            if (isNaN(expiryDate.getTime())) continue;
-
-            if (expiryDate >= now) {
-              hasValidStock = true;
-              break;
-            }
-          }
-
-          if (hasValidStock) {
-            validItems.push({
-              key: doc.id,
-              description: data.itemName || "Unnamed Item",
-              quantity: data.quantity || 0,
-              status: data.status || "Unknown",
-              category: data.category || "Uncategorized",
-              room: data.labRoom || "No Room Info",
-              ...data, // Keep full data for modals/details
-            });
-          }
-        }
+          return {
+            key: doc.id,
+            description: data.itemName || "Unnamed Item",
+            quantity: data.quantity || 0,
+            status: data.status || "Unknown",
+            category: data.category || "Uncategorized",
+            room: data.labRoom || "No Room Info",
+            ...data, // Keep full data for modals/details
+          };
+        });
 
         setInventoryData(validItems);
         setFilteredData(validItems);
       } catch (err) {
-        console.error("Error fetching inventory with expiry filter:", err);
+        console.error("Error fetching inventory data:", err);
       }
     };
 
@@ -305,20 +216,25 @@ const SearchItems = () => {
   }, []);
 
   useEffect(() => {
+    // Sanitize inputs before applying filters
+    const sanitizedSearchText = sanitizeInput(searchText);
+    const sanitizedStatusFilter = statusFilter ? sanitizeInput(statusFilter) : null;
+    const sanitizedCategoryFilter = categoryFilter ? sanitizeInput(categoryFilter) : null;
+
     let data = [...inventoryData];
 
-    if (searchText) {
+    if (sanitizedSearchText) {
       data = data.filter((item) =>
-        item.description.toLowerCase().includes(searchText.toLowerCase())
+        item.description.toLowerCase().includes(sanitizedSearchText.toLowerCase())
       );
     }
 
-    if (statusFilter) {
-      data = data.filter((item) => item.status === statusFilter);
+    if (sanitizedStatusFilter) {
+      data = data.filter((item) => item.status === sanitizedStatusFilter);
     }
 
-    if (categoryFilter) {
-      data = data.filter((item) => item.category === categoryFilter);
+    if (sanitizedCategoryFilter) {
+      data = data.filter((item) => item.category === sanitizedCategoryFilter);
     }
 
     setFilteredData(data);
@@ -385,7 +301,7 @@ const SearchItems = () => {
             />
           </div>
 
-          {/* <Modal
+          <Modal
             className="search-modal-container"
             visible={isModalVisible}
             onCancel={() => setIsModalVisible(false)}
@@ -394,70 +310,15 @@ const SearchItems = () => {
           >
             {selectedItem && (
               <>
-              <div style={{marginBottom: '15px'}}>
-                <strong style={{fontSize: '20px'}}>Item Details</strong>
-              </div>
-              <Descriptions bordered column={1} className="custom-descriptions">
-                <Descriptions.Item label="Item Name"> 
-                  {selectedItem.itemName}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Quantity">
-                  {selectedItem.quantity}
-                  {["Glasswares", "Chemical", "Reagent"].includes(selectedItem.category) ? " pcs" : ""}
-                  {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
-                  {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` / ${selectedItem.unit} ML` : ""}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Status">
-                  {selectedItem.status}
-                </Descriptions.Item>
-                
-                <Descriptions.Item label="Condition">
-                  {selectedItem.condition
-                    ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
-                    : "N/A"}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Item Type">
-                  {selectedItem.type}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Category">
-                  {selectedItem.category}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Department">
-                  {selectedItem.department}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Date Acquired">
-                  {selectedItem.entryCurrentDate || "N/A"}
-                </Descriptions.Item>
-
-              </Descriptions>
-              </>
-            )}
-          </Modal> */}
-
-            <Modal
-              className="search-modal-container"
-              visible={isModalVisible}
-              onCancel={() => setIsModalVisible(false)}
-              zIndex={1010}
-              footer={null}
-            >
-              {selectedItem && (
-                <>
-                <div style={{marginBottom: '15px'}}>
-                  <strong style={{fontSize: '20px'}}>Item Details</strong>
+                <div style={{ marginBottom: "15px" }}>
+                  <strong style={{ fontSize: "20px" }}>Item Details</strong>
                 </div>
                 <Descriptions bordered column={1} className="custom-descriptions">
-                  <Descriptions.Item label="Item Name"> 
+                  <Descriptions.Item label="Item Name">
                     {selectedItem.itemName}
                   </Descriptions.Item>
 
-                  <Descriptions.Item label="Item Description"> 
+                  <Descriptions.Item label="Item Description">
                     {selectedItem.itemDetails}
                   </Descriptions.Item>
 
@@ -465,72 +326,10 @@ const SearchItems = () => {
                     {selectedItem.quantity}
                   </Descriptions.Item>
 
-                  {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit && (
-                    <Descriptions.Item label="Unit">
-                      {selectedItem.unit}
-                    </Descriptions.Item>
-                  )}
-
-                  {/* <Descriptions.Item label="Quantity">
-                    {selectedItem.quantity}
-                    {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` ${selectedItem.unit}` : ""}
-                    {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
-                  </Descriptions.Item> */}
-
-                  {/* <Descriptions.Item label="Quantity">
-                    {selectedItem.quantity}
-                    {["Glasswares", "Chemical", "Reagent"].includes(selectedItem.category) ? " pcs" : ""}
-                    {selectedItem.category === "Glasswares" && selectedItem.volume ? ` / ${selectedItem.volume} ML` : ""}
-                    {["Chemical", "Reagent"].includes(selectedItem.category) && selectedItem.unit ? ` / ${selectedItem.unit} ML` : ""}
-                  </Descriptions.Item> */}
-
-                  {/* <Descriptions.Item label="Quantity">
-                    {(() => {
-                      const { quantity, category, volume, unit } = selectedItem;
-
-                      if (category === "Glasswares") {
-                        if (Array.isArray(quantity)) {
-                          // Array of {qty, volume}
-                          return quantity
-                            .map((item) => {
-                              if (item && typeof item === "object" && "qty" in item) {
-                                return `${item.qty} pcs${item.volume ? ` / ${item.volume} ML` : ""}`;
-                              } else {
-                                return "Invalid Item";
-                              }
-                            })
-                            .join(", ");
-                        } else if (quantity && typeof quantity === "object" && "qty" in quantity) {
-                          // Single {qty, volume} object
-                          return `${quantity.qty} pcs${quantity.volume ? ` / ${quantity.volume} ML` : ""}`;
-                        } else if (typeof quantity === "number" || typeof quantity === "string") {
-                          // Primitive
-                          return `${quantity} pcs${volume ? ` / ${volume} ML` : ""}`;
-                        } else {
-                          return "N/A";
-                        }
-                      }
-
-                      // For Chemical / Reagent
-                      if (["Chemical", "Reagent"].includes(category)) {
-                        if (typeof quantity === "number" || typeof quantity === "string") {
-                          return `${quantity} pcs${unit ? ` / ${unit} ML` : ""}`;
-                        } else {
-                          return "N/A";
-                        }
-                      }
-
-                      // All other categories
-                      return typeof quantity === "number" || typeof quantity === "string"
-                        ? quantity
-                        : "N/A";
-                    })()}
-                  </Descriptions.Item> */}
-
                   <Descriptions.Item label="Status">
                     {selectedItem.status}
                   </Descriptions.Item>
-                  
+
                   <Descriptions.Item label="Condition">
                     {selectedItem.condition
                       ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
@@ -541,10 +340,6 @@ const SearchItems = () => {
                     {selectedItem.type}
                   </Descriptions.Item>
 
-                  {/* <Descriptions.Item label="Usage Type">
-                    {selectedItem.usageType}
-                  </Descriptions.Item> */}
-
                   <Descriptions.Item label="Category">
                     {selectedItem.category}
                   </Descriptions.Item>
@@ -553,18 +348,13 @@ const SearchItems = () => {
                     {selectedItem.department}
                   </Descriptions.Item>
 
-                  {/* <Descriptions.Item label="Laboratory Room">
-                    {selectedItem.labRoom}
-                  </Descriptions.Item> */}
-
                   <Descriptions.Item label="Date Acquired">
                     {selectedItem.entryCurrentDate || "N/A"}
                   </Descriptions.Item>
-
                 </Descriptions>
-                </>
-              )}
-            </Modal>
+              </>
+            )}
+          </Modal>
         </Content>
       </Layout>
     </Layout>

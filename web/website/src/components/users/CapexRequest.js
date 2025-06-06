@@ -222,105 +222,108 @@ const CapexRequest = () => {
     });
   
     doc.save("capex_request.pdf");
+  
   };  
+  const sanitizeInput = (input) => {
+  if (typeof input !== "string") return input; // Return as is if not a string
+  // Remove HTML tags and non-alphanumeric characters (except spaces)
+  return input.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
+};
+
+
   
   const handleSave = async (values) => {
-    // Close the modal immediately
-    setIsModalVisible(false);
-  
-    const userId = localStorage.getItem("userId");
-    const userName = localStorage.getItem("userName");
-    let itemToLog;
-  
-    try {
-      // Check for duplicates (only if adding new item)
-      if (editingRow === null) {
-        const isDuplicate = dataSource.some(
-          (item) =>
-            item.itemDescription.trim().toLowerCase() ===
-            values.itemDescription.trim().toLowerCase()
-        );
+  setIsModalVisible(false);
 
-        if (isDuplicate) {
-          setNotificationMessage("Item already exists in the request list.");
-          setNotificationVisible(true); // Show the notification modal
-          return; // Stop further execution if duplicate found
-        }
-      }
-
-      if (editingRow !== null) {
-        // Updating an existing item
-        const updatedItem = {
-          ...values,
-          id: editingRow.id,
-          totalPrice: values.qty * values.estimatedCost,
-        };
-  
-        // Directly update the item in Firestore
-        const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, editingRow.id);
-        await setDoc(capexRequestRef, updatedItem);
-  
-        itemToLog = updatedItem;
-  
-        setNotificationMessage("Item updated successfully!");
-        setNotificationVisible(true);
-  
-      } else {
-        // Adding a new item
-        const newItem = {
-          ...values,
-          totalPrice: values.qty * values.estimatedCost,
-        };
-  
-        // Add the new item to Firestore directly
-        const capexRequestRef = await addDoc(collection(db, `accounts/${userId}/temporaryCapexRequest`), newItem);
-        const newItemWithId = {
-          ...newItem,
-          id: capexRequestRef.id,
-          no: dataSource.length + 1,
-        };
-  
-        setNotificationMessage("Item added successfully!");
-        setNotificationVisible(true);
-  
-        itemToLog = newItem;
-      }
-  
-      await logRequestOrReturn(userId, userName, "Added a Capex Item", itemToLog);
-  
-      calculateTotalPrice(); // Recalculate total price without modifying the state directly
-  
-    } catch (error) {
-     
-      setNotificationMessage("Failed to save Item");
-      setNotificationVisible(true);
-    }
-  };  
-   
-  const handleDelete = async (id) => {
-    const updatedData = dataSource.filter((item) => item.id !== id);
-    setDataSource(updatedData);
-    calculateTotalPrice(updatedData);
-    setNotificationMessage("Item deleted successfully!");
-    setNotificationVisible(true);
-  
-    const userId = localStorage.getItem("userId");
-    const userName = localStorage.getItem("userName");
-  
-    try {
-      const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, id);
-      await deleteDoc(capexRequestRef); // 👈 Use deleteDoc here
-  
-      await logRequestOrReturn(userId, userName, "Deleted a Capex Item", [
-        { deletedItemId: id }
-      ]);
-
-    } catch (error) {
-    
-      setNotificationMessage("Failed to delete Item");
-      setNotificationVisible(true);
-    }
+  // Sanitize input values before saving
+  const sanitizedValues = {
+    itemDescription: sanitizeInput(values.itemDescription),
+    subject: sanitizeInput(values.subject),
+    justification: sanitizeInput(values.justification),
+    qty: values.qty, // qty should be a number, no need for sanitization unless necessary
+    estimatedCost: values.estimatedCost, // Same for estimatedCost
   };
+
+  // If editing an existing item
+  if (editingRow !== null) {
+    const updatedItem = {
+      ...sanitizedValues,
+      id: editingRow.id,
+      totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost, // Ensure total price is updated
+    };
+
+    try {
+      const userId = localStorage.getItem("userId");
+      const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, editingRow.id);
+      await setDoc(capexRequestRef, updatedItem);
+
+      // Logging the action
+      await logRequestOrReturn(userId, localStorage.getItem("userName"), "Updated a Capex Item", updatedItem);
+
+      setNotificationMessage("Item updated successfully!");
+      setNotificationVisible(true);
+
+      calculateTotalPrice(); // Recalculate total price
+    } catch (error) {
+      setNotificationMessage("Failed to update Item.");
+      setNotificationVisible(true);
+    }
+  } else {
+    // If adding a new item
+    const newItem = {
+      ...sanitizedValues,
+      totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost, // Ensure total price is calculated
+    };
+
+    try {
+      const userId = localStorage.getItem("userId");
+      const capexRequestRef = await addDoc(collection(db, `accounts/${userId}/temporaryCapexRequest`), newItem);
+      const newItemWithId = {
+        ...newItem,
+        id: capexRequestRef.id,
+        no: dataSource.length + 1, // Number the items in the list
+      };
+
+      setNotificationMessage("Item added successfully!");
+      setNotificationVisible(true);
+
+      // Update the state to reflect the new item
+      setDataSource([...dataSource, newItemWithId]);
+      calculateTotalPrice(); // Recalculate total price after adding new item
+    } catch (error) {
+      setNotificationMessage("Failed to add Item.");
+      setNotificationVisible(true);
+    }
+  }
+};
+
+ const handleDelete = async (id) => {
+  const sanitizedId = sanitizeInput(id); // Ensure sanitized ID
+
+  const updatedData = dataSource.filter((item) => item.id !== sanitizedId);
+  setDataSource(updatedData);
+  calculateTotalPrice(updatedData);
+
+  setNotificationMessage("Item deleted successfully!");
+  setNotificationVisible(true);
+
+  const userId = localStorage.getItem("userId");
+  const userName = localStorage.getItem("userName");
+
+  try {
+    const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, sanitizedId);
+    await deleteDoc(capexRequestRef);
+
+    await logRequestOrReturn(userId, userName, "Deleted a Capex Item", [
+      { deletedItemId: sanitizedId }
+    ]);
+  } catch (error) {
+    setNotificationMessage("Failed to delete Item");
+    setNotificationVisible(true);
+  }
+};
+
+
 
   const editRow = (record) => {
     setEditingRow(record);
