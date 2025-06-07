@@ -342,9 +342,10 @@ const CapexList = () => {
               <Col span={12}>
                 <Text strong>Requestor:</Text> {selectedRequest.userName}
               </Col>
-              <Col span={12} style={{ textAlign: "right" }}>
+
+              {/* <Col span={12} style={{ textAlign: "right" }}>
                 <Text italic>Request ID: {selectedRequest.id}</Text>
-              </Col>
+              </Col> */}
             </Row>
 
             <Row gutter={[16, 16]} style={{ marginTop: 10 }}>

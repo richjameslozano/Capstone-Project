@@ -1064,9 +1064,10 @@ const ReturnItems = () => {
                 <Col span={12}>
                   <Text strong>Name:</Text> {selectedRequest.raw?.userName}
                 </Col>
-                <Col span={12} style={{ textAlign: "right" }}>
+
+                {/* <Col span={12} style={{ textAlign: "right" }}>
                   <Text italic>Requisition ID: {selectedRequest.requisitionId}</Text>
-                </Col>
+                </Col> */}
               </Row>
 
               <Row gutter={[16, 8]} style={{ marginTop: 10 }}>

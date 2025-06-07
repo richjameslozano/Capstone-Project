@@ -445,7 +445,7 @@ const HistoryLog = () => {
           <>
             <div className="request-details-container" style={{ justifyContent: 'space-between' }}>
               <strong style={{ fontSize: '18px', color: 'white' }}>Request Details</strong>
-              <span style={{ fontSize: 12, color: 'white' }}>{selectedRequest?.id}</span>
+              {/* <span style={{ fontSize: 12, color: 'white' }}>{selectedRequest?.id}</span> */}
             </div>
             <div className="request-details-whole">
               <div className="request-details-left">
