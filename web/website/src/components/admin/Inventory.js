@@ -1652,7 +1652,7 @@ useEffect(() => {
                         </tr>
                         
                         <tr>
-                          <th>Lab/ Stock Room</th>
+                          <th>Stock Room</th>
                           <td>{selectedRow.labRoom}</td>
                         </tr>
                         
