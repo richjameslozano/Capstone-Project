@@ -72,6 +72,7 @@ const Inventory = () => {
   const [showExpiry, setShowExpiry] = useState(false);
   const [hasExpiryDate, setHasExpiryDate] = useState(false);
   const [departmentsAll, setDepartmentsAll] = useState([]);
+  const [filterDepartment, setFilterDepartment] = useState(null);
   const db = getFirestore();
 
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
@@ -439,6 +440,7 @@ const filteredData = dataSource.filter((item) => {
   return (
     (!filterCategory || item.category === filterCategory) &&
     (!filterItemType || item.type === filterItemType) &&
+    (!filterDepartment || item.department === filterDepartment) &&
     matchesSearch &&
     !isExpired(item.expiryDate) // Exclude expired items
   );
@@ -1091,6 +1093,19 @@ useEffect(() => {
                 allowClear
                 onChange={(e) => setSearchText(e.target.value)}
               />
+
+              <Select
+                allowClear
+                placeholder="Filter by Department"
+                style={{ width: 160 }}
+                onChange={(value) => setFilterDepartment(value)}
+              >
+                {departmentsAll.map((dept) => (
+                  <Option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </Option>
+                ))}
+              </Select>
 
               <Select
                 allowClear
