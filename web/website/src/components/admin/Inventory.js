@@ -602,6 +602,7 @@ const printPdf = () => {
   }
 };
 
+  // FRONTEND
   const handleAdd = async (values) => {
     if (!itemName || !values.department || !itemDetails) {
       alert("Please fill up the form!");
@@ -805,6 +806,38 @@ const printPdf = () => {
       console.error("Error adding document to Firestore:", error);
     }
   };
+
+  // BACKEND ADD ITEM
+  // const handleAdd = async (values) => {
+  //   try {
+  //     const response = await fetch("http://localhost:5000/add-inventory", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         ...values,
+  //         itemName,
+  //         itemDetails,
+  //         userId: localStorage.getItem("userId"),
+  //         userName: localStorage.getItem("userName"),
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       setNotificationMessage("Item successfully added!");
+  //       setIsNotificationVisible(true);
+  //       setItemName("");
+  //       setItemDetails("");
+  //       form.resetFields();
+        
+  //     } else {
+  //       alert(data.error || "Failed to add item.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error calling API:", error);
+  //   }
+  // };
 
   const editItem = (record, clearFields = true) => {
   editForm.resetFields();

@@ -326,7 +326,9 @@ const Login = () => {
       setTimeout(() => setAnimateInputs(false), 1000);
     }
   }
+
   
+  // FRONTEND
   const checkUserAndLogin = async () => {
     setIsLoading(true);
   
@@ -641,6 +643,87 @@ const Login = () => {
   //       setIsLoading(false);
   //     }
   //   };
+
+  // BACKEND LOGIN
+//   const checkUserAndLogin = async () => {
+//   setIsLoading(true);
+//   try {
+//     const { email, password } = formData;
+//     const response = await axios.post("http://localhost:5000/login", { email, password });
+//     const data = response.data;
+//     const user = data.user;
+
+//     if (!user) {
+//       setError("Invalid response from server.");
+//       setIsLoading(false);
+//       return;
+//     }
+//      console.log("User role from backend:", user.role);
+
+//     if (user.requiresFirebaseLogin) {
+//       try {
+//         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+//         const firebaseUser = userCredential.user;
+//         await firebaseUser.reload();
+
+//         if (!firebaseUser.emailVerified) {
+//           await signOut(auth);
+//           setError("Please verify your email before logging in.");
+//           setIsLoading(false);
+//           return;
+//         }
+
+//         // Save user info to localStorage
+//         localStorage.setItem("userId", user.userId);
+//         localStorage.setItem("userEmail", user.email);
+//         localStorage.setItem("userName", user.name);
+//         localStorage.setItem("userDepartment", user.department || "");
+//         localStorage.setItem("userPosition", user.role?.toLowerCase());
+//         localStorage.setItem("userJobTitle", user.jobTitle || "User");
+
+//         console.log("User role from backend:", user.role);
+
+
+//         // Navigate based on role
+//         switch (user.role?.toLowerCase()) {
+//           case "admin":
+//           case "super-user":
+//             navigate("/main/dashboard", { state: { loginSuccess: true, role: user.role.toLowerCase() } });
+//             break;
+//           case "user":
+//             navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
+//             break;
+//           default:
+//             setError("Unknown role. Please contact admin.");
+//         }
+//       } catch (authError) {
+//         setError("Invalid password.");
+//       }
+//     } else if (user.role?.toLowerCase() === "super-admin") {
+//       // For super-admins, no Firebase login
+//       localStorage.setItem("userId", user.userId);
+//       localStorage.setItem("userEmail", user.email);
+//       localStorage.setItem("userName", user.name);
+//       localStorage.setItem("userDepartment", user.department || "Admin");
+//       localStorage.setItem("userPosition", "super-admin");
+//       localStorage.setItem("userJobTitle", user.jobTitle || "User");
+
+//       navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+//     } else {
+//       setError("Login flow not defined for this role.");
+//     }
+
+//   } catch (err) {
+//     console.error("Login error:", err);
+//     if (err.response?.data?.error) {
+//       setError(err.response.data.error);
+//     } else {
+//       setError("Unexpected error. Please try again.");
+//     }
+//   } finally {
+//     setIsLoading(false);
+//   }
+// };
 
   // const handleRegisterPassword = async () => {
   //   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
