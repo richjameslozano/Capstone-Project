@@ -886,6 +886,7 @@ const Login = () => {
     }
   };
 
+  // FRONTEND
   const handleSignUp = async () => {
     const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
     const auth = getAuth();
@@ -1053,6 +1054,64 @@ const Login = () => {
       setSignUpMode(false)
     }
   };
+
+  // BACKEND
+  // const handleSignUp = async () => {
+  //   const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
+
+  //   setIsLoading(true);
+  //   setError("");
+
+  //   try {
+  //     const response = await fetch("http://localhost:5000/signup", { 
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         name,
+  //         email,
+  //         employeeId,
+  //         password,
+  //         confirmPassword,
+  //         jobTitle,
+  //         department,
+  //         termsChecked,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (!response.ok) {
+  //       // Backend returned error
+  //       setError(data.error || "Something went wrong");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // Success – show modal
+  //     setModalMessage(data.message || "Successfully registered!");
+  //     setIsModalVisible(true);
+
+  //     // Clear form
+  //     setSignUpData({
+  //       name: "",
+  //       email: "",
+  //       employeeId: "",
+  //       password: "",
+  //       confirmPassword: "",
+  //       jobTitle: "",
+  //       department: "",
+  //     });
+  //   } catch (err) {
+  //     setError("Failed to register. Please try again later.");
+  //     console.error("Sign-up error:", err);
+      
+  //   } finally {
+  //     setIsLoading(false);
+  //     setSignUpMode(false);
+  //   }
+  // };
   
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail) {
