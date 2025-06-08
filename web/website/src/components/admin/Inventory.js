@@ -1189,7 +1189,7 @@ useEffect(() => {
           >
             <Form layout="vertical" form={form} onFinish={handleAdd}>
               <Row gutter={16}>
-                <Col span={8}>
+                {/* <Col span={8}>
                   <Form.Item
                     name="Item Name"
                     label="Item Name"
@@ -1199,6 +1199,30 @@ useEffect(() => {
                       placeholder="Enter Item Name"
                       value={itemName}
                       onChange={(e) => setItemName(e.target.value)}
+                    />
+                  </Form.Item>
+                </Col> */}
+
+                <Col span={8}>
+                  <Form.Item
+                    name="Item Name"
+                    label="Item Name"
+                    rules={[{ required: true, message: "Please enter Item Name!" }]}
+                  >
+                    <Input
+                      placeholder="Enter Item Name"
+                      value={itemName}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Letters and space only
+                        setItemName(value);
+                      }}
+                      onKeyDown={(e) => {
+                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", " "];
+                        const isLetter = /^[a-zA-Z]$/.test(e.key);
+                        if (!isLetter && !allowedKeys.includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                     />
                   </Form.Item>
                 </Col>
@@ -1344,13 +1368,35 @@ useEffect(() => {
                   </Form.Item>
                 </Col>
 
-                <Col span={8}>
+                {/* <Col span={8}>
                   <Form.Item
                     name="labRoom"
                     label="Stock Room"
                     rules={[{ required: true, message: "Please enter Stock Room!" }]}
                   >
                     <Input placeholder="Enter Lab/Stock Room" />
+                  </Form.Item>
+                </Col> */}
+
+                <Col span={8}>
+                  <Form.Item
+                    name="labRoom"
+                    label="Stock Room"
+                    rules={[{ required: true, message: "Please enter Stock Room!" }]}
+                  >
+                    <Input
+                      placeholder="Enter Lab/Stock Room"
+                      onChange={(e) => {
+                        const numbersOnly = e.target.value.replace(/\D/g, ""); // Remove non-digits
+                        form.setFieldsValue({ labRoom: numbersOnly }); // Update Form.Item value
+                      }}
+                      onKeyDown={(e) => {
+                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+                        if (!/^\d$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                          e.preventDefault(); // Block non-numeric keys
+                        }
+                      }}
+                    />
                   </Form.Item>
                 </Col>
 
