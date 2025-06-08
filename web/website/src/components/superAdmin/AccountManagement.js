@@ -560,6 +560,19 @@ const AccountManagement = () => {
     }    
   ];
 
+  const handleEmployeeIdChange = (e) => {
+    let rawValue = e.target.value.replace(/\D/g, ""); // Only digits
+    if (rawValue.length > 6) rawValue = rawValue.slice(0, 6); // Limit to 6 digits
+
+    // Auto-insert dash after 2 digits
+    let formattedValue = rawValue;
+    if (rawValue.length > 2) {
+      formattedValue = rawValue.slice(0, 2) + "-" + rawValue.slice(2);
+    }
+
+    form.setFieldsValue({ employeeId: formattedValue });
+  };
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
 
@@ -682,7 +695,7 @@ const AccountManagement = () => {
                 <Input placeholder="e.g., 12-0430" />
               </Form.Item> */}
 
-              <Form.Item
+              {/* <Form.Item
                 name="employeeId"
                 label="Employee ID"
                 rules={[
@@ -701,6 +714,24 @@ const AccountManagement = () => {
                     const onlyNumbersAndDash = value.replace(/[^0-9-]/g, "");
                     e.target.value = onlyNumbersAndDash; 
                   }}
+                />
+              </Form.Item> */}
+
+              <Form.Item
+                name="employeeId"
+                label="Employee ID"
+                rules={[
+                  { required: true, message: "Please input Employee ID!" },
+                  {
+                    pattern: /^\d{2}-\d{4}$/,
+                    message: "Format must be like 12-0430",
+                  },
+                ]}
+              >
+                <Input
+                  placeholder="e.g., 12-0430"
+                  maxLength={7}
+                  onChange={handleEmployeeIdChange}
                 />
               </Form.Item>
 
