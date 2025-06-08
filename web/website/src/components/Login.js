@@ -1193,11 +1193,34 @@ const Login = () => {
                 <>
                   <div className="form-group">
                     <label>Name</label>
-                    <input
+                    {/* <input
                       type="text"
                       name="name"
                       value={signUpData.name}
                       onChange={handleSignUpChange}
+                      placeholder="enter name"
+                      required
+                    /> */}
+
+                    
+                    <input
+                      type="text"
+                      name="name"
+                      value={signUpData.name}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow letters and spaces only
+                        handleSignUpChange({ target: { name: "name", value } });
+                      }}
+                      onKeyDown={(e) => {
+                        // Block numbers and special characters (but allow backspace, tab, etc.)
+                        const allowedKeys = [
+                          "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", " ", // space
+                        ];
+                        const isLetter = /^[a-zA-Z]$/.test(e.key);
+                        if (!isLetter && !allowedKeys.includes(e.key)) {
+                          e.preventDefault();
+                        }
+                      }}
                       placeholder="enter name"
                       required
                     />
