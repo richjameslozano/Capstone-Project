@@ -1203,13 +1203,34 @@ const Login = () => {
                     />
                   </div>
 
-                  <div className="form-group">
+                  {/* <div className="form-group">
                     <label>Email</label>
                     <input
                       type="email"
                       name="email"
                       value={signUpData.email}
                       onChange={handleSignUpChange}
+                      placeholder="enter email (NU account)"
+                      required
+                    />
+                    {error && <p className="error-message">{error}</p>}
+                  </div> */}
+
+                  <div className="form-group">
+                    <label>Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      value={signUpData.email}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\s/g, ""); // Remove all whitespace
+                        handleSignUpChange({ target: { name: "email", value } });
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === " ") {
+                          e.preventDefault(); // Block spacebar
+                        }
+                      }}
                       placeholder="enter email (NU account)"
                       required
                     />
@@ -1337,7 +1358,7 @@ const Login = () => {
                 <>
 
                   {/* Login Fields */}
-                  <div className="form-group">
+                  {/* <div className="form-group">
                     <label>Email</label>
                     <input
                       type="email"
@@ -1347,7 +1368,28 @@ const Login = () => {
                       required
                       placeholder="Enter your email"
                     />
-                  </div>
+                  </div> */}
+
+                <div className="form-group">
+                  <label>Email</label>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={(e) => {
+                      // Prevent spaces from being part of the input value
+                      const value = e.target.value.replace(/\s/g, "");
+                      handleChange({ target: { name: "email", value } });
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === " ") {
+                        e.preventDefault(); // Block spacebar from typing
+                      }
+                    }}
+                    required
+                    placeholder="Enter your email"
+                  />
+                </div>
   
                   {/* <div className="form-group password-group">
                     <label>Password</label>
@@ -1394,7 +1436,7 @@ const Login = () => {
 
                   <div className="form-group password-group">
                     <label>{isNewUser ? "Set Password" : "Password"}</label>
-                    <div className="password-wrapper">
+                    {/* <div className="password-wrapper">
                       <input
                         type={showPassword ? "text" : "password"}
                         name="password"
@@ -1409,7 +1451,32 @@ const Login = () => {
                       >
                         {showPassword ? "🔒" : "👁️"}
                       </span>
-                    </div>
+                    </div> */}
+
+                      <div className="password-wrapper">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          name="password"
+                          value={formData.password}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\s/g, ""); // Remove all spaces
+                            handleChange({ target: { name: "password", value } });
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === " ") {
+                              e.preventDefault(); // Block spacebar
+                            }
+                          }}
+                          required
+                          placeholder={isNewUser ? "Set your password" : "Enter your password"}
+                        />
+                        <span
+                          className="toggle-password"
+                          onClick={() => setShowPassword(!showPassword)}
+                        >
+                          {showPassword ? "🔒" : "👁️"}
+                        </span>
+                      </div>
 
                     {error && <p className="error-message">{error}</p>}
 
