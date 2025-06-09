@@ -416,6 +416,8 @@ const Login = () => {
     }
   }
 
+  const capitalizeWords = (str) =>
+    str.trim().toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
   
   // FRONTEND
   // const checkUserAndLogin = async () => {
@@ -981,6 +983,8 @@ const Login = () => {
     const auth = getAuth();
     setIsLoading(true)
 
+    const formattedName = capitalizeWords(name);
+
     if (!termsChecked) {
       setError("You must accept the terms and conditions before signing up.");
       setIsLoading(false);
@@ -1084,7 +1088,8 @@ const Login = () => {
 
         // Save data to 'pendingaccounts' collection without creating the Firebase Auth user
       const sanitizedData = {
-        name: name.trim().toLowerCase(),
+        // name: name.trim().toLowerCase(),
+        name: formattedName,
         email: email.trim().toLowerCase(),
         employeeId: employeeId.trim().replace(/[^\d-]/g, ''),
         jobTitle,
@@ -1292,7 +1297,7 @@ const Login = () => {
                     /> */}
 
                     
-                    <input
+                    {/* <input
                       type="text"
                       name="name"
                       value={signUpData.name}
@@ -1312,7 +1317,34 @@ const Login = () => {
                       }}
                       placeholder="enter name"
                       required
-                    />
+                    /> */}
+
+                      <input
+                        type="text"
+                        name="name"
+                        value={signUpData.name}
+                        onChange={(e) => {
+                          let value = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow letters and spaces only
+
+                          // Capitalize the first letter of each word
+                          value = value
+                          .toLowerCase()
+                          .replace(/\b\w/g, (char) => char.toUpperCase());
+
+                          handleSignUpChange({ target: { name: "name", value } });
+                        }}
+                        onKeyDown={(e) => {
+                          const allowedKeys = [
+                            "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", " ", // space
+                          ];
+                          const isLetter = /^[a-zA-Z]$/.test(e.key);
+                          if (!isLetter && !allowedKeys.includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        placeholder="Enter name"
+                        required
+                      />
                   </div>
 
                   {/* <div className="form-group">

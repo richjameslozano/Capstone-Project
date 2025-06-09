@@ -267,10 +267,17 @@ const AccountManagement = () => {
   
   // FRONTEND
   const handleSave = async (values) => {
+    const capitalizeWords = (str) =>
+      str
+        .trim()
+        .toLowerCase()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+
     // Sanitize input by trimming extra spaces and lowering the case
     const sanitizedValues = {
       ...values,
-      name: values.name.trim().toLowerCase(),
+      // name: values.name.trim().toLowerCase(),
+      name: capitalizeWords(values.name),
       email: values.email.trim().toLowerCase(),
     };
 
@@ -732,7 +739,7 @@ const AccountManagement = () => {
                 <Input placeholder="Enter Name" />
               </Form.Item> */}
 
-              <Form.Item
+              {/* <Form.Item
                 name="name"
                 label="Name"
                 rules={[{ required: true, message: "Please enter the name" }]}
@@ -743,6 +750,35 @@ const AccountManagement = () => {
                     const value = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow letters & spaces
                     // Manually trigger the form update
                     e.target.value = value;
+                  }}
+                  onKeyDown={(e) => {
+                    const allowedKeys = [
+                      "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", " ", // space
+                    ];
+                    const isLetter = /^[a-zA-Z]$/.test(e.key);
+                    if (!isLetter && !allowedKeys.includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </Form.Item> */}
+
+              <Form.Item
+                name="name"
+                label="Name"
+                rules={[{ required: true, message: "Please enter the name" }]}
+              >
+                <Input
+                  placeholder="Enter Name"
+                  onChange={(e) => {
+                    // Clean input: allow only letters and spaces
+                    let value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+
+                    // Auto-capitalize first letter of each word
+                    value = value.replace(/\b\w/g, (char) => char.toUpperCase());
+
+                    // Manually update the form field value using the form instance
+                    form.setFieldsValue({ name: value });
                   }}
                   onKeyDown={(e) => {
                     const allowedKeys = [
@@ -767,12 +803,49 @@ const AccountManagement = () => {
                 <Input placeholder="Enter Email" />
               </Form.Item> */}
 
-              <Form.Item
+              {/* <Form.Item
                 name="email"
                 label="Email"
                 rules={[
                   { required: true, message: "Please enter the email" },
                   { type: "email", message: "Enter a valid email" },
+                ]}
+              >
+                <Input
+                  placeholder="Enter Email"
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\s/g, ""); // Remove all spaces
+                    e.target.value = value;
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") {
+                      e.preventDefault(); // Block spacebar
+                    }
+                  }}
+                />
+              </Form.Item> */}
+
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: "Please enter the email" },
+                  {
+                    type: "email",
+                    message: "Enter a valid email address",
+                  },
+                  {
+                    validator: (_, value) => {
+                      if (!value) return Promise.resolve();
+
+                      const domainPattern = /^[a-zA-Z0-9._%+-]+@(students\.nu-moa\.edu\.ph|nu-moa\.edu\.ph)$/i;
+                      return domainPattern.test(value)
+                        ? Promise.resolve()
+                        : Promise.reject(
+                            "Email must be a NU MOA email (e.g., name@students.nu-moa.edu.ph or name@nu-moa.edu.ph)"
+                          );
+                    },
+                  },
                 ]}
               >
                 <Input
