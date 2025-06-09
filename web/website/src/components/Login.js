@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   signInWithEmailAndPassword,
@@ -60,6 +60,7 @@ const Login = () => {
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [currentDepartments, setCurrentDepartments] = useState([]);
   const [animateInputs, setAnimateInputs] = useState(false);
+  const emailDebounceRef = useRef(null); 
 
   const departmentOptionsByJobTitle = {
     Dean: ["SAH", "SAS", "SOO", "SOD"],
@@ -189,7 +190,82 @@ const Login = () => {
   //   }
   // };
 
-  const handleChange = async (e) => {
+  // const handleChange = async (e) => {
+  //   const { name, value } = e.target;
+
+  //   // Update form data first
+  //   if (name === "confirmPassword") {
+  //     setConfirmPassword(value);
+
+  //   } else {
+  //     setFormData((prev) => ({ ...prev, [name]: value }));
+  //   }
+
+  //   // EMAIL CHECK
+  //   if (name === "email") {
+  //     const isValidEmail = /\S+@\S+\.\S+/.test(value);
+  //     if (!isValidEmail) {
+  //       setIsNewUser(false);
+  //       setEmailChecked(false); // ❗ reset email checked
+  //       return;
+  //     }
+
+  //     try {
+  //       const usersRef = collection(db, "accounts");
+  //       const q = query(usersRef, where("email", "==", value));
+  //       const querySnapshot = await getDocs(q);
+
+  //       if (!querySnapshot.empty) {
+  //         const userDoc = querySnapshot.docs[0];
+  //         const userData = userDoc.data();
+  //         setIsNewUser(!userData.uid);
+  //         setEmailChecked(true); // ✅ mark email as checked
+
+  //       } else {
+  //         setIsNewUser(true); // new user
+  //         setEmailChecked(true); // ✅ mark email as checked
+  //       }
+
+  //     } catch (err) {
+  //       console.error("Error checking user:", err.message);
+  //     }
+  //   }
+
+  //   // PASSWORD VALIDATION
+  //   if (name === "password") {
+  //     const passwordRegex =
+  //       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+  //     // if (!passwordRegex.test(value)) {
+  //     //   setError(
+  //     //     "Password must be at least 8 characters long and include a letter, a number, and a special character."
+  //     //   );
+  //     //   return;
+  //     // } else {
+  //     //   setError("");
+  //     // }
+
+  //     // check match with confirmPassword
+  //     if (confirmPassword && value !== confirmPassword) {
+  //       setError("Passwords do not match.");
+
+  //     } else {
+  //       setError("");
+  //     }
+  //   }
+
+  //   if (name === "confirmPassword") {
+  //     // Check match after password and confirmPassword are both typed
+  //     if (value !== formData.password) {
+  //       setError("Passwords do not match.");
+
+  //     } else {
+  //       setError("");
+  //     }
+  //   }
+  // };
+
+   const handleChange = async (e) => {
     const { name, value } = e.target;
 
     // Update form data first
@@ -202,10 +278,25 @@ const Login = () => {
 
     // EMAIL CHECK
     if (name === "email") {
-      const isValidEmail = /\S+@\S+\.\S+/.test(value);
+      const trimmedValue = value.trim();
+      const isValidEmail = /\S+@\S+\.\S+/.test(trimmedValue);
+      
+      setEmailChecked(false); 
+      
+      // if (!isValidEmail) {
+      //   setIsNewUser(false);
+      //   setEmailChecked(false); // ❗ reset email checked
+      //   return;
+      // }
+
+      if (emailDebounceRef.current) {
+        clearTimeout(emailDebounceRef.current);
+      }
+
+    emailDebounceRef.current = setTimeout(async () => {
       if (!isValidEmail) {
         setIsNewUser(false);
-        setEmailChecked(false); // ❗ reset email checked
+        setEmailChecked(false);
         return;
       }
 
@@ -224,11 +315,11 @@ const Login = () => {
           setIsNewUser(true); // new user
           setEmailChecked(true); // ✅ mark email as checked
         }
-
       } catch (err) {
         console.error("Error checking user:", err.message);
       }
-    }
+      }, 700); // Debounce time (ms)
+  }
 
     // PASSWORD VALIDATION
     if (name === "password") {
@@ -247,7 +338,6 @@ const Login = () => {
       // check match with confirmPassword
       if (confirmPassword && value !== confirmPassword) {
         setError("Passwords do not match.");
-
       } else {
         setError("");
       }
@@ -257,7 +347,6 @@ const Login = () => {
       // Check match after password and confirmPassword are both typed
       if (value !== formData.password) {
         setError("Passwords do not match.");
-
       } else {
         setError("");
       }
