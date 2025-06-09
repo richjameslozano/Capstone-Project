@@ -15,7 +15,7 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const PendingRequest = () => {
-  const [pageTitle, setPageTitle] = useState("");
+
   const [searchTerm, setSearchTerm] = useState('');
   const [checkedItems, setCheckedItems] = useState({});
   const [approvedRequests, setApprovedRequests] = useState([]);
@@ -28,116 +28,38 @@ const PendingRequest = () => {
   const [isApprovedModalVisible, setIsApprovedModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
-  const [uncheckedItems, setUncheckedItems] = useState([]);
+
   const [rejectionReason, setRejectionReason] = useState('');
   const [pendingApprovalData, setPendingApprovalData] = useState(null); 
   const [isMultiRejectModalVisible, setIsMultiRejectModalVisible] = useState(false);
   const [rejectionReasons, setRejectionReasons] = useState({});
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
   const [firstRequestMap, setFirstRequestMap] = useState({});
-  const [pRequests, setPRequests] = useState([]);
+ 
   const [loading, setLoading] = useState(true);
 
-// const filteredRequests = requests.filter((request) => {
-//   const searchLower = searchTerm.toLowerCase();
-//   return (
-//     request.userName?.toLowerCase().includes(searchLower) ||
-//     request.room?.toLowerCase().includes(searchLower) ||
-//     request.course?.toLowerCase().includes(searchLower) ||
-//     request.courseDescription?.toLowerCase().includes(searchLower)
-//   );
-// });
- // Utility function to sanitize the selected filter
-const sanitizeFilterValue = (input) => {
-  if (!input) return "All"; // Default to "All" if input is empty or invalid
-  return input.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
-};
+const sanitizeInput = (input) =>
+  input
 
-// Utility function to sanitize the search term
-const sanitizeSearchTerm = (term) => {
-  if (!term) return ""; // Default to empty string if no search term is provided
-  return term.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
-};
+    .replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+    .replace(/[^a-z0-9 \-.,()]/g, ""); // remove unwanted characters
+
 
 const [selectedFilter, setSelectedFilter] = useState('All');
+const sanitizedSearch = sanitizeInput(searchTerm).toLowerCase();
 
-// Filtered requests with sanitization applied
 const filteredRequests = requests.filter((request) => {
-  // Sanitize the selected filter value
-  const sanitizedSelectedFilter = sanitizeFilterValue(selectedFilter);
-
-  // Filter by usage type
-  const matchesFilter =
-    sanitizedSelectedFilter === 'All' || request.usageType === sanitizedSelectedFilter;
-
-  // Sanitize the search term before use
-  const sanitizedSearchTerm = sanitizeSearchTerm(searchTerm);
-  const matchesSearch =
-    request.userName?.toLowerCase().includes(sanitizedSearchTerm) ||
-    request.room?.toLowerCase().includes(sanitizedSearchTerm) ||
-    request.course?.toLowerCase().includes(sanitizedSearchTerm) ||
-    request.courseDescription?.toLowerCase().includes(sanitizedSearchTerm);
-
-  return matchesFilter && matchesSearch;
+  return (
+    request.userName?.toLowerCase().includes(sanitizedSearch) ||
+    request.room?.toLowerCase().includes(sanitizedSearch) ||
+    request.course?.toLowerCase().includes(sanitizedSearch) ||
+    request.courseDescription?.toLowerCase().includes(sanitizedSearch)
+  );
 });
 
-// useEffect(() => {
-//   const userRequestRef = collection(db, "userrequests");
-//   const q = query(userRequestRef, orderBy("timestamp", "desc"));
 
-//   const unsubscribe = onSnapshot(
-//     q,
-//     async (querySnapshot) => {
-//       setLoading(true); // Start loading
 
-//       const fetched = [];
 
-//       for (const docSnap of querySnapshot.docs) {
-//         const data = docSnap.data();
-
-//         const enrichedItems = await Promise.all(
-//           (data.filteredMergedData || []).map(async (item) => {
-//             const inventoryId = item.selectedItemId || item.selectedItem?.value;
-//             let itemId = "N/A";
-
-//             if (inventoryId) {
-//               try {
-//                 const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
-//                 if (invDoc.exists()) {
-//                   itemId = invDoc.data().itemId || "N/A";
-//                 }
-//               } catch (err) {
-              
-//               }
-//             }
-
-//             return {
-//               ...item,
-//               itemIdFromInventory: itemId,
-//             };
-//           })
-//         );
-
-//         fetched.push({
-//           id: docSnap.id,
-//           ...data,
-//           requestList: enrichedItems,
-//           timeFrom: data.timeFrom || "N/A",
-//           timeTo: data.timeTo || "N/A",
-//         });
-//       }
-
-//       setRequests(fetched);
-//       setLoading(false); // End loading
-//     },
-//     (error) => {
-     
-//       setLoading(false);
-//     }
-//   );
-
-//   return () => unsubscribe();
-// }, []);
 
 useEffect(() => {
   const userRequestRef = collection(db, "userrequests");
@@ -2026,7 +1948,11 @@ useEffect(() => {
               ))}
 
               <input placeholder="Search" className="search-input" value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}/>
+                    onChange={(e) => {
+                    const sanitized = sanitizeInput(e.target.value.toLowerCase());
+
+                     setSearchTerm(sanitized)}}
+                     />
             </div>
 
         

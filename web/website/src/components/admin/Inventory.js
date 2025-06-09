@@ -78,6 +78,10 @@ const Inventory = () => {
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
   const [fullEditForm] = Form.useForm();
 
+  const sanitizeInput = (input) =>
+  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+      .replace(/[^a-zA-Z0-9\s\-.,()]/g, "");
+  
 
   const [headerHeight, setHeaderHeight] = useState(0);
   const headerRef = useRef(null);
@@ -322,7 +326,8 @@ const handleFullUpdate = async (values) => {
     }
 
     // Sanitize criticalLevel (ensure it's a number and >= 1)
-    const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel), 1);
+   const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel), 1);
+
 
     // Sanitize category to ensure it's valid
     const validCategories = ["Glasswares", "Equipment", "Materials", "Chemical", "Reagent"];
@@ -654,7 +659,8 @@ const printPdf = () => {
     const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
     const inventoryRef = collection(db, "inventory");
     const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-    const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 20; // default to 5 if not provided
+    const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 1;
+
 
     let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
     let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
@@ -1091,7 +1097,11 @@ useEffect(() => {
                 className="search-bar"
                 style={{ width: 200 }}
                 allowClear
-                onChange={(e) => setSearchText(e.target.value)}
+                onInput={(e) => {
+                  const sanitized = sanitizeInput(e.target.value);
+                  e.target.value = sanitized;
+                  setSearchText(sanitized);
+          }}
               />
 
               <Select
@@ -1236,7 +1246,11 @@ useEffect(() => {
                     <Input
                       placeholder="Enter Item Description"
                       value={itemDetails}
-                      onChange={(e) => setItemDetails(e.target.value)}
+                     onInput={(e) => {
+                  const sanitized = sanitizeInput(e.target.value);
+                  e.target.value = sanitized;
+                  setItemDetails(sanitized);
+                     }}
                     />
                   </Form.Item>
                 </Col>
@@ -1265,7 +1279,12 @@ useEffect(() => {
                     label="Quantity"
                     rules={[{ required: true, message: "Please enter Quantity!" }]}
                   >
-                    <InputNumber min={1} placeholder="Enter quantity" style={{ width: "100%" }} />
+           <Input
+                    placeholder="Enter quantity"
+                    onInput={(e) => {
+                      e.target.value = e.target.value.replace(/\D/g, "");
+                    }}
+                    />
                   </Form.Item>
                 </Col>
 
@@ -1285,13 +1304,30 @@ useEffect(() => {
                 )}
                 
                 <Col span={8}>
-                  <Form.Item
-                    name="criticalLevel"
-                    label="Critical Level"
-                    rules={[{ required: true, message: "Please enter desired Critical Stock!" }]}
-                  >
-                    <InputNumber min={1} placeholder="Enter Critical Stock" style={{ width: "100%" }} />
-                  </Form.Item>
+                 <Form.Item
+                  name="criticalLevel"
+                  label="Critical Level"
+                  rules={[
+                    { required: true, message: "Please enter desired Critical Stock!" },
+                    {
+                      validator: (_, value) => {
+                        const numeric = parseInt(value, 10);
+                        if (!value || isNaN(numeric) || numeric < 1) {
+                          return Promise.reject("Value must be a number greater than 0");
+                        }
+                        return Promise.resolve();
+                      },
+                    },
+                  ]}
+                >
+                  <Input
+                    placeholder="Enter Critical Stock"
+                    onInput={(e) => {
+                      e.target.value = e.target.value.replace(/\D/g, ""); // Keep digits only
+                    }}
+                  />
+                </Form.Item>
+
                 </Col>
 
                 <Col span={8}>
@@ -1382,14 +1418,24 @@ useEffect(() => {
                   <Form.Item
                     name="labRoom"
                     label="Stock Room"
-                    rules={[{ required: true, message: "Please enter Stock Room!" }]}
+                  rules={[
+                      { required: true, message: "Please enter Stock Room!" },
+                      {
+                        validator: (_, value) => {
+                          if (!value || !/^\d+$/.test(value)) {
+                            return Promise.reject("Lab room must be a numeric value");
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+
                   >
                     <Input
                       placeholder="Enter Lab/Stock Room"
-                      onChange={(e) => {
-                        const numbersOnly = e.target.value.replace(/\D/g, ""); // Remove non-digits
-                        form.setFieldsValue({ labRoom: numbersOnly }); // Update Form.Item value
-                      }}
+                       onInput={(e) => {
+                    e.target.value = e.target.value.replace(/\D/g, ""); // digits only
+                  }}
                       onKeyDown={(e) => {
                         const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
                         if (!/^\d$/.test(e.key) && !allowedKeys.includes(e.key)) {
@@ -1485,13 +1531,19 @@ useEffect(() => {
                   name="itemName"
                   rules={[{ required: true, message: "Please enter Item Name!" }]}
                 >
-                  <Input />
+                  <Input onInput={(e) => {
+                      const sanitized = sanitizeInput(e.target.value);
+                      e.target.value = sanitized;
+                    }} />
                 </Form.Item>
               </Col>
 
               <Col span={12}>
                 <Form.Item label="Item Description" name="itemDetails">
-                  <Input />
+                 <Input onInput={(e) => {
+                          const sanitized = sanitizeInput(e.target.value);
+                          e.target.value = sanitized;
+                        }} />
                 </Form.Item>
               </Col>
             </Row>
@@ -1535,9 +1587,30 @@ useEffect(() => {
 
             <Row gutter={16}>
               <Col span={12}>
-                <Form.Item label="Critical Level" name="criticalLevel">
-                  <InputNumber min={0} style={{ width: "100%" }} />
-                </Form.Item>
+               <Form.Item
+                      name="criticalLevel"
+                      label="Critical Level"
+                      rules={[
+                        { required: true, message: "Please enter desired Critical Stock!" },
+                        {
+                          validator: (_, value) => {
+                            const numeric = parseInt(value, 10);
+                            if (!value || isNaN(numeric) || numeric < 1) {
+                              return Promise.reject("Value must be a number greater than 0");
+                            }
+                            return Promise.resolve();
+                          },
+                        },
+                      ]}
+                    >
+                      <Input
+                        placeholder="Enter Critical Stock"
+                        onInput={(e) => {
+                          e.target.value = e.target.value.replace(/\D/g, ""); // Keep digits only
+                        }}
+                      />
+                    </Form.Item>
+
               </Col>
 
               <Col span={12}>
@@ -1872,35 +1945,41 @@ useEffect(() => {
                 </Col> */}
 
                 <Col span={12}>
-                  <Form.Item
-                    name="quantity"
-                    label="Quantity"
-                    dependencies={[['condition']]} // watch for changes in condition
-                   rules={[
-                      { required: true, message: "Please enter quantity" },
-                      ({ getFieldValue }) => ({
-                        validator(_, value) {
-                          const condition = getFieldValue('condition') || {};
-                          const totalCondition =
-                            (parseInt(condition.Good) || 0) +
-                            (parseInt(condition.Defect) || 0) +
-                            (parseInt(condition.Damage) || 0);
+               <Form.Item
+                  name="quantity"
+                  label="Quantity"
+                  dependencies={[["condition"]]}
+                  rules={[
+                    { required: true, message: "Please enter quantity" },
+                    ({ getFieldValue }) => ({
+                      validator(_, value) {
+                        const condition = getFieldValue("condition") || {};
+                        const totalCondition =
+                          (parseInt(condition.Good) || 0) +
+                          (parseInt(condition.Defect) || 0) +
+                          (parseInt(condition.Damage) || 0);
 
-                          if (value == null || value === "") {
-                            return Promise.resolve(); // wait for value
-                          }
+                        if (!value || isNaN(parseInt(value))) {
+                          return Promise.reject("Quantity must be a number");
+                        }
 
-                          // Fix: ensure numbers are properly cast
-                          if (parseInt(value) === totalCondition) {
-                            return Promise.resolve();
-                          }
+                        if (parseInt(value) !== totalCondition) {
+                          return Promise.reject("Quantity must equal sum of Good, Defect, and Damage");
+                        }
 
-                        },
-                      }),
-                    ]}
-                  >
-                    <Input type="number" min={0} placeholder="Enter quantity" />
-                  </Form.Item>
+                        return Promise.resolve();
+                      },
+                    }),
+                  ]}
+                >
+                  <Input
+                    placeholder="Enter quantity"
+                    onInput={(e) => {
+                      e.target.value = e.target.value.replace(/\D/g, "");
+                    }}
+                  />
+                </Form.Item>
+
 
                   {hasExpiryDate && (
                     <Row gutter={16}>
