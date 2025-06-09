@@ -329,214 +329,35 @@ const Login = () => {
 
   
   // FRONTEND
-  const checkUserAndLogin = async () => {
-    setIsLoading(true);
-  
-    try {
-      const { email, password } = formData;
-      const usersRef = collection(db, "accounts");
-      const q = query(usersRef, where("email", "==", email));
-      const querySnapshot = await getDocs(q);
-  
-      let userDoc, userData, isSuperAdmin = false;
-  
-      // 🔎 First check regular accounts
-      if (!querySnapshot.empty) {
-        userDoc = querySnapshot.docs[0];
-        userData = userDoc.data();
-
-      } else {
-        // 🔎 Then check if it's a super-admin
-        const superAdminRef = collection(db, "super-admin");
-        const superAdminQuery = query(superAdminRef, where("email", "==", email));
-        const superAdminSnapshot = await getDocs(superAdminQuery);
-  
-        if (!superAdminSnapshot.empty) {
-          userDoc = superAdminSnapshot.docs[0];
-          userData = userDoc.data();
-          isSuperAdmin = true;
-        }
-      }
-  
-      if (!userData) {
-        setError("User not found. Please contact admin.");
-        setIsLoading(false);
-        return;
-      }
-
-      if (userData.disabled) {
-        setError("Your account has been disabled.");
-        await signOut(auth);
-        setIsLoading(false);
-        return;
-      }
-  
-      // 🧷 If password not set yet (new user)
-      if (!isSuperAdmin && !userData.uid) {
-        setIsNewUser(true);
-        setIsLoading(false);
-        return;
-      }
-  
-      // 🔒 Block check
-      // if (userData.isBlocked && userData.blockedUntil) {
-      //   const now = Timestamp.now().toMillis();
-      //   const blockedUntil = userData.blockedUntil.toMillis();
-  
-      //   if (now < blockedUntil) {
-      //     const remainingTime = Math.ceil((blockedUntil - now) / 1000);
-      //     setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
-      //     setIsLoading(false);
-      //     return;
-
-      //   } else {
-      //     await updateDoc(userDoc.ref, {
-      //       isBlocked: false,
-      //       loginAttempts: 0,
-      //       blockedUntil: null,
-      //     });
-          
-      //   }
-      // }
-  
-      // 🧠 Super-admin login (Firestore password)
-      if (isSuperAdmin) {
-        if (userData.password === password) {
-          await updateDoc(userDoc.ref, { loginAttempts: 0 });
-  
-          const userName = userData.name || "Super Admin";
-          localStorage.setItem("userId", userDoc.id);
-          localStorage.setItem("userEmail", userData.email);
-          localStorage.setItem("userName", userName);
-          localStorage.setItem("userDepartment", userData.department || "Admin");
-          localStorage.setItem("userPosition", "super-admin");
-          localStorage.setItem("userJobTitle", userData.jobTitle || "User");
-  
-          navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
-  
-        } else {
-          // const newAttempts = (userData.loginAttempts || 0) + 1;
-  
-          // if (newAttempts >= 4) {
-          //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000; // 30 minutes
-          //   await updateDoc(userDoc.ref, {
-          //     isBlocked: true,
-          //     blockedUntil: Timestamp.fromMillis(unblockTime),
-          //   });
-  
-          //   setError("Super Admin account blocked. Try again after 30 minutes.");
-
-          // } else {
-          //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-          //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
-          // }
-          setError(`Invalid password.`);
-        }
-  
-      } else {
-        // ✅ Firebase Auth login for regular users/admins
-        try {
-          await signInWithEmailAndPassword(auth, email, password);
-  
-          await updateDoc(userDoc.ref, { loginAttempts: 0 });
-  
-          let role = (userData.role || "user").toLowerCase().trim().replace(/[\s_]/g, '-');
-          if (role === "admin1" || role === "admin2") {
-            role = "admin";
-          }
-  
-          const userName = userData.name || "User";
-          localStorage.setItem("userId", userDoc.id);
-          localStorage.setItem("userEmail", userData.email);
-          localStorage.setItem("userName", userName);
-          localStorage.setItem("userDepartment", userData.department || "");
-          // localStorage.setItem("userPosition", userData.role || "User");
-          localStorage.setItem("userPosition", role);
-          localStorage.setItem("userJobTitle", userData.jobTitle || "User");
-
-          await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
-            action: "User Logged In (Website)",
-            userName: userData.name || "User",
-            timestamp: serverTimestamp(),
-          });          
-  
-          switch (role) {
-            case "admin":
-              navigate("/main/dashboard", { state: { loginSuccess: true, role } });
-              break;
-
-            case "super-user":
-              navigate("/main/dashboard", { state: { loginSuccess: true, role } });
-              break;
-
-            case "user":
-              navigate("/main/requisition", { state: { loginSuccess: true, role } });
-              break;
-
-            default:
-              setError("Unknown role. Please contact admin.");
-              break;
-          }
-  
-        } catch (authError) {
-  
-          const newAttempts = (userData.loginAttempts || 0) + 1;
-  
-          // if (newAttempts >= 4) {
-          //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
-          //   await updateDoc(userDoc.ref, {
-          //     isBlocked: true,
-          //     blockedUntil: Timestamp.fromMillis(unblockTime),
-          //   });
-  
-          //   setError("Account blocked after 4 failed attempts. Try again after 30 minutes.");
-
-          // } else {
-          //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-          //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
-          // }
-          setError(`Invalid password.`);
-          setIsLoading(false);
-        }
-      }
-  
-    } catch (error) {
-      setError("Unexpected error. Please try again.");
-
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  // LOGIN WITH VERIFICATION
   // const checkUserAndLogin = async () => {
   //   setIsLoading(true);
-
+  
   //   try {
   //     const { email, password } = formData;
   //     const usersRef = collection(db, "accounts");
   //     const q = query(usersRef, where("email", "==", email));
   //     const querySnapshot = await getDocs(q);
-
+  
   //     let userDoc, userData, isSuperAdmin = false;
-
-  //     // Check regular accounts
+  
+  //     // 🔎 First check regular accounts
   //     if (!querySnapshot.empty) {
   //       userDoc = querySnapshot.docs[0];
   //       userData = userDoc.data();
+
   //     } else {
-  //       // Check super-admin
+  //       // 🔎 Then check if it's a super-admin
   //       const superAdminRef = collection(db, "super-admin");
   //       const superAdminQuery = query(superAdminRef, where("email", "==", email));
   //       const superAdminSnapshot = await getDocs(superAdminQuery);
-
+  
   //       if (!superAdminSnapshot.empty) {
   //         userDoc = superAdminSnapshot.docs[0];
   //         userData = userDoc.data();
   //         isSuperAdmin = true;
   //       }
   //     }
-
+  
   //     if (!userData) {
   //       setError("User not found. Please contact admin.");
   //       setIsLoading(false);
@@ -549,19 +370,40 @@ const Login = () => {
   //       setIsLoading(false);
   //       return;
   //     }
-
-  //     // New user without password set yet
+  
+  //     // 🧷 If password not set yet (new user)
   //     if (!isSuperAdmin && !userData.uid) {
   //       setIsNewUser(true);
   //       setIsLoading(false);
   //       return;
   //     }
+  
+  //     // 🔒 Block check
+  //     // if (userData.isBlocked && userData.blockedUntil) {
+  //     //   const now = Timestamp.now().toMillis();
+  //     //   const blockedUntil = userData.blockedUntil.toMillis();
+  
+  //     //   if (now < blockedUntil) {
+  //     //     const remainingTime = Math.ceil((blockedUntil - now) / 1000);
+  //     //     setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
+  //     //     setIsLoading(false);
+  //     //     return;
 
+  //     //   } else {
+  //     //     await updateDoc(userDoc.ref, {
+  //     //       isBlocked: false,
+  //     //       loginAttempts: 0,
+  //     //       blockedUntil: null,
+  //     //     });
+          
+  //     //   }
+  //     // }
+  
+  //     // 🧠 Super-admin login (Firestore password)
   //     if (isSuperAdmin) {
-  //       // Super-admin login using Firestore-stored password
   //       if (userData.password === password) {
   //         await updateDoc(userDoc.ref, { loginAttempts: 0 });
-
+  
   //         const userName = userData.name || "Super Admin";
   //         localStorage.setItem("userId", userDoc.id);
   //         localStorage.setItem("userEmail", userData.email);
@@ -569,57 +411,64 @@ const Login = () => {
   //         localStorage.setItem("userDepartment", userData.department || "Admin");
   //         localStorage.setItem("userPosition", "super-admin");
   //         localStorage.setItem("userJobTitle", userData.jobTitle || "User");
-
+  
   //         navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
-
+  
   //       } else {
-  //         setError("Invalid password.");
+  //         // const newAttempts = (userData.loginAttempts || 0) + 1;
+  
+  //         // if (newAttempts >= 4) {
+  //         //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000; // 30 minutes
+  //         //   await updateDoc(userDoc.ref, {
+  //         //     isBlocked: true,
+  //         //     blockedUntil: Timestamp.fromMillis(unblockTime),
+  //         //   });
+  
+  //         //   setError("Super Admin account blocked. Try again after 30 minutes.");
+
+  //         // } else {
+  //         //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+  //         //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
+  //         // }
+  //         setError(`Invalid password.`);
   //       }
-
+  
   //     } else {
-  //       // Firebase Auth login for regular users/admins
+  //       // ✅ Firebase Auth login for regular users/admins
   //       try {
-  //         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  //         const signedInUser = userCredential.user;
-
-  //         // Force reload to ensure latest email verification status
-  //         await signedInUser.reload();
-  //         const refreshedUser = auth.currentUser;
-
-  //         if (!refreshedUser || !refreshedUser.emailVerified) {
-  //           await signOut(auth);
-  //           setError("Please verify your email before logging in.");
-  //           setIsLoading(false);
-  //           return;
-  //         }
-
+  //         await signInWithEmailAndPassword(auth, email, password);
+  
   //         await updateDoc(userDoc.ref, { loginAttempts: 0 });
-
+  
   //         let role = (userData.role || "user").toLowerCase().trim().replace(/[\s_]/g, '-');
   //         if (role === "admin1" || role === "admin2") {
   //           role = "admin";
   //         }
-
+  
   //         const userName = userData.name || "User";
   //         localStorage.setItem("userId", userDoc.id);
   //         localStorage.setItem("userEmail", userData.email);
   //         localStorage.setItem("userName", userName);
   //         localStorage.setItem("userDepartment", userData.department || "");
+  //         // localStorage.setItem("userPosition", userData.role || "User");
   //         localStorage.setItem("userPosition", role);
   //         localStorage.setItem("userJobTitle", userData.jobTitle || "User");
 
   //         await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
   //           action: "User Logged In (Website)",
-  //           userName,
+  //           userName: userData.name || "User",
   //           timestamp: serverTimestamp(),
-  //         });
-
+  //         });          
+  
   //         switch (role) {
   //           case "admin":
+  //             navigate("/main/dashboard", { state: { loginSuccess: true, role } });
+  //             break;
+
   //           case "super-user":
   //             navigate("/main/dashboard", { state: { loginSuccess: true, role } });
   //             break;
-              
+
   //           case "user":
   //             navigate("/main/requisition", { state: { loginSuccess: true, role } });
   //             break;
@@ -628,21 +477,172 @@ const Login = () => {
   //             setError("Unknown role. Please contact admin.");
   //             break;
   //         }
-
+  
   //       } catch (authError) {
-  //         console.error("Firebase Auth login failed:", authError.message);
-  //         setError("Invalid password.");
+  
+  //         const newAttempts = (userData.loginAttempts || 0) + 1;
+  
+  //         // if (newAttempts >= 4) {
+  //         //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
+  //         //   await updateDoc(userDoc.ref, {
+  //         //     isBlocked: true,
+  //         //     blockedUntil: Timestamp.fromMillis(unblockTime),
+  //         //   });
+  
+  //         //   setError("Account blocked after 4 failed attempts. Try again after 30 minutes.");
+
+  //         // } else {
+  //         //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
+  //         //   setError(`Invalid password. ${4 - newAttempts} attempts remaining.`);
+  //         // }
+  //         setError(`Invalid password.`);
+  //         setIsLoading(false);
   //       }
   //     }
-
+  
   //   } catch (error) {
-  //     console.error("Error during login:", error.message);
   //     setError("Unexpected error. Please try again.");
 
   //   } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
+  //     setIsLoading(false);
+  //   }
+  // };
+
+  // LOGIN WITH VERIFICATION
+  const checkUserAndLogin = async () => {
+    setIsLoading(true);
+
+    try {
+      const { email, password } = formData;
+      const usersRef = collection(db, "accounts");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      let userDoc, userData, isSuperAdmin = false;
+
+      // Check regular accounts
+      if (!querySnapshot.empty) {
+        userDoc = querySnapshot.docs[0];
+        userData = userDoc.data();
+      } else {
+        // Check super-admin
+        const superAdminRef = collection(db, "super-admin");
+        const superAdminQuery = query(superAdminRef, where("email", "==", email));
+        const superAdminSnapshot = await getDocs(superAdminQuery);
+
+        if (!superAdminSnapshot.empty) {
+          userDoc = superAdminSnapshot.docs[0];
+          userData = userDoc.data();
+          isSuperAdmin = true;
+        }
+      }
+
+      if (!userData) {
+        setError("User not found. Please contact admin.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (userData.disabled) {
+        setError("Your account has been disabled.");
+        await signOut(auth);
+        setIsLoading(false);
+        return;
+      }
+
+      // New user without password set yet
+      if (!isSuperAdmin && !userData.uid) {
+        setIsNewUser(true);
+        setIsLoading(false);
+        return;
+      }
+
+      if (isSuperAdmin) {
+        // Super-admin login using Firestore-stored password
+        if (userData.password === password) {
+          await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
+          const userName = userData.name || "Super Admin";
+          localStorage.setItem("userId", userDoc.id);
+          localStorage.setItem("userEmail", userData.email);
+          localStorage.setItem("userName", userName);
+          localStorage.setItem("userDepartment", userData.department || "Admin");
+          localStorage.setItem("userPosition", "super-admin");
+          localStorage.setItem("userJobTitle", userData.jobTitle || "User");
+
+          navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+
+        } else {
+          setError("Invalid password.");
+        }
+
+      } else {
+        // Firebase Auth login for regular users/admins
+        try {
+          const userCredential = await signInWithEmailAndPassword(auth, email, password);
+          const signedInUser = userCredential.user;
+
+          // Force reload to ensure latest email verification status
+          await signedInUser.reload();
+          const refreshedUser = auth.currentUser;
+
+          if (!refreshedUser || !refreshedUser.emailVerified) {
+            await signOut(auth);
+            setError("Please verify your email before logging in.");
+            setIsLoading(false);
+            return;
+          }
+
+          await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
+          let role = (userData.role || "user").toLowerCase().trim().replace(/[\s_]/g, '-');
+          if (role === "admin1" || role === "admin2") {
+            role = "admin";
+          }
+
+          const userName = userData.name || "User";
+          localStorage.setItem("userId", userDoc.id);
+          localStorage.setItem("userEmail", userData.email);
+          localStorage.setItem("userName", userName);
+          localStorage.setItem("userDepartment", userData.department || "");
+          localStorage.setItem("userPosition", role);
+          localStorage.setItem("userJobTitle", userData.jobTitle || "User");
+
+          await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
+            action: "User Logged In (Website)",
+            userName,
+            timestamp: serverTimestamp(),
+          });
+
+          switch (role) {
+            case "admin":
+            case "super-user":
+              navigate("/main/dashboard", { state: { loginSuccess: true, role } });
+              break;
+              
+            case "user":
+              navigate("/main/requisition", { state: { loginSuccess: true, role } });
+              break;
+
+            default:
+              setError("Unknown role. Please contact admin.");
+              break;
+          }
+
+        } catch (authError) {
+          console.error("Firebase Auth login failed:", authError.message);
+          setError("Invalid password.");
+        }
+      }
+
+    } catch (error) {
+      console.error("Error during login:", error.message);
+      setError("Unexpected error. Please try again.");
+
+    } finally {
+        setIsLoading(false);
+      }
+    };
 
   // BACKEND LOGIN
 //   const checkUserAndLogin = async () => {
