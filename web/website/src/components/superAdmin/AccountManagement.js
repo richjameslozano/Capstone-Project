@@ -15,7 +15,7 @@ import {
 import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
 import { db, auth } from "../../backend/firebase/FirebaseConfig";
-import { createUserWithEmailAndPassword, updateEmail } from "firebase/auth";
+import { createUserWithEmailAndPassword, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
 import {
   collection,
   addDoc,
@@ -473,22 +473,53 @@ const AccountManagement = () => {
     }
   };  
 
-  const handlePasswordConfirm = () => {
-    if (adminCredentials && password === adminCredentials.password) {
+  // const handlePasswordConfirm = () => {
+  //   if (adminCredentials && password === adminCredentials.password) {
+  //     if (actionType === "edit") {
+  //       const accountToEdit = accounts.find((acc) => acc.id === selectedAccountId);
+  //       showModalHandler(accountToEdit);
+
+  //     } else if (actionType === "delete") {
+  //       handleDisable(selectedAccountId); 
+  //     }
+
+  //     message.success("Password confirmed!");
+  //     setIsPasswordModalVisible(false);
+  //     setPassword("");
+  //     setPasswordError("");
+
+  //   } else {
+  //     setPasswordError("❗ Incorrect password. Please try again.");
+  //   }
+  // };
+
+  const handlePasswordConfirm = async () => {
+    const currentUser = auth.currentUser;
+
+    if (!currentUser) {
+      setPasswordError("User not logged in.");
+      return;
+    }
+
+    const credential = EmailAuthProvider.credential(currentUser.email, password);
+
+    try {
+      await reauthenticateWithCredential(currentUser, credential);
+
       if (actionType === "edit") {
         const accountToEdit = accounts.find((acc) => acc.id === selectedAccountId);
         showModalHandler(accountToEdit);
-
       } else if (actionType === "delete") {
-        handleDisable(selectedAccountId); 
+        handleDisable(selectedAccountId);
       }
 
       message.success("Password confirmed!");
       setIsPasswordModalVisible(false);
       setPassword("");
       setPasswordError("");
-
-    } else {
+      
+    } catch (error) {
+      console.error("Reauthentication error:", error);
       setPasswordError("❗ Incorrect password. Please try again.");
     }
   };
@@ -552,6 +583,25 @@ const AccountManagement = () => {
     setIsPasswordModalVisible(true);
   };
 
+  const getTagColor = (title) => {
+    switch (title) {
+      case "Dean":
+        return "#ffd6e8"; 
+
+      case "Program Chair":
+        return "#e6f0ff"; 
+
+      case "Laboratory Custodian":
+        return "#f0e6ff";
+
+      case "Faculty":
+        return "#ffe6cc";
+        
+      default:
+        return "#f0f0f0"; 
+    }
+  };
+
   const columns = [
     {
       title: "Name",
@@ -572,19 +622,42 @@ const AccountManagement = () => {
       title: "Job Title",
       dataIndex: "jobTitle",
       render: (jobTitle) => (
-        <Tag
-          color={
+        // <Tag
+        //   color={
+        //     jobTitle === "Dean"
+        //       ? "volcano"
+        //       : jobTitle === "Laboratory Custodian"
+        //       ? "geekblue"
+        //       : jobTitle === "Program Chair"
+        //       ? "purple"
+        //       : "green"
+        //   }
+        // >
+        //   {jobTitle.toLowerCase()}
+        // </Tag>
+      <Tag
+        style={{
+          backgroundColor: getTagColor(jobTitle),
+          color:
             jobTitle === "Dean"
-              ? "volcano"
-              : jobTitle === "Laboratory Custodian"
-              ? "geekblue"
+              ? "#d6336c"
+
               : jobTitle === "Program Chair"
-              ? "purple"
-              : "green"
-          }
-        >
-          {jobTitle.toLowerCase()}
-        </Tag>
+              ? "#096dd9" 
+
+              : jobTitle === "Laboratory Custodian"
+              ? "#722ed1" 
+
+              : jobTitle === "Faculty"
+              ? "#b34700" 
+
+              : "#595959", 
+          borderRadius: "8px",
+          fontWeight: "500",
+        }}
+      >
+        {jobTitle}
+      </Tag>
       ),
     },
     {
