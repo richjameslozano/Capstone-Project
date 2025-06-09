@@ -553,7 +553,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
                 <Text style={styles.label}>Full Name:<Text style={{color:'red'}}>*</Text></Text>
               <Animated.View style={[styles.animatedInputContainer, { borderColor: nameBorderColor, width: '100%' }]}>
-                <Input
+                {/* <Input
                   placeholder="Enter Full Name"
                   value={name}
                   onChangeText={setName}
@@ -562,6 +562,24 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 onBlur={() => handleBlur('name')}
                 inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
                 inputStyle={styles.inputText}
+                /> */}
+
+                <Input
+                  placeholder="Enter Full Name"
+                  value={name}
+                  onChangeText={(text) => {
+                    let formatted = text.replace(/[^a-zA-Z\s]/g, ""); // allow only letters and spaces
+
+                    // Capitalize the first letter of each word
+                    formatted = formatted.replace(/\b\w/g, (char) => char.toUpperCase());
+
+                    setName(formatted);
+                  }}
+                  mode="outlined"
+                  onFocus={() => handleFocus('name')}
+                  onBlur={() => handleBlur('name')}
+                  inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]} // removes underline
+                  inputStyle={styles.inputText}
                 />
               </Animated.View>
                 
