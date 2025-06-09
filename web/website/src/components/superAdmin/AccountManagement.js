@@ -580,6 +580,25 @@ const AccountManagement = () => {
     setIsPasswordModalVisible(true);
   };
 
+  const getTagColor = (title) => {
+    switch (title) {
+      case "Dean":
+        return "#ffd6e8"; 
+
+      case "Program Chair":
+        return "#e6f0ff"; 
+
+      case "Laboratory Custodian":
+        return "#f0e6ff";
+
+      case "Faculty":
+        return "#ffe6cc";
+        
+      default:
+        return "#f0f0f0"; 
+    }
+  };
+
   const columns = [
     {
       title: "Name",
@@ -600,19 +619,42 @@ const AccountManagement = () => {
       title: "Job Title",
       dataIndex: "jobTitle",
       render: (jobTitle) => (
-        <Tag
-          color={
+        // <Tag
+        //   color={
+        //     jobTitle === "Dean"
+        //       ? "volcano"
+        //       : jobTitle === "Laboratory Custodian"
+        //       ? "geekblue"
+        //       : jobTitle === "Program Chair"
+        //       ? "purple"
+        //       : "green"
+        //   }
+        // >
+        //   {jobTitle.toLowerCase()}
+        // </Tag>
+      <Tag
+        style={{
+          backgroundColor: getTagColor(jobTitle),
+          color:
             jobTitle === "Dean"
-              ? "volcano"
-              : jobTitle === "Laboratory Custodian"
-              ? "geekblue"
+              ? "#d6336c"
+
               : jobTitle === "Program Chair"
-              ? "purple"
-              : "green"
-          }
-        >
-          {jobTitle.toLowerCase()}
-        </Tag>
+              ? "#096dd9" 
+
+              : jobTitle === "Laboratory Custodian"
+              ? "#722ed1" 
+
+              : jobTitle === "Faculty"
+              ? "#b34700" 
+
+              : "#595959", 
+          borderRadius: "8px",
+          fontWeight: "500",
+        }}
+      >
+        {jobTitle}
+      </Tag>
       ),
     },
     {
