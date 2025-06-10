@@ -658,7 +658,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               <Route path="/lab-room" element={<LabRoomQR/>} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={["admin", "super-user"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />
               <Route path="/accounts" element={<AccountManagement />} />
               <Route path="/pending-accounts" element={<PendingAccounts />} />
