@@ -71,6 +71,9 @@ const AccountManagement = () => {
   const [newDepartment, setNewDepartment] = useState("");
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [departments, setDepartments] = useState([]);  
+  const sanitizeInput = (input) =>
+  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+   .replace(/[^a-zA-Z0-9\s\-.,()]/g, "");
 
   useEffect(() => {
     const loginSuccessFlag = sessionStorage.getItem("loginSuccess");
@@ -732,7 +735,11 @@ const AccountManagement = () => {
             <Input
               placeholder="Search by name or email"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+               onInput={(e) => {
+            const sanitized = sanitizeInput(e.target.value);
+            e.target.value = sanitized;
+            setSearchTerm(sanitized);
+               }}
             />
 
             <Select
@@ -970,7 +977,11 @@ const AccountManagement = () => {
           <Input
             placeholder="Enter department name"
             value={newDepartment}
-            onChange={(e) => setNewDepartment(e.target.value)}
+             onInput={(e) => {
+            const sanitized = sanitizeInput(e.target.value);
+            e.target.value = sanitized;
+            setNewDepartment(sanitized);
+          }}
             onPressEnter={handleAddDepartment}
           />
 

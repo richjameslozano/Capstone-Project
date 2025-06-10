@@ -64,6 +64,10 @@ const HistoryLog = () => {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [selectedActivityLog, setSelectedActivityLog] = useState(null);
 
+const sanitizeInput = (input) =>
+  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+      .replace(/[^a-zA-Z0-9\s\-.,()]/g, ""); // remove unwanted characters
+
   const fetchUserName = async () => {
     const auth = getAuth();
     const user = auth.currentUser;
@@ -403,13 +407,19 @@ const HistoryLog = () => {
         </Title>
       </div>
  
-        <Input
+          <Input
           placeholder="Search requests..."
           prefix={<SearchOutlined />}
           className="pending-search"
           allowClear
-          onChange={(e) => setSearchQuery(e.target.value)}
+          value={searchQuery}
+          onInput={(e) => {
+            const sanitized = sanitizeInput(e.target.value);
+            e.target.value = sanitized;
+            setSearchQuery(sanitized);
+          }}
         />
+
 
       
         {loading ? (
@@ -515,7 +525,11 @@ const renderProcessedTab = () => (
           prefix={<SearchOutlined />}
           className="activity-search"
           allowClear
-          onChange={(e) => setSearchQuery(e.target.value)}
+           onInput={(e) => {
+            const sanitized = sanitizeInput(e.target.value);
+            e.target.value = sanitized;
+            setSearchQuery(sanitized);
+          }}
         />
        
       </div>

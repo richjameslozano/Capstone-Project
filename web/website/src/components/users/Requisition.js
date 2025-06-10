@@ -18,9 +18,13 @@ import NotificationModal from "../customs/NotificationModal";
 import "../styles/usersStyle/Requisition.css";
 import "../styles/usersStyle/ActivityLog.css";
 
-
+const sanitizeInput = (input) =>
+  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+      .replace(/[^a-zA-Z0-9\s\-.,()]/g, "");
+  
 const { Content } = Layout;
 const { Title } = Typography;
+
 
 const columns2 = [
   {
@@ -1105,6 +1109,8 @@ const Requisition = () => {
     isValid = false;
   }
 
+
+
   const sanitizeData = (data) => {
     return data.map(item => {
       const cleanItem = {};
@@ -2070,9 +2076,9 @@ const Requisition = () => {
                 {/* Category Dropdown */}
                 <select
                     value={searchCategory}
-                    onChange={(e) => {
-                      const selectedCategory = e.target.value;
-                      setSearchCategory(selectedCategory);
+                   onChange={(e) => {
+                    const selectedCategory = sanitizeInput(e.target.value);
+                    setSearchCategory(selectedCategory);
                       if (selectedCategory === "") {
                         setFilteredItems(items);
                       } else {
@@ -2270,7 +2276,8 @@ const Requisition = () => {
                     <Input
                       type="number"
                       value={room}
-                      onChange={(e) => setRoom(e.target.value)}
+                      onChange={(e) => setRoom(sanitizeInput(e.target.value))}
+
                       placeholder="Enter room number"
                       style={{
                         width: "100%",
@@ -2378,7 +2385,8 @@ const Requisition = () => {
                         type="text"
                         placeholder="Please specify"
                         value={customUsageType}
-                        onChange={(e) => setCustomUsageType(e.target.value)}
+                        onChange={(e) => setCustomUsageType(sanitizeInput(e.target.value))}
+
                         style={{
                           width: "100%",
                           marginTop: "8px",
@@ -2401,7 +2409,7 @@ const Requisition = () => {
                   
                   maxLength={100}
                   value={reason}
-                  onChange={(e) => setReason(e.target.value)}
+                   onChange={(e) => setReason(sanitizeInput(e.target.value))}
                   placeholder="Leave a note for the custodian"
                 />
               </div>
