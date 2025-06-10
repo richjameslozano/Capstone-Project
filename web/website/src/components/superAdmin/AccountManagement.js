@@ -619,19 +619,6 @@ const AccountManagement = () => {
       title: "Job Title",
       dataIndex: "jobTitle",
       render: (jobTitle) => (
-        // <Tag
-        //   color={
-        //     jobTitle === "Dean"
-        //       ? "volcano"
-        //       : jobTitle === "Laboratory Custodian"
-        //       ? "geekblue"
-        //       : jobTitle === "Program Chair"
-        //       ? "purple"
-        //       : "green"
-        //   }
-        // >
-        //   {jobTitle.toLowerCase()}
-        // </Tag>
       <Tag
         style={{
           backgroundColor: getTagColor(jobTitle),
@@ -804,37 +791,6 @@ const AccountManagement = () => {
               onFinish={handleSave}
               initialValues={{ role: "User", department: "Nursing" }}
             >
-              {/* <Form.Item
-                name="name"
-                label="Name"
-                rules={[{ required: true, message: "Please enter the name" }]}
-              >
-                <Input placeholder="Enter Name" />
-              </Form.Item> */}
-
-              {/* <Form.Item
-                name="name"
-                label="Name"
-                rules={[{ required: true, message: "Please enter the name" }]}
-              >
-                <Input
-                  placeholder="Enter Name"
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Allow letters & spaces
-                    // Manually trigger the form update
-                    e.target.value = value;
-                  }}
-                  onKeyDown={(e) => {
-                    const allowedKeys = [
-                      "Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", " ", // space
-                    ];
-                    const isLetter = /^[a-zA-Z]$/.test(e.key);
-                    if (!isLetter && !allowedKeys.includes(e.key)) {
-                      e.preventDefault();
-                    }
-                  }}
-                />
-              </Form.Item> */}
 
               <Form.Item
                 name="name"
@@ -864,39 +820,6 @@ const AccountManagement = () => {
                   }}
                 />
               </Form.Item>
-
-              {/* <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: "Please enter the email" },
-                  { type: "email", message: "Enter a valid email" },
-                ]}
-              >
-                <Input placeholder="Enter Email" />
-              </Form.Item> */}
-
-              {/* <Form.Item
-                name="email"
-                label="Email"
-                rules={[
-                  { required: true, message: "Please enter the email" },
-                  { type: "email", message: "Enter a valid email" },
-                ]}
-              >
-                <Input
-                  placeholder="Enter Email"
-                  onChange={(e) => {
-                    const value = e.target.value.replace(/\s/g, ""); // Remove all spaces
-                    e.target.value = value;
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === " ") {
-                      e.preventDefault(); // Block spacebar
-                    }
-                  }}
-                />
-              </Form.Item> */}
 
               <Form.Item
                 name="email"
@@ -934,42 +857,6 @@ const AccountManagement = () => {
                   }}
                 />
               </Form.Item>
-
-              {/* <Form.Item
-                name="employeeId"
-                label="Employee ID"
-                rules={[
-                  { required: true, message: "Please input Employee ID!" },
-                  {
-                    pattern: /^\d{2}-\d{4}$/,
-                    message: "Format must be like 12-0430",
-                  },
-                ]}
-              >
-                <Input placeholder="e.g., 12-0430" />
-              </Form.Item> */}
-
-              {/* <Form.Item
-                name="employeeId"
-                label="Employee ID"
-                rules={[
-                  { required: true, message: "Please input Employee ID!" },
-                  {
-                    pattern: /^\d{2}-\d{4}$/,
-                    message: "Format must be like 12-0430",
-                  },
-                ]}
-              >
-                <Input 
-                  placeholder="e.g., 12-0430"
-                  maxLength={7}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const onlyNumbersAndDash = value.replace(/[^0-9-]/g, "");
-                    e.target.value = onlyNumbersAndDash; 
-                  }}
-                />
-              </Form.Item> */}
 
               <Form.Item
                 name="employeeId"
