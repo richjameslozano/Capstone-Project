@@ -32,7 +32,7 @@ const FinalizeRequestModal = ({
       closable={false}
     >
       <div className="finalize-title-container" style={{}}>
-        <strong style={{fontSize: '18px', color: 'white'}}>Finalize Request</strong>
+        <strong style={{fontSize: '22px', color: 'white'}}>Finalize Request</strong>
       </div>
 
     <div className="modal-whole">
