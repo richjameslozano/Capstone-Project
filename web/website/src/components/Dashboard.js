@@ -716,20 +716,17 @@ const criticalColumns = [
 //critical stock
 
 const getCriticalStockItems = (inventoryItems) => {
-  const DAYS_THRESHOLD = 5; // Or 5 — how many days ahead you want to forecast
-
   if (!inventoryItems || inventoryItems.length === 0) return [];
 
   return inventoryItems.filter(item => {
     const quantity = Number(item.quantity) || 0;
-    const avgDailyUsage = Number(item.dailyAverageUsage) || 0;
+    const criticalLevel = Number(item.criticalLevel) || 0;
 
-    // If no usage data, don't mark as critical
-    if (avgDailyUsage === 0) return false;
-
-    return quantity <= avgDailyUsage * DAYS_THRESHOLD;
+    return quantity <= criticalLevel;
   });
 };
+
+
 
 
 // useEffect to listen for inventory changes and update critical stock list
@@ -1114,41 +1111,42 @@ useEffect(() => {
           <Row gutter={16}>
             <Col xs={24} md={8}>
              <Card title="Critical Stocks" className="critical-card" style={{ marginBottom: '24px' }}>
-               <List
-                                    dataSource={criticalStockList}
-                                    locale={{ emptyText: 'No critical stock' }}
-                                    style={{ maxHeight: 250, overflowY: 'auto' }}
-                                    renderItem={(item) => {
-                                      const quantity = Number(item.quantity) || 0;
-                                      const criticalLevel = Number(item.criticalLevel) || 0;
-                                      const isBelowCritical = quantity <= criticalLevel;
+                            <List
+                              dataSource={criticalStockList}
+                              locale={{ emptyText: 'No critical stock' }}
+                              style={{ maxHeight: 250, overflowY: 'auto' }}
+                              renderItem={(item) => {
+                                const quantity = Number(item.quantity) || 0;
+                                const criticalLevel = Number(item.criticalLevel) || 0;
+                                const isBelowCritical = quantity <= criticalLevel;
 
-                                      return (
-                                        <List.Item>
-                                          <List.Item.Meta
-                                            title={
-                                              <Text strong>
-                                                {item.itemName} (ID: {item.itemId})
-                                              </Text>
-                                            }
-                                            description={
-                                              <>
-                                                <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
-                                                  Remaining Stock: {quantity} / Critical Level: {criticalLevel}
-                                                </Text>
-                                                {isBelowCritical && (
-                                                  <Tag color="red" style={{ marginLeft: 8 }}>
-                                                    Low Stock
-                                                  </Tag>
-                                                )}
-                                              </>
-                                            }
-                                          />
-                                        </List.Item>
-                                      );
-                                    }}
-                                  />
-              </Card>
+                                return (
+                                  <List.Item>
+                                    <List.Item.Meta
+                                      title={
+                                        <Text strong>
+                                          {item.itemName} (ID: {item.itemId})
+                                        </Text>
+                                      }
+                                      description={
+                                        <>
+                                          <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
+                                            Remaining Stock: {Math.round(quantity)} / Critical Level: {Math.round(criticalLevel)}
+                                          </Text>
+                                          {isBelowCritical && (
+                                            <Tag color="red" style={{ marginLeft: 8 }}>
+                                              Low Stock
+                                            </Tag>
+                                          )}
+                                        </>
+                                      }
+                                    />
+                                  </List.Item>
+                                );
+                              }}
+                            />
+                          </Card>
+
               <Card title="Item Expiry" className="item-expiry-card" style={{ marginBottom: '24px' }}>
                 <h4>Expired Items</h4>
                 <Table

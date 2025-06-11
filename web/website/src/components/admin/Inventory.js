@@ -211,7 +211,8 @@ const Inventory = () => {
 
                           batch.update(doc(db, "inventory", docId), {
                             averageDailyUsage: avgDailyUsage,
-                            isCritical: isCritical,
+                             ...(avgDailyUsage > 0 ? { averageDailyUsage: avgDailyUsage } : {}),
+                            
                           });
                         }
                       } catch (err) {

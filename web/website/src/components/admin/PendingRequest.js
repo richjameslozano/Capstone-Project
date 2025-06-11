@@ -1167,26 +1167,27 @@ try {
     };
   })
 );
-  for (const item of enrichedItems) {
+ for (const item of enrichedItems) {
   const requestedQty = item.quantity;
   const itemId = item.selectedItemId;
+  const itemName = item.itemName
 
   console.log("📦 Logging itemUsage for:", itemId);
 
   try {
-    // 1. Log usage
+    // 1. Log the usage
     await addDoc(collection(db, "itemUsage"), {
       itemId: itemId,
       usedQuantity: requestedQty,
       timestamp: serverTimestamp(),
+      itemName:itemName
     });
 
-    // 2. Fetch all itemUsage logs for this item
+    // 2. Fetch all past usage logs
     const usageQuery = query(
       collection(db, "itemUsage"),
       where("itemId", "==", itemId)
     );
-
     const usageSnap = await getDocs(usageQuery);
 
     let total = 0;
@@ -1201,20 +1202,25 @@ try {
       }
     });
 
-    const average = uniqueDates.size > 0 ? total / uniqueDates.size : 0;
+    const daysWithUsage = uniqueDates.size;
+    const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
 
-    // 3. Update the inventory document for this item
+    // 🔄 Assumed buffer of 5 days for critical stock level
+    const bufferDays = 7;
+    const criticalLevel = average * bufferDays;
+
+    // 3. Update inventory with new average and critical level
     const itemRef = doc(db, "inventory", itemId);
     await updateDoc(itemRef, {
       averageDailyUsage: average,
+      criticalLevel: criticalLevel,
     });
 
-    console.log(`✅ Updated averageDailyUsage for ${itemId} ➡️ ${average}`);
+    console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
   } catch (e) {
-    console.error(`❌ Error handling usage for ${itemId}:`, e);
+    console.error(`❌ Error processing usage for ${itemId}:`, e);
   }
 }
-
     // Filter out unchecked items (for rejection)
     const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
       const key = `${selectedRequest.id}-${index}`;
