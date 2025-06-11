@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import {
   UserOutlined,
   DashboardOutlined,
@@ -72,6 +72,16 @@ const LayoutMain = () => {
   const [pageTitle, setPageTitle] = useState("");
   const [loading, setLoading] = useState(false);
   
+
+
+const excludedPaths = useMemo(() => [
+  "/main/inventory",
+  "/main/pending-request",
+], []);
+const shouldShowSpinner = useMemo(() => {
+  return !excludedPaths.some((route) => location.pathname.startsWith(route));
+}, [location.pathname, excludedPaths]);
+
 
   useEffect(() => {
     const handleResize = () => {
@@ -490,6 +500,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
 
 
+
   return (
     <Layout style={{ minHeight: "100vh",  marginLeft: 50, transition: 'margin-left 0.2s' }}>
             <Sider
@@ -570,8 +581,9 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
             borderRadius: borderRadiusLG,
           }}
         >
-<Spin spinning={loading} tip="Loading..." size="large">
+<Spin spinning={shouldShowSpinner && loading} tip="Loading..." size="large">
           <Routes>
+            
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/not-authorized" element={<NotAuthorized />} />
 

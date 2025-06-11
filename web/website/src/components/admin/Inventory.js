@@ -73,6 +73,7 @@ const Inventory = () => {
   const [hasExpiryDate, setHasExpiryDate] = useState(false);
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [filterDepartment, setFilterDepartment] = useState(null);
+  const [loading, setLoading] = useState(true); // default: true
   const db = getFirestore();
 
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
@@ -105,7 +106,6 @@ const Inventory = () => {
     return () => observer.disconnect();
   }, []);
 
-  
 
   // useEffect(() => {
   //   const inventoryRef = collection(db, "inventory");
@@ -153,6 +153,7 @@ const Inventory = () => {
     const unsubscribe = onSnapshot(
       inventoryRef,
       async (snapshot) => {
+        setLoading(true); // Start loading
         try {
           const batch = writeBatch(db); // use batch to reduce writes
 
@@ -226,10 +227,13 @@ const Inventory = () => {
 
         } catch (error) {
           console.error("Error processing inventory snapshot: ", error);
-        }
+        }finally {
+        setLoading(false); // Stop loading
+      }
       },
       (error) => {
         console.error("Error fetching inventory with onSnapshot: ", error);
+        setLoading(false); // Stop loading even on error
       }
     );
 
@@ -1179,7 +1183,7 @@ useEffect(() => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
-    
+             loading={{ spinning: loading, tip: "Loading inventory data..." }}
             onRow={(record) => {
               return {
                 onClick: () => {
