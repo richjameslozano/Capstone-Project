@@ -613,6 +613,7 @@ import SuccessModal from "./customs/SuccessModal";
 import CustomCalendar from "./customs/CustomCalendar";
 import PoliciesModal from "./Policies";
 import "./styles/Dashboard.css";
+import { Tabs } from 'antd';
 import {
   UserOutlined,
   DashboardOutlined,
@@ -1092,137 +1093,143 @@ useEffect(() => {
         </div>
 
 <Content className="content">
-  <Row gutter={[24, 24]}>
+  <Tabs defaultActiveKey="1" style={{ marginTop: 20 }}>
+  <Tabs.TabPane tab="Analytics Center" key="1">
+    <Row gutter={[24, 24]}>
+      <Col xs={24} md={24}>
+        <div className="analytics-box">
+          <div className="analytics-center-wrapper">
+            <h1 style={{ fontWeight: "bold", marginTop: '30px', marginBottom: '40px', fontSize: '26px', marginLeft:'20px'}}>
+              Analytics Center
+            </h1>
+          </div>
 
-    <Col xs={24} md={14}>
-      <div className="analytics-box">
-        <div className="analytics-center-wrapper">
-          <h1 style={{ fontWeight: "bold", marginTop: '30px', marginBottom: '40px', fontSize: '26px', marginLeft:'20px'}}>
-            Analytics Center
-          </h1>
-        </div>
-
-        <Row gutter={16}>
-
-          <Col xs={24} md={12}>
-            <Card title="Item Expiry" className="item-expiry-card" style={{ marginBottom: '24px' }}>
-              <h4>Expired Items</h4>
-              <Table
-                dataSource={expiredItems}
-                columns={expiryColumns}
-                pagination={false}
-                size="small"
-                scroll={{ y: 100 }}
-                locale={{ emptyText: "No expired items" }}
-              />
-              <h4 style={{ marginTop: "20px" }}>Expiring Soon (Next 7 Days)</h4>
-              <Table
-                dataSource={expiringSoonItems}
-                columns={expiryColumns}
-                pagination={false}
-                size="small"
-                scroll={{ y: 100 }}
-                locale={{ emptyText: "No items expiring soon" }}
-              />
-            </Card>
-
-            {/* Critical Stocks */}
-          <Card title="Critical Stocks" className="critical-card" style={{ marginBottom: '24px' }}>
-            <List
-              dataSource={criticalStockList}
-              locale={{ emptyText: 'No data' }}
-              style={{ maxHeight: 250, overflowY: 'auto' }}
-              renderItem={(item) => {
-                const isBelowCritical = (item.quantity ?? 0) <= (item.criticalLevel ?? 0);
-                return (
-                  <List.Item>
-                    <List.Item.Meta
-                      title={
-                        <Text strong>
-                          {item.itemName} (ID: {item.itemId})
-                        </Text>
-                      }
-                      description={
-                        <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
-                          Remaining Stock: {item.quantity ?? 0}
-
-                        </Text>
-                      }
-                    />
-                  </List.Item>
-                );
-              }}
-            />
-          </Card>
-
-          </Col>
-
-          <Col xs={24} md={12}>
-               
-            {/* Recently Added Products */}
-<Card title="Recently Added Products" style={{marginBottom:'24px'}} className="sales-card-header">
-              <div style={{ height: '234px', overflowY: 'auto'}}> 
+          <Row gutter={16}>
+            <Col xs={24} md={8}>
+             <Card title="Critical Stocks" className="critical-card" style={{ marginBottom: '24px' }}>
                 <List
-                  dataSource={recentProducts}
-                  renderItem={(item) => (
-                    <List.Item>
-                      <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontWeight: 500 }}>{item.itemName}</div>
-                          <small style={{ color: "#888" }}>{item.category}</small>
-                        </div>
-                        <div style={{ color: '#555', fontSize: '0.9em' }}>{item.entryCurrentDate}</div>
-                      </div>
-                    </List.Item>
-                  )}
+                  dataSource={criticalStockList}
+                  locale={{ emptyText: 'No data' }}
+                  style={{ maxHeight: 250, overflowY: 'auto' }}
+                  renderItem={(item) => {
+                    const isBelowCritical = (item.quantity ?? 0) <= (item.criticalLevel ?? 0);
+                    return (
+                      <List.Item>
+                        <List.Item.Meta
+                          title={<Text strong>{item.itemName} (ID: {item.itemId})</Text>}
+                          description={
+                            <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
+                              Remaining Stock: {item.quantity ?? 0}
+                            </Text>
+                          }
+                        />
+                      </List.Item>
+                    );
+                  }}
                 />
+              </Card>
+              <Card title="Item Expiry" className="item-expiry-card" style={{ marginBottom: '24px' }}>
+                <h4>Expired Items</h4>
+                <Table
+                  dataSource={expiredItems}
+                  columns={expiryColumns}
+                  pagination={false}
+                  size="small"
+                  scroll={{ y: 100 }}
+                  locale={{ emptyText: "No expired items" }}
+                />
+                <h4 style={{ marginTop: "20px" }}>Expiring Soon (Next 7 Days)</h4>
+                <Table
+                  dataSource={expiringSoonItems}
+                  columns={expiryColumns}
+                  pagination={false}
+                  size="small"
+                  scroll={{ y: 100 }}
+                  locale={{ emptyText: "No items expiring soon" }}
+                />
+              </Card>
+
+             
+            </Col>
+
+            <Col xs={24} md={8}>
+
+                <Card title="Items for Replace" className="damaged-card" style={{ marginBottom: 24 }}>
+                <Table
+                  dataSource={damagedItems.filter(item => item.damageQty > 0)}
+                  columns={[
+                    { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
+                    { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
+                    { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
+                    { title: "Damaged", dataIndex: "damageQty", key: "damageQty", width: 100 },
+                  ]}
+                  pagination={{ pageSize: 5 }}
+                  size="small"
+                  locale={{ emptyText: "No damaged items" }}
+                  scroll={{ y: 100 }}
+                />
+              </Card>
+
+              <Card title="Recently Added Items" style={{marginBottom:'24px'}} className="sales-card-header">
+                <div style={{ height: '234px', overflowY: 'auto'}}> 
+                  <List
+                    dataSource={recentProducts}
+                    renderItem={(item) => (
+                      <List.Item>
+                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
+                          <div>
+                            <div style={{ fontWeight: 500 }}>{item.itemName}</div>
+                            <small style={{ color: "#888" }}>{item.category}</small>
+                          </div>
+                          <div style={{ color: '#555', fontSize: '0.9em' }}>{item.entryCurrentDate}</div>
+                        </div>
+                      </List.Item>
+                    )}
+                  />
                 </div>
-            </Card>
-                        {/* Damaged / Defective Items */}
-           <Card title="Items for Replace" className="damaged-card" style={{ marginBottom: 24 }}>
-            <Table
-              dataSource={damagedItems.filter(item => item.damageQty > 0)}
-              columns={[
-                { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
-                { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
-                { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
-                { title: "Damaged", dataIndex: "damageQty", key: "damageQty", width: 100 },
-              ]}
-              pagination={{ pageSize: 5 }}
-              size="small"
-              locale={{ emptyText: "No damaged items" }}
-            />
-          </Card>
-
-          <Card title="Items for Repair" className="defective-card">
-            <Table
-              dataSource={damagedItems.filter(item => item.defectQty > 0)}
-              columns={[
-                { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
-                { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
-                { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
-                { title: "Defective", dataIndex: "defectQty", key: "defectQty", width: 100 },
-              ]}
-              pagination={{ pageSize: 5 }}
-              size="small"
-              locale={{ emptyText: "No defective items" }}
-            />
-          </Card>
-
-          </Col>
-        </Row>
-      </div>
-    </Col>
+              </Card>
 
 
-    <Col xs={24} md={10}>
-      <div className="calendar-box">
-        <Card title="Calendar" style={{ height: '100%', width:'100%' }}>
-          <CustomCalendar onSelectDate={handleDateSelect} />
+
+            </Col>
+              <Col xs={24} md={8}>
+              <Card title="Items for Repair" className="defective-card">
+                <Table
+                  dataSource={damagedItems.filter(item => item.defectQty > 0)}
+                  columns={[
+                    { title: "Item Name", dataIndex: "itemName", key: "itemName", width: 105 },
+                    { title: "Item ID", dataIndex: "itemId", key: "itemId", width: 100 },
+                    { title: "Lab Room", dataIndex: "labRoom", key: "labRoom", width: 100 },
+                    { title: "Defective", dataIndex: "defectQty", key: "defectQty", width: 100 },
+                  ]}
+                  scroll={{ y: 100 }}
+                  pagination={{ pageSize: 5 }}
+                  size="small"
+                  locale={{ emptyText: "No defective items" }}
+                />
+              </Card>
+            </Col>
+          </Row>
+        </div>
+      </Col>
+      
+    </Row>
+  </Tabs.TabPane>
+
+<Tabs.TabPane tab="Calendar" key="2">
+  <Row gutter={[24, 24]} justify="center">
+    <Col xs={24} style={{ width: '100%' }}>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <Card title="Calendar" style={{ width: '100%', minHeight: 600 }}>
+          <div style={{ minHeight: 500, width: '100%' }}>
+            <CustomCalendar onSelectDate={handleDateSelect} />
+          </div>
         </Card>
       </div>
     </Col>
   </Row>
+</Tabs.TabPane>
+</Tabs>
 </Content>
                     
          <SuccessModal isVisible={showModal} onClose={closeModal} />
