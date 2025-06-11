@@ -1740,14 +1740,14 @@ const Login = () => {
 
                     {/* ✅ Only show if email was checked AND isNewUser is true */}
                     {/* {isNewUser && emailChecked && formData.password && ( */}
-                    {!isNewUser && emailChecked && formData.password && (
+                    {/* {!isNewUser && emailChecked && formData.password && (
                         <small
                           className="password-hint"
                           style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}
                         >
                           Password must be at least 8 characters long and include a letter, a number, and a special character.
                         </small>
-                      )}
+                      )} */}
                   </div>
   
                   {/* {isNewUser && (
