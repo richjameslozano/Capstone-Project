@@ -36,7 +36,7 @@ const PendingRequest = () => {
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
   const [firstRequestMap, setFirstRequestMap] = useState({});
  
-  const [loading, setLoading] = useState(true);
+
 
 const sanitizeInput = (input) =>
   input
@@ -68,7 +68,7 @@ useEffect(() => {
   const unsubscribe = onSnapshot(
     q,
     async (querySnapshot) => {
-      setLoading(true); // Start loading
+  
 
       const fetched = [];
 
@@ -137,10 +137,10 @@ useEffect(() => {
       setRequests(fetched);
       setFirstRequestMap(simpleFirstRequestMap);
 
-      setLoading(false); // End loading
+    
     },
     (error) => {
-      setLoading(false);
+  
       console.error("Error fetching user requests:", error);
     }
   );
@@ -1956,7 +1956,7 @@ useEffect(() => {
             </div>
 
         
-<Spin spinning={loading} tip="Loading requests...">
+
   <div>
     {Object.entries(categorizedRequests).map(([label, group]) => {
       if (group.length === 0) return null;
@@ -2149,7 +2149,7 @@ useEffect(() => {
             );
           })}
         </div>
-      </Spin>
+
 
         <Modal
           title="Reject Reason"
