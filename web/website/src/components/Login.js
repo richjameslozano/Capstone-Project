@@ -1765,7 +1765,7 @@ const Login = () => {
                           className="toggle-password"
                           onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                         >
-                          {showConfirmPassword ? "🔒" : "👁️"}
+                          {showConfirmPassword ? <EyeInvisibleOutlined/>: <EyeOutlined/>}
                         </span>
                       </div>
 
