@@ -50,6 +50,7 @@ import NotAuthorized from './NotAuthorized';
 import CapexList from './admin/CapexList';
 import LabRoomQR from './admin/LabRoomQR';
 import PrivacyPolicy from './PrivacyPolicy';
+import ApprovalRequest from './admin/ApprovalRequest';
 import './styles/LayoutMain.css'
 import { Spin } from 'antd';
 
@@ -211,6 +212,11 @@ const LayoutMain = () => {
         setPageTitle("Lab Room Details");
         break;
 
+    case "/main/approval-requeest":
+        setSelectedKey("20");
+        setPageTitle("Approval Request");
+        break;
+
       default:
         setSelectedKey("1");
         setPageTitle("Dashboard");
@@ -333,6 +339,11 @@ const LayoutMain = () => {
           key: "/main/borrow-catalog",
           icon: <ShoppingOutlined />,
           label: "Borrow Catalog",
+        },
+        {
+          key: "/main/approval-request",
+          icon: <ShoppingOutlined />,
+          label: "Apporval Request",
         },
         {
           key: "/main/request-log",
@@ -587,10 +598,11 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               <Route path="/lab-room" element={<LabRoomQR/>} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={["admin", "super-user"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />
               <Route path="/accounts" element={<AccountManagement />} />
               <Route path="/pending-accounts" element={<PendingAccounts />} />
+              <Route path="/approval-request" element={<ApprovalRequest/>} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
