@@ -507,7 +507,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               {!collapsed || isMobile ? (
                 <>
                   <h3 className="logo-title">NU MOA</h3>
-                  <p className="logo-subtitle">Laboratory System</p>
+                   <p className="logo-subtitle">Laboratory System</p>
                 </>
               ) : (
                 <h3 className="logo-title">NU MOA</h3>

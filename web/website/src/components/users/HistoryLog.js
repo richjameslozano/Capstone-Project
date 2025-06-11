@@ -402,9 +402,6 @@ const sanitizeInput = (input) =>
     const renderPendingTab = () => (
     <Content className="pending-content">
             <div className="activity-header">
-        <Title level={3} style={{fontSize:'36px'}}>
-          <span className="icon-activity"></span> Request List
-        </Title>
       </div>
  
           <Input
@@ -502,9 +499,6 @@ const sanitizeInput = (input) =>
 const renderProcessedTab = () => (
     <Content className="activity-content">
       <div className="activity-header">
-        <Title level={3} style={{fontSize:'36px'}}>
-          <span className="icon-activity"></span> Processed Request
-        </Title>
       </div>
       <div className="activity-controls">
          <Select
@@ -572,31 +566,6 @@ const renderProcessedTab = () => (
                   {selectedLog.program || "N/A"}
                 </Descriptions.Item>
 
-                {/* <Descriptions.Item label="Items Requested">
-                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                    <ul style={{ paddingLeft: 20 }}>
-                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                        <li key={index} style={{ marginBottom: 10 }}>
-                          <strong>{item.itemName}</strong>
-                          <ul style={{ marginLeft: 20 }}>
-                            <li>Quantity: {item.quantity}</li>
-                            {item.category && <li>Category: {item.category}</li>}
-                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                            {item.itemType && <li>Item Type: {item.itemType}</li>}
-                            {item.department && <li>Department: {item.department}</li>}
-                            {selectedLog.action === "Request Rejected" && item.reason && (
-                              <li><strong>Rejection Reason:</strong> {item.reason}</li>
-                            )}
-                          </ul>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    "None"
-                  )}
-                </Descriptions.Item> */}
-
                 <Descriptions.Item label="Items Requested">
                   {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
                     <ul style={{ paddingLeft: 20 }}>
@@ -613,27 +582,12 @@ const renderProcessedTab = () => (
                             {item.category === "Glasswares" && item.volume && (
                               <li>Volume: {item.volume}</li>
                             )}
-                            {/* {item.condition && <li>Condition: {item.condition}</li>} */}
-                            {/* {item.condition && (
-                              <li>
-                                Condition:
-                                <ul>
-                                  <li>Good: {item.condition.Good ?? 0}</li>
-                                  <li>Defect: {item.condition.Defect ?? 0}</li>
-                                  <li>Damage: {item.condition.Damage ?? 0}</li>
-                                </ul>
-                              </li>
-                            )} */}
+
                             {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
                             {item.usageType && <li>Usage Type: {item.usageType}</li>}
                             {item.itemType && <li>Item Type: {item.itemType}</li>}
                             {item.department && <li>Department: {item.department}</li>}
-                            {/* {selectedLog.action === "Request Rejected" && item.reason && (
-                              <li><strong>Rejection Reason:</strong> {item.reason}</li>
-                            )} */}
-                            {/* {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
-                              <li><strong>Rejection Reason:</strong> {item.rejectionReason || item.reason}</li>
-                            )} */}
+
                             {selectedLog.action === "Request Rejected" && (item.reason || item.rejectionReason) && (
                               <>
                                 {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
