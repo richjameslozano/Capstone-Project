@@ -216,7 +216,7 @@ export default function InventoryStocks({ }) {
 
 const formatCondition = (cond) => {
   if (cond && typeof cond === 'object') {
-    return `Good: ${cond.Good ?? 0}\nDefect: ${cond.Defect ?? 0}\nDamage: ${cond.Damage ?? 0}`;
+    return `Good: ${cond.Good ?? 0}\nDefect: ${cond.Defect ?? 0}\nDamage: ${cond.Damage ?? 0}\nLost: ${cond.Lost ?? 0}`;
   }
 
   return cond || 'N/A';

@@ -1215,7 +1215,7 @@ export default function InventoryScreen({ navigation }) {
                 <Text style={styles.itemType}>
                   Condition: {
                     selectedItem?.condition && typeof selectedItem.condition === 'object'
-                      ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
+                      ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}, Lost: ${selectedItem.condition.Lost ?? 0}`
                       : selectedItem?.condition || 'N/A'
                   }
                 </Text>
