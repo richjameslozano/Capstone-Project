@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   UserOutlined,
   DashboardOutlined,
@@ -51,6 +51,8 @@ import CapexList from './admin/CapexList';
 import LabRoomQR from './admin/LabRoomQR';
 import PrivacyPolicy from './PrivacyPolicy';
 import './styles/LayoutMain.css'
+import { Spin } from 'antd';
+
 const { Header, Sider, Content } = Layout;
 
 const LayoutMain = () => {
@@ -67,6 +69,8 @@ const LayoutMain = () => {
   const [showModal, setShowModal] = useState(false);
   const [role, setRole] = useState("");
   const [pageTitle, setPageTitle] = useState("");
+  const [loading, setLoading] = useState(false);
+  
 
   useEffect(() => {
     const handleResize = () => {
@@ -75,10 +79,22 @@ const LayoutMain = () => {
         setMobileOpen(false); 
       }
     };
-  
+
+
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+   useEffect(() => {
+  setLoading(true); // Start loading on path change
+
+  // Simulate load time or wait for actual content to render
+  const timer = setTimeout(() => {
+    setLoading(false);
+  }, 500); // Adjust as needed
+
+  return () => clearTimeout(timer);
+}, [location.pathname]);
 
   useEffect(() => {
     const state = location.state || {};
@@ -267,94 +283,7 @@ const LayoutMain = () => {
     },
   ];
 
-// const adminMenuItems = [
 
-//     {
-//     type: "group",
-//       label: (
-//     <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-//       <UserOutlined />
-//       Faculty panel
-//     </span>
-//   ),
-//     children: [
-//       {
-//         key: "/main/requisition",
-//         icon: <FileDoneOutlined />,
-//         label: "Requisition",
-//       },
-//       {
-//         key: "/main/return-items",
-//         icon: <RollbackOutlined />,
-//         label: "Return Items",
-//       },
-//       {
-//         key: "/main/orders",
-//         icon: <ShoppingCartOutlined />,
-//         label: "Orders",
-//       },
-//     ],
-//   },
-//     {
-//       type: "group",
-//       icon: <UserSwitchOutlined/>,
-//        label: (
-//     <span style={{ display: 'flex', alignItems: 'center', gap: 8}}>
-//       <UserSwitchOutlined />
-//       Admin Panel
-//     </span>
-//   ),
-//       children: [
-//       {
-//         key: "/main/dashboard",
-//         icon: <DashboardOutlined />,
-//         label: "Dashboard",
-//       },
-//       {
-//         key: "/main/inventory",
-//         icon: <UnorderedListOutlined />,
-//         label: "Inventory",
-//       },
-//       {
-//         key: "/main/pending-request",
-//         icon: <FileTextOutlined />,
-//         label: "Pending Requests",
-//       },
-//       {
-//         key: "/main/borrow-catalog",
-//         icon: <ShoppingOutlined />,
-//         label: "Borrow Catalog",
-//       },
-//       {
-//         key: "/main/request-log",
-//         icon: <DatabaseOutlined />,
-//         label: "Request Log",
-//       },
-//       {
-//         key: "/main/capex-request-list",
-//         icon: <DollarCircleOutlined />,
-//         label: "Capex Request List",
-//       },
-//       {
-//         key: "/main/lab-room",
-//         icon: <HomeOutlined />,
-//         label: "Stock Room Details",
-//       },
-//     ],
-//   },
-//   {
-//     key: "/main/admin-activity-log",
-//     icon: <HistoryOutlined />,
-//     label: "Activity Log",
-//   },
-//   {
-//     key: "logout",
-//     icon: <LogoutOutlined />,
-//     label: "Sign Out",
-//     danger: true,
-    
-//   },
-// ];
 
   const adminMenuItems = [
     {
@@ -630,7 +559,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
             borderRadius: borderRadiusLG,
           }}
         >
-
+<Spin spinning={loading} tip="Loading..." size="large">
           <Routes>
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
             <Route path="/not-authorized" element={<NotAuthorized />} />
@@ -678,6 +607,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
             <Route path="/not-authorized" element={<NotAuthorized />} />
           </Routes>
+          </Spin>
         </Content>
         
         <CustomModal
