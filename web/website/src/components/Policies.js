@@ -32,26 +32,27 @@ const PoliciesModal = ({ isOpen, onClose }) => {
 
   if (!isOpen) return null;
 
-  return (
-    <div className="modal-overlay">
+return (
+  <div className="modal-overlay">
+
+    <div className="modal-box-wrapper">
       <div className="modal-container" ref={modalRef}>
+
         <div className="modal-header">
-          <h2>Laboratory Policies</h2>
-          <button className="close-btn" onClick={handleClose}>
+          <h2 className="modal-title">Laboratory Policies</h2>
+          <button className="close-btn close-top-right" onClick={handleClose}>
             &times;
           </button>
         </div>
+
         <div className="modal-body">
           <p>
-            LABORATORY REQUESTS MUST BE SUBMITTED (7) SEVEN DAYS BEFORE THE SCHEDULED DATE NEEDED.
-            FAILURE TO ADHERE WITH THIS PROTOCOL WILL RESULT TO NON-FULFILLMENT OF THE REQUEST.
-            <br /><br />
-            RETURN THE BORROWED ITEMS TO THE LABORATORY STOCK ROOM.
-            MICROSCOPES, GLASSWARES AND EQUIPMENTS MUST BE CLEANED AND IN INTACT CONDITION.
-            DIRTY, MISSING, BROKEN AND EXTREMELY DAMAGED LABORATORY ITEMS SHOULD BE REPORTED TO
-            THE LABORATORY CUSTODIAN FOR PROPER DOCUMENTATION.
+            Laboratory requests must be submitted (7) seven days before the scheduled date needed.<br /><br />
+            Failure to adhere with this protocol will result in non-fulfillment of the request.<br /><br />
+            Return the borrowed items to the laboratory stock room. Microscopes, glasswares, and equipment must be cleaned and in an intact condition. Dirty, missing, broken, and extremely damaged laboratory items should be reported to the laboratory custodian for proper documentation.
           </p>
         </div>
+
         <div className="modal-footer">
           <label className="checkbox-container">
             <input
@@ -59,7 +60,7 @@ const PoliciesModal = ({ isOpen, onClose }) => {
               checked={dontShowAgain}
               onChange={(e) => setDontShowAgain(e.target.checked)}
             />
-            Don't show this again
+            &nbsp;Don't show this again
           </label>
           <button className="close-btn" onClick={handleClose}>
             Close
@@ -67,7 +68,8 @@ const PoliciesModal = ({ isOpen, onClose }) => {
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 };
 
 export default PoliciesModal;
