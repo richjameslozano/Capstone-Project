@@ -204,6 +204,7 @@ const ReturnItems = () => {
         Good: 0,
         Damage: 0,
         Defect: 0,
+        Lost: 0,
       };
 
       const newCounts = { ...existingConditionCount };
@@ -431,6 +432,7 @@ const ReturnItems = () => {
                                 <Picker.Item label="Good" value="Good" />
                                 <Picker.Item label="Defect" value="Defect" />
                                 <Picker.Item label="Damage" value="Damage" />
+                                <Picker.Item label="Lost" value="Lost" />
                               </Picker>
                             </View>
                           </View>

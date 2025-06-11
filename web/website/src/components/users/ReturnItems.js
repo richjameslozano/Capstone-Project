@@ -853,9 +853,6 @@ const ReturnItems = () => {
   
       const timestamp = serverTimestamp();
       const currentDateString = new Date().toISOString();
-
-
-
   
       const fullReturnData = {
         accountId: userId,
@@ -880,6 +877,7 @@ const ReturnItems = () => {
           );
           return {
             ...item,
+            itemId: item.itemIdFromInventory,
             returnedQuantity: conditions.length,
             conditions,
             scannedCount: 0,
@@ -906,6 +904,7 @@ const ReturnItems = () => {
         Good: 0,
         Damage: 0,
         Defect: 0,
+        Lost: 0,
       };
 
       // Tally condition counts from the returned units
@@ -1136,6 +1135,7 @@ const ReturnItems = () => {
                           <Option value="Good">Good</Option>
                           <Option value="Defect">Defect</Option>
                           <Option value="Damage">Damage</Option>
+                          <Option value="Lost">Lost</Option>
                         </Select>
                       );
                     },

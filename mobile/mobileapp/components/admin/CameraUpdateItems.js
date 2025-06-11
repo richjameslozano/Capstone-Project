@@ -275,11 +275,12 @@ const handleAddQuantity = async (addedQuantity, expiryDate) => {
       const data = docSnap.data();
 
       // ✅ Compute updated quantity and condition
-      const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
+      const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
       const newCondition = {
         Good: prevCondition.Good + addedQuantity,
         Defect: prevCondition.Defect,
         Damage: prevCondition.Damage,
+        Lost: prevCondition.Lost,
       };
 
       const updatedData = {
@@ -341,11 +342,12 @@ const handleAddQuantity = async (addedQuantity, expiryDate) => {
     const data = itemDocSnap.data();
 
     // ✅ Compute updated quantity and condition for labRoom
-    const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
+    const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
     const newCondition = {
       Good: prevCondition.Good + addedQuantity,
       Defect: prevCondition.Defect,
       Damage: prevCondition.Damage,
+      Lost: prevCondition.Lost,
     };
 
     const updatedRoomData = {

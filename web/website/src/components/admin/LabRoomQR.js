@@ -57,7 +57,7 @@ const LabRoomQR = () => {
                   id: itemDoc.id,
                   category: itemData.category || "N/A",
                   condition: itemData.condition
-                    ? `Good: ${itemData.condition.Good ?? 0}, Defect: ${itemData.condition.Defect ?? 0}, Damage: ${itemData.condition.Damage ?? 0}`
+                    ? `Good: ${itemData.condition.Good ?? 0}, Defect: ${itemData.condition.Defect ?? 0}, Damage: ${itemData.condition.Damage ?? 0}, Lost: ${itemData.condition.Lost ?? 0}`
                     : "N/A",
                   department: itemData.department || "N/A",
                   entryCurrentDate: itemData.entryCurrentDate || "N/A",

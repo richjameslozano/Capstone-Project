@@ -13,7 +13,28 @@
   padding: 1rem;
   z-index: 9999 !important;
 }
+.terms-modal {
+  padding: 1.5rem;
+  background: white;
+  border-radius: 8px;
+  max-width: 800px;
+  margin: 0 auto;
+}
 
+
+.terms-content h3 {
+  text-align: left !important;
+  margin-top: 2.5rem;  /* Increased spacing above the heading */
+  margin-bottom: 0.75rem;  /* Slightly more space below */
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #34495e;
+}
+
+.terms-content ul {
+  margin-left: 1.25rem;
+  list-style: disc;
+}
 /* Modal Content Box */
 .modal-content {
   background-color: #fff;

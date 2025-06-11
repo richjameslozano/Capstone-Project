@@ -332,7 +332,7 @@ const SearchItems = () => {
 
                   <Descriptions.Item label="Condition">
                     {selectedItem.condition
-                      ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}`
+                      ? `Good: ${selectedItem.condition.Good ?? 0}, Defect: ${selectedItem.condition.Defect ?? 0}, Damage: ${selectedItem.condition.Damage ?? 0}, Lost: ${selectedItem.condition.Lost ?? 0}`
                       : "N/A"}
                   </Descriptions.Item>
 

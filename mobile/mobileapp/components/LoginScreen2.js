@@ -264,19 +264,46 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         } else {
           // ✅ Firebase Auth login for regular users/admins
           try {
-            await signInWithEmailAndPassword(auth, email, password);
-            await updateDoc(userDoc.ref, { loginAttempts: 0 });
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const signedInUser = userCredential.user;
+            
+            // await signInWithEmailAndPassword(auth, email, password);
+            // await updateDoc(userDoc.ref, { loginAttempts: 0 });
     
+            // const role = (userData.role || "user").toLowerCase();
+            // login({ ...userData, id: userDoc.id });
+
+            // console.log("Login Succesfull!")
+    
+            // await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
+            //   action: "User Logged In (Mobile)",
+            //   userName: userData.name || "User",
+            //   timestamp: serverTimestamp(),
+              
+            // });
+
+            // 🔁 Force reload to ensure latest email verification status
+            await signedInUser.reload();
+            const refreshedUser = auth.currentUser;
+
+            if (!refreshedUser || !refreshedUser.emailVerified) {
+              await signOut(auth);
+              setError("Please verify your email before logging in.");
+              setLoading(false);
+              return;
+            }
+
+            await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
             const role = (userData.role || "user").toLowerCase();
             login({ ...userData, id: userDoc.id });
 
-            console.log("Login Succesfull!")
-    
+            console.log("Login Successful!");
+
             await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
               action: "User Logged In (Mobile)",
               userName: userData.name || "User",
               timestamp: serverTimestamp(),
-              
             });
     
             switch (role) {
@@ -428,9 +455,29 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
           // const firebaseUser = userCredential.user;
       
+          // let role = "user";
+          // if (jobTitle.toLowerCase() === "dean") {
+          //   role = "admin";
+
+          // } else if (jobTitle.toLowerCase() === "program chair") {
+          //   role = "admin";
+
+          // } else if (jobTitle.toLowerCase().includes("custodian")) {
+          //   role = "super-user";
+
+          // } else if (jobTitle.toLowerCase() === "faculty") {
+          //   role = "user";
+          // }
+
           let role = "user";
+
           if (jobTitle.toLowerCase() === "dean") {
-            role = "admin";
+            if (department.toLowerCase() === "sah") {
+              role = "admin";
+
+            } else {
+              role = "user";
+            }
 
           } else if (jobTitle.toLowerCase() === "program chair") {
             role = "admin";
@@ -441,7 +488,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           } else if (jobTitle.toLowerCase() === "faculty") {
             role = "user";
           }
-      
+
           const sanitizedData = {
             name: name.trim(),
             email: email.trim().toLowerCase(),

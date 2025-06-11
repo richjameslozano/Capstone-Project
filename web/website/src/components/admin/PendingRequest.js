@@ -36,7 +36,7 @@ const PendingRequest = () => {
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
   const [firstRequestMap, setFirstRequestMap] = useState({});
  
-  const [loading, setLoading] = useState(true);
+
 
 const sanitizeInput = (input) =>
   input
@@ -68,7 +68,7 @@ useEffect(() => {
   const unsubscribe = onSnapshot(
     q,
     async (querySnapshot) => {
-      setLoading(true); // Start loading
+  
 
       const fetched = [];
 
@@ -137,10 +137,10 @@ useEffect(() => {
       setRequests(fetched);
       setFirstRequestMap(simpleFirstRequestMap);
 
-      setLoading(false); // End loading
+    
     },
     (error) => {
-      setLoading(false);
+  
       console.error("Error fetching user requests:", error);
     }
   );
@@ -380,10 +380,12 @@ try {
           const good = data.condition?.Good ?? 0;
           const damage = data.condition?.Damage ?? 0;
           const defect = data.condition?.Defect ?? 0;
+          const lost = data.condition?.Lost ?? 0;
 
           let newGood = good;
           let newDamage = damage;
           let newDefect = defect;
+          let newLost = lost;
 
           if (remaining > 0) {
             const deductFromGood = Math.min(newGood, remaining);
@@ -403,13 +405,18 @@ try {
             remaining -= deductFromDefect;
           }
 
+          if (remaining > 0) {
+            const deductFromLost = Math.min(newLost, remaining);
+            newLost -= deductFromLost;
+            remaining -= deductFromLost;
+          }
+
           await updateDoc(inventoryRef, {
             'condition.Good': newGood,
             'condition.Damage': newDamage,
-            'condition.Defect': newDefect
+            'condition.Defect': newDefect,
+            'condition.Lost' : newLost,
           });
-
-         
 
 
           // 🔁 Update labRoom item quantity
@@ -453,6 +460,7 @@ try {
           let labGood = labData.condition?.Good ?? 0;
           let labDamage = labData.condition?.Damage ?? 0;
           let labDefect = labData.condition?.Defect ?? 0;
+          let labLost = labData.condition?.Lost ?? 0;
 
           let remainingLab = requestedQty;
 
@@ -474,13 +482,18 @@ try {
             remainingLab -= deductFromLabDefect;
           }
 
+          if (remainingLab > 0) {
+            const deductFromLabLost = Math.min(labLost, remainingLab);
+            labLost -= deductFromLabLost;
+            remainingLab -= deductFromLabLost;
+          }
+
           await updateDoc(labRoomItemRef, {
             'condition.Good': labGood,
             'condition.Damage': labDamage,
-            'condition.Defect': labDefect
+            'condition.Defect': labDefect,
+            'condition.Lost' : labLost,
           });
-
-        
         }
         
       } catch (err) {
@@ -804,10 +817,12 @@ try {
           const good = data.condition?.Good ?? 0;
           const damage = data.condition?.Damage ?? 0;
           const defect = data.condition?.Defect ?? 0;
+          const lost = data.condition?.Lost ?? 0;
 
           let newGood = good;
           let newDamage = damage;
           let newDefect = defect;
+          let newLost = lost;
 
           if (remaining > 0) {
             const deductFromGood = Math.min(newGood, remaining);
@@ -827,13 +842,18 @@ try {
             remaining -= deductFromDefect;
           }
 
+          if (remaining > 0) {
+            const deductFromLost = Math.min(newLost, remaining);
+            newLost -= deductFromLost;
+            remaining -= deductFromLost;
+          }
+
           await updateDoc(inventoryRef, {
             'condition.Good': newGood,
             'condition.Damage': newDamage,
-            'condition.Defect': newDefect
+            'condition.Defect': newDefect,
+            'condition.Lost' : newLost,
           });
-
-      
           
           // 🔁 Update labRoom item quantity
           const roomNumber = item.labRoom; // e.g. "0930"
@@ -876,6 +896,7 @@ try {
           let labGood = labData.condition?.Good ?? 0;
           let labDamage = labData.condition?.Damage ?? 0;
           let labDefect = labData.condition?.Defect ?? 0;
+          let labLost = labData.condition?.Lost ?? 0;
 
           let remainingLab = requestedQty;
 
@@ -897,10 +918,17 @@ try {
             remainingLab -= deductFromLabDefect;
           }
 
+          if (remainingLab > 0) {
+            const deductFromLabLost = Math.min(labLost, remainingLab);
+            labLost -= deductFromLabLost;
+            remainingLab -= deductFromLabLost;
+          }
+
           await updateDoc(labRoomItemRef, {
             'condition.Good': labGood,
             'condition.Damage': labDamage,
-            'condition.Defect': labDefect
+            'condition.Defect': labDefect,
+            'condition.Lost' : labLost,
           });
 
           
@@ -1295,10 +1323,12 @@ try {
           const good = data.condition?.Good ?? 0;
           const damage = data.condition?.Damage ?? 0;
           const defect = data.condition?.Defect ?? 0;
+          const lost = data.condition?.Lost ?? 0;
 
           let newGood = good;
           let newDamage = damage;
           let newDefect = defect;
+          let newLost = lost;
 
           if (remaining > 0) {
             const deductFromGood = Math.min(newGood, remaining);
@@ -1318,10 +1348,17 @@ try {
             remaining -= deductFromDefect;
           }
 
+          if (remaining > 0) {
+            const deductFromLost = Math.min(newLost, remaining);
+            newLost -= deductFromLost;
+            remaining -= deductFromLost;
+          }
+
           await updateDoc(inventoryRef, {
             'condition.Good': newGood,
             'condition.Damage': newDamage,
-            'condition.Defect': newDefect
+            'condition.Defect': newDefect,
+            'condition.Lost' : newLost,
           });
 
          
@@ -1369,6 +1406,7 @@ try {
           let labGood = labData.condition?.Good ?? 0;
           let labDamage = labData.condition?.Damage ?? 0;
           let labDefect = labData.condition?.Defect ?? 0;
+          let labLost = labData.condition?.Lost ?? 0;
 
           let remainingLab = requestedQty;
 
@@ -1390,10 +1428,17 @@ try {
             remainingLab -= deductFromLabDefect;
           }
 
+          if (remainingLab > 0) {
+            const deductFromLabLost = Math.min(labLost, remainingLab);
+            labLost -= deductFromLabLost;
+            remainingLab -= deductFromLabLost;
+          }
+
           await updateDoc(labRoomItemRef, {
             'condition.Good': labGood,
             'condition.Damage': labDamage,
-            'condition.Defect': labDefect
+            'condition.Defect': labDefect,
+            'condition.Lost' : labLost,
           });
 
           
@@ -1956,7 +2001,7 @@ useEffect(() => {
             </div>
 
         
-<Spin spinning={loading} tip="Loading requests...">
+
   <div>
     {Object.entries(categorizedRequests).map(([label, group]) => {
       if (group.length === 0) return null;
@@ -2149,7 +2194,7 @@ useEffect(() => {
             );
           })}
         </div>
-      </Spin>
+
 
         <Modal
           title="Reject Reason"
