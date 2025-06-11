@@ -1183,10 +1183,30 @@ const Login = () => {
       }
   
       // Step 5: Determine the role based on the job title
-      let role = "user"; 
-      if (jobTitle.toLowerCase() === "dean") {
-        role = "admin";
+      // let role = "user"; 
+      // if (jobTitle.toLowerCase() === "dean") {
+      //   role = "admin";
 
+      // } else if (jobTitle.toLowerCase() === "program chair") {
+      //   role = "admin";
+
+      // } else if (jobTitle.toLowerCase().includes("custodian")) {
+      //   role = "super-user";
+
+      // } else if (jobTitle.toLowerCase() === "faculty") {
+      //   role = "user";
+      // }
+
+      // Step 5: Determine the role based on the job title and department
+      let role = "user"; 
+
+      if (jobTitle.toLowerCase() === "dean") {
+        if (department.toLowerCase() === "sah") {
+          role = "admin";
+
+        } else {
+          role = "user";
+        }
       } else if (jobTitle.toLowerCase() === "program chair") {
         role = "admin";
 
