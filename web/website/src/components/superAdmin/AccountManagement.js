@@ -61,6 +61,7 @@ const AccountManagement = () => {
   const [departmentFilter, setDepartmentFilter] = useState("");
   const [filteredAccounts, setFilteredAccounts] = useState([]);
   const [jobTitle, setJobTitle] = useState("");
+  const [newCollege, setNewCollege] = useState("");
   const departmentOptionsByJobTitle = {
     Dean: ["SAH", "SAS", "SOO", "SOD"],
     "Program Chair": ["Nursing", "Medical Technology", "Psychology", "Optometry", "Dentistry", "Physical Therapy"],
@@ -72,7 +73,7 @@ const AccountManagement = () => {
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [departments, setDepartments] = useState([]);  
   const sanitizeInput = (input) =>
-  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+  input.replace(/\s+/g, " ")          
    .replace(/[^a-zA-Z0-9\s\-.,()]/g, "");
 
   useEffect(() => {
@@ -573,20 +574,66 @@ const AccountManagement = () => {
       .toLowerCase()
       .replace(/\b\w/g, (char) => char.toUpperCase());
 
+  // const handleAddDepartment = async () => {
+  //   const trimmedName = newDepartment.trim();
+
+  //   if (!trimmedName) {
+  //     setModalMessage("Department name cannot be empty.");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+
+  //   try {
+  //     const formattedName = capitalizeWords(trimmedName);
+
+  //     // Check if department already exists
+  //     const deptQuery = query(collection(db, "departments"), where("name", "==", formattedName));
+  //     const existingDepts = await getDocs(deptQuery);
+
+  //     if (!existingDepts.empty) {
+  //       setModalMessage("Department already exists!");
+  //       setIsNotificationVisible(true);
+  //       return;
+  //     }
+
+  //     // Generate custom doc ref so we can include the ID
+  //     const deptRef = doc(collection(db, "departments"));
+  //     const id = deptRef.id;
+
+  //     await setDoc(deptRef, {
+  //       id,
+  //       name: formattedName,
+  //       createdAt: new Date(),
+  //     });
+
+  //     setModalMessage("Department added successfully!");
+  //     setIsNotificationVisible(true);
+  //     setIsDeptModalVisible(false);
+  //     setNewDepartment("");
+
+  //   } catch (error) {
+  //     message.error("Failed to add department.");
+  //   }
+  // };
+
   const handleAddDepartment = async () => {
     const trimmedName = newDepartment.trim();
+    const trimmedCollege = newCollege.trim();
 
-    if (!trimmedName) {
-      setModalMessage("Department name cannot be empty.");
+    if (!trimmedName || !trimmedCollege) {
+      setModalMessage("Both department and college are required.");
       setIsNotificationVisible(true);
       return;
     }
 
     try {
       const formattedName = capitalizeWords(trimmedName);
+      const formattedCollege = trimmedCollege.toUpperCase();
 
-      // Check if department already exists
-      const deptQuery = query(collection(db, "departments"), where("name", "==", formattedName));
+      const deptQuery = query(
+        collection(db, "departments"),
+        where("name", "==", formattedName)
+      );
       const existingDepts = await getDocs(deptQuery);
 
       if (!existingDepts.empty) {
@@ -595,13 +642,13 @@ const AccountManagement = () => {
         return;
       }
 
-      // Generate custom doc ref so we can include the ID
       const deptRef = doc(collection(db, "departments"));
       const id = deptRef.id;
 
       await setDoc(deptRef, {
         id,
         name: formattedName,
+        college: formattedCollege, // <- 🔑 add this
         createdAt: new Date(),
       });
 
@@ -609,11 +656,14 @@ const AccountManagement = () => {
       setIsNotificationVisible(true);
       setIsDeptModalVisible(false);
       setNewDepartment("");
+      setNewCollege("");
 
     } catch (error) {
+      console.error("Failed to add department: ", error);
       message.error("Failed to add department.");
     }
   };
+
 
   const confirmDelete = (id) => {
     setActionType("delete");
@@ -1029,14 +1079,34 @@ const AccountManagement = () => {
             onPressEnter={handleAddDepartment}
           />
 
+          <Input
+            placeholder="Enter college (e.g., SAH, SAS)"
+            value={newCollege}
+            onChange={(e) => setNewCollege(e.target.value)}
+            onPressEnter={handleAddDepartment}
+          />
+
           <List
+            size="small"
+            header={<div>Departments List</div>}
+            bordered
+            dataSource={departmentsAll}
+            renderItem={item => (
+              <List.Item key={item.id}>
+                {item.name} <span style={{ color: 'gray' }}>({item.college})</span>
+              </List.Item>
+            )}
+            style={{ marginTop: 16, maxHeight: 200, overflowY: "auto" }}
+          />
+
+          {/* <List
             size="small"
             header={<div>Departments List</div>}
             bordered
             dataSource={departmentsAll}
             renderItem={item => <List.Item key={item.id}>{item.name}</List.Item>}
             style={{ marginTop: 16, maxHeight: 200, overflowY: "auto" }}
-          />
+          /> */}
         </Modal>
 
         <NotificationModal  

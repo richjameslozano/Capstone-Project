@@ -28,7 +28,7 @@ const PendingRequest = () => {
   const [isApprovedModalVisible, setIsApprovedModalVisible] = useState(false);
   const [rejectReason, setRejectReason] = useState("");
   const [isRejectModalVisible, setIsRejectModalVisible] = useState(false);
-
+  const [selectedCollege, setSelectedCollege] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
   const [pendingApprovalData, setPendingApprovalData] = useState(null); 
   const [isMultiRejectModalVisible, setIsMultiRejectModalVisible] = useState(false);
@@ -57,9 +57,20 @@ const filteredRequests = requests.filter((request) => {
   );
 });
 
+const getCollegeByDepartment = async (departmentName) => {
+  if (!departmentName) return null;
 
+  const q = query(
+    collection(db, "departments"),
+    where("name", "==", departmentName)
+  );
 
-
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    return snapshot.docs[0].data().college || null;
+  }
+  return null;
+};
 
 useEffect(() => {
   const userRequestRef = collection(db, "userrequests");
@@ -148,10 +159,23 @@ useEffect(() => {
   return () => unsubscribe();
 }, []);
 
+  // const handleViewDetails = (request) => {
+  //   setSelectedRequest(request);
+  //   setIsModalVisible(true);
+  // };
 
-  
-  const handleViewDetails = (request) => {
+  const handleViewDetails = async (request) => {
+    if (!request || !request.department) {
+      console.error("Department is undefined. Cannot fetch college.");
+      setSelectedRequest(request);
+      setSelectedCollege(null); // Or some default
+      setIsModalVisible(true);
+      return;
+    }
+
+    const college = await getCollegeByDepartment(request.department);
     setSelectedRequest(request);
+    setSelectedCollege(college);
     setIsModalVisible(true);
   };
 
@@ -2293,7 +2317,6 @@ useEffect(() => {
         )}
 
         <RequisitionRequestModal
-        
           isModalVisible={isModalVisible}
           handleCancel={handleCancel}
           handleApprove={handleApprove}
@@ -2302,6 +2325,7 @@ useEffect(() => {
           columns={columns}
           formatDate={formatDate}
           allItemsChecked={allItemsChecked} 
+          college={selectedCollege} 
         />
 
         <ApprovedRequestModal

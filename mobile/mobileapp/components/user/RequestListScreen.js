@@ -198,7 +198,9 @@ const RequestListScreen = ({}) => {
         return false;
       }
   
+      const userData = userDocSnapshot.data();
       const userName = userDocSnapshot.data().name;
+      const department = userData.department || "N/A";
   
       // Prepare request data
       const requestData = {
@@ -218,6 +220,7 @@ const RequestListScreen = ({}) => {
           // timeTo: metadata.timeTo,
         })),
         userName,
+        department, 
         timestamp: Timestamp.now(),
         usageType: metadata.usageType,
       };
