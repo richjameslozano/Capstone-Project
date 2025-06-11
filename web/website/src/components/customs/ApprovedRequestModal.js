@@ -354,8 +354,8 @@ const requestList = selectedApprovedRequest?.requestList || [];
   const approvedRequestColumns = [
     {
       title: "Item ID",
-      dataIndex: "itemId",
       key: "itemId",
+      render: (_, record) => record.itemId || record.itemIdFromInventory,
     },
     {
       title: "Item Name",
