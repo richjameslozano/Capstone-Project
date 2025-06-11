@@ -5,8 +5,7 @@
   align-items: center;
   height: 100vh;
   background-color: #0f3c4c;
-  background:
-            url('C:\Users\Henreizh Nathan\OneDrive - National University\Desktop\New folder\Capstone-Project\web\website\src\loginbg.svg');
+  background:url('../loginbg.svg');
   background-repeat: repeat;
   background-attachment: fixed;
 }
