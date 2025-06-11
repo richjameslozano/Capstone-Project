@@ -1183,7 +1183,7 @@ useEffect(() => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
-             loading={{ spinning: loading, tip: "Loading inventory data..." }}
+            loading={{ spinning: loading, tip: "Loading inventory data..." }}
             onRow={(record) => {
               return {
                 onClick: () => {
