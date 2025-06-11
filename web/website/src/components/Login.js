@@ -42,6 +42,7 @@ const Login = () => {
   const [termsChecked, setTermsChecked] = useState(false);
   const [passwordTouched, setPasswordTouched] = useState(false);
   const [emailChecked, setEmailChecked] = useState(false);
+  const [isVerifiedWithoutPassword, setIsVerifiedWithoutPassword] = useState(false);
   const [signUpData, setSignUpData] = useState({
     
     name: "",
@@ -265,7 +266,95 @@ const Login = () => {
   //   }
   // };
 
-   const handleChange = async (e) => {
+  //  const handleChange = async (e) => {
+  //   const { name, value } = e.target;
+
+  //   // Update form data first
+  //   if (name === "confirmPassword") {
+  //     setConfirmPassword(value);
+
+  //   } else {
+  //     setFormData((prev) => ({ ...prev, [name]: value }));
+  //   }
+
+  //   // EMAIL CHECK
+  //   if (name === "email") {
+  //     const trimmedValue = value.trim();
+  //     const isValidEmail = /\S+@\S+\.\S+/.test(trimmedValue);
+      
+  //     setEmailChecked(false); 
+      
+  //     // if (!isValidEmail) {
+  //     //   setIsNewUser(false);
+  //     //   setEmailChecked(false); // ❗ reset email checked
+  //     //   return;
+  //     // }
+
+  //     if (emailDebounceRef.current) {
+  //       clearTimeout(emailDebounceRef.current);
+  //     }
+
+  //   emailDebounceRef.current = setTimeout(async () => {
+  //     if (!isValidEmail) {
+  //       setIsNewUser(false);
+  //       setEmailChecked(false);
+  //       return;
+  //     }
+
+  //     try {
+  //       const usersRef = collection(db, "accounts");
+  //       const q = query(usersRef, where("email", "==", value));
+  //       const querySnapshot = await getDocs(q);
+
+  //       if (!querySnapshot.empty) {
+  //         const userDoc = querySnapshot.docs[0];
+  //         const userData = userDoc.data();
+  //         setIsNewUser(!userData.uid);
+  //         setEmailChecked(true); // ✅ mark email as checked
+
+  //       } else {
+  //         setIsNewUser(true); // new user
+  //         setEmailChecked(true); // ✅ mark email as checked
+  //       }
+  //     } catch (err) {
+  //       console.error("Error checking user:", err.message);
+  //     }
+  //     }, 700); // Debounce time (ms)
+  // }
+
+  //   // PASSWORD VALIDATION
+  //   if (name === "password") {
+  //     const passwordRegex =
+  //       /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+
+  //     // if (!passwordRegex.test(value)) {
+  //     //   setError(
+  //     //     "Password must be at least 8 characters long and include a letter, a number, and a special character."
+  //     //   );
+  //     //   return;
+  //     // } else {
+  //     //   setError("");
+  //     // }
+
+  //     // check match with confirmPassword
+  //     if (confirmPassword && value !== confirmPassword) {
+  //       setError("Passwords do not match.");
+  //     } else {
+  //       setError("");
+  //     }
+  //   }
+
+  //   if (name === "confirmPassword") {
+  //     // Check match after password and confirmPassword are both typed
+  //     if (value !== formData.password) {
+  //       setError("Passwords do not match.");
+  //     } else {
+  //       setError("");
+  //     }
+  //   }
+  // };
+
+  const handleChange = async (e) => {
     const { name, value } = e.target;
 
     // Update form data first
@@ -308,36 +397,54 @@ const Login = () => {
         if (!querySnapshot.empty) {
           const userDoc = querySnapshot.docs[0];
           const userData = userDoc.data();
-          setIsNewUser(!userData.uid);
-          setEmailChecked(true); // ✅ mark email as checked
+
+          const hasUid = !!userData.uid;
+          const hasPassword = !!userData.password; // assuming you store password hashes
+          const isVerified = userData.verified === true; // adapt if your field is named differently
+
+          setIsNewUser(!hasUid); // Still used for general logic
+          setEmailChecked(hasUid);
+
+          if (!hasUid) {
+                  setIsNewUser(false);
+                  setIsVerifiedWithoutPassword(true); // ✅ User exists but has no UID/password
+                  setEmailChecked(true); // ✅ Mark that check is done, so form shows
+                  
+                } else {
+                  setIsNewUser(false);
+                  setIsVerifiedWithoutPassword(false);
+                  setEmailChecked(true); // ✅ Verified user
+                }
 
         } else {
-          setIsNewUser(true); // new user
-          setEmailChecked(true); // ✅ mark email as checked
+          setIsNewUser(true);
+                setIsVerifiedWithoutPassword(false);
+                setEmailChecked(true);
         }
       } catch (err) {
         console.error("Error checking user:", err.message);
       }
-      }, 700); // Debounce time (ms)
-  }
+    }, 700); // Debounce time (ms)
+    }
 
-    // PASSWORD VALIDATION
-    if (name === "password") {
-      const passwordRegex =
-        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+      // PASSWORD VALIDATION
+      if (name === "password") {
+        const passwordRegex =
+          /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
-      // if (!passwordRegex.test(value)) {
-      //   setError(
-      //     "Password must be at least 8 characters long and include a letter, a number, and a special character."
-      //   );
-      //   return;
-      // } else {
-      //   setError("");
-      // }
+        // if (!passwordRegex.test(value)) {
+        //   setError(
+        //     "Password must be at least 8 characters long and include a letter, a number, and a special character."
+        //   );
+        //   return;
+        // } else {
+        //   setError("");
+        // }
 
       // check match with confirmPassword
       if (confirmPassword && value !== confirmPassword) {
         setError("Passwords do not match.");
+
       } else {
         setError("");
       }
@@ -347,6 +454,7 @@ const Login = () => {
       // Check match after password and confirmPassword are both typed
       if (value !== formData.password) {
         setError("Passwords do not match.");
+
       } else {
         setError("");
       }
@@ -1253,20 +1361,19 @@ const Login = () => {
 
           <div className="form-div">
              {!signUpMode && (
-          <div style={{ display: 'flex', justifyContent: 'center', height: 'auto',justifySelf: 'flex-start'}}>
-            <img src={nulsLogo} alt="NULS Logo" style={{maxHeight: 150}} />
-          </div>
-        )}
- 
+              <div style={{ display: 'flex', justifyContent: 'center', height: 'auto',justifySelf: 'flex-start'}}>
+                <img src={nulsLogo} alt="NULS Logo" style={{maxHeight: 150}} />
+              </div>
+            )}
 
             <h2 className={signUpMode ? "create-account-title" : "login-title"}>
               {signUpMode
                 ? "Create an Account"
-                : isNewUser
+                // : isNewUser
+                : isVerifiedWithoutPassword && !signUpMode
                 ? "Set Your Password"
                 : "Sign in to your account"} 
             </h2>
-            
 
             <form
               className={signUpMode ? "form-wrapper slide-in" : "form-wrapper slide-in2"}
@@ -1276,11 +1383,15 @@ const Login = () => {
                   alert("You must agree to the terms and conditions.");
                   return;
                 }
-                signUpMode
-                  ? handleSignUp()
-                  : isNewUser
-                  ? handleRegisterPassword()
-                  : checkUserAndLogin();
+                 if (signUpMode) {
+                    handleSignUp();
+
+                  } else if (isVerifiedWithoutPassword) {
+                    handleRegisterPassword();
+                    
+                  } else {
+                    checkUserAndLogin();
+                  }
               }}
             >
               {signUpMode ? (
@@ -1579,7 +1690,8 @@ const Login = () => {
                   </div> */}
 
                   <div className="form-group password-group">
-                    <label>{isNewUser ? "Set Password" : "Password"}</label>
+                    {/* <label>{isNewUser ? "Set Password" : "Password"}</label> */}
+                     <label>Password</label>
                     {/* <div className="password-wrapper">
                       <input
                         type={showPassword ? "text" : "password"}
@@ -1612,8 +1724,10 @@ const Login = () => {
                             }
                           }}
                           required
-                          placeholder={isNewUser ? "Set your password" : "Enter your password"}
+                          // placeholder={isNewUser ? "Set your password" : "Enter your password"}
+                          placeholder="Enter your password"
                         />
+
                         <span
                           className="toggle-password"
                           onClick={() => setShowPassword(!showPassword)}
@@ -1625,7 +1739,8 @@ const Login = () => {
                     {error && <p className="error-message">{error}</p>}
 
                     {/* ✅ Only show if email was checked AND isNewUser is true */}
-                    {isNewUser && emailChecked && formData.password && (
+                    {/* {isNewUser && emailChecked && formData.password && ( */}
+                    {!isNewUser && emailChecked && formData.password && (
                         <small
                           className="password-hint"
                           style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}
@@ -1664,7 +1779,8 @@ const Login = () => {
                 </>
               )} */}
 
-                  {isNewUser && (
+                  {/* {isNewUser && ( */}
+                  {isVerifiedWithoutPassword && emailChecked && (
                     <div className="form-group password-group">
                       <label>Confirm Password</label>
                       <div className="password-wrapper">
@@ -1716,7 +1832,8 @@ const Login = () => {
                 ) : signUpMode ? (
                   "Sign Up"
                   
-                ) : isNewUser ? (
+                // ) : isNewUser ? (
+                ) : isVerifiedWithoutPassword ? (
                   "Set Password"
                 ) : (
                   "Login"
@@ -1726,7 +1843,8 @@ const Login = () => {
             </form>
   
             <div className={signUpMode ? "bottom-label-div2" : "bottom-label-div"}>
-              {!signUpMode && !isNewUser && (
+              {/* {!signUpMode && !isNewUser && ( */}
+              {!signUpMode && !isVerifiedWithoutPassword && (
                 <p
                   className="forgot-password-link"
                   style={{ marginTop: '20px', cursor: 'pointer' }}
@@ -1743,10 +1861,22 @@ const Login = () => {
                     <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign in here</span></label>
                   </>
                 ) : (
-                  <>
-                    Don’t have an account?{" "}
-                    <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign up here</span>
-                  </>
+                  // <>
+                  //   Don’t have an account?{" "}
+                  //   <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign up here</span>
+                  // </>
+                  !isVerifiedWithoutPassword && (
+                    <>
+                      Don’t have an account?{" "}
+                      <span
+                        onClick={() => signUpAnimate()}
+                        style={{ color: '#0a3e75', fontWeight: '700', cursor: 'pointer' }}
+                        className="link"
+                      >
+                        Sign up here
+                      </span>
+                    </>
+                  )
                 )}
               </p>
             </div>
