@@ -904,6 +904,7 @@ const ReturnItems = () => {
         Good: 0,
         Damage: 0,
         Defect: 0,
+        Lost: 0,
       };
 
       // Tally condition counts from the returned units
@@ -1134,6 +1135,7 @@ const ReturnItems = () => {
                           <Option value="Good">Good</Option>
                           <Option value="Defect">Defect</Option>
                           <Option value="Damage">Damage</Option>
+                          <Option value="Lost">Lost</Option>
                         </Select>
                       );
                     },

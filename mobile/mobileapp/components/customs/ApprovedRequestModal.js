@@ -54,7 +54,8 @@ const ApprovedRequestModal = ({ isVisible, onClose, request, formatDate }) => {
         index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
       ]}
     >
-      <Text style={styles.tableCell}>{item.itemId}</Text>
+      {/* <Text style={styles.tableCell}>{item.itemId}</Text> */}
+      <Text style={styles.tableCell}>{item.itemId || item.itemIdFromInventory}</Text>
       <Text style={styles.tableCell}>{item.itemName}</Text>
       <Text style={styles.tableCell}>{item.itemDetails}</Text>
       <Text style={styles.tableCell}>{item.quantity}</Text>

@@ -302,6 +302,7 @@ const openFullEditModal = (record) => {
           Good: record.condition?.Good ?? 0,
           Defect: record.condition?.Defect ?? 0,
           Damage: record.condition?.Damage ?? 0,
+          Lost: record.condition?.Lost ?? 0,
         }
       : undefined,
   });
@@ -343,6 +344,7 @@ const handleFullUpdate = async (values) => {
       Good: Number(values.condition?.Good) || 0,
       Defect: Number(values.condition?.Defect) || 0,
       Damage: Number(values.condition?.Damage) || 0,
+      Lost: Number(values.condition?.Lost) || 0,
     };
 
     // If the category requires condition, set quantity based on Good stock
@@ -1502,24 +1504,30 @@ useEffect(() => {
 
                   const defect = Number(condition.Defect) || 0;
                   const damage = Number(condition.Damage) || 0;
+                  const lost = Number(condition.Lost) || 0;
 
-                  const newGood = originalGood - defect - damage;
+                  const newGood = originalGood - defect - damage - lost;
 
                   if (newGood < 0) {
                     fullEditForm.setFields([
                       {
                         name: ['condition', 'Defect'],
-                        errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
                       },
                       {
                         name: ['condition', 'Damage'],
-                        errors: ['Sum of Defect and Damage cannot exceed original Good quantity'],
+                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
+                      },
+                      {
+                        name: ['condition', 'Lost'],
+                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
                       },
                     ]);
                   } else {
                     fullEditForm.setFields([
                       { name: ['condition', 'Defect'], errors: [] },
                       { name: ['condition', 'Damage'], errors: [] },
+                      { name: ['condition', 'Lost'], errors: [] },
                     ]);
                     const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
                     if (currentGood !== newGood) {
@@ -1668,6 +1676,14 @@ useEffect(() => {
                       label="Damage"
                       name={['condition', 'Damage']}
                       rules={[{ required: true, message: "Please enter Damage quantity" }]}
+                    >
+                      <InputNumber min={0} style={{ width: '100%' }} />
+                    </Form.Item>
+
+                    <Form.Item
+                      label="Lost"
+                      name={['condition', 'Lost']}
+                      rules={[{ required: true, message: "Please enter Lost quantity" }]}
                     >
                       <InputNumber min={0} style={{ width: '100%' }} />
                     </Form.Item>
@@ -1971,7 +1987,7 @@ useEffect(() => {
                         }
 
                         if (parseInt(value) !== totalCondition) {
-                          return Promise.reject("Quantity must equal sum of Good, Defect, and Damage");
+                          return Promise.reject("Quantity must equal sum of Good, Defect, Damage and Lost");
                         }
 
                         return Promise.resolve();

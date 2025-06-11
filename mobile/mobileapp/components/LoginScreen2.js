@@ -264,19 +264,46 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         } else {
           // ✅ Firebase Auth login for regular users/admins
           try {
-            await signInWithEmailAndPassword(auth, email, password);
-            await updateDoc(userDoc.ref, { loginAttempts: 0 });
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const signedInUser = userCredential.user;
+            
+            // await signInWithEmailAndPassword(auth, email, password);
+            // await updateDoc(userDoc.ref, { loginAttempts: 0 });
     
+            // const role = (userData.role || "user").toLowerCase();
+            // login({ ...userData, id: userDoc.id });
+
+            // console.log("Login Succesfull!")
+    
+            // await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
+            //   action: "User Logged In (Mobile)",
+            //   userName: userData.name || "User",
+            //   timestamp: serverTimestamp(),
+              
+            // });
+
+            // 🔁 Force reload to ensure latest email verification status
+            await signedInUser.reload();
+            const refreshedUser = auth.currentUser;
+
+            if (!refreshedUser || !refreshedUser.emailVerified) {
+              await signOut(auth);
+              setError("Please verify your email before logging in.");
+              setLoading(false);
+              return;
+            }
+
+            await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
             const role = (userData.role || "user").toLowerCase();
             login({ ...userData, id: userDoc.id });
 
-            console.log("Login Succesfull!")
-    
+            console.log("Login Successful!");
+
             await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
               action: "User Logged In (Mobile)",
               userName: userData.name || "User",
               timestamp: serverTimestamp(),
-              
             });
     
             switch (role) {
