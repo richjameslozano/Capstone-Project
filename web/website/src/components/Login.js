@@ -1066,6 +1066,7 @@ const Login = () => {
 
         setIsNewUser(false);
         setFormData((prev) => ({ ...prev, email: "", password: "" }));
+        setConfirmPassword("");
 
       } else {
         setError("User record not found in Firestore.");
