@@ -1127,6 +1127,7 @@ const Requisition = () => {
     if (isValid) {
       try {
         const userId = localStorage.getItem("userId");
+        const department = localStorage.getItem("userDepartment");
   
         if (userId) {
           // Fetch the user's name from the accounts collection
@@ -1157,6 +1158,7 @@ const Requisition = () => {
             reason,
             filteredMergedData: sanitizedFilteredData,
             userName,
+            department,
             timestamp: Timestamp.now(),
           };
   
