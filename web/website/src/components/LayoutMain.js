@@ -353,7 +353,7 @@ const shouldShowSpinner = useMemo(() => {
         {
           key: "/main/approval-request",
           icon: <ShoppingOutlined />,
-          label: "Apporval Request",
+          label: "Approval Request",
         },
         {
           key: "/main/request-log",
