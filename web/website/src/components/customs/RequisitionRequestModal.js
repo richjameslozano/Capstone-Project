@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Button, Row, Col, Typography, Table } from "antd";
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/PendingRequest.css";
 import NotificationModal from "./NotificationModal";
@@ -22,6 +22,7 @@ const RequisitionReqestModal = ({
   const [checkedItemIds, setCheckedItemIds] = useState([]);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
 
   useEffect(() => {
     if (selectedRequest) {
@@ -33,8 +34,30 @@ const RequisitionReqestModal = ({
     return name.replace(/\b\w/g, char => char.toUpperCase());
   };  
 
+  // const handleAskApproval = async () => {
+  //   if (!selectedRequest) return;
+
+  //   try {
+  //     await addDoc(collection(db, "approvalrequestcollection"), {
+  //       ...selectedRequest,
+  //       forwardedAt: serverTimestamp(),
+  //       status: "Pending Approval",
+  //     });
+
+  //     setNotificationMessage("Request successfully forwarded for approval.");
+  //     setIsNotificationVisible(true);
+  //     handleCancel(); // Optionally close the modal
+  //   } catch (error) {
+  //     console.error("Error forwarding request:", error);
+  //     setNotificationMessage("Failed to forward request for approval.");
+  //     setIsNotificationVisible(true);
+  //   }
+  // };
+
   const handleAskApproval = async () => {
     if (!selectedRequest) return;
+
+    console.log("userId:", selectedRequest.accountId); 
 
     try {
       await addDoc(collection(db, "approvalrequestcollection"), {
@@ -42,10 +65,19 @@ const RequisitionReqestModal = ({
         forwardedAt: serverTimestamp(),
         status: "Pending Approval",
       });
+      console.log("Successfully added to approvalrequestcollection");
 
+      await updateDoc(doc(db, `userrequests/${selectedRequest.id}`), {
+        approvalRequested: true,
+      });
+
+      
+      console.log("Successfully updated userRequests");
+      setApprovalRequestedIds(prev => [...prev, selectedRequest.id]);
       setNotificationMessage("Request successfully forwarded for approval.");
       setIsNotificationVisible(true);
       handleCancel(); // Optionally close the modal
+
     } catch (error) {
       console.error("Error forwarding request:", error);
       setNotificationMessage("Failed to forward request for approval.");

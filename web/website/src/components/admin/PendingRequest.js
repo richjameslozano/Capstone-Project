@@ -35,8 +35,7 @@ const PendingRequest = () => {
   const [rejectionReasons, setRejectionReasons] = useState({});
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
   const [firstRequestMap, setFirstRequestMap] = useState({});
- 
-
+  const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
 
 const sanitizeInput = (input) =>
   input
@@ -2139,11 +2138,18 @@ useEffect(() => {
 
         // Check if this request is the first for any of its items on this date
       // Disabled if ANY item in this request is not the first request for that item+date
-      const isDisabled = (request.requestList || []).some(item => {
+      // const isDisabled = (request.requestList || []).some(item => {
+      //   const key = `${item.selectedItemId}_${request.dateRequired}`;
+      //   return firstRequestMap[key] !== request.id;  // different request owns that item+date first
+      // });
+
+       const isApprovalRequested = request.approvalRequested === true || approvalRequestedIds.includes(request.id);
+      const isItemConflict = (request.requestList || []).some(item => {
         const key = `${item.selectedItemId}_${request.dateRequired}`;
-        return firstRequestMap[key] !== request.id;  // different request owns that item+date first
+        return firstRequestMap[key] !== request.id;
       });
 
+      const isDisabled = isApprovalRequested || isItemConflict;
 
         return (
           <div
@@ -2203,9 +2209,21 @@ useEffect(() => {
                 <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.course}{request.courseDescription}</p>
               </div>
 
-              {isDisabled && (
+              {/* {isDisabled && (
                 <div style={{ color: 'red', fontSize: 14, marginTop: 5 }}>
                   Request blocked (already requested by someone else for this date and item)
+                </div>
+              )} */}
+
+              {isItemConflict && (
+                <div style={{ color: 'red', fontSize: 14, marginTop: 5 }}>
+                  Request blocked (already requested by someone else for this date and item)
+                </div>
+              )}
+
+              {isApprovalRequested && (
+                <div style={{ color: 'orange', fontSize: 14, marginTop: 5 }}>
+                  Waiting for Approval for Dean
                 </div>
               )}
             </div>
