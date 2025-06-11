@@ -853,9 +853,6 @@ const ReturnItems = () => {
   
       const timestamp = serverTimestamp();
       const currentDateString = new Date().toISOString();
-
-
-
   
       const fullReturnData = {
         accountId: userId,
@@ -880,6 +877,7 @@ const ReturnItems = () => {
           );
           return {
             ...item,
+            itemId: item.itemIdFromInventory,
             returnedQuantity: conditions.length,
             conditions,
             scannedCount: 0,

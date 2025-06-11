@@ -459,9 +459,11 @@ const handleCategoryChange = (value) => {
   if (["Chemical", "Reagent"].includes(value)) {
     type = "Consumable";
     disableExpiry = false;
+
   } else if (value === "Materials") {
     type = "Consumable";
     disableExpiry = true;
+
   } else if (["Equipment", "Glasswares"].includes(value)) {
     type = "Fixed";
     disableExpiry = true;
@@ -711,6 +713,7 @@ const printPdf = () => {
           Good: quantityNumber,
           Defect: 0,
           Damage: 0,
+          Lost: 0,
         },
       }),
     };
@@ -864,6 +867,7 @@ const printPdf = () => {
       Good: record.condition?.Good ?? 0,
       Defect: record.condition?.Defect ?? 0,
       Damage: record.condition?.Damage ?? 0,
+      Lost: record.condition?.Lost ?? 0,
     },
   });
 
@@ -911,6 +915,7 @@ const updateItem = async (values) => {
           Good: prevCondition.Good + addedQuantity,
           Defect: prevCondition.Defect,
           Damage: prevCondition.Damage,
+          Lost: prevCondition.Lost,
         };
 
         // Ensure quantity is valid and sanitize it
@@ -1072,7 +1077,7 @@ useEffect(() => {
     }
 
     if (condition && typeof condition === 'object') {
-      return `Good: ${condition.Good ?? 0}, Defect: ${condition.Defect ?? 0}, Damage: ${condition.Damage ?? 0}`;
+      return `Good: ${condition.Good ?? 0}, Defect: ${condition.Defect ?? 0}, Damage: ${condition.Damage ?? 0}, Lost: ${condition.Lost ?? 0}`;
     }
 
     return condition || 'N/A';
@@ -1891,6 +1896,7 @@ useEffect(() => {
                         Good: newQuantity,
                         Defect: 0,
                         Damage: 0,
+                        Lost: 0,
                       },
                     });
                   }, 0);
@@ -1957,7 +1963,8 @@ useEffect(() => {
                         const totalCondition =
                           (parseInt(condition.Good) || 0) +
                           (parseInt(condition.Defect) || 0) +
-                          (parseInt(condition.Damage) || 0);
+                          (parseInt(condition.Damage) || 0) +
+                          (parseInt(condition.Lost) || 0);
 
                         if (!value || isNaN(parseInt(value))) {
                           return Promise.reject("Quantity must be a number");
@@ -2089,6 +2096,16 @@ useEffect(() => {
                     >
                       <Input type="number" min={0} /> */}
                     {/* </Form.Item> */}
+
+                    {/* <Col span={8}>
+                      <Form.Item
+                        name={["condition", "Lost"]}
+                        label="Lost"
+                        rules={[{ required: true, message: "Enter Lost qty" }]}
+                      >
+                        <Input type="number" min={0} />
+                      </Form.Item>
+                    </Col> */}
                   </Col>
                 </Row>
               )}
