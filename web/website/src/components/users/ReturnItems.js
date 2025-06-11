@@ -645,7 +645,7 @@ const ReturnItems = () => {
       dataIndex: "status",
       key: "status",
       render: (status) => (
-        <Text style={{ color: status === "Approved" ? "green" : "red", fontWeight: "bold" }}>
+        <Text style={{ color: status === "Approved" ? "green" : "#8b8989", fontWeight: "bold" }}>
           {status}
         </Text>
       ),
@@ -1014,6 +1014,7 @@ const ReturnItems = () => {
             </Button>
 
             <Button
+            className="approved-status-button"
               type={filterStatus === "Approved" ? "primary" : "default"}
               onClick={() => setFilterStatus("Approved")}
               style={{ marginRight: 8 }}
@@ -1022,6 +1023,7 @@ const ReturnItems = () => {
             </Button>
 
             <Button
+              className="print-all-button"
               type={filterStatus === "Deployed" ? "primary" : "default"}
               onClick={() => setFilterStatus("Deployed")}
             >

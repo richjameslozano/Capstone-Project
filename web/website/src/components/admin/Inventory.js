@@ -1095,18 +1095,20 @@ useEffect(() => {
       <Layout>
         <Content className="content inventory-container">
     
-          <div style={{ marginBottom: 16 }}>
-            <Button type="primary" onClick={showModal}>
-              Add Item
-            </Button>
-          </div>
+          
 
           <div className="inventory-header">
             <Space wrap>
+              
+            <Button className="add-item-button"
+            style ={{width:'200px', marginRight:'30px', border:'none'}} type="primary" onClick={showModal}>
+              Add Item
+            </Button>
+          
               <Input.Search
                 placeholder="Search"
                 className="search-bar"
-                style={{ width: 200 }}
+                style={{ width: 280 }}
                 allowClear
                 onInput={(e) => {
                   const sanitized = sanitizeInput(e.target.value);
@@ -1152,6 +1154,7 @@ useEffect(() => {
               </Select>
 
               <Button
+                className="reset-filters-button"
                 onClick={() => {
                   setFilterCategory(null);
                   setFilterItemType(null);
@@ -1162,15 +1165,15 @@ useEffect(() => {
                 Reset Filters
               </Button>
 
-              <Button type="primary" onClick={exportToExcel}>
+              <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
                 Export to Excel
               </Button>
 
-              <Button type="primary" onClick={saveAsPdf}>
+              <Button className="save-pdf-button" type="primary" onClick={saveAsPdf}>
                 Save as PDF
               </Button>
 
-              <Button type="primary" onClick={printPdf}>
+              <Button className="print-pdf-button" type="primary" onClick={printPdf}>
                 Print PDF
               </Button>
 
@@ -1485,7 +1488,7 @@ useEffect(() => {
               </Row>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="add-btn">
+                <Button className='add-item-button' style={{marginTop:'10px'}}type="primary" htmlType="submit" >
                   Add to Inventory
                 </Button>
               </Form.Item>
