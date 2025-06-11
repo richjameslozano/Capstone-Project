@@ -37,7 +37,7 @@ const RequisitionReqestModal = ({
     if (!selectedRequest) return;
 
     try {
-      await addDoc(collection(db, "ApprovalRequestCollection"), {
+      await addDoc(collection(db, "approvalrequestcollection"), {
         ...selectedRequest,
         forwardedAt: serverTimestamp(),
         status: "Pending Approval",

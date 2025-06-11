@@ -21,7 +21,7 @@ const ApprovalRequest = () => {
 useEffect(() => {
   const fetchCatalogData = () => {
     try {
-      const borrowCatalogRef = collection(db, "ApprovalRequestCollection");
+      const borrowCatalogRef = collection(db, "approvalrequestcollection");
 
       const unsubscribe = onSnapshot(borrowCatalogRef, (snapshot) => {
         const catalogData = snapshot.docs.map((doc) => {
