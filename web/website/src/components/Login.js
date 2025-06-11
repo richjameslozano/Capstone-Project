@@ -479,10 +479,12 @@ const Login = () => {
         filteredDepts = departmentOptionsByJobTitle[value] || [];
       }
 
+      const autoDept = value === "Laboratory Custodian" ? "SAH" : "";
+
       setSignUpData({
         ...signUpData,
         jobTitle: value,
-        department: "" // reset department
+        department: autoDept, 
       });
 
       setCurrentDepartments(filteredDepts);

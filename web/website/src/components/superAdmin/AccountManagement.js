@@ -173,28 +173,72 @@ const AccountManagement = () => {
     setIsDeptModalVisible(false);
   };
 
+  // const onJobTitleChange = (value) => {
+  //   setJobTitle(value);
+
+  //   form.setFieldsValue({
+  //     role:
+  //       value === "Dean"
+  //         ? "admin"
+
+  //         : value === "Laboratory Custodian"
+  //         ? "super-user"
+
+  //         : value === "Program Chair"
+  //         ? "admin"
+
+  //         : value === "Faculty"
+  //         ? "User"
+
+  //         : "",
+  //     department: undefined, 
+  //   });
+
+  //   if (value === "Faculty") {
+  //     const facultyDepts = departmentsAll.map((dept) => dept.name);
+  //     setDepartments(facultyDepts);
+
+  //   } else if (value === "Program Chair") {
+  //     const programChairDepts = departmentsAll
+  //       .map((dept) => dept.name)
+  //       .filter((name) => name !== "SHS");
+  //     setDepartments(programChairDepts);
+
+  //   } else {
+  //     setDepartments(departmentOptionsByJobTitle[value] || []);
+  //   }
+  // };
+
   const onJobTitleChange = (value) => {
     setJobTitle(value);
 
+    // Set the role and department based on job title
+    const role =
+      value === "Dean"
+        ? "admin"
+
+        : value === "Laboratory Custodian"
+        ? "super-user"
+
+        : value === "Program Chair"
+        ? "admin"
+
+        : value === "Faculty"
+        ? "User"
+        : "";
+
+    // Auto-set department to SAH for Laboratory Custodian
+    const department = value === "Laboratory Custodian" ? "SAH" : undefined;
+
     form.setFieldsValue({
-      role:
-        value === "Dean"
-          ? "admin"
-
-          : value === "Laboratory Custodian"
-          ? "super-user"
-
-          : value === "Program Chair"
-          ? "admin"
-
-          : value === "Faculty"
-          ? "User"
-
-          : "",
-      department: undefined, 
+      role,
+      department,
     });
 
-    if (value === "Faculty") {
+    if (value === "Laboratory Custodian") {
+      setDepartments(["SAH"]);
+
+    } else if (value === "Faculty") {
       const facultyDepts = departmentsAll.map((dept) => dept.name);
       setDepartments(facultyDepts);
 
@@ -911,7 +955,7 @@ const AccountManagement = () => {
                 ]}
               >
                 <Select placeholder="Select Department"
-                disabled={!jobTitle} 
+                disabled={!jobTitle || jobTitle === "Laboratory Custodian"}
                 allowClear
                 >
                 {departments.map((dept) => (
