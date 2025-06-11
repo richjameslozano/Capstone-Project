@@ -14,8 +14,6 @@ import SuccessModal from "../customs/SuccessModal";
 import PoliciesModal from "../Policies";
 import FinalizeRequestModal from "../customs/FinalizeRequestModal";
 import NotificationModal from "../customs/NotificationModal";
-
-import "../styles/usersStyle/Requisition.css";
 import "../styles/usersStyle/ActivityLog.css";
 
 const sanitizeInput = (input) =>
@@ -2139,7 +2137,7 @@ const Requisition = () => {
                   />
 
                     <Button
-                      type="dashed"
+                      type="primary"
                       onClick={handleAddRow}
                       className="add-item-row-btn"
                       // disabled={tableData.length >= 10}
@@ -2149,8 +2147,6 @@ const Requisition = () => {
 
                     <Button 
                       type="primary"
-                      danger
-                      block
                       className="finalize-btn"
                       disabled={!isFormValid}
                       onClick={async () => {
