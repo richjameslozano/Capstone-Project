@@ -163,11 +163,59 @@ const Inventory = () => {
 
               const entryDate = data.entryDate || "N/A";
               const expiryDate = data.expiryDate || "N/A";
+
               const quantity = Number(data.quantity) || 0;
               const category = (data.category || "").toLowerCase();
 
               let status = data.status || ""; // base status
               let newStatus = status;
+              
+              try {
+                        if (data.itemId) {
+                          const usageQuery = query(
+                            collection(db, "itemUsage"),
+                            where("itemId", "==", data.itemId),
+                            orderBy("timestamp", "desc"),
+                            limit(30)
+                          );
+
+                          const usageSnapshot = await getDocs(usageQuery);
+
+                          const totalUsed = usageSnapshot.docs.reduce((sum, doc) => {
+                            const usageData = doc.data();
+                            const used = Number(usageData.usedQuantity) || 0;
+                            return sum + used;
+                          }, 0);
+
+                          const uniqueDays = new Set(
+                            usageSnapshot.docs
+                              .map(doc => {
+                                const ts = doc.data().timestamp;
+                                return ts instanceof Timestamp ? ts.toDate().toDateString() : null;
+                              })
+                              .filter(Boolean)
+                          );
+
+                          const numDays = Math.max(uniqueDays.size, 1);
+                          const avgDailyUsage = totalUsed / numDays;
+
+                          const isCritical = quantity <= avgDailyUsage * 30;
+                          console.log("Critical check:", {
+                            item: data.itemName,
+                            avgDailyUsage,
+                            quantity,
+                            isCritical
+                          });
+
+
+                          batch.update(doc(db, "inventory", docId), {
+                            averageDailyUsage: avgDailyUsage,
+                            isCritical: isCritical,
+                          });
+                        }
+                      } catch (err) {
+                        console.error("Error calculating critical status for item:", data.itemName, err);
+                      }
 
               // Update logic
               if (quantity === 0) {
@@ -663,7 +711,13 @@ const printPdf = () => {
     const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
     const inventoryRef = collection(db, "inventory");
     const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-    const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 1;
+    const defaultCriticalDays = 7;
+    let averageDailyUsage = 0;
+
+    // You could fetch historical averageDailyUsage if available, otherwise 0
+    // For new items, it's likely 0 by default
+
+    const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
 
 
     let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
