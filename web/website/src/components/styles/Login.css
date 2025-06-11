@@ -4,24 +4,22 @@
   justify-content: center;
   align-items: center;
   height: 100vh;
-  background-color: #072542;
-  background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)),
-            url('../try-bg.svg');
- 
+  background-color: #0f3c4c;
+  background:
+            url('C:\Users\Henreizh Nathan\OneDrive - National University\Desktop\New folder\Capstone-Project\web\website\src\loginbg.svg');
+  background-repeat: repeat;
+  background-attachment: fixed;
 }
 
 .login-box {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-width: 1200px;
+  width: auto;
   height: 100%;
   max-height: 750px;
   padding: 10px;
-  padding-right: 0px;
-  background-color: #ffffff;
   border-radius: 30px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  
 }
 
 .login-title {
@@ -30,7 +28,7 @@
   font-weight: bold;
   color: #333;
   font-family:'Poppins', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
-  margin-top: 100px;
+  margin-top: 20px;
 }
 
 .create-account-title{
@@ -49,13 +47,13 @@
   width: 100%;
 }
 
-.image-div{
+/* .image-div{
   height: 100%;
   width:750px;
 
   border-radius: 50px;
   border-width: 1;
-}
+} */
 
 img{
   height: 100%;
@@ -86,7 +84,7 @@ justify-items: flex-end;
 
 .form-group {
   margin-bottom: 15px;
-  width: 100%;
+  width: 400px
 }
 
 .form-group label {
@@ -104,9 +102,9 @@ justify-items: flex-end;
   border-radius: 10px;
   font-size: 15px;
   height: 50px;
-  background-color: #f0f0f0;
-  box-shadow: inset;
-
+  background-color: #fff;
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.1);
+  border: 1px solid #dfdfdf;
 }
 
 .slide-in2{
@@ -139,6 +137,10 @@ justify-items: flex-end;
   }
 }
 
+.switch-mode{
+  font-size: 15px;
+
+}
 
 .forgot-password {
   text-align: center;
@@ -256,28 +258,25 @@ justify-items: flex-end;
 }
 
 .password-group {
-  position: relative;
   width: 100%;
 }
 
 .password-wrapper {
-  position: relative;
   width: 100%;
 }
 
 .password-wrapper input {
   width: 100%;
-  padding-right: 40px;
 }
 
-.toggle-password {
+/* .toggle-password {
   position: absolute;
   right: 10px;
   top: 50%;
   transform: translateY(-50%);
   cursor: pointer;
-  font-size: 18px;
-}
+  font-size: 28px;
+} */
 
 .loader {
   border: 4px solid #f3f3f3;
@@ -433,6 +432,7 @@ h3 {
 /* Container for checkbox + label */
 .terms-checkbox {
   position: relative;
+  margin-top: 30px  ;
 }
 
 /* Style the checkbox */
@@ -482,8 +482,6 @@ h3 {
 
 .dropdown-container{ 
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   width: 100%;
 }
 

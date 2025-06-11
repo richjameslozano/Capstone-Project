@@ -15,12 +15,14 @@ import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, s
 import { notification, Modal, message } from "antd";
 import bcrypt from "bcryptjs";
 import "./styles/Login.css";
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 
-import trybg2 from '../try-bg2.svg'
+
+
 import NotificationModal from "./customs/NotificationModal";
 import TermsModal from "./customs/TermsModal";
 
-import nulsLogo from '../logo1.png'
+import nulsLogo from './lablogo.svg'
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -479,10 +481,12 @@ const Login = () => {
         filteredDepts = departmentOptionsByJobTitle[value] || [];
       }
 
+      const autoDept = value === "Laboratory Custodian" ? "SAH" : "";
+
       setSignUpData({
         ...signUpData,
         jobTitle: value,
-        department: "" // reset department
+        department: autoDept, 
       });
 
       setCurrentDepartments(filteredDepts);
@@ -1181,10 +1185,30 @@ const Login = () => {
       }
   
       // Step 5: Determine the role based on the job title
-      let role = "user"; 
-      if (jobTitle.toLowerCase() === "dean") {
-        role = "admin";
+      // let role = "user"; 
+      // if (jobTitle.toLowerCase() === "dean") {
+      //   role = "admin";
 
+      // } else if (jobTitle.toLowerCase() === "program chair") {
+      //   role = "admin";
+
+      // } else if (jobTitle.toLowerCase().includes("custodian")) {
+      //   role = "super-user";
+
+      // } else if (jobTitle.toLowerCase() === "faculty") {
+      //   role = "user";
+      // }
+
+      // Step 5: Determine the role based on the job title and department
+      let role = "user"; 
+
+      if (jobTitle.toLowerCase() === "dean") {
+        if (department.toLowerCase() === "sah") {
+          role = "admin";
+
+        } else {
+          role = "user";
+        }
       } else if (jobTitle.toLowerCase() === "program chair") {
         role = "admin";
 
@@ -1355,15 +1379,15 @@ const Login = () => {
       <div className="login-box">
         
         <div className="container2">
-          <div className="image-div">
+          {/* <div className="image-div">
             <img src={trybg2} alt="This is the image" />
               
-          </div>
+          </div> */}
 
           <div className="form-div">
              {!signUpMode && (
               <div style={{ display: 'flex', justifyContent: 'center', height: 'auto',justifySelf: 'flex-start'}}>
-                <img src={nulsLogo} alt="NULS Logo" style={{maxHeight: 150}} />
+                <img src={nulsLogo} alt="NULS Logo" style={{maxHeight: '300px'}} />
               </div>
             )}
 
@@ -1522,6 +1546,7 @@ const Login = () => {
                       name="jobTitle"
                       value={signUpData.jobTitle}
                       onChange={handleSignUpChange}
+                      style={{width: '100%'}}
                       required
                     >
                       <option value="">Select Job Title</option>
@@ -1531,7 +1556,9 @@ const Login = () => {
                       <option value="Faculty">Faculty</option>
                     </select>
                   </div>
-  
+                </div>
+
+                <div className="dropdown-container">
                   <div className="form-group">
                     <label>Department</label>
                     <select
@@ -1540,6 +1567,7 @@ const Login = () => {
                       onChange={handleSignUpChange}
                       required={signUpData.jobTitle !== "Laboratory Custodian"}
                       disabled={!signUpData.jobTitle || signUpData.jobTitle === "Laboratory Custodian"}
+                      style={{width: '100%'}}
                     >
                       <option value="">Select Department</option>
                         {currentDepartments.map((dept) => (
@@ -1548,7 +1576,7 @@ const Login = () => {
                       ))}
                     </select>
                   </div>
-                </div>
+                  </div>
                   
                   {/* <div className="form-group password-group">
                     <label>Password</label>
@@ -1603,7 +1631,7 @@ const Login = () => {
                     <label htmlFor="termsCheckbox">
                       I agree to{' '}
                       <span onClick={openTermsModal} className="terms-link">
-                        Terms and Conditions
+                        Terms & Conditions
                       </span>
                     </label>
 
@@ -1646,69 +1674,10 @@ const Login = () => {
                     placeholder="Enter your email"
                   />
                 </div>
-  
-                  {/* <div className="form-group password-group">
-                    <label>Password</label>
-                    <div className="password-wrapper">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        placeholder="Enter your password"
-                      />
-                      <span
-                        className="toggle-password"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? "🔒" : "👁️"}
-                      </span>
-  
-                      {error && <p className="error-message">{error}</p>}
-                    </div>
-                  </div> */}
 
-                    {/* <div className="form-group password-group">
-                    <label>{isNewUser ? "Set Password" : "Password"}</label>
-                    <div className="password-wrapper">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        placeholder={isNewUser ? "Set your password" : "Enter your password"}
-                      />
-                      <span
-                        className="toggle-password"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? "🔒" : "👁️"}
-                      </span>
-                      {error && <p className="error-message">{error}</p>}
-                    </div>
-                  </div> */}
-
-                  <div className="form-group password-group">
-                    {/* <label>{isNewUser ? "Set Password" : "Password"}</label> */}
+                  <div className="form-group" 
+                 >
                      <label>Password</label>
-                    {/* <div className="password-wrapper">
-                      <input
-                        type={showPassword ? "text" : "password"}
-                        name="password"
-                        value={formData.password}
-                        onChange={handleChange}
-                        required
-                        placeholder={isNewUser ? "Set your password" : "Enter your password"}
-                      />
-                      <span
-                        className="toggle-password"
-                        onClick={() => setShowPassword(!showPassword)}
-                      >
-                        {showPassword ? "🔒" : "👁️"}
-                      </span>
-                    </div> */}
 
                       <div className="password-wrapper">
                         <input
@@ -1716,7 +1685,7 @@ const Login = () => {
                           name="password"
                           value={formData.password}
                           onChange={(e) => {
-                            const value = e.target.value.replace(/\s/g, ""); // Remove all spaces
+                            const value = e.target.value.replace(/\s/g, ""); 
                             handleChange({ target: { name: "password", value } });
                           }}
                           onKeyDown={(e) => {
@@ -1725,7 +1694,6 @@ const Login = () => {
                             }
                           }}
                           required
-                          // placeholder={isNewUser ? "Set your password" : "Enter your password"}
                           placeholder="Enter your password"
                         />
 
@@ -1733,7 +1701,7 @@ const Login = () => {
                           className="toggle-password"
                           onClick={() => setShowPassword(!showPassword)}
                         >
-                          {showPassword ? "🔒" : "👁️"}
+                          {showPassword ? <EyeInvisibleOutlined/>:<EyeOutlined/>}
                         </span>
                       </div>
 
@@ -1858,8 +1826,8 @@ const Login = () => {
               <p className="switch-mode">
                 {signUpMode ? (
                   <>
-                    <label style={{marginTop: '10px'}}>Already have an account?{" "}
-                    <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign in here</span></label>
+                    Already have an account?{" "}
+                    <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign in here</span>
                   </>
                 ) : (
                   // <>
