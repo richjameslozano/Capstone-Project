@@ -73,6 +73,7 @@ const Inventory = () => {
   const [hasExpiryDate, setHasExpiryDate] = useState(false);
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [filterDepartment, setFilterDepartment] = useState(null);
+  const [loading, setLoading] = useState(true); // default: true
   const db = getFirestore();
 
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
@@ -105,7 +106,6 @@ const Inventory = () => {
     return () => observer.disconnect();
   }, []);
 
-  
 
   // useEffect(() => {
   //   const inventoryRef = collection(db, "inventory");
@@ -153,6 +153,7 @@ const Inventory = () => {
     const unsubscribe = onSnapshot(
       inventoryRef,
       async (snapshot) => {
+        setLoading(true); // Start loading
         try {
           const batch = writeBatch(db); // use batch to reduce writes
 
@@ -274,10 +275,13 @@ const Inventory = () => {
 
         } catch (error) {
           console.error("Error processing inventory snapshot: ", error);
-        }
+        }finally {
+        setLoading(false); // Stop loading
+      }
       },
       (error) => {
         console.error("Error fetching inventory with onSnapshot: ", error);
+        setLoading(false); // Stop loading even on error
       }
     );
 
@@ -1145,18 +1149,20 @@ useEffect(() => {
       <Layout>
         <Content className="content inventory-container">
     
-          <div style={{ marginBottom: 16 }}>
-            <Button type="primary" onClick={showModal}>
-              Add Item
-            </Button>
-          </div>
+          
 
           <div className="inventory-header">
             <Space wrap>
+              
+            <Button className="add-item-button"
+            style ={{width:'200px', marginRight:'30px', border:'none'}} type="primary" onClick={showModal}>
+              Add Item
+            </Button>
+          
               <Input.Search
                 placeholder="Search"
                 className="search-bar"
-                style={{ width: 200 }}
+                style={{ width: 280 }}
                 allowClear
                 onInput={(e) => {
                   const sanitized = sanitizeInput(e.target.value);
@@ -1202,6 +1208,7 @@ useEffect(() => {
               </Select>
 
               <Button
+                className="reset-filters-button"
                 onClick={() => {
                   setFilterCategory(null);
                   setFilterItemType(null);
@@ -1212,15 +1219,15 @@ useEffect(() => {
                 Reset Filters
               </Button>
 
-              <Button type="primary" onClick={exportToExcel}>
+              <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
                 Export to Excel
               </Button>
 
-              <Button type="primary" onClick={saveAsPdf}>
+              <Button className="save-pdf-button" type="primary" onClick={saveAsPdf}>
                 Save as PDF
               </Button>
 
-              <Button type="primary" onClick={printPdf}>
+              <Button className="print-pdf-button" type="primary" onClick={printPdf}>
                 Print PDF
               </Button>
 
@@ -1233,7 +1240,7 @@ useEffect(() => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
-    
+            loading={{ spinning: loading, tip: "Loading inventory data..." }}
             onRow={(record) => {
               return {
                 onClick: () => {
@@ -1535,7 +1542,7 @@ useEffect(() => {
               </Row>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="add-btn">
+                <Button className='add-item-button' style={{marginTop:'10px'}}type="primary" htmlType="submit" >
                   Add to Inventory
                 </Button>
               </Form.Item>

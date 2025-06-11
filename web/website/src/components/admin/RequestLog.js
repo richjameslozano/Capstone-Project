@@ -371,7 +371,12 @@ const printPdf = () => {
       render: (status) => (
         <Text
           style={{
-            color: status === "Approved" ? "green" : "red",
+            color:
+          status === "Approved"
+            ? "green"
+            : status === "Rejected"
+            ? "red"
+            : "#faad14", 
             fontWeight: "bold",
           }}
         >
@@ -428,6 +433,7 @@ const printPdf = () => {
               All
             </Button>
               <Button
+                    className="save-all-pdf-button"
                     type="primary"
                     onClick={saveAllAsPdf}
                     style={{ marginRight: 8 }}
@@ -435,6 +441,7 @@ const printPdf = () => {
                     Save All as PDF
                   </Button>
                   <Button
+                  className="print-all-button"
                     onClick={printAllPdf}
                   >
                     Print All
@@ -442,14 +449,16 @@ const printPdf = () => {
                           
 
             <Button
+              className="approved-status-button"
               type={filterStatus === "Approved" ? "primary" : "default"}
               onClick={() => setFilterStatus("Approved")}
-              style={{ marginRight: 8 }}
+              style={{ marginRight: 8, marginLeft: 30 }}
             >
               Approved
             </Button>
 
             <Button
+              className="rejected-status-button"
               type={filterStatus === "Rejected" ? "primary" : "default"}
               onClick={() => setFilterStatus("Rejected")}
               style={{ marginRight: 8 }}
@@ -458,6 +467,7 @@ const printPdf = () => {
             </Button>
 
             <Button
+              className="returned-status-button"
               type={filterStatus === "Returned" ? "primary" : "default"}
               onClick={() => setFilterStatus("Returned")}
             >
@@ -480,10 +490,10 @@ const printPdf = () => {
           visible={modalVisible}
           onCancel={closeModal}
           footer={[
-            <Button key="save" type="primary" onClick={saveAsPdf}>
+            <Button className='save-all-pdf-button' key="save" type="primary" onClick={saveAsPdf}>
               Save as PDF
             </Button>,
-              <Button key="print" onClick={() => printPdf(selectedRequest)}>
+              <Button className='print-all-button'type="primary" key="print" onClick={() => printPdf(selectedRequest)}>
               Print
             </Button>,
 

@@ -5,7 +5,7 @@ import { db } from "../../backend/firebase/FirebaseConfig";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/adminStyle/BorrowCatalog.css";
-import ApprovedRequestModal from "../customs/ApprovedRequestModal";
+import ApprovalRequestModal from "../customs/ApprovalRequestModal";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -268,7 +268,7 @@ useEffect(() => {
             pagination={{ pageSize: 10 }}
           />
 
-            <ApprovedRequestModal
+            <ApprovalRequestModal
               isApprovedModalVisible={isModalVisible}
               setIsApprovedModalVisible={setIsModalVisible}
               selectedApprovedRequest={selectedRequest}
