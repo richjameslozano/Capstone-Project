@@ -833,6 +833,12 @@ const printPdf = () => {
         timestamp: serverTimestamp(),
       });
 
+      await db.collection("allactivitylog").add({
+        action: `Added new item (${finalItemName}) to inventory`,
+        userName: userName || "User",
+        timestamp: serverTimestamp(),
+      });
+
       setNotificationMessage("Item successfully added!");
       setIsNotificationVisible(true);
 
