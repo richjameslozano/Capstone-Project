@@ -838,7 +838,7 @@ useEffect(() => {
     useEffect(() => {
       const fetchGeminiAnalysis = async () => {
         try {
-          const response = await fetch("http://localhost:5000/gemini", {
+          const response = await fetch("https://webnuls.onrender.com/gemini", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -863,7 +863,7 @@ useEffect(() => {
     useEffect(() => {
       const fetchGeminiAnalysis = async () => {
         try {
-          const response = await fetch("http://localhost:5000/predict-inventory-trends", {
+          const response = await fetch("https://webnuls.onrender.com/predict-inventory-trends", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
