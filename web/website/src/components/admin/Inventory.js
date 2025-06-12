@@ -666,77 +666,75 @@ const printPdf = () => {
 };
 
   // FRONTEND
-  const handleAdd = async (values) => {
-    if (!itemName || !values.department || !itemDetails) {
-      alert("Please fill up the form!");
-      return;
-    }
- 
-    const trimmedName = itemName.trim();
-    const normalizedInputName = trimmedName.toLowerCase();
-    const normalizedInputDetails = itemDetails.trim().toLowerCase();
- 
-    // Find items with the same name (case-insensitive)
-    const sameNameItems = dataSource.filter(
-      (item) => item.item.toLowerCase().startsWith(normalizedInputName)
+   const handleAdd = async (values) => {
+  if (!itemName || !values.department || !itemDetails) {
+    alert("Please fill up the form!");
+    return;
+  }
+
+  const trimmedName = itemName.trim();
+  const normalizedInputName = trimmedName.toLowerCase();
+  const normalizedInputDetails = itemDetails.trim().toLowerCase();
+  const normalizedDepartment = values.department.trim().toLowerCase();
+
+  // Find items with the same name (case-insensitive)
+  const sameNameItems = dataSource.filter(
+    (item) => item.item.toLowerCase().startsWith(normalizedInputName)
+  );
+
+  // Check if same name AND same details AND same department already exists
+  const exactMatch = sameNameItems.find((item) => {
+    const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
+    const itemNameSafe = item.item ? item.item.toLowerCase() : "";
+    const itemDepartmentSafe = item.department ? item.department.trim().toLowerCase() : "";
+    return (
+      itemDetailsSafe === normalizedInputDetails &&
+      itemNameSafe === normalizedInputName &&
+      itemDepartmentSafe === normalizedDepartment
     );
- 
-    // Check if same name AND same details already exists
-    const exactMatch = sameNameItems.find((item) => {
-      const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
-      const itemNameSafe = item.item ? item.item.toLowerCase() : "";
-      return (
-        itemDetailsSafe === normalizedInputDetails &&
-        itemNameSafe === normalizedInputName
-      );
-    });
- 
-    if (exactMatch) {
-      setNotificationMessage("An item with the same name and details already exists in the inventory.");
-      setIsNotificationVisible(true);
-      return;
-    }
-    const itemCategoryPrefixMap = {
-      Chemical: "CHEM",
-      Equipment: "EQP",
-      Reagent: "RGT",
-      Glasswares: "GLS",
-      Materials: "MAT",
-    };
-   
- 
-    // Generate suffix for similar items with same base name but different details
-    // let similarItemCount = sameNameItems.length + 1;
-    const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
-    // const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
-    const formattedItemName = `${baseName}`;
- 
-    const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
- 
-    const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
-    const inventoryRef = collection(db, "inventory");
-    const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-    const defaultCriticalDays = 7;
-    let averageDailyUsage = 0;
- 
-    // You could fetch historical averageDailyUsage if available, otherwise 0
-    // For new items, it's likely 0 by default
- 
-    const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
- 
- 
-    let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
-    let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-    let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
- 
-    // 🔁 Keep trying until we find a unique ID
-    while (!idQuerySnapshot.empty) {
-      ItemCategoryCount++;
-      generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-      idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-    }
- 
-    setItemId(generatedItemId);
+  });
+
+  if (exactMatch) {
+    setNotificationMessage(
+      "An item with the same name, details, and department already exists in the inventory."
+    );
+    setIsNotificationVisible(true);
+    return;
+  }
+
+  const itemCategoryPrefixMap = {
+    Chemical: "CHEM",
+    Equipment: "EQP",
+    Reagent: "RGT",
+    Glasswares: "GLS",
+    Materials: "MAT",
+  };
+
+  const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
+  const formattedItemName = `${baseName}`;
+  const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
+
+  const itemCategoryPrefix = itemCategoryPrefixMap[values.category] || "UNK01";
+  const inventoryRef = collection(db, "inventory");
+  const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
+  const defaultCriticalDays = 7;
+  let averageDailyUsage = 0;
+
+  const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
+
+  let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
+  let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+  let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+
+  // 🔁 Keep trying until we find a unique ID
+  while (!idQuerySnapshot.empty) {
+    ItemCategoryCount++;
+    generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+    idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  }
+
+  setItemId(generatedItemId);
+
  
  
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
