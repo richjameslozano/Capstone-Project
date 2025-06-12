@@ -513,10 +513,32 @@ const Requisition = () => {
 
   }, [location.state, navigate]);  
 
+    // useEffect(() => {
+    //   const departmentsCollection = collection(db, "departments");
+    //   const unsubscribe = onSnapshot(
+    //     departmentsCollection,
+    //     (querySnapshot) => {
+    //       const deptList = querySnapshot.docs
+    //         .map((doc) => ({ id: doc.id, ...doc.data() }))
+    //         .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    //       setDepartmentsAll(deptList);
+    //     },
+    //     (error) => {
+    //       console.error("Error fetching departments in real-time: ", error);
+    //     }
+    //   );
+
+    //   return () => unsubscribe();
+    // }, []);
+
     useEffect(() => {
       const departmentsCollection = collection(db, "departments");
+
+      // Only get departments where college == "SAH"
+      const q = query(departmentsCollection, where("college", "==", "SAH"));
+
       const unsubscribe = onSnapshot(
-        departmentsCollection,
+        q,
         (querySnapshot) => {
           const deptList = querySnapshot.docs
             .map((doc) => ({ id: doc.id, ...doc.data() }))
@@ -524,7 +546,7 @@ const Requisition = () => {
           setDepartmentsAll(deptList);
         },
         (error) => {
-          console.error("Error fetching departments in real-time: ", error);
+          console.error("Error fetching SAH departments in real-time:", error);
         }
       );
 
