@@ -9,6 +9,7 @@ export default StyleSheet.create({
     backgroundColor: '#e9ecee',
     paddingBottom: 0,
     overflow: 'visible',
+  
   },
 
   profileHeader:{
@@ -46,19 +47,19 @@ export default StyleSheet.create({
   },
 
   searchFilter:{
-    position: 'absolute', 
-    zIndex: 999, 
+    position: 'absolute',
+    zIndex: 999,
+    flex:1,
     alignSelf: 'center', 
     width: '100%',
     height: 'auto',
     padding: 5,
-    paddingBottom: 5,
     backgroundColor: 'white',
-    paddingTop: 10,
+    paddingBottom: 0,
   },
 
   searchContainer: {
-    width: '70%',
+    flex:3,
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
@@ -67,6 +68,7 @@ export default StyleSheet.create({
     paddingHorizontal: 10,
     backgroundColor: '#fff',
   },
+
   searchInput: {
     flex: 1,
     height: 40,
@@ -598,6 +600,7 @@ timeBtn:{
     paddingBottom: 5,
     borderRadius: 8,
     marginHorizontal: 7,
+    marginTop: 5
   },
 
   proceedBtn:{
