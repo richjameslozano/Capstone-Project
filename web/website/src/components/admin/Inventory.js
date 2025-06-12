@@ -811,7 +811,10 @@ const printPdf = () => {
         userName: userName || "User",
         timestamp: serverTimestamp(),
       });
- 
+
+      setNotificationMessage("Item successfully added!");
+      setIsNotificationVisible(true);
+
       await addDoc(collection(inventoryDocRef, "stockLog"), {
         date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
         noOfItems: quantityNumber,
@@ -1003,6 +1006,16 @@ const updateItem = async (values) => {
 
         setIsNotificationVisible(true);
         setNotificationMessage("Item updated successfully!");
+
+          const userId = localStorage.getItem("userId");
+          const userName = localStorage.getItem("userName") || "User";
+
+          await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+            action: `Item (${data.itemName}) updated`,
+            userName: userName || "User",
+            timestamp: serverTimestamp(),
+          });
+
 
         const updatedItem = {
           ...editingItem,

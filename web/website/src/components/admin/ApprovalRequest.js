@@ -42,6 +42,7 @@ useEffect(() => {
 
           return {
             id: doc.id,
+            firestoreId: data.firestoreId, 
             accountId: data.accountId || null,
             timestamp: data.timestamp || null,
             requestor: data.userName || "N/A",
@@ -273,6 +274,7 @@ useEffect(() => {
               setIsApprovedModalVisible={setIsModalVisible}
               selectedApprovedRequest={selectedRequest}
               setSelectedApprovedRequest={setSelectedRequest}
+              requestId={selectedRequest?.id}
               columns={columns}
               formatDate={formatDate}
             />

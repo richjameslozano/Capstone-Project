@@ -1,6 +1,6 @@
 import React from "react";
 import { Modal, Row, Col, Typography, Table, Button, Input } from "antd";
-import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs  } from "firebase/firestore";
+import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { getAuth } from "firebase/auth";
 const { Text, Title } = Typography;
@@ -12,334 +12,217 @@ const ApprovalRequestModal = ({
   setSelectedApprovedRequest,
   formatDate,
 }) => {
-  
-const requestList = selectedApprovedRequest?.requestList || [];
-const [comment, setComment] = React.useState("");
 
-console.log("requestList in Modal:", requestList);
+  const requestList = selectedApprovedRequest?.requestList || [];
+  const [comment, setComment] = React.useState("");
 
-  const conditionCounts = requestList.reduce((acc, item) => {
-    const condition = item.condition;
-    if (condition) {
-      if (!acc[condition]) {
-        acc[condition] = 0;
-      }
-      acc[condition]++;
-    }
-    return acc;
-  }, {});
+  console.log("requestList in Modal:", requestList);
 
-  if (selectedApprovedRequest) {
-    console.log("Raw timestamp value:", selectedApprovedRequest.timestamp);
+    // Define your own columns for the modal
+    const approvedRequestColumns = [
+      {
+        title: "Item ID",
+        key: "itemId",
+        render: (_, record) => record.itemId || record.itemIdFromInventory,
+      },
+      {
+        title: "Item Name",
+        dataIndex: "itemName",
+        key: "itemName",
+      },
+      {
+        title: "Item Description",
+        dataIndex: "itemDetails",
+        key: "itemDetails",
+      },
+      {
+        title: "Quantity",
+        dataIndex: "quantity",
+        key: "quantity",
+      },
+      {
+        title: "Category",
+        dataIndex: "category",
+        key: "category",
+      },
+    ];
+
+  if (selectedApprovedRequest?.status === "Returned") {
+    approvedRequestColumns.push({
+      title: "Condition",
+      dataIndex: "conditionSummary",
+      key: "conditionSummary",
+      render: (text) => <span>{text || "N/A"}</span>,
+    });
   }
 
-  // Define your own columns for the modal
-  const approvedRequestColumns = [
-    {
-      title: "Item ID",
-      key: "itemId",
-      render: (_, record) => record.itemId || record.itemIdFromInventory,
-    },
-    {
-      title: "Item Name",
-      dataIndex: "itemName",
-      key: "itemName",
-    },
-    {
-      title: "Item Description",
-      dataIndex: "itemDetails",
-      key: "itemDetails",
-    },
-    {
-      title: "Quantity",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Category",
-      dataIndex: "category",
-      key: "category",
-    },
-  ];
 
-if (selectedApprovedRequest?.status === "Returned") {
-  approvedRequestColumns.push({
-    title: "Condition",
-    dataIndex: "conditionSummary",
-    key: "conditionSummary",
-    render: (text) => <span>{text || "N/A"}</span>,
-  });
-}
+  function getConditionSummary(conditionsArray) {
+    if (!Array.isArray(conditionsArray)) return "N/A";
 
+    const counts = conditionsArray.reduce((acc, condition) => {
+      acc[condition] = (acc[condition] || 0) + 1;
+      return acc;
+    }, {});
 
-function getConditionSummary(conditionsArray) {
-  if (!Array.isArray(conditionsArray)) return "N/A";
+    return Object.entries(counts)
+      .map(([condition, count]) => `${condition}: ${count}`)
+      .join(", ");
+  }
 
-  const counts = conditionsArray.reduce((acc, condition) => {
-    acc[condition] = (acc[condition] || 0) + 1;
-    return acc;
-  }, {});
+    const logRequestOrReturn = async (userId, userName, action) => {
+      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+        action, // e.g. "Requested Items" or "Returned Items"
+        userName,
+        timestamp: serverTimestamp(),
+      });
+    };
 
-  return Object.entries(counts)
-    .map(([condition, count]) => `${condition}: ${count}`)
-    .join(", ");
-}
-
-  const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
-    await addDoc(collection(db, `accounts/${userId}/activitylog`), {
-      action, // e.g. "Requested Items" or "Returned Items"
-      userName,
-      timestamp: serverTimestamp(),
-      requestList: requestDetails, 
-    });
-  };
-
-
-  const handleReject = async () => {
-    console.log("🚀 Selected Record:", selectedApprovedRequest);
-
-    const userId = localStorage.getItem("userId");
-    const userName = localStorage.getItem("userName");
-
-    let requestorAccountId = selectedApprovedRequest.accountId;
-
+  const getApprovalRequestDocByInternalId = async (internalId) => {
     try {
-      // Fallback: if accountId is missing, fetch it using userId
-      if (!requestorAccountId && selectedApprovedRequest.accountId) {
-        console.warn("⚠️ accountId missing. Trying to fetch via userId...");
-
-        const accountsQuery = query(
-          collection(db, "accounts"),
-          where("accountId", "==", selectedApprovedRequest.accountId)
-        );
-
-        const accountsSnapshot = await getDocs(accountsQuery);
-        if (!accountsSnapshot.empty) {
-          requestorAccountId = accountsSnapshot.docs[0].accountId;
-          console.log("✅ accountId fetched:", requestorAccountId);
-
-        } else {
-          throw new Error("No account found for userId");
-        }
-      }
-
-      if (!requestorAccountId) {
-        console.error("❌ Cannot update userrequestlog: accountId is missing");
-        alert("Cannot update user request log. accountId is missing.");
-        return;
-      }
-
-      // 1. Update status in borrowcatalog
-      const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
-      await updateDoc(docRef, {
-        status: "Deployed",
-      });
-
-      const mainItemName = selectedApprovedRequest.requestList?.[0]?.itemName || "Item";
-      const deployMessage = `Deployed "${mainItemName}" to ${selectedApprovedRequest.userName} in ${selectedApprovedRequest.room}`;
-
-      // 2. Log the activity
-      await logRequestOrReturn(userId, userName, deployMessage, {
-        requestId: selectedApprovedRequest.id,
-        status: "Deployed",
-        itemName: mainItemName,
-        userDeployedTo: selectedApprovedRequest.userName,
-      });
-
-      // 3. Update userrequestlog
-      const userRequestQuery = query(
-      collection(db, `accounts/${requestorAccountId}/userrequestlog`),
-      // where("dateRequired", "==", selectedApprovedRequest.dateRequired)
+      const approvalQuery = query(
+        collection(db, "approvalrequestcollection"),
+        where("id", "==", internalId)
       );
+      const querySnapshot = await getDocs(approvalQuery);
 
-      const userRequestSnapshot = await getDocs(userRequestQuery);
-      console.log("📄 userrequestlog found:", userRequestSnapshot.docs.length); 
-
-      for (const docSnap of userRequestSnapshot.docs) {
-        const docData = docSnap.data();
-        let hasMatchingItem = false;
-
-        docData.requestList?.forEach(async (item) => {
-          const selectedItem = selectedApprovedRequest.requestList?.[0]; 
-          const requestorLogData = selectedApprovedRequest;
-
-          const matches =
-            item.itemName === selectedItem?.itemName &&
-            item.itemDetails === selectedItem?.itemDetails &&
-            item.selectedItemId === selectedItem?.selectedItemId &&
-            item.labRoom === selectedItem?.labRoom &&
-            item.quantity === selectedItem?.quantity &&
-            docData.program === requestorLogData.program &&
-            docData.timeFrom === requestorLogData.timeFrom &&
-            docData.timeTo === requestorLogData.timeTo;
-
-          console.log("🔍 Comparing item:");
-          console.log("  itemName:", item.itemName, "==", selectedItem?.itemName);
-          console.log("  itemDetails:", item.itemDetails, "==", selectedItem?.itemDetails);
-          console.log("  selectedItemId:", item.selectedItemId, "==", selectedItem?.selectedItemId);
-          console.log("  labRoom:", item.labRoom, "==", selectedItem?.labRoom);
-          console.log("  quantity:", item.quantity, "==", selectedItem?.quantity);
-          console.log("  program:", docData.program, "==", requestorLogData.program);
-          console.log("  timeFrom:", docData.timeFrom, "==", requestorLogData.timeFrom);
-          console.log("  timeTo:", docData.timeTo, "==", requestorLogData.timeTo);
-          console.log("  ➤ Matches:", matches);
-
-          if (matches) {
-            hasMatchingItem = true;
-
-            await updateDoc(doc(db, `accounts/${requestorAccountId}/userrequestlog/${docSnap.id}`), {
-              status: 'Deployed'
-            });
-
-            console.log("✅ userrequestlog updated to 'Deployed'");
-          } 
-        });
+      if (querySnapshot.empty) {
+        console.warn("⚠️ No approvalrequestcollection document found with internal id:", internalId);
+        return null;
       }
-      
-      alert("Request successfully deployed!");
-      setIsApprovedModalVisible(false);
 
-    } catch (error) {
-      console.error("❌ Error during deployment:", error.message || error);
-      alert("Deployment failed. Check console for details.");
+      // Assuming there's only one matching doc
+      const docSnap = querySnapshot.docs[0];
+      return { docId: docSnap.id, data: docSnap.data() };
+
+    } catch (err) {
+      console.error("❌ Error fetching approvalrequestcollection document:", err);
+      return null;
     }
   };
 
-  const handleApprove = async () => {
-    try {
-      const requisitionId = selectedApprovedRequest?.id;
-      if (!requisitionId) {
-        console.error("Missing requisition ID");
-        return;
-      }
-  
-      // Get current authenticated user
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      const userEmail = currentUser?.email;
-  
-      let approverName = "Unknown";
-      if (userEmail) {
-        const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-        const userSnapshot = await getDocs(userQuery);
-        
-        if (!userSnapshot.empty) {
-          approverName = userSnapshot.docs[0].data().name || "Unknown";
+    const handleReject = async () => {
+        let userRequestId = selectedApprovedRequest?.firestoreId;
+
+        if (userRequestId?.startsWith("/userrequests/")) {
+            userRequestId = userRequestId.replace("/userrequests/", "");
         }
-      }
 
-      for (const item of selectedApprovedRequest.requestList || []) {
-        const inventoryId = item.selectedItemId || item.selectedItem?.value;
-        const returnedQty = Number(item.quantity);
-        const labRoomId = item.labRoom;
-        const conditionReturned = Array.isArray(item.conditions) && item.conditions[0]
-        ? item.conditions[0]
-        : "Good"; // default fallback
+        console.log("✅ Using cleaned userrequests doc ID:", userRequestId);
 
-        if (inventoryId && !isNaN(returnedQty)) {
-          const inventoryDocRef = doc(db, "inventory", inventoryId);
-          const inventoryDocSnap = await getDoc(inventoryDocRef);
+        if (!userRequestId) {
+            console.error("❌ Missing userrequests ID in selectedApprovedRequest");
+            alert("Missing request ID. Cannot approve the request.");
+            return;
+        }
 
-        if (inventoryDocSnap.exists()) {
-          const inventoryData = inventoryDocSnap.data();
-          const currentQty = Number(inventoryData.quantity || 0);
-          const currentCond = inventoryData.condition || {};
-          const currentCondQty = Number(currentCond[conditionReturned] || 0);
+        if (!comment.trim()) {
+            alert("Please enter a comment before rejecting.");
+            return;
+        }
 
+        try {
+            // const auth = getAuth();
+            // const currentUser = auth.currentUser;
+            // const userId = currentUser?.uid;
+            // const userName = currentUser?.displayName || "Unknown User";
 
-            // Update inventory
-            await updateDoc(inventoryDocRef, {
-              quantity: currentQty + returnedQty,
-              [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
-            });
+            const userId = localStorage.getItem("userId");
+            const userName = localStorage.getItem("userName");
 
+            const requestDocRef = doc(db, "userrequests", userRequestId);
+            const requestDocSnap = await getDoc(requestDocRef);
 
-             const labRoomNumber = item.labRoom;
-           // 🔍 STEP 1: Find labRoom document by roomNumber
-            const labRoomQuery = query(
-              collection(db, "labRoom"),
-              where("roomNumber", "==", labRoomNumber)
-            );
-            const labRoomSnapshot = await getDocs(labRoomQuery);
-
-            if (labRoomSnapshot.empty) {
-              console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomNumber}`);
-              continue;
+            if (!requestDocSnap.exists()) {
+            console.error(`❌ Request document not found at userrequests/${userRequestId}`);
+            alert("Request not found. It may have been deleted.");
+            return;
             }
 
-            const labRoomDoc = labRoomSnapshot.docs[0];
-            const labRoomId = labRoomDoc.id;
-
-            // 🔍 STEP 2: Find item in the labRoom/{labRoomId}/items by itemId field
-            const itemId = inventoryData.itemId;
-            const labItemsRef = collection(db, "labRoom", labRoomId, "items");
-            const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
-            const itemSnapshot = await getDocs(itemQuery);
-
-            if (itemSnapshot.empty) {
-              console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
-              continue;
-            }
-
-            const itemDoc = itemSnapshot.docs[0];
-            const labItemDocId = itemDoc.id;
-            const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
-
-            const labData = itemDoc.data();
-            const labQty = Number(labData.quantity || 0);
-            const labCond = labData.condition || {};
-            const labCondQty = Number(labCond[conditionReturned] || 0);
-
-            // ✅ Update labRoom item
-            await updateDoc(labItemRef, {
-              quantity: labQty + returnedQty,
-              [`condition.${conditionReturned}`]: labCondQty + returnedQty,
+            await updateDoc(requestDocRef, {
+            deanStatus: "Rejected by Dean",
+            deanComment: comment.trim(),
+            approvalRequested: false,
             });
 
-            console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
+            // Remove from approvalrequestcollection
+            const approvalDoc = await getApprovalRequestDocByInternalId(userRequestId);
+            if (approvalDoc?.docId) {
+              await deleteDoc(doc(db, "approvalrequestcollection", approvalDoc.docId));
+              console.log("✅ Removed from approvalrequestcollection");
+            }
 
-          } else {
-            console.warn(`⚠️ Inventory item not found for ID: ${inventoryId}`);
-          } 
+            await logRequestOrReturn(userId, userName, "Rejected Request");
+
+            console.log("✅ userrequests document updated successfully.");
+            setIsApprovedModalVisible(false);
+            setSelectedApprovedRequest(null);
+            setComment("");
+
+        } catch (error) {
+            console.error("❌ Error updating userrequests document:", error);
+            alert("Something went wrong while approving the request.");
         }
-      }
-  
-      // ✅ Update borrowcatalog status
-      const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
-      await updateDoc(borrowDocRef, { status: "Return Approved" });
+    };
 
-     // Step 1: Find the matching requestlog document using a field (like accountId)
-      const requestLogQuery = query(
-        collection(db, "requestlog"),
-        where("accountId", "==", selectedApprovedRequest.accountId)
-      );
+    const handleApprove = async () => {
+        let userRequestId = selectedApprovedRequest?.firestoreId;
 
-      const requestLogSnapshot = await getDocs(requestLogQuery);
+        if (userRequestId?.startsWith("/userrequests/")) {
+            userRequestId = userRequestId.replace("/userrequests/", "");
+        }
 
-      if (!requestLogSnapshot.empty) {
-        // Assuming only one match — update that document
-        const requestLogDoc = requestLogSnapshot.docs[0];
-        const requestLogDocRef = doc(db, "requestlog", requestLogDoc.id);
+        console.log("✅ Using cleaned userrequests doc ID:", userRequestId);
 
-        await updateDoc(requestLogDocRef, {
-          status: "Returned",
-          timestamp: serverTimestamp(),
-        });
+        if (!userRequestId) {
+            console.error("❌ Missing userrequests ID in selectedApprovedRequest");
+            alert("Missing request ID. Cannot approve the request.");
+            return;
+        }
 
-        console.log("✅ Requestlog status updated to 'Returned'");
-        
-      } else {
-        console.warn("⚠️ No matching requestlog document found for accountId:", selectedApprovedRequest.accountId);
-      }
+        if (!comment.trim()) {
+            alert("Please enter a comment before approving.");
+            return;
+        }
 
-      console.log("Return approved and inventory updated.");
-      setIsApprovedModalVisible(false);
-      setSelectedApprovedRequest(null);
-  
-    } catch (error) {
-      console.error("Error approving return and updating inventory:", error);
-    }
-  };  
+        try {
+            const userId = localStorage.getItem("userId");
+            const userName = localStorage.getItem("userName");
+
+            const requestDocRef = doc(db, "userrequests", userRequestId);
+            const requestDocSnap = await getDoc(requestDocRef);
+
+            if (!requestDocSnap.exists()) {
+            console.error(`❌ Request document not found at userrequests/${userRequestId}`);
+            alert("Request not found. It may have been deleted.");
+            return;
+            }
+
+            await updateDoc(requestDocRef, {
+            deanStatus: "Approved by Dean",
+            deanComment: comment.trim(),
+            approvalRequested: false,
+            });
+
+            
+            const approvalDoc = await getApprovalRequestDocByInternalId(userRequestId);
+            if (approvalDoc?.docId) {
+              await deleteDoc(doc(db, "approvalrequestcollection", approvalDoc.docId));
+              console.log("✅ Removed from approvalrequestcollection");
+            }
+
+            await logRequestOrReturn(userId, userName, "Approved Request");
+
+            console.log("✅ userrequests document updated successfully.");
+            setIsApprovedModalVisible(false);
+            setSelectedApprovedRequest(null);
+            setComment("");
+
+        } catch (error) {
+            console.error("❌ Error updating userrequests document:", error);
+            alert("Something went wrong while approving the request.");
+        }
+    };
 
   return (
     <Modal
@@ -365,10 +248,11 @@ function getConditionSummary(conditionsArray) {
       ]}
     >
       {selectedApprovedRequest && (
-        <div style={{ padding: "20px" }}>
+        <div style={{ padding: "20px" }}>   
           <Row gutter={[16, 16]}>
             <Col span={12}>
               <Text strong>Name:</Text> {selectedApprovedRequest.userName || "N/A"}<br />
+              <Text strong>Names:</Text> {selectedApprovedRequest.firestoreId || "N/A"}<br />
               <Text strong>Request Date:</Text>{" "}
               {selectedApprovedRequest?.timestamp
                 ? formatDate(selectedApprovedRequest.timestamp)
@@ -382,6 +266,7 @@ function getConditionSummary(conditionsArray) {
               <p style={{ fontSize: "12px", marginTop: 5 }}>{selectedApprovedRequest.reason || "N/A"}</p>
               <Text strong>Room:</Text> {selectedApprovedRequest.room || "N/A"}<br />
               <Text strong>Course Code:</Text> {selectedApprovedRequest.course || "N/A"}<br />
+              <Text strong>Course Description:</Text> {selectedApprovedRequest.courseDescription || "N/A"}<br />
               <Text strong>Program:</Text> {selectedApprovedRequest.program || "N/A"}
             </Col>
           </Row>
