@@ -622,6 +622,8 @@ import {
   DatabaseOutlined,
 
 } from '@ant-design/icons';
+import ReactMarkdown from 'react-markdown';
+
  const { Content } = Layout;
  
 const { Text } = Typography;
@@ -712,9 +714,6 @@ const getCriticalStockItems = (inventoryItems) => {
     return quantity <= criticalLevel;
   });
 };
-
-
-
 
 // useEffect to listen for inventory changes and update critical stock list
 useEffect(() => {
@@ -824,6 +823,54 @@ useEffect(() => {
 
   fetchDamagedOrDefectiveItems();
 }, []);
+
+    useEffect(() => {
+      const fetchGeminiAnalysis = async () => {
+        try {
+          const response = await fetch("http://localhost:5000/gemini", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              prompt: "Perform predictive and prescriptive analysis on the inventory from Firestore. Consider quantity, condition, and criticalLevel.",
+            }),
+          });
+
+          const result = await response.json();
+    const geminiText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No analysis received";
+    setPredictedSales(cleanMarkdown(geminiText)); // ✅ Clean it before displaying
+
+        } catch (error) {
+          console.error("Error fetching Gemini analysis:", error);
+        }
+      };
+
+      fetchGeminiAnalysis();
+    }, []);
+
+    useEffect(() => {
+      const fetchGeminiAnalysis = async () => {
+        try {
+          const response = await fetch("http://localhost:5000/predict-inventory-trends", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+
+          const result = await response.json();
+          const geminiText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No analysis received";
+
+          // clean and display
+          setPredictedSales(cleanMarkdown(geminiText));
+        } catch (error) {
+          console.error("Error fetching Gemini analysis:", error);
+        }
+      };
+
+      fetchGeminiAnalysis();
+    }, []);
  
     useEffect(() => {
       const q = collectionGroup(db, "userrequests");
@@ -915,20 +962,19 @@ useEffect(() => {
       }
     }, [location.state, navigate]);
 
-    // Fetch AI-based sales predictions and product trends
     useEffect(() => {
-        // Replace with your AI-powered API endpoints once your Blaze plan is active
-        fetch('/api/predict-sales')  // Example endpoint for sales prediction
-          .then((res) => res.json())
-          .then((data) => {
-            setPredictedSales(data.prediction);  // Update predicted sales state
-          });
+      fetch('/api/predict-sales')
+        .then((res) => res.json())
+        .then((data) => {
+          const geminiText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "No analysis received";
+          setPredictedSales(cleanMarkdown(geminiText));
+        });
 
-        fetch('/api/product-trends')  
-          .then((res) => res.json())
-          .then((data) => {
-            setProductTrends(data.trends);  
-          });
+      fetch('/api/product-trends')
+        .then((res) => res.json())
+        .then((data) => {
+          setProductTrends(data.trends);
+        });
     }, []);
 
     useEffect(() => {
@@ -1044,6 +1090,14 @@ useEffect(() => {
    ];
  
    const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  const cleanMarkdown = (markdown) => {
+    return markdown
+      .replace(/```[\s\S]*?```/g, (match) =>
+        match.replace(/```[\w]*\n?/, '').replace(/```$/, '')
+      );
+  };
+
    return (
      <Layout style={{ minHeight: "100vh" }}>
        <Layout>
@@ -1157,6 +1211,12 @@ useEffect(() => {
 
              
             </Col>
+
+            <Card title="AI Inventory Analysis (Gemini)" style={{ marginBottom: '24px' }}>
+              <div style={{ maxHeight: 400, overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
+                <ReactMarkdown>{predictedSales}</ReactMarkdown>
+              </div>
+            </Card>
 
             <Col xs={24} md={8}>
 
