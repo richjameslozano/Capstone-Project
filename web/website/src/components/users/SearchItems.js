@@ -10,68 +10,48 @@ import {
   Modal,
   Descriptions,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import "../styles/usersStyle/SearchItems.css";
+import {
+  SearchOutlined,
+  AppstoreOutlined,
+  ExperimentOutlined,
+  ClusterOutlined,
+  ToolOutlined,
+  BgColorsOutlined,
+} from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Title } = Typography;
 const { Option } = Select;
 
-// const columns = [
-//   {
-//     title: "Item Name",
-//     dataIndex: "description",
-//     key: "description",
-//     sorter: (a, b) => a.description.localeCompare(b.description),
-//   },
-//   {
-//     title: "Stock Qty",
-//     dataIndex: "quantity",
-//     key: "quantity",
-//     sorter: (a, b) => a.quantity - b.quantity,
-//     render: (quantity) => <strong>{quantity}</strong>,
-//   },
-//   {
-//     title: "Status",
-//     dataIndex: "status",
-//     key: "status",
-//     render: (status) => {
-//       let color;
-//       switch (status) {
-//         case "Available":
-//           color = "green";
-//           break;
-//         case "Out of Stock":
-//           color = "red";
-//           break;
-//         case "In Use":
-//           color = "orange";
-//           break;
-//         default:
-//           color = "blue";
-//       }
-//       return <Tag color={color}>{status.toUpperCase()}</Tag>;
-//     },
-//   },
-//   {
-//     title: "Category",
-//     dataIndex: "category",
-//     key: "category",
-//     render: (category) => (
-//       <Tag color={category === "Chemical" ? "blue" : "geekblue"}>
-//         {category.toUpperCase()}
-//       </Tag>
-//     ),
-//   },
-//   {
-//     title: "Room Location",
-//     dataIndex: "room",
-//     key: "room",
-//     sorter: (a, b) => a.room.localeCompare(b.room),
-//   },
-// ];
+  const handleColor = (item) => {
+    if (item.category === 'Equipment') return '#026A5D';
+    if (item.category === 'Chemical') return '#631990';
+    if (item.category === 'Materials') return '#c4610e';
+    if (item.category === 'Reagent') return '#235284';
+    if (item.category === 'Glasswares') return '#d09902';
+    return '#ffffff'; // default fallback
+  };
+
+  const handleBG = (item) => {
+  if (item.category === "Equipment") return "#C8E6C9";
+  if (item.category === "Chemical") return "#E4D6EC";
+  if (item.category === "Materials") return "#f7d4b7";
+  if (item.category === "Reagent") return "#b8e2f4";
+  if (item.category === "Glasswares") return "#fff2ce";
+  return "#f0f0f0";
+};
+
+const handleIcon = (item) => {
+  if (item.category === "Equipment") return <ToolOutlined />;
+  if (item.category === "Chemical") return <ExperimentOutlined />;
+  if (item.category === "Materials") return <ClusterOutlined />;
+  if (item.category === "Reagent") return <BgColorsOutlined />;
+  if (item.category === "Glasswares") return <AppstoreOutlined />;
+  return <AppstoreOutlined />;
+};
 
 const columns = [
   {
@@ -80,50 +60,6 @@ const columns = [
     key: "description",
     sorter: (a, b) => a.description.localeCompare(b.description),
   },
-//   {
-//     title: "Stock Qty",
-//     dataIndex: "quantity",
-//     key: "quantity",
-//     // sorter: (a, b) => a.quantity - b.quantity,
-//     sorter: (a, b) => {
-//   const getQty = (q) =>
-//     Array.isArray(q)
-//       ? q.reduce((sum, item) => sum + (item.qty || 0), 0)
-//       : typeof q === "object" && q !== null && "qty" in q
-//       ? q.qty
-//       : typeof q === "number"
-//       ? q
-//       : 0;
-
-//   return getQty(a.quantity) - getQty(b.quantity);
-// },
-//     // render: (quantity) => <strong>{quantity}</strong>,
-//     render: (quantity) => {
-//   if (Array.isArray(quantity)) {
-//     return (
-//       <strong>
-//         {quantity
-//           .map((item) =>
-//             item && typeof item === "object" && "qty" in item
-//               ? `${item.qty} pcs${item.volume ? ` / ${item.volume} ML` : ""}`
-//               : "Invalid"
-//           )
-//           .join(", ")}
-//       </strong>
-//     );
-//   } else if (quantity && typeof quantity === "object" && "qty" in quantity) {
-//     return (
-//       <strong>
-//         {`${quantity.qty} pcs${quantity.volume ? ` / ${quantity.volume} ML` : ""}`}
-//       </strong>
-//     );
-//   } else if (typeof quantity === "number" || typeof quantity === "string") {
-//     return <strong>{quantity}</strong>;
-//   } else {
-//     return <strong>N/A</strong>;
-//   }
-// }
-//   },
   {
     title: "Stock Qty",
     dataIndex: "quantity",
@@ -163,11 +99,29 @@ const columns = [
     title: "Category",
     dataIndex: "category",
     key: "category",
-    render: (category) => (
-      <Tag color={category === "Chemical" ? "blue" : "geekblue"}>
-        {category.toUpperCase()}
-      </Tag>
-    ),
+    render: (category, record) => {
+      const bgColor = handleBG(record);
+      const textColor = handleColor(record);
+      const icon = handleIcon(record);
+
+      return (
+        <div
+          style={{
+            backgroundColor: bgColor,
+            color: textColor,
+            display: "inline-flex",
+            alignItems: "center",
+            padding: "4px 8px",
+            borderRadius: 6,
+            gap: 6,
+            fontWeight: "bold",
+          }}
+        >
+          {icon}
+          <span>{category.toUpperCase()}</span>
+        </div>
+      );
+    },
   },
   {
     title: "Room Location",
@@ -191,6 +145,7 @@ const SearchItems = () => {
   const [categoryFilter, setCategoryFilter] = useState(null);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+
 
   useEffect(() => {
     const fetchInventory = async () => {
@@ -251,6 +206,7 @@ const SearchItems = () => {
     setIsModalVisible(true);
   };
 
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout className="site-layout">
@@ -303,7 +259,9 @@ const SearchItems = () => {
               className="search-table"
               onRow={(record) => ({
                 onClick: () => handleRowClick(record),
+                
               })}
+              
             />
           </div>
 
@@ -368,3 +326,104 @@ const SearchItems = () => {
 };
 
 export default SearchItems;
+
+
+// const columns = [
+//   {
+//     title: "Item Name",
+//     dataIndex: "description",
+//     key: "description",
+//     sorter: (a, b) => a.description.localeCompare(b.description),
+//   },
+//   {
+//     title: "Stock Qty",
+//     dataIndex: "quantity",
+//     key: "quantity",
+//     sorter: (a, b) => a.quantity - b.quantity,
+//     render: (quantity) => <strong>{quantity}</strong>,
+//   },
+//   {
+//     title: "Status",
+//     dataIndex: "status",
+//     key: "status",
+//     render: (status) => {
+//       let color;
+//       switch (status) {
+//         case "Available":
+//           color = "green";
+//           break;
+//         case "Out of Stock":
+//           color = "red";
+//           break;
+//         case "In Use":
+//           color = "orange";
+//           break;
+//         default:
+//           color = "blue";
+//       }
+//       return <Tag color={color}>{status.toUpperCase()}</Tag>;
+//     },
+//   },
+//   {
+//     title: "Category",
+//     dataIndex: "category",
+//     key: "category",
+//     render: (category) => (
+//       <Tag color={category === "Chemical" ? "blue" : "geekblue"}>
+//         {category.toUpperCase()}
+//       </Tag>
+//     ),
+//   },
+//   {
+//     title: "Room Location",
+//     dataIndex: "room",
+//     key: "room",
+//     sorter: (a, b) => a.room.localeCompare(b.room),
+//   },
+// ];
+
+
+//   {
+//     title: "Stock Qty",
+//     dataIndex: "quantity",
+//     key: "quantity",
+//     // sorter: (a, b) => a.quantity - b.quantity,
+//     sorter: (a, b) => {
+//   const getQty = (q) =>
+//     Array.isArray(q)
+//       ? q.reduce((sum, item) => sum + (item.qty || 0), 0)
+//       : typeof q === "object" && q !== null && "qty" in q
+//       ? q.qty
+//       : typeof q === "number"
+//       ? q
+//       : 0;
+
+//   return getQty(a.quantity) - getQty(b.quantity);
+// },
+//     // render: (quantity) => <strong>{quantity}</strong>,
+//     render: (quantity) => {
+//   if (Array.isArray(quantity)) {
+//     return (
+//       <strong>
+//         {quantity
+//           .map((item) =>
+//             item && typeof item === "object" && "qty" in item
+//               ? `${item.qty} pcs${item.volume ? ` / ${item.volume} ML` : ""}`
+//               : "Invalid"
+//           )
+//           .join(", ")}
+//       </strong>
+//     );
+//   } else if (quantity && typeof quantity === "object" && "qty" in quantity) {
+//     return (
+//       <strong>
+//         {`${quantity.qty} pcs${quantity.volume ? ` / ${quantity.volume} ML` : ""}`}
+//       </strong>
+//     );
+//   } else if (typeof quantity === "number" || typeof quantity === "string") {
+//     return <strong>{quantity}</strong>;
+//   } else {
+//     return <strong>N/A</strong>;
+//   }
+// }
+//   },
