@@ -412,13 +412,29 @@ export default function InventoryScreen({ navigation }) {
       if(item.category === 'Reagent') return 'test-tube';
       if(item.category === 'Glasswares') return 'beaker-outline';
     }
+
+      const handleColor =(item)=>{
+      if(item.category === 'Equipment') return '#026A5D';
+      if(item.category === 'Chemical') return '#631990';
+      if(item.category === 'Materials') return '#c4610e';
+      if(item.category === 'Reagent') return '#235284';
+      if(item.category === 'Glasswares') return '#d09902';
+    }
+
+    const handleBG =(item)=>{
+      if(item.category === 'Equipment') return '#C8E6C9';
+      if(item.category === 'Chemical') return '#E4D6EC';
+      if(item.category === 'Materials') return '#f7d4b7'; 
+      if(item.category === 'Reagent') return '#b8e2f4';
+      if(item.category === 'Glasswares') return '#fff2ce';
+    }
     
     return (
       <TouchableOpacity onPress={() => openModal(item)} activeOpacity={0.9}>
         <View style={styles.card}>
           <View style={styles.cardContent}>
-            <View style={[styles.imageContainer]}>
-              <Icon name={handleIcon()} size={30} color={'black'}/>
+            <View style={[styles.imageContainer, {backgroundColor: handleBG(item)}]}>
+              <Icon name={handleIcon()} size={30} color={handleColor(item)}/>
             </View>
             
   
@@ -623,10 +639,21 @@ export default function InventoryScreen({ navigation }) {
 
     setIsComplete(true);
   };
-   const [selectedCode, setSelectedCode] = useState("");
   const [description, setDescription] = useState("");
 
   const [isSelected, setIsSelected] = useState(false)
+
+    const handleFilter = (category) => {
+      if (selectedCategory === category) {
+        // Deselect = show all
+        setSelectedCategory("All");
+        setIsSelected(false);
+      } else {
+        setSelectedCategory(category);
+        setIsSelected(true);
+      }
+    };
+
 
   return (
     <View style={styles.container}>
@@ -652,12 +679,8 @@ export default function InventoryScreen({ navigation }) {
       style={{ flex: 1,}}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
-      {/* <StatusBar
-                      translucent
-                      backgroundColor="transparent"
-                      barStyle="light-content" // or 'light-content' depending on your design
-                    /> */}
-      {!isComplete && (
+     
+      {isComplete && (
      
         <View style={{flex:1}}>
         <ScrollView 
@@ -952,114 +975,16 @@ export default function InventoryScreen({ navigation }) {
           </TouchableOpacity>
         </View>
         </View>
-        
     )}
-    
-  {/* {isComplete && (
-    <View style={{flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7}}>
 
-
-      <View style={[styles.searchFilter, {top: headerHeight}]}>
-        <View style={{flex: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 7}}>
-          <View style={styles.searchContainer}>
-            <Icon name="magnify" size={20} color="#888"  />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search by item name"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-            />
-          </View>
-
-          <TouchableOpacity
-            style={{
-              backgroundColor: '#efefef',
-              flex: 1,
-              borderRadius: 5,
-              justifyContent: 'center',
-              alignItems: 'center',
-              flexDirection: 'row',
-              gap: 5,
-              padding: 10,
-            }}
-            onPress={() => setIsCategoryModalVisible(true)}
-          >
-            <Icon name='filter-variant' size={20} color='#515151' />
-            <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5, paddingHorizontal:10}}>
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Icon name='cube-outline' size={16} color={'gray'}/>
-          <Text style={{fontWeight: 300, fontSize: 11}}>- Equipment</Text>
-          </View>
-
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Icon name='flask-outline' size={16} color={'gray'}/>
-          <Text style={{fontWeight: 300, fontSize: 11}}>- Chemical</Text>
-          </View>
-
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Icon name='layers-outline' size={16} color={'gray'}/>
-          <Text style={{fontWeight: 300, fontSize: 11}}>- Material</Text>
-          </View>
-
-          <View style={{flexDirection: 'row', alignItems: 'center'}}>
-          <Icon name='test-tube' size={16} color={'gray'}/>
-          <Text style={{fontWeight: 300, fontSize: 11}} >- Reagent</Text>
-          </View>
-
-        </View>
-      </View>
-
-
-    <View style={[styles.wholeSection2,{ marginTop: headerHeight+85 }]}>
-            <ScrollView
-            showsVerticalScrollIndicator={false}
-            enableOnAndroid={true}
-            keyboardShouldPersistTaps="always"
-            extraScrollHeight={30} 
-            enableAutomaticScroll={true}
-            >
-            <FlatList
-                 style={{flexGrow: 1, paddingBottom: 80, paddingHorizontal: 5, paddingTop: 5}}
-                data={filteredItems}
-                renderItem={renderItem}
-                keyExtractor={(item) => item.id}
-                extraScrollHeight={30}
-                ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20}}>No items found</Text>}
-              /> 
-            </ScrollView>
-      
-              
-              
-
-        <View style={styles.bottomContainer}>
-
-        <View style={styles.requestAddContainer}>
-        <TouchableOpacity style={styles.requestButton} onPress={() => navigation.navigate('RequestListScreen')}>
-          <Text style={styles.requestButtonText}>Item List</Text>
-          {tempRequestCount > 0 && (
-            <View style={styles.notificationBadge}>
-              <Text style={styles.notificationText}>{tempRequestCount}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-        </View>
-
-
-      </View> 
-      </View>
-      </View>
-  )} */}
-
-        {isComplete && (
+        {!isComplete && (
           <View style={{ flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7 }}>
+
+            
             
             {/* Header/Search Filter */}
-            <View style={[styles.searchFilter, { top: headerHeight }]}>
-                <View style={{flex: 1, flexDirection: 'row', gap: 5, paddingHorizontal: 7}}>
+            <View style={[styles.searchFilter, { marginTop: headerHeight }]}>
+                <View style={{flex: 2, flexDirection: 'row', gap: 5, paddingHorizontal: 7,}}>
                   <View style={styles.searchContainer}>
                     <Icon name="magnify" size={20} color="#888"  />
                     <TextInput
@@ -1070,7 +995,7 @@ export default function InventoryScreen({ navigation }) {
                     />
                   </View>
 
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={{
                       backgroundColor: '#efefef',
                       flex: 1,
@@ -1085,12 +1010,13 @@ export default function InventoryScreen({ navigation }) {
                   >
                     <Icon name='filter-variant' size={20} color='#515151' />
                     <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
 
                   <TouchableOpacity
                     style={{
                       backgroundColor: '#efefef',
                       flex: 1,
+                      height: '100%',
                       borderRadius: 5,
                       justifyContent: 'center',
                       alignItems: 'center',
@@ -1107,36 +1033,67 @@ export default function InventoryScreen({ navigation }) {
                   </TouchableOpacity>
 
                 </View>
-                  <View style={{flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 5, paddingHorizontal:10}}>
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Icon name='cube-outline' size={16} color={'gray'}/>
-                  <Text style={{fontWeight: 300, fontSize: 11}}>- Equipment</Text>
-                  </View>
 
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Icon name='flask-outline' size={16} color={'gray'}/>
-                  <Text style={{fontWeight: 300, fontSize: 11}}>- Chemical</Text>
-                  </View>
+                  <ScrollView 
+                  horizontal 
+                  showsHorizontalScrollIndicator={false} 
+                  style={{flex: 1, flexDirection: 'row', marginTop: 5}}
+                  contentContainerStyle={{justifyContent: 'space-between', gap: 20, paddingHorizontal:10, paddingBottom: 5}}
+                  >
 
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Icon name='layers-outline' size={16} color={'gray'}/>
-                  <Text style={{fontWeight: 300, fontSize: 11}}>- Material</Text>
-                  </View>
+                  <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}
+                   onPress={()=> handleFilter("Equipment")}>
+                  <Icon name='cube-outline' size={16} color={selectedCategory === "Equipment" ? 'black':'gray'}/>
+                  <Text style={{
+                    fontWeight: selectedCategory === "Equipment" ? 'bold' : '300',
+                    fontSize: 12
+                  }}>- Equipment</Text>
 
-                  <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                  <Icon name='test-tube' size={16} color={'gray'}/>
-                  <Text style={{fontWeight: 300, fontSize: 11}} >- Reagent</Text>
-                  </View>
-                </View>
+                  </TouchableOpacity>
 
-                <View style={{flexDirection: 'row', alignItems: 'center'}}>
-                <Icon name='beaker-outline' size={16} color={'gray'}/>
-                <Text style={{fontWeight: 300, fontSize: 11}} >- Glasswares</Text>
-                </View>
+                  <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}
+                   onPress={()=> handleFilter("Chemical")}>
+                  <Icon name='flask-outline' size={16} color={selectedCategory === "Chemical" ? 'black':'gray'}/>
+                  <Text style={{
+                    fontWeight: selectedCategory === "Chemical" ? 'bold' : '300',
+                    fontSize: 12
+                  }}>- Chemical</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}
+                   onPress={()=> handleFilter("Materials")}>
+                  <Icon name='layers-outline' size={16} color={selectedCategory === "Materials" ? 'black':'gray'}/>
+                  <Text style={{
+                    fontWeight: selectedCategory === "Materials" ? 'bold' : '300',
+                    fontSize: 12
+                  }}>- Material</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}
+                   onPress={()=> handleFilter("Reagent")}>
+                  <Icon name='test-tube' size={16} color={selectedCategory === "Reagent" ? 'black':'gray'}/>
+                  <Text style={{
+                    fontWeight: selectedCategory === "Reagent" ? 'bold' : '300',
+                    fontSize: 12
+                  }}>- Reagent</Text>
+                  </TouchableOpacity>
+
+                  <TouchableOpacity style={{flexDirection: 'row', alignItems: 'center'}}
+                  onPress={()=> handleFilter("Glasswares")}>
+                <Icon name='beaker-outline' size={16} color={selectedCategory === "Glasswares" ? 'black':'gray'}/>
+                  <Text style={{
+                    fontWeight: selectedCategory === "Glasswares" ? 'bold' : '300',
+                    fontSize: 12
+                  }}>- Glasswares</Text>
+                </TouchableOpacity>
+
+                </ScrollView>
+
+                
             </View>
 
             {/* List Section */}
-            <View style={[styles.wholeSection2, { marginTop: headerHeight + 85, flex: 1 }]}>
+            <View style={[styles.wholeSection2, { flex: 7, marginTop: headerHeight+90 }]} >
               <FlatList
                 contentContainerStyle={{ paddingBottom: 80, paddingHorizontal: 5, paddingTop: 5 }}
                 data={filteredItems}
