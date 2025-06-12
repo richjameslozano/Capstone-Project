@@ -1161,23 +1161,36 @@ useEffect(() => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
 
-      <Layout>
-        <Content className="content inventory-container">
+      <Layout style={{paddingTop: 0}}>
+        <Content className="content inventory-container" style={{paddingTop: 0, paddingBottom: 150}}>
     
           
 
           <div className="inventory-header">
-            <Space wrap>
               
-            <Button className="add-item-button"
-            style ={{width:'200px', marginRight:'30px', border:'none'}} type="primary" onClick={showModal}>
-              Add Item
+
+          {!isModalVisible && (
+              <div className="add-item-button">
+            <Button 
+            className="inner-btn"
+             type="primary" onClick={showModal}
+             style={{borderRadius: 500, width: '100%', height: '100%', backgroundColor: '#0f3c4c', fontWeight: 'bold', fontSize: '15px', paddingRight: 20, paddingLeft: 20}}
+             >
+              Add Item to Inventory
+              <PlusOutlined style={{fontSize: 18}}/>
             </Button>
-          
+            </div>
+            )
+          }
               <Input.Search
                 placeholder="Search"
                 className="search-bar"
-                style={{ width: 280 }}
+                style={{
+                  height: '100%',              // Stretch to parent
+                  display: 'flex',             // Flex container
+                  alignItems: 'center'         // Center internal input
+                }}
+                
                 allowClear
                 onInput={(e) => {
                   const sanitized = sanitizeInput(e.target.value);
@@ -1189,7 +1202,7 @@ useEffect(() => {
               <Select
                 allowClear
                 placeholder="Filter by Department"
-                style={{ width: 160 }}
+                style={{ height: '80%', flex: 1}}
                 onChange={(value) => setFilterDepartment(value)}
               >
                 {departmentsAll.map((dept) => (
@@ -1202,7 +1215,7 @@ useEffect(() => {
               <Select
                 allowClear
                 placeholder="Filter by Category"
-                style={{ width: 160 }}
+                style={{flex:1,  height: '80%' }}
                 onChange={(value) => setFilterCategory(value)}
               >
                 <Option value="Chemical">Chemical</Option>
@@ -1215,7 +1228,7 @@ useEffect(() => {
               <Select
                 allowClear
                 placeholder="Filter by Item Type"
-                style={{ width: 160 }}
+                style={{flex:1,  height: '80%' }}
                 onChange={(value) => setFilterItemType(value)}
               >
                 <Option value="Fixed">Fixed</Option>
@@ -1233,7 +1246,8 @@ useEffect(() => {
               >
                 Reset Filters
               </Button>
-
+            
+            <div style={{display: 'flex', flex: 1, height: '100%', alignItems: 'center', gap: 10}}>
               <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
                 Export to Excel
               </Button>
@@ -1245,8 +1259,8 @@ useEffect(() => {
               <Button className="print-pdf-button" type="primary" onClick={printPdf}>
                 Print PDF
               </Button>
-
-            </Space>
+            </div>
+  
           </div> 
 
           <Table
@@ -1254,6 +1268,7 @@ useEffect(() => {
             columns={columns}
             rowKey={(record) => record.itemId}
             bordered
+            pagination={{pageSize: 12}}
             className="inventory-table"
             loading={{ spinning: loading, tip: "Loading inventory data..." }}
             onRow={(record) => {
@@ -1303,6 +1318,7 @@ useEffect(() => {
                     rules={[{ required: true, message: "Please enter Item Name!" }]}
                   >
                     <Input
+                      className="add-input"
                       placeholder="Enter Item Name"
                       value={itemName}
                       onChange={(e) => {
@@ -1327,6 +1343,7 @@ useEffect(() => {
                     rules={[{ required: true, message: "Please enter Item Description!" }]}
                   >
                     <Input
+                      className="add-input"
                       placeholder="Enter Item Description"
                       value={itemDetails}
                      onInput={(e) => {
@@ -1343,8 +1360,10 @@ useEffect(() => {
                     name="category"
                     label="Category"
                     rules={[{ required: true, message: "Please select a category!" }]}
+                    className="add-input"
                   >
-                    <Select placeholder="Select Category" onChange={handleCategoryChange}>
+                    <Select placeholder="Select Category" onChange={handleCategoryChange}
+                    className="add-input">
                       <Option value="Chemical">Chemical</Option>
                       <Option value="Reagent">Reagent</Option>
                       <Option value="Materials">Materials</Option>
@@ -1362,7 +1381,8 @@ useEffect(() => {
                     label="Quantity"
                     rules={[{ required: true, message: "Please enter Quantity!" }]}
                   >
-           <Input
+                    <Input
+                    className="add-input"
                     placeholder="Enter quantity"
                     onInput={(e) => {
                       e.target.value = e.target.value.replace(/\D/g, "");
@@ -1378,7 +1398,8 @@ useEffect(() => {
                       label="Unit"
                       rules={[{ required: true, message: "Please select a unit!" }]}
                     >
-                      <Select placeholder="Select unit">
+                      <Select placeholder="Select unit"
+                      className="add-input">
                         <Select.Option value="ml">ml</Select.Option>
                         <Select.Option value="g">g</Select.Option>
                       </Select>
@@ -1404,6 +1425,7 @@ useEffect(() => {
                   ]}
                 >
                   <Input
+                  className="add-input"
                     placeholder="Enter Critical Stock"
                     onInput={(e) => {
                       e.target.value = e.target.value.replace(/\D/g, ""); // Keep digits only
@@ -1416,6 +1438,7 @@ useEffect(() => {
                 <Col span={8}>
                   <Form.Item name="entryDate" label="Date of Entry" disabled>
                     <DatePicker
+                    className="add-input"
                       format="YYYY-MM-DD"
                       style={{ width: "100%" }}
                       defaultValue={dayjs()}
@@ -1457,6 +1480,7 @@ useEffect(() => {
                           rules={[{ required: true, message: "Please select expiry date!" }]}
                         >
                           <DatePicker
+                          className="add-input"
                             format="YYYY-MM-DD"
                             style={{ width: "100%" }}
                             disabledDate={disabledExpiryDate}
@@ -1476,6 +1500,7 @@ useEffect(() => {
                     rules={[{ required: true, message: "Please select Item Type!" }]}
                   >
                     <Select
+                    className="add-input"
                       value={itemType}
                       onChange={(value) => setItemType(value)}
                       disabled
@@ -1515,6 +1540,7 @@ useEffect(() => {
 
                   >
                     <Input
+                    className="add-input"
                       placeholder="Enter Lab/Stock Room"
                        onInput={(e) => {
                     e.target.value = e.target.value.replace(/\D/g, ""); // digits only
@@ -1542,6 +1568,7 @@ useEffect(() => {
                     rules={[{ required: true, message: "Please select a department" }]}
                   >
                     <Select
+                    className="add-input"
                       placeholder="Select department"
                       loading={!departmentsAll.length}
                       disabled={!departmentsAll.length}
@@ -1556,8 +1583,9 @@ useEffect(() => {
                 </Col>
               </Row>
 
-              <Form.Item>
-                <Button className='add-item-button' style={{marginTop:'10px'}}type="primary" htmlType="submit" >
+              <Form.Item
+              style={{justifyContent: 'flex-end', alignItems: 'flex-end'}}>
+                <Button style={{marginTop:'10px'}}type="primary" htmlType="submit" >
                   Add to Inventory
                 </Button>
               </Form.Item>

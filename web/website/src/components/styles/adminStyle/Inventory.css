@@ -7,7 +7,11 @@
   display: flex;
   justify-content: space-between;
   margin-bottom: 20px;
-  margin-top: 50px;
+  margin-top: 20px;
+  display: flex;
+  gap: 10px;
+  height: 60px;
+  align-items: center;
 }
 
 .modal-header{
@@ -87,13 +91,42 @@
 }
 
 .search-bar {
-  width: 300px;
+  height: 80%;
+  margin-right: 30px;
 }
 
-.filter-btn {
-  background-color: #f0f0f0;
-  border: 1px solid #d9d9d9;
+.search-bar .ant-input-group-wrapper {
+  height: 100% !important;
+    flex: 1 !important;
 }
+
+.search-bar .ant-input-wrapper {
+  height: 80%;
+  display: flex;
+  align-items: stretch;
+}
+
+.search-bar .ant-input-affix-wrapper{
+  height: 100%;
+}
+
+.search-bar .ant-input {
+  height: 100% !important;
+  line-height: normal;
+
+  background-color: #263f5f;
+}
+
+.search-bar .ant-input-search-button {
+  height: 100%;
+}
+
+/* 
+.filter-btn {
+  background-color: #ec0e0e;
+  border: 1px solid #d9d9d9;
+  height: 100%;
+} */
 
 .inventory-table {
   background-color: white;
@@ -115,10 +148,10 @@
 }
 
 .inventory-table .ant-table-tbody{
-  font-size: 16px;
+  font-size: 15px;
 }
 .inventory-table .ant-table-thead{
-  font-size: 18px;
+  font-size: 15px;
 }
 .inventory-table .ant-table-thead th:nth-child(1), 
 .inventory-table .ant-table-tbody td:nth-child(1) {
@@ -194,11 +227,20 @@
 
 /* Styles for the "Add Item" button */
 .add-item-button {
-  background-color: #263f5f !important; /* Green */
   border-color: #263f5f !important;
+  position: fixed; 
+   z-index: 999;
+  height: 70px;
+  width: auto;
+  right: 100px;
+  bottom: 80px;
+  border-radius: 50px;
+  padding: 4px; 
+  background-color: #6e9fc1;
+  box-shadow: 0px 5px 14px rgba(0, 0, 0, 0.2);
 }
 
-.add-item-button:hover {
+.inner-btn:hover {
   background-color: #3c6397 !important; /* Lighter green on hover */
   border-color: #3c6397 !important;
 }
@@ -208,6 +250,7 @@
   background-color: #2e7d32 !important; /* Darker green */
   border-color: #2e7d32 !important;
   margin-right: -1px !important;
+  height: 80%;
 }
 
 .export-excel-button:hover {
@@ -219,6 +262,7 @@
 .save-pdf-button {
   background-color: #af2626 !important; /* Red */
   border-color: #af2626 !important;
+  height: 80%;
 }
 
 .save-pdf-button:hover {
@@ -231,6 +275,7 @@
   background-color: #d4d4d4 !important; /* Gray, consistent with "Print PDF" */
   border-color: #8b8989 !important;
   color: black;
+  height: 80%;
 }
 
 .print-pdf-button:hover {
@@ -243,9 +288,15 @@
   background-color: #ffffff !important; /* White */
   border-color: #d9d9d9 !important; /* Standard gray border */
   color: rgba(0, 0, 0, 0.88) !important;
+  height: 80%;
 }
 
 .reset-filters-button:hover {
-  background-color: #f5f5f5 !important; /* Very light gray on hover */
+  background-color: #dddddd !important; /* Very light gray on hover */
   border-color: #c0c0c0 !important;
+}
+
+.add-input{
+  height:50px
+  ;
 }
