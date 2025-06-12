@@ -14,7 +14,7 @@ import {
   InputNumber,
   Radio,
 } from "antd";
-import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined } from '@ant-design/icons'; 
+import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined, FileTextOutlined} from '@ant-design/icons'; 
 import moment from "moment";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
@@ -32,7 +32,6 @@ import { saveAs } from 'file-saver';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
 import StockLog from '../customs/StockLog.js'
-import { FileTextOutlined  } from '@ant-design/icons';
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -667,77 +666,75 @@ const printPdf = () => {
 };
 
   // FRONTEND
-  const handleAdd = async (values) => {
-    if (!itemName || !values.department || !itemDetails) {
-      alert("Please fill up the form!");
-      return;
-    }
- 
-    const trimmedName = itemName.trim();
-    const normalizedInputName = trimmedName.toLowerCase();
-    const normalizedInputDetails = itemDetails.trim().toLowerCase();
- 
-    // Find items with the same name (case-insensitive)
-    const sameNameItems = dataSource.filter(
-      (item) => item.item.toLowerCase().startsWith(normalizedInputName)
+   const handleAdd = async (values) => {
+  if (!itemName || !values.department || !itemDetails) {
+    alert("Please fill up the form!");
+    return;
+  }
+
+  const trimmedName = itemName.trim();
+  const normalizedInputName = trimmedName.toLowerCase();
+  const normalizedInputDetails = itemDetails.trim().toLowerCase();
+  const normalizedDepartment = values.department.trim().toLowerCase();
+
+  // Find items with the same name (case-insensitive)
+  const sameNameItems = dataSource.filter(
+    (item) => item.item.toLowerCase().startsWith(normalizedInputName)
+  );
+
+  // Check if same name AND same details AND same department already exists
+  const exactMatch = sameNameItems.find((item) => {
+    const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
+    const itemNameSafe = item.item ? item.item.toLowerCase() : "";
+    const itemDepartmentSafe = item.department ? item.department.trim().toLowerCase() : "";
+    return (
+      itemDetailsSafe === normalizedInputDetails &&
+      itemNameSafe === normalizedInputName &&
+      itemDepartmentSafe === normalizedDepartment
     );
- 
-    // Check if same name AND same details already exists
-    const exactMatch = sameNameItems.find((item) => {
-      const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
-      const itemNameSafe = item.item ? item.item.toLowerCase() : "";
-      return (
-        itemDetailsSafe === normalizedInputDetails &&
-        itemNameSafe === normalizedInputName
-      );
-    });
- 
-    if (exactMatch) {
-      setNotificationMessage("An item with the same name and details already exists in the inventory.");
-      setIsNotificationVisible(true);
-      return;
-    }
-    const itemCategoryPrefixMap = {
-      Chemical: "CHEM",
-      Equipment: "EQP",
-      Reagent: "RGT",
-      Glasswares: "GLS",
-      Materials: "MAT",
-    };
-   
- 
-    // Generate suffix for similar items with same base name but different details
-    // let similarItemCount = sameNameItems.length + 1;
-    const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
-    // const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
-    const formattedItemName = `${baseName}`;
- 
-    const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
- 
-    const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
-    const inventoryRef = collection(db, "inventory");
-    const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-    const defaultCriticalDays = 7;
-    let averageDailyUsage = 0;
- 
-    // You could fetch historical averageDailyUsage if available, otherwise 0
-    // For new items, it's likely 0 by default
- 
-    const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
- 
- 
-    let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
-    let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-    let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
- 
-    // 🔁 Keep trying until we find a unique ID
-    while (!idQuerySnapshot.empty) {
-      ItemCategoryCount++;
-      generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-      idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-    }
- 
-    setItemId(generatedItemId);
+  });
+
+  if (exactMatch) {
+    setNotificationMessage(
+      "An item with the same name, details, and department already exists in the inventory."
+    );
+    setIsNotificationVisible(true);
+    return;
+  }
+
+  const itemCategoryPrefixMap = {
+    Chemical: "CHEM",
+    Equipment: "EQP",
+    Reagent: "RGT",
+    Glasswares: "GLS",
+    Materials: "MAT",
+  };
+
+  const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
+  const formattedItemName = `${baseName}`;
+  const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
+
+  const itemCategoryPrefix = itemCategoryPrefixMap[values.category] || "UNK01";
+  const inventoryRef = collection(db, "inventory");
+  const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
+  const defaultCriticalDays = 7;
+  let averageDailyUsage = 0;
+
+  const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
+
+  let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
+  let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+  let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+
+  // 🔁 Keep trying until we find a unique ID
+  while (!idQuerySnapshot.empty) {
+    ItemCategoryCount++;
+    generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+    idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  }
+
+  setItemId(generatedItemId);
+
  
  
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
@@ -1287,310 +1284,284 @@ useEffect(() => {
             }}
           />
 
-          <Modal
-            title="Add Item to Inventory"
-            open={isModalVisible}
-            onCancel={handleCancel}
-            footer={null}
-            width={1000}
-            zIndex={1024}
-          >
-            <Form layout="vertical" form={form} onFinish={handleAdd}>
-              <Row gutter={16}>
-                {/* <Col span={8}>
-                  <Form.Item
-                    name="Item Name"
-                    label="Item Name"
-                    rules={[{ required: true, message: "Please enter Item Name!" }]}
-                  >
-                    <Input
-                      placeholder="Enter Item Name"
-                      value={itemName}
-                      onChange={(e) => setItemName(e.target.value)}
-                    />
-                  </Form.Item>
-                </Col> */}
+             <Modal
+      className="add-modal"
+      title="Add Item to Inventory"
+      open={isModalVisible}
+      onCancel={handleCancel}
+      footer={null}
+      width={1000}
+      zIndex={1024}
+      
+    >
+      <div className="add-header">
+        <EditOutlined style={{margin: 0, color: 'white', fontSize: 20, height: '100%'}}/>
+        <h3 style={{margin:0,color: '#fff'}}>Add Item to Inventory</h3>
+      </div>
+      <Form
+        layout="vertical"
+        form={form}
+        onFinish={handleAdd}
+        className="inventory-form"
+        style={{marginTop: 50}}
+      >
+        <h3 style={{marginBottom: 25}}>Item Details</h3>
 
-                <Col span={8}>
-                  <Form.Item
-                    name="Item Name"
-                    label="Item Name"
-                    rules={[{ required: true, message: "Please enter Item Name!" }]}
-                  >
-                    <Input
-                      className="add-input"
-                      placeholder="Enter Item Name"
-                      value={itemName}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/[^a-zA-Z\s]/g, ""); // Letters and space only
-                        setItemName(value);
-                      }}
-                      onKeyDown={(e) => {
-                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", " "];
-                        const isLetter = /^[a-zA-Z]$/.test(e.key);
-                        if (!isLetter && !allowedKeys.includes(e.key)) {
-                          e.preventDefault();
-                        }
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
+        <div style={{ border: '1px solid #ececec', borderTopWidth: 0, borderRightWidth: 0, borderLeftWidth: 0, marginBottom: 25}}>
+        <Row gutter={16} style={{marginBottom: 20}}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="Item Name"
+              label="Item Name"
+              rules={[{ required: true, message: "Please enter Item Name!" }]}
+              tooltip="Enter only letters and spaces"
+            >
+              <Input
+                className="add-input"
+                placeholder="Enter Item Name"
+                value={itemName}
+                onChange={(e) => {
+                  const value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
+                  setItemName(value);
+                }}
+                onKeyDown={(e) => {
+                  const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete", " "];
+                  const isLetter = /^[a-zA-Z]$/.test(e.key);
+                  if (!isLetter && !allowedKeys.includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            </Form.Item>
+          </Col>
 
-                <Col span={8}>
-                  <Form.Item
-                    name="Item Description"
-                    label="Item Description"
-                    rules={[{ required: true, message: "Please enter Item Description!" }]}
-                  >
-                    <Input
-                      className="add-input"
-                      placeholder="Enter Item Description"
-                      value={itemDetails}
-                     onInput={(e) => {
-                  const sanitized = sanitizeInput(e.target.value);
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="Item Description"
+              label="Item Description"
+              rules={[{ required: true, message: "Please enter Item Description!" }]}
+              tooltip="Use clear, concise language"
+            >
+              <Input
+                className="add-input"
+                placeholder="Enter Item Description"
+                value={itemDetails}
+                onInput={(e) => {
+                  const sanitized = e.target.value.replace(/[<>]/g, "");
                   e.target.value = sanitized;
                   setItemDetails(sanitized);
-                     }}
-                    />
-                  </Form.Item>
-                </Col>
+                }}
+              />
+            </Form.Item>
+          </Col>
 
-                <Col span={8}>
-                  <Form.Item
-                    name="category"
-                    label="Category"
-                    rules={[{ required: true, message: "Please select a category!" }]}
-                    className="add-input"
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="category"
+              label="Category"
+              rules={[{ required: true, message: "Please select a category!" }]}
+            >
+              <Select placeholder="Select Category" onChange={handleCategoryChange}
+              className="add-input">
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+                <Option value="Glasswares">Glasswares</Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+        </div>
+          
+        <h3 style={{marginBottom: 25}}>Inventory Information</h3>
+        <Row gutter={16}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="quantity"
+              label="Quantity"
+              rules={[{ required: true, message: "Please enter Quantity!" }]}
+            >
+              <Input
+              className="add-input"
+                placeholder="Enter quantity"
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/\D/g, "");
+                }}
+              />
+            </Form.Item>
+          </Col>
+
+          {['Chemical', 'Reagent'].includes(selectedCategory) && (
+            <Col xs={24} md={8}>
+              <Form.Item
+                name="unit"
+                label="Unit"
+                rules={[{ required: true, message: "Please select a unit!" }]}
+              >
+                <Select placeholder="Select unit"
+                className="add-input">
+                  <Option value="ml">ml</Option>
+                  <Option value="g">g</Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          )}
+
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="criticalLevel"
+              label="Critical Level"
+              rules={[
+                { required: true, message: "Please enter desired Critical Stock!" },
+                {
+                  validator: (_, value) => {
+                    const numeric = parseInt(value, 10);
+                    if (!value || isNaN(numeric) || numeric < 1) {
+                      return Promise.reject("Value must be a number greater than 0");
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input
+              className="add-input"
+                placeholder="Enter Critical Stock"
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/\D/g, "");
+                }}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Form.Item name="entryDate" label="Date of Entry">
+              <DatePicker
+              className="add-input"
+                format="YYYY-MM-DD"
+                style={{ width: "100%" }}
+                defaultValue={dayjs()}
+                disabled
+              />
+            </Form.Item>
+          </Col>
+
+          {['Chemical', 'Reagent'].includes(selectedCategory) && (
+            <>
+              <Col xs={24} md={8}>
+                <Form.Item label="Does this item expire?">
+                  <Radio.Group
+                    onChange={(e) => setShowExpiry(e.target.value)}
+                    value={showExpiry}
                   >
-                    <Select placeholder="Select Category" onChange={handleCategoryChange}
-                    className="add-input">
-                      <Option value="Chemical">Chemical</Option>
-                      <Option value="Reagent">Reagent</Option>
-                      <Option value="Materials">Materials</Option>
-                      <Option value="Equipment">Equipment</Option>
-                      <Option value="Glasswares">Glasswares</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>                
-                <Col span={8}>
-                  <Form.Item
-                    name="quantity"
-                    label="Quantity"
-                    rules={[{ required: true, message: "Please enter Quantity!" }]}
-                  >
-                    <Input
-                    className="add-input"
-                    placeholder="Enter quantity"
-                    onInput={(e) => {
-                      e.target.value = e.target.value.replace(/\D/g, "");
-                    }}
-                    />
-                  </Form.Item>
-                </Col>
-
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
-                  <Col span={8}>
-                    <Form.Item
-                      name="unit"
-                      label="Unit"
-                      rules={[{ required: true, message: "Please select a unit!" }]}
-                    >
-                      <Select placeholder="Select unit"
-                      className="add-input">
-                        <Select.Option value="ml">ml</Select.Option>
-                        <Select.Option value="g">g</Select.Option>
-                      </Select>
-                    </Form.Item>
-                  </Col>
-                )}
-                
-                <Col span={8}>
-                 <Form.Item
-                  name="criticalLevel"
-                  label="Critical Level"
-                  rules={[
-                    { required: true, message: "Please enter desired Critical Stock!" },
-                    {
-                      validator: (_, value) => {
-                        const numeric = parseInt(value, 10);
-                        if (!value || isNaN(numeric) || numeric < 1) {
-                          return Promise.reject("Value must be a number greater than 0");
-                        }
-                        return Promise.resolve();
-                      },
-                    },
-                  ]}
-                >
-                  <Input
-                  className="add-input"
-                    placeholder="Enter Critical Stock"
-                    onInput={(e) => {
-                      e.target.value = e.target.value.replace(/\D/g, ""); // Keep digits only
-                    }}
-                  />
+                    <Radio value={true}>Yes</Radio>
+                    <Radio value={false}>No</Radio>
+                  </Radio.Group>
                 </Form.Item>
+              </Col>
 
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item name="entryDate" label="Date of Entry" disabled>
+              {showExpiry && (
+                <Col xs={24} md={8}>
+                  <Form.Item
+                    name="expiryDate"
+                    label="Date of Expiry"
+                    rules={[{ required: true, message: "Please select expiry date!" }]}
+                  >
                     <DatePicker
                     className="add-input"
-                      format="YYYY-MM-DD"
-                      style={{ width: "100%" }}
-                      defaultValue={dayjs()}
-                      disabled
-                    />
-                  </Form.Item>
-                </Col>
-
-                {/* <Col span={8}>
-                  <Form.Item name="expiryDate" label="Date of Expiry">
-                    <DatePicker
                       format="YYYY-MM-DD"
                       style={{ width: "100%" }}
                       disabledDate={disabledExpiryDate}
-                      disabled={disableExpiryDate}
-                    />
-                  </Form.Item>
-                </Col> */}
-
-                {["Chemical", "Reagent"].includes(selectedCategory) && (
-                  <>
-                    <Col span={8}>
-                      <Form.Item label="Does this item expire?">
-                        <Radio.Group
-                          onChange={(e) => setShowExpiry(e.target.value)}
-                          value={showExpiry}
-                        >
-                          <Radio value={true}>Yes</Radio>
-                          <Radio value={false}>No</Radio>
-                        </Radio.Group>
-                      </Form.Item>
-                    </Col>
-
-                    {showExpiry && (
-                      <Col span={8}>
-                        <Form.Item
-                          name="expiryDate"
-                          label="Date of Expiry"
-                          rules={[{ required: true, message: "Please select expiry date!" }]}
-                        >
-                          <DatePicker
-                          className="add-input"
-                            format="YYYY-MM-DD"
-                            style={{ width: "100%" }}
-                            disabledDate={disabledExpiryDate}
-                          />
-                        </Form.Item>
-                      </Col>
-                    )}
-                  </>
-                )}
-              </Row>
-
-              <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name="type"
-                    label="Item Type"
-                    rules={[{ required: true, message: "Please select Item Type!" }]}
-                  >
-                    <Select
-                    className="add-input"
-                      value={itemType}
-                      onChange={(value) => setItemType(value)}
-                      disabled
-                      placeholder="Select Item Type"
-                    >
-                      <Option value="Fixed">Fixed</Option>
-                      <Option value="Consumable">Consumable</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                {/* <Col span={8}>
-                  <Form.Item
-                    name="labRoom"
-                    label="Stock Room"
-                    rules={[{ required: true, message: "Please enter Stock Room!" }]}
-                  >
-                    <Input placeholder="Enter Lab/Stock Room" />
-                  </Form.Item>
-                </Col> */}
-
-                <Col span={8}>
-                  <Form.Item
-                    name="labRoom"
-                    label="Stock Room"
-                  rules={[
-                      { required: true, message: "Please enter Stock Room!" },
-                      {
-                        validator: (_, value) => {
-                          if (!value || !/^\d+$/.test(value)) {
-                            return Promise.reject("Lab room must be a numeric value");
-                          }
-                          return Promise.resolve();
-                        },
-                      },
-                    ]}
-
-                  >
-                    <Input
-                    className="add-input"
-                      placeholder="Enter Lab/Stock Room"
-                       onInput={(e) => {
-                    e.target.value = e.target.value.replace(/\D/g, ""); // digits only
-                  }}
-                      onKeyDown={(e) => {
-                        const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
-                        if (!/^\d$/.test(e.key) && !allowedKeys.includes(e.key)) {
-                          e.preventDefault(); // Block non-numeric keys
-                        }
-                      }}
                     />
                   </Form.Item>
                 </Col>
+              )}
+            </>
+          )}
+        </Row>
 
-                {/* <Col span={8}>
-                  <Form.Item name="department" label="Department">
-                    <Input placeholder="Enter department" />
-                  </Form.Item>
-                </Col> */}
-                
-                <Col span={8}>
-                  <Form.Item
-                    name="department"
-                    label="Department"
-                    rules={[{ required: true, message: "Please select a department" }]}
-                  >
-                    <Select
-                    className="add-input"
-                      placeholder="Select department"
-                      loading={!departmentsAll.length}
-                      disabled={!departmentsAll.length}
-                    >
-                      {departmentsAll.map((dept) => (
-                        <Select.Option key={dept.id} value={dept.name}>
-                          {dept.name}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
+        <Row gutter={16}>
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="type"
+              label="Item Type"
+              rules={[{ required: true, message: "Please select Item Type!" }]}
+            >
+              <Select
+              className="add-input"
+                value={itemType}
+                onChange={(value) => setItemType(value)}
+                disabled
+                placeholder="Select Item Type"
+              >
+                <Option value="Fixed">Fixed</Option>
+                <Option value="Consumable">Consumable</Option>
+              </Select>
+            </Form.Item>
+          </Col>
 
-              <Form.Item
-              style={{justifyContent: 'flex-end', alignItems: 'flex-end'}}>
-                <Button style={{marginTop:'10px'}}type="primary" htmlType="submit" >
-                  Add to Inventory
-                </Button>
-              </Form.Item>
-            </Form>
-          </Modal>
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="labRoom"
+              label="Stock Room"
+              rules={[
+                { required: true, message: "Please enter Stock Room!" },
+                {
+                  validator: (_, value) => {
+                    if (!value || !/^\d+$/.test(value)) {
+                      return Promise.reject("Lab room must be a numeric value");
+                    }
+                    return Promise.resolve();
+                  },
+                },
+              ]}
+            >
+              <Input
+              className="add-input"
+                placeholder="Enter Lab/Stock Room"
+                onInput={(e) => {
+                  e.target.value = e.target.value.replace(/\D/g, "");
+                }}
+                onKeyDown={(e) => {
+                  const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+                  if (!/^\d$/.test(e.key) && !allowedKeys.includes(e.key)) {
+                    e.preventDefault();
+                  }
+                }}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="department"
+              label="Department"
+              rules={[{ required: true, message: "Please select a department" }]}
+            >
+              <Select
+              className="add-input"
+                placeholder="Select department"
+                loading={!departmentsAll.length}
+                disabled={!departmentsAll.length}
+              >
+                {departmentsAll.map((dept) => (
+                  <Option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>  
+          </Col>
+        </Row>
+
+        <Form.Item style={{ textAlign: "right" }}>
+          <Button type="primary" htmlType="submit">
+            Add to Inventory
+          </Button>
+        </Form.Item>
+      </Form>
+    </Modal>
 
           <Modal
             title="Edit Item Details"
