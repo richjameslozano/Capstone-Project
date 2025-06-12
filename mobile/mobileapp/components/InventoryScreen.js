@@ -686,7 +686,7 @@ export default function InventoryScreen({ navigation }) {
       keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
     >
      
-      {isComplete && (
+      {!isComplete && (
      
         <View style={{flex:1}}>
         <ScrollView 
@@ -984,7 +984,7 @@ export default function InventoryScreen({ navigation }) {
         </View>
     )}
 
-        {!isComplete && (
+        {isComplete && (
           <View style={{ flex: 1, backgroundColor: '#e9ecee', paddingBottom: 7 }}>
 
             
