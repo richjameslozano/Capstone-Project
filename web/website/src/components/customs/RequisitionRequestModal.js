@@ -110,7 +110,7 @@ const RequisitionReqestModal = ({
           <Button key="cancel" onClick={handleCancel}>Cancel</Button>,
           <Button key="reject" type="default" onClick={handleReturn}>Reject</Button>,
           college?.toUpperCase() !== "SAH" && (
-            <Button key="askApproval" type="dashed" onClick={handleAskApproval}>
+            <Button key="askApproval" type="dashed" onClick={handleAskApproval} disabled={selectedRequest?.approvalRequested === false}>
               Ask Approval
             </Button>
           ),
@@ -241,7 +241,9 @@ const RequisitionReqestModal = ({
             {selectedRequest.deanComment && (
               <div style={{ display: 'flex', marginTop: '10px' }}>
                 <p>
-                  <strong>Dean Comment:</strong> {selectedRequest.deanComment}
+                  <strong>Dean Comment:</strong> {selectedRequest.deanComment} 
+                  <br/>
+                  <strong>Status:</strong> {selectedRequest.deanStatus}
                 </p>
               </div>
             )}
