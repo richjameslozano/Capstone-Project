@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Row, Col, Table, Input, Button, Typography } from "antd";
+import { Layout, Row, Col, Table, Input, Button, Typography, Select } from "antd";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import Sidebar from "../Sidebar";
@@ -10,6 +10,7 @@ import ApprovalRequestModal from "../customs/ApprovalRequestModal";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Search } = Input;
+const { Option } = Select;
 
 const ApprovalRequest = () => {
   const [catalog, setCatalog] = useState([]);
@@ -17,73 +18,93 @@ const ApprovalRequest = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [departmentsAll, setDepartmentsAll] = useState([]);
+  const [departmentFilter, setDepartmentFilter] = useState("All");
 
-useEffect(() => {
-  const fetchCatalogData = () => {
-    try {
-      const borrowCatalogRef = collection(db, "approvalrequestcollection");
+  useEffect(() => {
+    const fetchCatalogData = () => {
+      try {
+        const borrowCatalogRef = collection(db, "approvalrequestcollection");
 
-      const unsubscribe = onSnapshot(borrowCatalogRef, (snapshot) => {
-        const catalogData = snapshot.docs.map((doc) => {
-          const data = doc.data();
+        const unsubscribe = onSnapshot(borrowCatalogRef, (snapshot) => {
+          const catalogData = snapshot.docs.map((doc) => {
+            const data = doc.data();
 
-          const requestedItems = Array.isArray(data.requestList)
-            ? data.requestList.map((item) => ({
-                itemId: item.itemIdFromInventory,
-                itemName: item.itemName,
-                itemDetails: item.itemDetails,
-                quantity: item.quantity,
-                category: item.category,
-                condition: item.conditions,
-                department: data.department || "N/A",
-                labRoom: item.labRoom,
-              }))
-            : [];
+            const requestedItems = Array.isArray(data.requestList)
+              ? data.requestList.map((item) => ({
+                  itemId: item.itemIdFromInventory,
+                  itemName: item.itemName,
+                  itemDetails: item.itemDetails,
+                  quantity: item.quantity,
+                  category: item.category,
+                  condition: item.conditions,
+                  department: data.department || "N/A",
+                  labRoom: item.labRoom,
+                }))
+              : [];
 
-          return {
-            id: doc.id,
-            firestoreId: data.firestoreId, 
-            accountId: data.accountId || null,
-            timestamp: data.timestamp || null,
-            requestor: data.userName || "N/A",
-            userName: data.userName || "N/A",
-            approvedBy: data.approvedBy || "N/A",
-            reason: data.reason || "N/A",
-            dateRequired: data.dateRequired || "N/A",
-            timeFrom: data.timeFrom || "N/A",
-            timeTo: data.timeTo || "N/A",
-            course: data.course || "N/A",
-            courseDescription: data.courseDescription || "N/A",
-            program: data.program || "N/A",
-            room: data.room || "N/A",
-            requestList: Array.isArray(data.requestList) ? data.requestList : [],
-            requestedItems,
-            status: data.status || "Pending",
-            department: data.department || "N/A", 
-          };
+            return {
+              id: doc.id,
+              firestoreId: data.firestoreId, 
+              accountId: data.accountId || null,
+              timestamp: data.timestamp || null,
+              requestor: data.userName || "N/A",
+              userName: data.userName || "N/A",
+              approvedBy: data.approvedBy || "N/A",
+              reason: data.reason || "N/A",
+              dateRequired: data.dateRequired || "N/A",
+              timeFrom: data.timeFrom || "N/A",
+              timeTo: data.timeTo || "N/A",
+              course: data.course || "N/A",
+              courseDescription: data.courseDescription || "N/A",
+              program: data.program || "N/A",
+              room: data.room || "N/A",
+              requestList: Array.isArray(data.requestList) ? data.requestList : [],
+              requestedItems,
+              status: data.status || "Pending",
+              department: data.department || "N/A", 
+            };
+          });
+
+          // Sort by most recent
+          const sortedCatalogData = catalogData.sort((a, b) => {
+            if (a.timestamp && b.timestamp) {
+              const timeA = a.timestamp.seconds * 1000 + a.timestamp.nanoseconds / 1000000;
+              const timeB = b.timestamp.seconds * 1000 + b.timestamp.nanoseconds / 1000000;
+              return timeB - timeA;
+            }
+            return 0;
+          });
+
+          setCatalog(sortedCatalogData);
         });
 
-        // Sort by most recent
-        const sortedCatalogData = catalogData.sort((a, b) => {
-          if (a.timestamp && b.timestamp) {
-            const timeA = a.timestamp.seconds * 1000 + a.timestamp.nanoseconds / 1000000;
-            const timeB = b.timestamp.seconds * 1000 + b.timestamp.nanoseconds / 1000000;
-            return timeB - timeA;
-          }
-          return 0;
-        });
+        return () => unsubscribe();
+      } catch (error) {
+        console.error("Error fetching approval requests:", error);
+      }
+    };
 
-        setCatalog(sortedCatalogData);
-      });
+    fetchCatalogData();
+  }, []);
 
-      return () => unsubscribe();
-    } catch (error) {
-      console.error("Error fetching approval requests:", error);
-    }
-  };
+  useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+    const unsubscribe = onSnapshot(
+      departmentsCollection,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error("Error fetching departments in real-time: ", error);
+      }
+    );
 
-  fetchCatalogData();
-}, []);
+    return () => unsubscribe();
+  }, []);
 
   const handleSearch = (value) => {
     setSearchQuery(value);
@@ -103,7 +124,10 @@ useEffect(() => {
     const matchesStatus =
       statusFilter === "All" || item.status === statusFilter;
 
-    return matchesSearch && matchesStatus;
+    const matchesDepartment =
+      departmentFilter === "All" || item.department === departmentFilter;
+
+    return matchesSearch && matchesStatus && matchesDepartment;
   });
 
   const columns = [
@@ -236,8 +260,24 @@ useEffect(() => {
                 onSearch={handleSearch}
               />
             </Col>
-            
+
             <Col>
+              <Select
+                value={departmentFilter}
+                onChange={(value) => setDepartmentFilter(value)}
+                style={{ width: 200 }}
+                placeholder="Select Department"
+              >
+                <Option value="All">All Departments</Option>
+                {departmentsAll.map((dept) => (
+                  <Option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+            
+            {/* <Col>
               <Button type={statusFilter === "All" ? "primary" : "default"} onClick={() => handleStatusFilter("All")}>
                 All
               </Button>
@@ -257,7 +297,7 @@ useEffect(() => {
               <Button type={statusFilter === "Deployed" ? "primary" : "default"} onClick={() => handleStatusFilter("Deployed")}>
                 Deployed
               </Button>
-            </Col>
+            </Col> */}
           </Row>
 
           <Table
