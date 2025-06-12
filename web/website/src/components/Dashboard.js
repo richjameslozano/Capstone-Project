@@ -634,10 +634,17 @@ import {
   UserSwitchOutlined,
   IdcardOutlined,
 } from '@ant-design/icons';
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS, CategoryScale, LinearScale,
+  BarElement, Title, Tooltip, Legend
+} from "chart.js";
+
+
 import ReactMarkdown from 'react-markdown';
 
 const { Content } = Layout;
- 
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 const { Text } = Typography;
  
  const Dashboard = () => {
@@ -660,6 +667,8 @@ const { Text } = Typography;
    const [damagedItems, setDamagedItems] = useState([]);
    const [criticalStockList, setCriticalStockList] = useState([]);
    const [lostItems, setLostItems] = useState([]);
+   const [geminiChartData, setGeminiChartData] = useState([]);
+
 
    const expiryColumns = [
   {
@@ -724,6 +733,7 @@ const getCriticalStockItems = (inventoryItems) => {
     return quantity <= criticalLevel;
   });
 };
+
 
 // critical stock 
 useEffect(() => {
@@ -838,7 +848,7 @@ useEffect(() => {
     useEffect(() => {
       const fetchGeminiAnalysis = async () => {
         try {
-          const response = await fetch("http://localhost:5000/gemini", {
+          const response = await fetch("https://webnuls.onrender.com/gemini", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -863,7 +873,7 @@ useEffect(() => {
     useEffect(() => {
       const fetchGeminiAnalysis = async () => {
         try {
-          const response = await fetch("http://localhost:5000/predict-inventory-trends", {
+          const response = await fetch("https://webnuls.onrender.com/predict-inventory-trends", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
