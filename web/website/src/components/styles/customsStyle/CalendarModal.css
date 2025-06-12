@@ -21,3 +21,50 @@
 .events li {
   margin-bottom: 4px;
 }
+
+.calendar-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.custom-calendar{
+  background-color: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+
+.custom-calendar .ant-picker-calendar-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  font-weight: bold;
+}
+
+.custom-calendar .ant-picker-cell:hover {
+  background-color: #f9fbff;
+}
+
+.custom-calendar .ant-picker-cell-today .ant-picker-cell-inner::before {
+  border: 1px solid #52c41a !important;
+
+}
+
+.custom-calendar .ant-picker-cell-selected .ant-picker-cell-inner {
+  color: white;
+  border-radius: 4px;
+}
+
+/* Make weekday headers bold, centered, and colored */
+.ant-picker-calendar .ant-picker-content th {
+  font-weight: 600;
+  text-align: center;
+  font-size: 15px;
+  color: #2b2b2b; /* Customize as needed */
+  background-color: #e9ecee; /* Optio nal */
+  padding: 12px 0;
+  border-bottom: 1px solid #acacac;
+}

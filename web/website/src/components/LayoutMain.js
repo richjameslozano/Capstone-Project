@@ -203,7 +203,7 @@ const shouldShowSpinner = useMemo(() => {
 
       case "/main/admin-activity-log":
         setSelectedKey("16");
-        setPageTitle("Activivty Log");
+        setPageTitle("Activity Log");
         break;
 
       case "/main/pending-accounts":
