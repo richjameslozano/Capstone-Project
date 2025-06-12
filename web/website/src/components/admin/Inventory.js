@@ -1004,6 +1004,16 @@ const updateItem = async (values) => {
         setIsNotificationVisible(true);
         setNotificationMessage("Item updated successfully!");
 
+          const userId = localStorage.getItem("userId");
+          const userName = localStorage.getItem("userName") || "User";
+
+          await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+            action: `Item (${data.itemName}) updated`,
+            userName: userName || "User",
+            timestamp: serverTimestamp(),
+          });
+
+
         const updatedItem = {
           ...editingItem,
           ...updatedData,
