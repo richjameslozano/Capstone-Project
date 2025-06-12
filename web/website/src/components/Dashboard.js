@@ -1317,8 +1317,28 @@ useEffect(() => {
 
 
 </Tabs.TabPane>
+
+<Tabs.TabPane tab="Analytics" key="3">
+
+ 
+  <Row gutter={[24, 24]} justify="center">
+    <Col xs={24} style={{ width: '100%' }}>
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+    <Card title="Calendar" style={{ width: '100%', minHeight: 600 }}>
+          <div style={{ minHeight: 500, width: '100%' }}>
+          </div>
+        </Card>
+      </div>
+    </Col>
+  </Row>
+</Tabs.TabPane>x
+
+
+
+
 </Tabs>
 </Content>
+
                     
          <SuccessModal isVisible={showModal} onClose={closeModal} />
 
