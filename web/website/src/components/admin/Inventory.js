@@ -812,6 +812,9 @@ const printPdf = () => {
         timestamp: serverTimestamp(),
       });
 
+      setNotificationMessage("Item successfully added!");
+      setIsNotificationVisible(true);
+
       await addDoc(collection(inventoryDocRef, "stockLog"), {
         date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
         noOfItems: quantityNumber,
