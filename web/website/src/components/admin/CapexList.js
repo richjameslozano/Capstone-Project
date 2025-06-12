@@ -295,15 +295,17 @@ const CapexList = () => {
               </Select>
 
               <div>
-                <Button type="primary" onClick={saveAsPdf} style={{ marginRight: 8 }}>
-                  Save as PDF
-                </Button>
-                <Button onClick={printPdf} style={{ marginRight: 8 }}>
-                  Print
-                </Button>
-                <Button onClick={exportToExcel}>
+                <Button className='export-excel-button'onClick={exportToExcel}>
                   Export to Excel
                 </Button>
+                <Button className='save-pdf-button'type="primary" onClick={saveAsPdf} style={{ marginRight: 8 }}>
+                  Save as PDF
+                </Button>
+                
+                <Button className='print-pdf-button'onClick={printPdf} style={{ marginRight: 8 }}>
+                  Print
+                </Button>
+                
               </div>
             </div>
 

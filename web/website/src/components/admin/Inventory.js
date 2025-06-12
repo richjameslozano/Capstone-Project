@@ -73,6 +73,7 @@ const Inventory = () => {
   const [hasExpiryDate, setHasExpiryDate] = useState(false);
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [filterDepartment, setFilterDepartment] = useState(null);
+  const [loading, setLoading] = useState(true); // default: true
   const db = getFirestore();
 
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
@@ -105,7 +106,6 @@ const Inventory = () => {
     return () => observer.disconnect();
   }, []);
 
-  
 
   // useEffect(() => {
   //   const inventoryRef = collection(db, "inventory");
@@ -153,6 +153,7 @@ const Inventory = () => {
     const unsubscribe = onSnapshot(
       inventoryRef,
       async (snapshot) => {
+        setLoading(true); // Start loading
         try {
           const batch = writeBatch(db); // use batch to reduce writes
 
@@ -163,11 +164,60 @@ const Inventory = () => {
 
               const entryDate = data.entryDate || "N/A";
               const expiryDate = data.expiryDate || "N/A";
+
               const quantity = Number(data.quantity) || 0;
               const category = (data.category || "").toLowerCase();
 
               let status = data.status || ""; // base status
               let newStatus = status;
+              
+              try {
+                        if (data.itemId) {
+                          const usageQuery = query(
+                            collection(db, "itemUsage"),
+                            where("itemId", "==", data.itemId),
+                            orderBy("timestamp", "desc"),
+                            limit(30)
+                          );
+
+                          const usageSnapshot = await getDocs(usageQuery);
+
+                          const totalUsed = usageSnapshot.docs.reduce((sum, doc) => {
+                            const usageData = doc.data();
+                            const used = Number(usageData.usedQuantity) || 0;
+                            return sum + used;
+                          }, 0);
+
+                          const uniqueDays = new Set(
+                            usageSnapshot.docs
+                              .map(doc => {
+                                const ts = doc.data().timestamp;
+                                return ts instanceof Timestamp ? ts.toDate().toDateString() : null;
+                              })
+                              .filter(Boolean)
+                          );
+
+                          const numDays = Math.max(uniqueDays.size, 1);
+                          const avgDailyUsage = totalUsed / numDays;
+
+                          const isCritical = quantity <= avgDailyUsage * 30;
+                          console.log("Critical check:", {
+                            item: data.itemName,
+                            avgDailyUsage,
+                            quantity,
+                            isCritical
+                          });
+
+
+                          batch.update(doc(db, "inventory", docId), {
+                            averageDailyUsage: avgDailyUsage,
+                             ...(avgDailyUsage > 0 ? { averageDailyUsage: avgDailyUsage } : {}),
+                            
+                          });
+                        }
+                      } catch (err) {
+                        console.error("Error calculating critical status for item:", data.itemName, err);
+                      }
 
               // Update logic
               if (quantity === 0) {
@@ -226,10 +276,13 @@ const Inventory = () => {
 
         } catch (error) {
           console.error("Error processing inventory snapshot: ", error);
-        }
+        }finally {
+        setLoading(false); // Stop loading
+      }
       },
       (error) => {
         console.error("Error fetching inventory with onSnapshot: ", error);
+        setLoading(false); // Stop loading even on error
       }
     );
 
@@ -619,16 +672,16 @@ const printPdf = () => {
       alert("Please fill up the form!");
       return;
     }
-
+ 
     const trimmedName = itemName.trim();
     const normalizedInputName = trimmedName.toLowerCase();
     const normalizedInputDetails = itemDetails.trim().toLowerCase();
-
+ 
     // Find items with the same name (case-insensitive)
     const sameNameItems = dataSource.filter(
       (item) => item.item.toLowerCase().startsWith(normalizedInputName)
     );
-
+ 
     // Check if same name AND same details already exists
     const exactMatch = sameNameItems.find((item) => {
       const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
@@ -638,7 +691,7 @@ const printPdf = () => {
         itemNameSafe === normalizedInputName
       );
     });
-
+ 
     if (exactMatch) {
       setNotificationMessage("An item with the same name and details already exists in the inventory.");
       setIsNotificationVisible(true);
@@ -651,47 +704,53 @@ const printPdf = () => {
       Glasswares: "GLS",
       Materials: "MAT",
     };
-    
-
+   
+ 
     // Generate suffix for similar items with same base name but different details
     let similarItemCount = sameNameItems.length + 1;
     const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
     const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
-
+ 
     const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
-
+ 
     const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
     const inventoryRef = collection(db, "inventory");
     const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-    const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 1;
-
-
+    const defaultCriticalDays = 7;
+    let averageDailyUsage = 0;
+ 
+    // You could fetch historical averageDailyUsage if available, otherwise 0
+    // For new items, it's likely 0 by default
+ 
+    const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
+ 
+ 
     let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
     let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
     let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-
+ 
     // 🔁 Keep trying until we find a unique ID
     while (!idQuerySnapshot.empty) {
       ItemCategoryCount++;
       generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
       idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
     }
-
-    setItemId(generatedItemId); 
-
-  
+ 
+    setItemId(generatedItemId);
+ 
+ 
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
-    const expiryDate = values.type === "Fixed" 
-      ? null 
-      : values.expiryDate 
+    const expiryDate = values.type === "Fixed"
+      ? null
+      : values.expiryDate
       ? values.expiryDate.format("YYYY-MM-DD")
       : null;
-
+ 
     const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
     const timestamp = new Date();
-
+ 
     const quantityNumber = Number(values.quantity);
-
+ 
     const inventoryItem = {
       itemId: generatedItemId,
       // itemName,
@@ -709,7 +768,7 @@ const printPdf = () => {
       status: "Available",
       ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
       rawTimestamp: new Date(),
-
+ 
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
         condition: {
           Good: quantityNumber,
@@ -719,39 +778,42 @@ const printPdf = () => {
         },
       }),
     };
-
+ 
     const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(inventoryItem),
       SECRET_KEY
     ).toString();
-    
+   
     const newItem = {
       id: count + 1,
       itemId: generatedItemId,
       // item: itemName,
       item: finalItemName,
       itemDetails: itemDetails,
-      entryDate: entryCurrentDate, 
-      expiryDate: expiryDate, 
+      entryDate: entryCurrentDate,
+      expiryDate: expiryDate,
       qrCode: encryptedData,
       ...inventoryItem,
     };
-
+ 
      try {
-
+ 
       const inventoryDocRef = await addDoc(collection(db, "inventory"), {
         ...inventoryItem,
         qrCode: encryptedData,
       });
-
+ 
       const userId = localStorage.getItem("userId");
       const userName = localStorage.getItem("userName") || "User";
-
+ 
       await addDoc(collection(db, `accounts/${userId}/activitylog`), {
         action: `Added new item (${finalItemName}) to inventory`,
         userName: userName || "User",
         timestamp: serverTimestamp(),
       });
+
+      setNotificationMessage("Item successfully added!");
+      setIsNotificationVisible(true);
 
       await addDoc(collection(inventoryDocRef, "stockLog"), {
         date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
@@ -760,38 +822,38 @@ const printPdf = () => {
         createdAt: serverTimestamp(),
         ...(expiryDate && { expiryDate }),
       });
-
+ 
       // 🔽 Check if labRoom with the given room number already exists
       const labRoomQuery = query(
         collection(db, "labRoom"),
         where("roomNumber", "==", values.labRoom)
       );
       const labRoomSnapshot = await getDocs(labRoomQuery);
-
+ 
       let labRoomRef;
-
+ 
       if (labRoomSnapshot.empty) {
         // 🔽 Create new labRoom document with generated ID
         labRoomRef = await addDoc(collection(db, "labRoom"), {
           roomNumber: values.labRoom,
           createdAt: new Date(),
         });
-
+ 
       } else {
         // 🔽 Use existing labRoom document
         labRoomRef = labRoomSnapshot.docs[0].ref;
       }
-
+ 
       // 🔽 Add item to the labRoom's subcollection
       await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
         ...inventoryItem,
         qrCode: encryptedData,
         roomNumber: values.labRoom,
       });
-
+ 
       // 🔽 Fetch all items under this labRoom
       const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-
+ 
       // 🔽 Generate encrypted QR code with labRoom ID only
       const labRoomQRData = CryptoJS.AES.encrypt(
         JSON.stringify({
@@ -799,13 +861,13 @@ const printPdf = () => {
         }),
         SECRET_KEY
       ).toString();
-
+ 
       // 🔽 Update labRoom document with the generated QR code
       await updateDoc(labRoomRef, {
         qrCode: labRoomQRData,
         updatedAt: new Date(),
       });
-
+ 
       setDataSource([...dataSource, newItem]);
       setLogRefreshKey(prev => prev + 1);
       setCount(count + 1);
@@ -814,7 +876,7 @@ const printPdf = () => {
       setItemDetails("")
       setItemId("");
       setIsModalVisible(false);
-
+ 
     } catch (error) {
       console.error("Error adding document to Firestore:", error);
     }
@@ -944,6 +1006,16 @@ const updateItem = async (values) => {
 
         setIsNotificationVisible(true);
         setNotificationMessage("Item updated successfully!");
+
+          const userId = localStorage.getItem("userId");
+          const userName = localStorage.getItem("userName") || "User";
+
+          await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+            action: `Item (${data.itemName}) updated`,
+            userName: userName || "User",
+            timestamp: serverTimestamp(),
+          });
+
 
         const updatedItem = {
           ...editingItem,
@@ -1091,18 +1163,20 @@ useEffect(() => {
       <Layout>
         <Content className="content inventory-container">
     
-          <div style={{ marginBottom: 16 }}>
-            <Button type="primary" onClick={showModal}>
-              Add Item
-            </Button>
-          </div>
+          
 
           <div className="inventory-header">
             <Space wrap>
+              
+            <Button className="add-item-button"
+            style ={{width:'200px', marginRight:'30px', border:'none'}} type="primary" onClick={showModal}>
+              Add Item
+            </Button>
+          
               <Input.Search
                 placeholder="Search"
                 className="search-bar"
-                style={{ width: 200 }}
+                style={{ width: 280 }}
                 allowClear
                 onInput={(e) => {
                   const sanitized = sanitizeInput(e.target.value);
@@ -1148,6 +1222,7 @@ useEffect(() => {
               </Select>
 
               <Button
+                className="reset-filters-button"
                 onClick={() => {
                   setFilterCategory(null);
                   setFilterItemType(null);
@@ -1158,15 +1233,15 @@ useEffect(() => {
                 Reset Filters
               </Button>
 
-              <Button type="primary" onClick={exportToExcel}>
+              <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
                 Export to Excel
               </Button>
 
-              <Button type="primary" onClick={saveAsPdf}>
+              <Button className="save-pdf-button" type="primary" onClick={saveAsPdf}>
                 Save as PDF
               </Button>
 
-              <Button type="primary" onClick={printPdf}>
+              <Button className="print-pdf-button" type="primary" onClick={printPdf}>
                 Print PDF
               </Button>
 
@@ -1179,7 +1254,7 @@ useEffect(() => {
             rowKey={(record) => record.itemId}
             bordered
             className="inventory-table"
-    
+            loading={{ spinning: loading, tip: "Loading inventory data..." }}
             onRow={(record) => {
               return {
                 onClick: () => {
@@ -1481,7 +1556,7 @@ useEffect(() => {
               </Row>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="add-btn">
+                <Button className='add-item-button' style={{marginTop:'10px'}}type="primary" htmlType="submit" >
                   Add to Inventory
                 </Button>
               </Form.Item>

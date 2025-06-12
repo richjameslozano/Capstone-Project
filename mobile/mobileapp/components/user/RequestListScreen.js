@@ -149,6 +149,7 @@ const RequestListScreen = ({}) => {
       !metadata?.timeTo ||
       !metadata?.program ||
       !metadata?.course ||
+      !metadata?.courseDescription ||
       !metadata?.room ||
       !metadata?.usageType
       
@@ -198,7 +199,9 @@ const RequestListScreen = ({}) => {
         return false;
       }
   
+      const userData = userDocSnapshot.data();
       const userName = userDocSnapshot.data().name;
+      const department = userData.department || "N/A";
   
       // Prepare request data
       const requestData = {
@@ -207,6 +210,7 @@ const RequestListScreen = ({}) => {
         timeTo: metadata.timeTo,
         program: metadata.program,
         course: metadata.course,
+        courseDescription: metadata.courseDescription,
         room: metadata.room,
         reason: metadata.reason,
         filteredMergedData: requestList.map((item) => ({
@@ -218,6 +222,7 @@ const RequestListScreen = ({}) => {
           // timeTo: metadata.timeTo,
         })),
         userName,
+        department, 
         timestamp: Timestamp.now(),
         usageType: metadata.usageType,
       };

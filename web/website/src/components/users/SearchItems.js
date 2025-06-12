@@ -136,21 +136,27 @@ const columns = [
     dataIndex: "status",
     key: "status",
     render: (status) => {
+      const normalizedStatus = status?.toLowerCase();
       let color;
-      switch (status) {
-        case "Available":
+
+      switch (normalizedStatus) {
+        case "available":
           color = "green";
           break;
-        case "Out of Stock":
+
+        case "out of stock":
           color = "red";
           break;
-        case "In Use":
+
+        case "in use":
           color = "orange";
           break;
+
         default:
           color = "blue";
       }
-      return <Tag color={color}>{status.toUpperCase()}</Tag>;
+
+      return <Tag color={color}>{status?.toUpperCase()}</Tag>;
     },
   },
   {

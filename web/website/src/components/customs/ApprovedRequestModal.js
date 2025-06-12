@@ -379,27 +379,6 @@ const requestList = selectedApprovedRequest?.requestList || [];
     },
   ];
 
-// if (selectedApprovedRequest?.status === "Returned") {
-//   approvedRequestColumns.push({
-//     title: "Condition",
-//     dataIndex: "conditions",
-//     key: "conditions",
-//     render: (text) => {
-//       if (typeof text === "object" && text !== null) {
-//         return (
-//           <span>
-//             {Object.entries(text)
-//               .map(([key, value]) => `${key}: ${value}`)
-//               .join(" | ")}
-//           </span>
-//         );
-//       }
-//       return <span>{text || "N/A"}</span>;
-//     }
-
-//   });
-// }
-
 if (selectedApprovedRequest?.status === "Returned") {
   approvedRequestColumns.push({
     title: "Condition",
@@ -423,23 +402,6 @@ function getConditionSummary(conditionsArray) {
     .join(", ");
 }
 
-  // const handleDeploy = async () => {
-  //   try {
-  //     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
-  //     await updateDoc(docRef, {
-  //       status: "Deployed",
-  //     });
-
-  //     // Optional: feedback or close modal
-  //     alert("Request successfully deployed!");
-  //     setIsApprovedModalVisible(false);
-
-  //   } catch (error) {
-  //    
-  //     alert("Failed to deploy request.");
-  //   }
-  // };
-
   const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
     await addDoc(collection(db, `accounts/${userId}/activitylog`), {
       action, // e.g. "Requested Items" or "Returned Items"
@@ -448,99 +410,6 @@ function getConditionSummary(conditionsArray) {
       requestList: requestDetails, 
     });
   };
-
-  // const handleDeploy = async () => {
-  //   const userId = localStorage.getItem("userId");
-  //   const userName = localStorage.getItem("userName");
-
-  //   try {
-  //     // 1. Update the status of the selected approved request
-  //     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
-  //     await updateDoc(docRef, {
-  //       status: "Deployed",
-  //     });
-
-  //     // 2. Log the deploy action in the user's activity log
-  //     const requestDetails = {
-  //       requestId: selectedApprovedRequest.id,
-  //       status: "Deployed",
-  //       // add any other fields you'd like to log here
-  //     };
-
-  //     await logRequestOrReturn(userId, userName, "Deployed request", requestDetails);
-
-  //     alert("Request successfully deployed!");
-  //     setIsApprovedModalVisible(false);
-      
-  //   } catch (error) {
-  //    
-  //     alert("Failed to deploy request.");
-  //   }
-  // };
-
-  // const handleDeploy = async () => {
-  //   const userId = localStorage.getItem("userId");
-  //   const userName = localStorage.getItem("userName");
-
-  //   try {
-  //     // 1. Update the status of the selected approved request
-  //     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
-  //     await updateDoc(docRef, {
-  //       status: "Deployed",
-  //     });
-
-  //     const mainItemName = selectedApprovedRequest.requestList?.[0]?.itemName || "Item";
-      
-  //     const deployMessage = `Deployed "${mainItemName}" to ${selectedApprovedRequest.userName} in ${selectedApprovedRequest.room}`;
-
-  //     // 2. Log the deploy action in the user's activity log with full message
-  //     await logRequestOrReturn(userId, userName, deployMessage, {
-  //       requestId: selectedApprovedRequest.id,
-  //       status: "Deployed",
-  //       itemName: mainItemName,
-  //       userDeployedTo: selectedApprovedRequest.userName,
-  //     });
-
-  //     alert("Request successfully deployed!");
-  //     setIsApprovedModalVisible(false);
-
-  //   } catch (error) {
-  //     
-  //     alert("Failed to deploy request.");
-  //   }
-  // };
-
-  // const handleDeploy = async () => {
-  //   const userId = localStorage.getItem("userId");
-  //   const userName = localStorage.getItem("userName");
-
-  //   try {
-  //     // 1. Update the status of the selected approved request
-  //     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
-  //     await updateDoc(docRef, {
-  //       status: "Deployed",
-  //     });
-
-  //     const mainItemName = selectedApprovedRequest.requestList?.[0]?.itemName || "Item";
-      
-  //     const deployMessage = `Deployed "${mainItemName}" to ${selectedApprovedRequest.userName} in ${selectedApprovedRequest.room}`;
-
-  //     // 2. Log the deploy action in the user's activity log with full message
-  //     await logRequestOrReturn(userId, userName, deployMessage, {
-  //       requestId: selectedApprovedRequest.id,
-  //       status: "Deployed",
-  //       itemName: mainItemName,
-  //       userDeployedTo: selectedApprovedRequest.userName,
-  //     });
-
-  //     alert("Request successfully deployed!");
-  //     setIsApprovedModalVisible(false);
-
-  //   } catch (error) {
-  //    
-  //     alert("Failed to deploy request.");
-  //   }
-  // };
 
   const handleDeploy = async () => {
   
@@ -642,222 +511,6 @@ function getConditionSummary(conditionsArray) {
     }
   };
 
-  // const handleApprove = async () => {
-  //   try {
-  //     const requisitionId = selectedApprovedRequest?.id;
-  //     if (!requisitionId) {
-  //       
-  //       return;
-  //     }
-  
-  //     // Get current authenticated user
-  //     const auth = getAuth();
-  //     const currentUser = auth.currentUser;
-  //     const userEmail = currentUser?.email;
-  
-  //     let approverName = "Unknown";
-  //     if (userEmail) {
-  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-  //       const userSnapshot = await getDocs(userQuery);
-        
-  //       if (!userSnapshot.empty) {
-  //         approverName = userSnapshot.docs[0].data().name || "Unknown";
-  //       }
-  //     }
-
-  //     for (const item of selectedApprovedRequest.requestList || []) {
-  //       const inventoryId = item.selectedItemId || item.selectedItem?.value;
-  //       const returnedQty = Number(item.quantity);
-  //       const labRoomId = item.labRoom; // Comes from filteredMergedData
-
-  //       if (inventoryId && !isNaN(returnedQty)) {
-  //         const inventoryDocRef = doc(db, "inventory", inventoryId);
-  //         const inventoryDocSnap = await getDoc(inventoryDocRef);
-
-  //         if (inventoryDocSnap.exists()) {
-  //           const inventoryData = inventoryDocSnap.data();
-  //           const currentInventoryQty = Number(inventoryData.quantity || 0);
-  //           const newInventoryQty = currentInventoryQty + returnedQty;
-
-  //           // Update inventory quantity
-  //           await updateDoc(inventoryDocRef, {
-  //             quantity: newInventoryQty,
-  //           });
-  //           
-
-  //           // Update labRoom item quantity
-  //           const itemId = inventoryData.itemId;
-  //           if (labRoomId && itemId) {
-  //             const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-  //             const labRoomItemSnap = await getDoc(labRoomItemRef);
-
-  //             if (labRoomItemSnap.exists()) {
-  //               const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
-  //               const newLabQty = currentLabQty + returnedQty;
-
-  //               await updateDoc(labRoomItemRef, {
-  //                 quantity: newLabQty,
-  //               });
-
-  //               
-
-  //             } else {
-  //              
-  //             }
-              
-  //           } else {
-  //             
-  //           }
-
-  //         } else {
-  //           
-  //         }
-  //       }
-  //     }
-  
-  //     // ✅ Update borrowcatalog status
-  //     const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
-  //     await updateDoc(borrowDocRef, { status: "Return Approved" });
-  
-  //     // ✅ Log request in requestlog
-  //     const requestLogRef = collection(db, "requestlog");
-  //     await addDoc(requestLogRef, {
-  //       requisitionId,
-  //       userName: selectedApprovedRequest.userName || "N/A",
-  //       timestamp: serverTimestamp(),
-  //       dateRequired: selectedApprovedRequest.dateRequired || "N/A",
-  //       timeFrom: selectedApprovedRequest.timeFrom || "N/A",
-  //       timeTo: selectedApprovedRequest.timeTo || "N/A",
-  //       reason: selectedApprovedRequest.reason || "N/A",
-  //       room: selectedApprovedRequest.room || "N/A",
-  //       course: selectedApprovedRequest.course || "N/A",
-  //       courseDescription: selectedApprovedRequest.courseDescription || "N/A",
-  //       program: selectedApprovedRequest.program || "N/A",
-  //       status: "Returned",
-  //       requestList: selectedApprovedRequest.requestList || [],
-  //       approvedBy: approverName,
-  //     });
-  
-  //     
-  //     setIsApprovedModalVisible(false);
-  //     setSelectedApprovedRequest(null);
-  
-  //   } catch (error) {
-  //    
-  //   }
-  // };  
-
-  // const handleApprove = async () => {
-  //   try {
-  //     const requisitionId = selectedApprovedRequest?.id;
-  //     if (!requisitionId) {
-  //   
-  //       return;
-  //     }
-  
-  //     // Get current authenticated user
-  //     const auth = getAuth();
-  //     const currentUser = auth.currentUser;
-  //     const userEmail = currentUser?.email;
-  
-  //     let approverName = "Unknown";
-  //     if (userEmail) {
-  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-  //       const userSnapshot = await getDocs(userQuery);
-        
-  //       if (!userSnapshot.empty) {
-  //         approverName = userSnapshot.docs[0].data().name || "Unknown";
-  //       }
-  //     }
-
-  //     for (const item of selectedApprovedRequest.requestList || []) {
-  //       const inventoryId = item.selectedItemId || item.selectedItem?.value;
-  //       const returnedQty = Number(item.quantity);
-  //       const labRoomId = item.labRoom;
-  //       const conditionReturned = Array.isArray(item.conditions) && item.conditions[0]
-  //       ? item.conditions[0]
-  //       : "Good"; // default fallback
-
-  //       if (inventoryId && !isNaN(returnedQty)) {
-  //         const inventoryDocRef = doc(db, "inventory", inventoryId);
-  //         const inventoryDocSnap = await getDoc(inventoryDocRef);
-
-  //       if (inventoryDocSnap.exists()) {
-  //         const inventoryData = inventoryDocSnap.data();
-  //         const currentQty = Number(inventoryData.quantity || 0);
-  //         const currentCond = inventoryData.condition || {};
-  //         const currentCondQty = Number(currentCond[conditionReturned] || 0);
-
-
-  //           // Update inventory
-  //           await updateDoc(inventoryDocRef, {
-  //             quantity: currentQty + returnedQty,
-  //             [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
-  //           });
-
-  //           // Update labRoom subcollection
-  //         const itemId = inventoryData.itemId;
-  //         if (labRoomId && itemId) {
-  //           const labRef = doc(db, `labRoom/${labRoomId}/items`, itemId);
-  //           const labSnap = await getDoc(labRef);
-
-  //           if (labSnap.exists()) {
-  //             const labData = labSnap.data();
-  //             const labQty = Number(labData.quantity || 0);
-  //             const labCond = labData.condition || {};
-  //             const labCondQty = Number(labCond[conditionReturned] || 0);
-
-  //             await updateDoc(labRef, {
-  //               quantity: labQty + returnedQty,
-  //               [`condition.${conditionReturned}`]: labCondQty + returnedQty,
-  //             });
-
-  //             } else {
-  //             
-  //             }
-              
-  //           } else {
-  //           
-  //           }
-
-  //         } else {
-  //        
-  //         }
-          
-  //       }
-  //     }
-  
-  //     // ✅ Update borrowcatalog status
-  //     const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
-  //     await updateDoc(borrowDocRef, { status: "Return Approved" });
-  
-  //     // ✅ Log request in requestlog
-  //     const requestLogRef = collection(db, "requestlog");
-  //     await addDoc(requestLogRef, {
-  //       requisitionId,
-  //       userName: selectedApprovedRequest.userName || "N/A",
-  //       timestamp: serverTimestamp(),
-  //       dateRequired: selectedApprovedRequest.dateRequired || "N/A",
-  //       timeFrom: selectedApprovedRequest.timeFrom || "N/A",
-  //       timeTo: selectedApprovedRequest.timeTo || "N/A",
-  //       reason: selectedApprovedRequest.reason || "N/A",
-  //       room: selectedApprovedRequest.room || "N/A",
-  //       course: selectedApprovedRequest.course || "N/A",
-  //       courseDescription: selectedApprovedRequest.courseDescription || "N/A",
-  //       program: selectedApprovedRequest.program || "N/A",
-  //       status: "Returned",
-  //       requestList: selectedApprovedRequest.requestList || [],
-  //       approvedBy: approverName,
-  //     });
-  
-  //     
-  //     setIsApprovedModalVisible(false);
-  //     setSelectedApprovedRequest(null);
-  
-  //   } catch (error) {
-  //  
-  //   }
-  // };  
 
   const handleApprove = async () => {
     try {
@@ -961,31 +614,6 @@ function getConditionSummary(conditionsArray) {
       // ✅ Update borrowcatalog status
       const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
       await updateDoc(borrowDocRef, { status: "Return Approved" });
-  
-      // ✅ Log request in requestlog
-      // const requestLogRef = collection(db, "requestlog");
-      // await addDoc(requestLogRef, {
-      //   requisitionId,
-      //   userName: selectedApprovedRequest.userName || "N/A",
-      //   timestamp: serverTimestamp(),
-      //   dateRequired: selectedApprovedRequest.dateRequired || "N/A",
-      //   timeFrom: selectedApprovedRequest.timeFrom || "N/A",
-      //   timeTo: selectedApprovedRequest.timeTo || "N/A",
-      //   reason: selectedApprovedRequest.reason || "N/A",
-      //   room: selectedApprovedRequest.room || "N/A",
-      //   course: selectedApprovedRequest.course || "N/A",
-      //   courseDescription: selectedApprovedRequest.courseDescription || "N/A",
-      //   program: selectedApprovedRequest.program || "N/A",
-      //   status: "Returned",
-      //   requestList: selectedApprovedRequest.requestList || [],
-      //   approvedBy: approverName,
-      // });
-
-      // const requestLogDocRef = doc(db, "requestlog", requisitionId); 
-      // await updateDoc(requestLogDocRef, {
-      // status: "Returned",
-      // timestamp: serverTimestamp(), 
-      // });
 
      // Step 1: Find the matching requestlog document using a field (like accountId)
       const requestLogQuery = query(
@@ -1077,20 +705,6 @@ function getConditionSummary(conditionsArray) {
             rowKey="key"
             pagination={false}
             bordered
-            // footer={
-            //   selectedApprovedRequest?.status === "Returned"
-            //     ? () => (
-            //         <div>
-            //           <Text strong>Conditions Summary:</Text>{" "}
-            //           <Text>
-            //             {Object.entries(conditionCounts)
-            //               .map(([condition, count]) => `${condition}: ${count}`)
-            //               .join(" | ")}
-            //           </Text>
-            //         </div>
-            //       )
-            //     : null
-            // }
           />
           {selectedApprovedRequest?.status === "Borrowed" && (
             <Button type="primary" danger onClick={handleDeploy}>
@@ -1098,17 +712,6 @@ function getConditionSummary(conditionsArray) {
             </Button>
           )}
 
-          {/* {selectedApprovedRequest?.status === "Returned" && (
-            <div style={{ marginTop: 16 }}>
-              <Text strong>Conditions Summary:</Text>{" "}
-              <Text>
-                {Object.entries(conditionCounts).map(
-                  ([condition, count], index) =>
-                    `${condition}: ${count}${index !== Object.entries(conditionCounts).length - 1 ? " " : ""}`
-                )}
-              </Text>
-            </div>
-          )} */}
         </div>
       )}
     </Modal>

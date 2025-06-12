@@ -41,6 +41,7 @@ export default function InventoryScreen({ navigation }) {
   const [selectedEndTime, setSelectedEndTime] = useState({ hour: '3', minute: '00', period: 'PM' });
   const [program, setProgram] = useState('');
   const [course, setCourse] = useState('');
+  const [courseDescription, setCourseDescription] = useState('');
   const [room, setRoom] = useState('');
   const [selectedUsageTypeInput, setSelectedUsageTypeInput] = useState(''); 
   const [usageTypeOtherInput, setUsageTypeOtherInput] = useState('')
@@ -81,6 +82,7 @@ export default function InventoryScreen({ navigation }) {
       setSelectedEndTime({ hour: '3', minute: '00', period: 'PM' })
       setProgram('')
       setCourse('')
+      setCourseDescription('')
       setRoom('')
       setReason('')
       setDescription('')
@@ -332,6 +334,7 @@ export default function InventoryScreen({ navigation }) {
       timeTo: metadata?.timeTo,
       program: metadata?.program,
       course: metadata?.course,
+      courseDescription: metadata?.courseDescription,
       room: metadata?.room,
       usageType: metadata?.usageType,
       usageTypeOther: metadata?.usageTypeOther,
@@ -350,6 +353,7 @@ export default function InventoryScreen({ navigation }) {
       !metadata?.timeTo || 
       !metadata?.program || 
       !metadata?.course || 
+      !metadata?.courseDescription ||
       !metadata?.room || 
       !finalUsageType 
     ) {
@@ -589,7 +593,8 @@ export default function InventoryScreen({ navigation }) {
       timeFrom: formatTime(selectedStartTime),
       timeTo: formatTime(selectedEndTime),
       room,
-      course
+      course,
+      courseDescription,
     });
 
     const newErrors = {
@@ -632,6 +637,7 @@ export default function InventoryScreen({ navigation }) {
       timeTo: formattedEndTime,
       program,
       course,
+      courseDescription,
       room,
       usageType: finalUsageType,
       reason,
@@ -749,7 +755,8 @@ export default function InventoryScreen({ navigation }) {
               onValueChange={(itemValue) => {
                 setCourse(itemValue);
                 setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
-                setDescription(courseMap[itemValue]);
+                // setDescription(courseMap[itemValue]);
+                setCourseDescription(courseMap[itemValue]); 
               }}
               style={{
                 color: course ? 'white' : 'black', // White when selected, black when placeholder
@@ -774,7 +781,7 @@ export default function InventoryScreen({ navigation }) {
 
           <View style={styles.programSection}>
               <Text style={styles.label}>Course Description:</Text>
-              <TextInput style={{width: '60%', backgroundColor: 'gray', backgroundColor: '#e9ecee', borderRadius: 5, paddingHorizontal: 10}} value={description} editable={false}placeholder='Course Description'></TextInput>
+              <TextInput style={{width: '60%', backgroundColor: 'gray', backgroundColor: '#e9ecee', borderRadius: 5, paddingHorizontal: 10}} value={courseDescription} editable={false}placeholder='Course Description'></TextInput>
           </View>
         </View>
 
