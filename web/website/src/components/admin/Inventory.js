@@ -80,7 +80,7 @@ const Inventory = () => {
   const [fullEditForm] = Form.useForm();
 
   const sanitizeInput = (input) =>
-  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+  input.replace(/\s+/g, " ")           // convert multiple spaces to one                   
       .replace(/[^a-zA-Z0-9\s\-.,()]/g, "");
   
 
@@ -707,9 +707,10 @@ const printPdf = () => {
    
  
     // Generate suffix for similar items with same base name but different details
-    let similarItemCount = sameNameItems.length + 1;
+    // let similarItemCount = sameNameItems.length + 1;
     const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
-    const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
+    // const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
+    const formattedItemName = `${baseName}`;
  
     const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
  
