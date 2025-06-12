@@ -232,7 +232,7 @@
    z-index: 999;
   height: 70px;
   width: auto;
-  right: 100px;
+  right: 150px;
   bottom: 80px;
   border-radius: 50px;
   padding: 4px; 
@@ -321,3 +321,11 @@
 .add-modal .ant-modal-close{
   color: white;
 }
+
+/* File: FloatingButtonStyles.css */
+.custom-float-btn-group .ant-float-btn {
+  width: 65px !important;
+  height: 65px !important;
+}
+
+

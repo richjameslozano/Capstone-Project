@@ -13,8 +13,9 @@ import {
   Modal,
   InputNumber,
   Radio,
+  FloatButton,
 } from "antd";
-import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined, FileTextOutlined} from '@ant-design/icons'; 
+import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
 import moment from "moment";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
@@ -1167,6 +1168,7 @@ useEffect(() => {
               
 
           {!isModalVisible && (
+            <div style={{backgroundColor: 'red'}}>
               <div className="add-item-button">
             <Button 
             className="inner-btn"
@@ -1177,6 +1179,70 @@ useEffect(() => {
               <PlusOutlined style={{fontSize: 18}}/>
             </Button>
             </div>
+
+  <FloatButton.Group
+    trigger="hover"
+    type="primary"
+    icon={<DownloadOutlined />}
+    className="custom-float-btn-group"
+    style={{
+      right: 70,
+      bottom: 85,
+    }}
+  >
+    <FloatButton
+      icon={
+        <FilePdfOutlined
+          style={{
+            fontSize: 24,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: '100%',
+          }}
+        />
+      }
+      onClick={saveAsPdf}
+      tooltip="Download PDF"
+      className="gradient-float-btn"
+      style={{ width: 60, height: 60, }}
+    />
+    <FloatButton
+    onClick={exportToExcel}
+        icon={
+    <FileExcelOutlined
+      style={{
+        fontSize: 24,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+      }}
+    />
+  }
+      tooltip="Export Excel"
+      className="gradient-float-btn"
+      style={{ width: 60, height: 60 }}
+    />
+    <FloatButton
+    onClick={printPdf}
+        icon={
+    <PrinterOutlined
+      style={{
+        fontSize: 24,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        height: '100%',
+      }}
+    />
+  }
+      tooltip="Print"
+      className="gradient-float-btn"
+      style={{ width: 60, height: 60, marginBottom: 20 }}
+    />
+  </FloatButton.Group>
+          </div>
             )
           }
               <Input.Search
@@ -1244,7 +1310,7 @@ useEffect(() => {
                 Reset Filters
               </Button>
             
-            <div style={{display: 'flex', flex: 1, height: '100%', alignItems: 'center', gap: 10}}>
+            {/* <div style={{display: 'flex', flex: 1, height: '100%', alignItems: 'center', gap: 10}}>
               <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
                 Export to Excel
               </Button>
@@ -1256,7 +1322,7 @@ useEffect(() => {
               <Button className="print-pdf-button" type="primary" onClick={printPdf}>
                 Print PDF
               </Button>
-            </div>
+            </div> */}
   
           </div> 
 
