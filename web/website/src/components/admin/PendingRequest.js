@@ -109,8 +109,11 @@ useEffect(() => {
         );
 
         fetched.push({
-          id: docSnap.id,
+          // id: docSnap.id,
+          // ...data,
           ...data,
+          id: docSnap.id,
+          firestoreId: docSnap.id,
           requestList: enrichedItems,
           timeFrom: data.timeFrom || "N/A",
           timeTo: data.timeTo || "N/A",

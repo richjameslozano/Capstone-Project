@@ -62,6 +62,7 @@ const RequisitionReqestModal = ({
     try {
       await addDoc(collection(db, "approvalrequestcollection"), {
         ...selectedRequest,
+        firestoreId: selectedRequest.id,
         forwardedAt: serverTimestamp(),
         status: "Pending Approval",
       });
@@ -203,21 +204,22 @@ const RequisitionReqestModal = ({
                       </table>
                       </div>
                 </div>
-                {/* <div className="left-slip">
+
+                <div className="left-slip">
                   <div> <strong>Requestor:</strong><p> {selectedRequest.userName}</p></div>
-                <div>< strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p> </div>
-                <div>< strong>Date Needed:</strong> <p>{selectedRequest.dateRequired}</p></div>
-                <div>< strong>Time Needed:</strong> <p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p> </div>
+                  <div>< strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p> </div>
+                  <div>< strong>Date Needed:</strong> <p>{selectedRequest.dateRequired}</p></div>
+                  <div>< strong>Time Needed:</strong> <p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p> </div>
                 </div>
                 
 
                 <div className="right-slip">
-                <div><strong>Room:</strong> <p>{selectedRequest.room}</p></div>
-                <div><strong>Course Code:</strong> <p>{selectedRequest.course}</p></div>
-                <div><strong>Course Description:</strong> <p>{selectedRequest.courseDescription}</p></div>
-                <div><strong>Program:</strong> <p>{selectedRequest.program}</p></div>
-                <div><strong>Usage Type:</strong> <p>{selectedRequest.usageType}</p></div>
-                </div> */}
+                  <div><strong>Room:</strong> <p>{selectedRequest.room}</p></div>
+                  <div><strong>Course Code:</strong> <p>{selectedRequest.course}</p></div>
+                  <div><strong>Course Description:</strong> <p>{selectedRequest.courseDescription}</p></div>
+                  <div><strong>Program:</strong> <p>{selectedRequest.program}</p></div>
+                  <div><strong>Usage Type:</strong> <p>{selectedRequest.usageType}</p></div>
+                </div>
                 
               </div>
               
@@ -234,7 +236,15 @@ const RequisitionReqestModal = ({
             />
 
             <div style={{display: 'flex', marginTop: '20px'}}><p style={{textDecoration: 'italics'}}><strong>Note:</strong> {selectedRequest.reason || 'None'}</p></div>
-            </div>
+          </div>
+
+            {selectedRequest.deanComment && (
+              <div style={{ display: 'flex', marginTop: '10px' }}>
+                <p>
+                  <strong>Dean Comment:</strong> {selectedRequest.deanComment}
+                </p>
+              </div>
+            )}
           </>
         )}
       </Modal>
