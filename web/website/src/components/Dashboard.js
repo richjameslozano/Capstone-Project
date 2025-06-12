@@ -606,13 +606,15 @@
 // VERSION 2
 import React, { useState, useEffect } from "react";
 import { useNavigate,  useLocation } from "react-router-dom";
-import { Layout, Card, Col, Row, Table, List, Modal,Typography, Tag, Tabs } from "antd";
+import { Layout, Card, Col, Row, Table, List, Modal,Typography, Tag, Tabs, Spin } from "antd";
 import { db } from "../backend/firebase/FirebaseConfig"; 
 import { collectionGroup, query, where, getDocs, onSnapshot, collection, orderBy, limit } from "firebase/firestore";
 import SuccessModal from "./customs/SuccessModal";
 import CustomCalendar from "./customs/CustomCalendar";
 import PoliciesModal from "./Policies";
 import "./styles/Dashboard.css";
+import ReactMarkdown from 'react-markdown';
+import AIInventoryPieChart from "./customs/AIInventoryPieChart";
 import {
   UserOutlined,
   DashboardOutlined,
@@ -641,8 +643,6 @@ import {
 } from "chart.js";
 
 
-import ReactMarkdown from 'react-markdown';
-
 const { Content } = Layout;
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 const { Text } = Typography;
@@ -668,7 +668,7 @@ const { Text } = Typography;
    const [criticalStockList, setCriticalStockList] = useState([]);
    const [lostItems, setLostItems] = useState([]);
    const [geminiChartData, setGeminiChartData] = useState([]);
-
+   const [loadingGemini, setLoadingGemini] = useState(true);
 
    const expiryColumns = [
   {
@@ -845,7 +845,7 @@ useEffect(() => {
   fetchDamagedOrDefectiveItems();
 }, []);
 
-    useEffect(() => {
+   useEffect(() => {
       const fetchGeminiAnalysis = async () => {
         try {
           const response = await fetch("https://webnuls.onrender.com/gemini", {
@@ -859,40 +859,39 @@ useEffect(() => {
           });
 
           const result = await response.json();
-    const geminiText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No analysis received";
-    setPredictedSales(cleanMarkdown(geminiText)); // ✅ Clean it before displaying
+        const geminiText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No analysis received";
+        setPredictedSales(cleanMarkdown(geminiText)); // ✅ Clean it before displaying
 
-        } catch (error) {
-          console.error("Error fetching Gemini analysis:", error);
-        }
-      };
+            } catch (error) {
+              console.error("Error fetching Gemini analysis:", error);
+            }
+          };
 
-      fetchGeminiAnalysis();
+          fetchGeminiAnalysis();
     }, []);
 
     useEffect(() => {
       const fetchGeminiAnalysis = async () => {
+        setLoadingGemini(true); // ⏳ start loading
         try {
           const response = await fetch("https://webnuls.onrender.com/predict-inventory-trends", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: { "Content-Type": "application/json" },
           });
 
           const result = await response.json();
-          const geminiText = result?.candidates?.[0]?.content?.parts?.[0]?.text || "No analysis received";
-
-          // clean and display
+          const geminiText = result?.analysis || "No analysis received";
           setPredictedSales(cleanMarkdown(geminiText));
         } catch (error) {
           console.error("Error fetching Gemini analysis:", error);
+          setPredictedSales("Failed to load analysis.");
+        } finally {
+          setLoadingGemini(false); // ✅ done loading
         }
       };
 
       fetchGeminiAnalysis();
     }, []);
- 
     useEffect(() => {
       const q = collectionGroup(db, "userrequests");
   
@@ -1114,13 +1113,17 @@ useEffect(() => {
  
    const [hoveredIndex, setHoveredIndex] = useState(null);
 
-  const cleanMarkdown = (markdown) => {
-    return markdown
-      .replace(/```[\s\S]*?```/g, (match) =>
-        match.replace(/```[\w]*\n?/, '').replace(/```$/, '')
-      );
-  };
+  // const cleanMarkdown = (markdown) => {
+  //   return markdown.replace(/```[\s\S]*?```/g, '').trim();
+  // };
 
+  const cleanMarkdown = (text) => {
+    return text
+      .replace(/```[\s\S]*?```/g, '')  // Remove code blocks
+      // .replace(/`+/g, '')              // Remove stray backticks
+      // .replace(/^\s*[\-\•]\s*/gm, '- ') // Normalize bullet points
+      // .trim();
+  };
 
    return (
      <Layout style={{ minHeight: "100vh" }}>
@@ -1236,11 +1239,28 @@ useEffect(() => {
              
             </Col>
 
-            <Card title="AI Inventory Analysis (Gemini)" style={{ marginBottom: '24px' }}>
-              <div style={{ maxHeight: 400, overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
-                <ReactMarkdown>{predictedSales}</ReactMarkdown>
-              </div>
-            </Card>
+<Card title="AI Inventory Analysis (Gemini)" style={{ marginBottom: '24px',overflow:'hidden' }}>
+  {loadingGemini ? (
+    <Spin tip="Loading AI analysis..." />
+  ) : (
+    <ul style={{ paddingLeft: "20px", overflowY: "auto",marginTop:0,maxHeight: 350,height:'100%',alignSelf:'flex-start',justifySelf:'flex-start', lineHeight: "1.6" }}>
+      {predictedSales
+        .split("\n")
+        .filter((line) => line.trim().startsWith("-"))
+        .map((line, index) => (
+          <li key={index} style={{ marginBottom: "8px", textAlign: "justify" }}>
+            {line.replace(/^- /, "")}
+          </li>
+        ))}
+    </ul>
+  )}
+</Card>
+
+<Card title="AI-Powered Inventory Health Overview" style={{ marginBottom: '24px' }}>
+  <div style={{ maxHeight: 400, overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
+    <AIInventoryPieChart />
+  </div>
+</Card>
 
             <Col xs={24} md={8}>
 
@@ -1322,9 +1342,6 @@ useEffect(() => {
 
   </Col>
 </Row>
-
-
-
 
 </Tabs.TabPane>
 
