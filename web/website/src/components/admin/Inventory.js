@@ -164,11 +164,60 @@ const Inventory = () => {
 
               const entryDate = data.entryDate || "N/A";
               const expiryDate = data.expiryDate || "N/A";
+
               const quantity = Number(data.quantity) || 0;
               const category = (data.category || "").toLowerCase();
 
               let status = data.status || ""; // base status
               let newStatus = status;
+              
+              try {
+                        if (data.itemId) {
+                          const usageQuery = query(
+                            collection(db, "itemUsage"),
+                            where("itemId", "==", data.itemId),
+                            orderBy("timestamp", "desc"),
+                            limit(30)
+                          );
+
+                          const usageSnapshot = await getDocs(usageQuery);
+
+                          const totalUsed = usageSnapshot.docs.reduce((sum, doc) => {
+                            const usageData = doc.data();
+                            const used = Number(usageData.usedQuantity) || 0;
+                            return sum + used;
+                          }, 0);
+
+                          const uniqueDays = new Set(
+                            usageSnapshot.docs
+                              .map(doc => {
+                                const ts = doc.data().timestamp;
+                                return ts instanceof Timestamp ? ts.toDate().toDateString() : null;
+                              })
+                              .filter(Boolean)
+                          );
+
+                          const numDays = Math.max(uniqueDays.size, 1);
+                          const avgDailyUsage = totalUsed / numDays;
+
+                          const isCritical = quantity <= avgDailyUsage * 30;
+                          console.log("Critical check:", {
+                            item: data.itemName,
+                            avgDailyUsage,
+                            quantity,
+                            isCritical
+                          });
+
+
+                          batch.update(doc(db, "inventory", docId), {
+                            averageDailyUsage: avgDailyUsage,
+                             ...(avgDailyUsage > 0 ? { averageDailyUsage: avgDailyUsage } : {}),
+                            
+                          });
+                        }
+                      } catch (err) {
+                        console.error("Error calculating critical status for item:", data.itemName, err);
+                      }
 
               // Update logic
               if (quantity === 0) {
@@ -667,7 +716,13 @@ const printPdf = () => {
     const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
     const inventoryRef = collection(db, "inventory");
     const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-    const criticalLevel = values.criticalLevel !== undefined ? Number(values.criticalLevel) : 1;
+    const defaultCriticalDays = 7;
+    let averageDailyUsage = 0;
+
+    // You could fetch historical averageDailyUsage if available, otherwise 0
+    // For new items, it's likely 0 by default
+
+    const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
 
 
     let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
@@ -1095,18 +1150,20 @@ useEffect(() => {
       <Layout>
         <Content className="content inventory-container">
     
-          <div style={{ marginBottom: 16 }}>
-            <Button type="primary" onClick={showModal}>
-              Add Item
-            </Button>
-          </div>
+          
 
           <div className="inventory-header">
             <Space wrap>
+              
+            <Button className="add-item-button"
+            style ={{width:'200px', marginRight:'30px', border:'none'}} type="primary" onClick={showModal}>
+              Add Item
+            </Button>
+          
               <Input.Search
                 placeholder="Search"
                 className="search-bar"
-                style={{ width: 200 }}
+                style={{ width: 280 }}
                 allowClear
                 onInput={(e) => {
                   const sanitized = sanitizeInput(e.target.value);
@@ -1152,6 +1209,7 @@ useEffect(() => {
               </Select>
 
               <Button
+                className="reset-filters-button"
                 onClick={() => {
                   setFilterCategory(null);
                   setFilterItemType(null);
@@ -1162,15 +1220,15 @@ useEffect(() => {
                 Reset Filters
               </Button>
 
-              <Button type="primary" onClick={exportToExcel}>
+              <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
                 Export to Excel
               </Button>
 
-              <Button type="primary" onClick={saveAsPdf}>
+              <Button className="save-pdf-button" type="primary" onClick={saveAsPdf}>
                 Save as PDF
               </Button>
 
-              <Button type="primary" onClick={printPdf}>
+              <Button className="print-pdf-button" type="primary" onClick={printPdf}>
                 Print PDF
               </Button>
 
@@ -1485,7 +1543,7 @@ useEffect(() => {
               </Row>
 
               <Form.Item>
-                <Button type="primary" htmlType="submit" className="add-btn">
+                <Button className='add-item-button' style={{marginTop:'10px'}}type="primary" htmlType="submit" >
                   Add to Inventory
                 </Button>
               </Form.Item>

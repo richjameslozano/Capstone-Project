@@ -4,7 +4,7 @@ import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/adminStyle/PendingRequest.css";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { collection, getDocs, getDoc, doc, addDoc, query, where, deleteDoc, serverTimestamp, onSnapshot, updateDoc, orderBy } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, addDoc, query, where, deleteDoc,Timestamp, serverTimestamp, onSnapshot, updateDoc, orderBy } from "firebase/firestore";
 import { getAuth } from "firebase/auth";
 import RequisitionRequestModal from "../customs/RequisitionRequestModal";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
@@ -396,6 +396,24 @@ try {
           const currentQty = Number(data.quantity || 0);
           const newQty = Math.max(currentQty - requestedQty, 0);
           await updateDoc(inventoryRef, { quantity: newQty });
+
+         console.log("📌 Attempting to log usage:", {
+          itemId: data.itemId,
+          requestedQty
+        });
+
+        try {
+          await addDoc(collection(db, "itemUsage"), {
+            itemId: data.itemId,
+            itemName:data.itemName,
+            usedQuantity: requestedQty,
+            timestamp: serverTimestamp(),
+          });
+          console.log("✅ itemUsage logged");
+        } catch (logErr) {
+          console.error("❌ Failed to log itemUsage:", logErr);
+        }
+
          
 
           // ⚙️ Update inventory condition breakdown
@@ -438,8 +456,9 @@ try {
             'condition.Good': newGood,
             'condition.Damage': newDamage,
             'condition.Defect': newDefect,
-            'condition.Lost' : newLost,
+            'condition.Lost': newLost,
           });
+
 
 
           // 🔁 Update labRoom item quantity
@@ -477,6 +496,7 @@ try {
           const currentLabQty = Number(labData.quantity || 0);
           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
           await updateDoc(labRoomItemRef, { quantity: newLabQty });
+          
         
 
           // Update condition breakdown
@@ -833,6 +853,14 @@ try {
           const currentQty = Number(data.quantity || 0);
           const newQty = Math.max(currentQty - requestedQty, 0);
           await updateDoc(inventoryRef, { quantity: newQty });
+
+          // Log item usage
+          await addDoc(collection(db, "itemUsage"), {
+            itemId: data.itemId, // Make sure this is correct
+            usedQuantity: requestedQty, // How much was used
+            timestamp: serverTimestamp(), // So it's traceable over time
+          });
+
       
 
           // ⚙️ Update inventory condition breakdown
@@ -1117,35 +1145,82 @@ try {
 
 
     const enrichedItems = await Promise.all(
-      filteredItems.map(async (item) => {
-        const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-        let itemType = "Unknown";
+  filteredItems.map(async (item) => {
+    const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+    let itemType = "Unknown";
 
-        if (selectedItemId) {
-          try {
-            const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-
-            if (inventoryDoc.exists()) {
-              itemType = inventoryDoc.data().type || "Unknown";
-            }
-
-          } catch (err) {
-          
-          }
+    if (selectedItemId) {
+      try {
+        const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+        if (inventoryDoc.exists()) {
+          itemType = inventoryDoc.data().type || "Unknown";
         }
+      } catch (err) {
+        console.error("Failed to fetch inventory item:", err);
+      }
+    }
 
-        const enriched = {
-          ...item,
-          selectedItemId,
-          itemType,
-          // volume: item.volume ?? "N/A", // <-- add this
-        };
-    
-      
-        return enriched;
-      })
+    return {
+      ...item,
+      selectedItemId,
+      itemType,
+    };
+  })
+);
+ for (const item of enrichedItems) {
+  const requestedQty = item.quantity;
+  const itemId = item.selectedItemId;
+  const itemName = item.itemName
+
+  console.log("📦 Logging itemUsage for:", itemId);
+
+  try {
+    // 1. Log the usage
+    await addDoc(collection(db, "itemUsage"), {
+      itemId: itemId,
+      usedQuantity: requestedQty,
+      timestamp: serverTimestamp(),
+      itemName:itemName
+    });
+
+    // 2. Fetch all past usage logs
+    const usageQuery = query(
+      collection(db, "itemUsage"),
+      where("itemId", "==", itemId)
     );
+    const usageSnap = await getDocs(usageQuery);
 
+    let total = 0;
+    const uniqueDates = new Set();
+
+    usageSnap.forEach((doc) => {
+      const data = doc.data();
+      if (data.usedQuantity && data.timestamp?.toDate) {
+        total += data.usedQuantity;
+        const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
+        uniqueDates.add(dateStr);
+      }
+    });
+
+    const daysWithUsage = uniqueDates.size;
+    const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
+
+    // 🔄 Assumed buffer of 5 days for critical stock level
+    const bufferDays = 7;
+    const criticalLevel = average * bufferDays;
+
+    // 3. Update inventory with new average and critical level
+    const itemRef = doc(db, "inventory", itemId);
+    await updateDoc(itemRef, {
+      averageDailyUsage: average,
+      criticalLevel: criticalLevel,
+    });
+
+    console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
+  } catch (e) {
+    console.error(`❌ Error processing usage for ${itemId}:`, e);
+  }
+}
     // Filter out unchecked items (for rejection)
     const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
       const key = `${selectedRequest.id}-${index}`;

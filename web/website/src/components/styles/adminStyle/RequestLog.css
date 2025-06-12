@@ -49,3 +49,61 @@
 .pdf-format th {
   background-color: #f0f0f0 !important;
 }
+
+/* Styles for "Save All as PDF" button */
+.save-all-pdf-button {
+  background-color: #af2626 !important; /* Red, consistent with "Save as PDF" */
+  border-color: #af2626 !important;
+}
+
+.save-all-pdf-button:hover {
+  background-color: #e53935 !important; /* Lighter red on hover */
+  border-color: #e53935 !important;
+}
+
+/* Styles for "Print All" button */
+.print-all-button.ant-btn-primary {
+  background-color: #d4d4d4 !important; /* Gray, consistent with "Print PDF" */
+  border-color: #8b8989 !important;
+  color: black;
+}
+
+.print-all-button:hover {
+  background-color: #9e9e9e !important; /* Lighter gray on hover */
+  border-color: #9e9e9e !important;
+  color: black !important;
+}
+
+/* Styles for "Approved" status button */
+.approved-status-button.ant-btn-primary {
+  background-color: #52c41a !important; /* Green for success/approved */
+  border-color: #52c41a !important;
+
+}
+
+.approved-status-button.ant-btn-primary:hover {
+  background-color: #73d13d !important; /* Lighter green on hover */
+  border-color: #73d13d !important;
+}
+
+/* Styles for "Rejected" status button */
+.rejected-status-button.ant-btn-primary {
+  background-color: #e0424a !important; /* Red for rejection/danger */
+  border-color: #e0424a !important;
+}
+
+.rejected-status-button.ant-btn-primary:hover {
+  background-color: #ff4d4f !important; /* Lighter red on hover */
+  border-color: #ff4d4f !important;
+}
+
+/* Styles for "Returned" status button */
+.returned-status-button.ant-btn-primary {
+  background-color: #faad14 !important; /* Orange for warning/returned */
+  border-color: #faad14 !important;
+}
+
+.returned-status-button.ant-btn-primary:hover {
+  background-color: #ffc53d !important; /* Lighter orange on hover */
+  border-color: #ffc53d !important;
+}
