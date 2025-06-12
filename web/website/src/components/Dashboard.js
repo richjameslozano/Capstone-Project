@@ -615,25 +615,12 @@ import PoliciesModal from "./Policies";
 import "./styles/Dashboard.css";
 import { Tabs } from 'antd';
 import {
-  UserOutlined,
-  DashboardOutlined,
+
   UnorderedListOutlined,
   FileTextOutlined,
-  AppstoreOutlined,
-  HistoryOutlined,
-  LogoutOutlined,
-  FileDoneOutlined,
-  SnippetsOutlined,
-  ClockCircleOutlined,
-  SearchOutlined,
-  ShoppingCartOutlined,
-  DollarCircleOutlined,
-  RollbackOutlined,
   ShoppingOutlined,
   DatabaseOutlined,
-  HomeOutlined,
-  UserSwitchOutlined,
-  IdcardOutlined,
+
 } from '@ant-design/icons';
  const { Content } = Layout;
  
@@ -1236,17 +1223,25 @@ useEffect(() => {
   </Tabs.TabPane>
 
 <Tabs.TabPane tab="Calendar" key="2">
-  <Row gutter={[24, 24]} justify="center">
-    <Col xs={24} style={{ width: '100%' }}>
-      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
-    <Card title="Calendar" style={{ width: '100%', minHeight: 600 }}>
-          <div style={{ minHeight: 500, width: '100%' }}>
-            <CustomCalendar onSelectDate={handleDateSelect} />
+<Row gutter={[24, 24]}>
+  <Col xs={24}>
+    <div className="calendar-box">
+          <div className="analytics-center-wrapper">
+            <h1 style={{ fontWeight: "bold", fontSize: '26px', margin:'20px'}}>
+              Calendar
+            </h1>
           </div>
-        </Card>
-      </div>
-    </Col>
-  </Row>
+  <div style={{ minHeight: 500, width: '100%'}}>
+    <CustomCalendar onSelectDate={handleDateSelect} className="calendar" />
+  </div>
+    </div>
+
+  </Col>
+</Row>
+
+
+
+
 </Tabs.TabPane>
 </Tabs>
 </Content>

@@ -13,42 +13,6 @@ const CustomCalendar = ({ onSelectDate }) => {
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterProgram, setFilterProgram] = useState("all");
 
-  // useEffect(() => {
-  //   const unsubscribe = onSnapshot(
-  //     collection(db, "borrowcatalog"),
-  //     (querySnapshot) => {
-  //       const requests = [];
-
-  //       querySnapshot.forEach((doc) => {
-  //         const data = doc.data();
-  //         if (Array.isArray(data.requestList)) {
-  //           data.requestList.forEach((item) => {
-  //             requests.push({
-  //               date: data.dateRequired,
-  //               title: item.itemName || "Request",
-  //               userName: data.userName || "N/A",
-  //               department: item.department || "N/A",
-  //               room: data.room || "N/A",
-  //               status: data.status || "N/A",
-  //               quantity: item.quantity || "N/A",
-  //               condition: item.condition || "N/A",
-  //               approvedBy: data.approvedBy || "N/A",
-  //               program: data.program || "N/A", 
-  //             });
-  //           });
-  //         }
-  //       });
-
-  //       setApprovedRequests(requests);
-  //     },
-  //     (error) => {
-
-  //     }
-  //   );
-
-  //   return () => unsubscribe();
-  // }, []);
-
   useEffect(() => {
     const unsubscribe = onSnapshot(
       collection(db, "borrowcatalog"),
@@ -163,8 +127,8 @@ const CustomCalendar = ({ onSelectDate }) => {
   };
 
   return (
-    <>
-      <div style={{ marginBottom: 16, display: "flex", gap: "16px", alignItems: "center" }}>
+    <div style={{borderRadius: '10px', overflow: 'hidden', border: '1px solid #dfdfdf', padding: 25,  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',backgroundColor: '#e9f5f9'}}>
+      <div   className="calendar-filters">
         <div>
           <span style={{ marginRight: 8, fontWeight: "bold" }}>Filter by status:</span>
           <Select
@@ -195,7 +159,7 @@ const CustomCalendar = ({ onSelectDate }) => {
         </div>
       </div>
 
-      <Calendar dateCellRender={dateCellRender} onSelect={handleDateSelect} />
+      <Calendar dateCellRender={dateCellRender} onSelect={handleDateSelect} style={{width: '100%', borderRadius: 10, padding: 10}} className="custom-calendar"/>
 
       <Modal
         title="Approved Requests"
@@ -249,7 +213,7 @@ const CustomCalendar = ({ onSelectDate }) => {
           />
         )}
       </Modal>
-    </>
+    </div>
   );
 };
 
