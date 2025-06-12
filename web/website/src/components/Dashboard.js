@@ -606,25 +606,37 @@
 // VERSION 2
 import React, { useState, useEffect } from "react";
 import { useNavigate,  useLocation } from "react-router-dom";
-import { Layout, Card, Col, Row, Table, List, Modal,Typography,Tag } from "antd";
+import { Layout, Card, Col, Row, Table, List, Modal,Typography, Tag, Tabs } from "antd";
 import { db } from "../backend/firebase/FirebaseConfig"; 
 import { collectionGroup, query, where, getDocs, onSnapshot, collection, orderBy, limit } from "firebase/firestore";
 import SuccessModal from "./customs/SuccessModal";
 import CustomCalendar from "./customs/CustomCalendar";
 import PoliciesModal from "./Policies";
 import "./styles/Dashboard.css";
-import { Tabs } from 'antd';
 import {
-
+  UserOutlined,
+  DashboardOutlined,
   UnorderedListOutlined,
   FileTextOutlined,
+  AppstoreOutlined,
+  HistoryOutlined,
+  LogoutOutlined,
+  FileDoneOutlined,
+  SnippetsOutlined,
+  ClockCircleOutlined,
+  SearchOutlined,
+  ShoppingCartOutlined,
+  DollarCircleOutlined,
+  RollbackOutlined,
   ShoppingOutlined,
   DatabaseOutlined,
-
+  HomeOutlined,
+  UserSwitchOutlined,
+  IdcardOutlined,
 } from '@ant-design/icons';
 import ReactMarkdown from 'react-markdown';
 
- const { Content } = Layout;
+const { Content } = Layout;
  
 const { Text } = Typography;
  
@@ -647,8 +659,7 @@ const { Text } = Typography;
    const [expiringSoonItems, setExpiringSoonItems] = useState([]);
    const [damagedItems, setDamagedItems] = useState([]);
    const [criticalStockList, setCriticalStockList] = useState([]);
-
-
+   const [lostItems, setLostItems] = useState([]);
 
    const expiryColumns = [
   {
@@ -703,19 +714,18 @@ const criticalColumns = [
   },
 ];
 //critical stock
-
 const getCriticalStockItems = (inventoryItems) => {
   if (!inventoryItems || inventoryItems.length === 0) return [];
 
   return inventoryItems.filter(item => {
+    const criticalLevel = Number(item.criticalLevel) || 0; // fallback to 0 if invalid
     const quantity = Number(item.quantity) || 0;
-    const criticalLevel = Number(item.criticalLevel) || 0;
 
     return quantity <= criticalLevel;
   });
 };
 
-// useEffect to listen for inventory changes and update critical stock list
+// critical stock 
 useEffect(() => {
   const inventoryRef = collection(db, "inventory");
 
@@ -725,7 +735,7 @@ useEffect(() => {
       ...doc.data(),
     }));
 
-    const criticalItems = getCriticalStockItems(items); // 👈 Use the new logic
+    const criticalItems = getCriticalStockItems(items);
     setCriticalStockList(criticalItems);
   });
 
@@ -803,6 +813,7 @@ useEffect(() => {
 
       const damage = condition.Damage || 0;
       const defect = condition.Defect || 0;
+      const lost = condition.Lost || 0;
 
       if (damage > 0 || defect > 0) {
         problematicItems.push({
@@ -962,6 +973,8 @@ useEffect(() => {
       }
     }, [location.state, navigate]);
 
+
+    // Fetch AI-based sales predictions and product trends
     useEffect(() => {
       fetch('/api/predict-sales')
         .then((res) => res.json())
@@ -1097,6 +1110,7 @@ useEffect(() => {
         match.replace(/```[\w]*\n?/, '').replace(/```$/, '')
       );
   };
+
 
    return (
      <Layout style={{ minHeight: "100vh" }}>
