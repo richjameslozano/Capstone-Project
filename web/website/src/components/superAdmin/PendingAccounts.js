@@ -282,7 +282,13 @@ const PendingAccounts = () => {
                 <Button
                   type="primary"
                   onClick={handleApprove}
+                  
                   disabled={selectedRequests.length === 0}
+                    style={{
+                        backgroundColor: selectedRequests.length > 0 ? '#45a049' : '', // green when enabled
+                        borderColor: selectedRequests.length > 0 ? '#45a049' : '',
+                        color:  selectedRequests.length > 0 ? '#fff': '',
+                      }}
                 >
                   Approve Selected
                 </Button>

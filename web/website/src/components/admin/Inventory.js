@@ -672,16 +672,16 @@ const printPdf = () => {
       alert("Please fill up the form!");
       return;
     }
-
+ 
     const trimmedName = itemName.trim();
     const normalizedInputName = trimmedName.toLowerCase();
     const normalizedInputDetails = itemDetails.trim().toLowerCase();
-
+ 
     // Find items with the same name (case-insensitive)
     const sameNameItems = dataSource.filter(
       (item) => item.item.toLowerCase().startsWith(normalizedInputName)
     );
-
+ 
     // Check if same name AND same details already exists
     const exactMatch = sameNameItems.find((item) => {
       const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
@@ -691,7 +691,7 @@ const printPdf = () => {
         itemNameSafe === normalizedInputName
       );
     });
-
+ 
     if (exactMatch) {
       setNotificationMessage("An item with the same name and details already exists in the inventory.");
       setIsNotificationVisible(true);
@@ -704,53 +704,53 @@ const printPdf = () => {
       Glasswares: "GLS",
       Materials: "MAT",
     };
-    
-
+   
+ 
     // Generate suffix for similar items with same base name but different details
     let similarItemCount = sameNameItems.length + 1;
     const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
     const formattedItemName = `${baseName}${String(similarItemCount).padStart(2, "0")}`;
-
+ 
     const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
-
+ 
     const itemCategoryPrefix = itemCategoryPrefixMap[values.category]|| "UNK01";
     const inventoryRef = collection(db, "inventory");
     const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
     const defaultCriticalDays = 7;
     let averageDailyUsage = 0;
-
+ 
     // You could fetch historical averageDailyUsage if available, otherwise 0
     // For new items, it's likely 0 by default
-
+ 
     const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
-
-
+ 
+ 
     let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
     let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
     let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-
+ 
     // 🔁 Keep trying until we find a unique ID
     while (!idQuerySnapshot.empty) {
       ItemCategoryCount++;
       generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
       idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
     }
-
-    setItemId(generatedItemId); 
-
-  
+ 
+    setItemId(generatedItemId);
+ 
+ 
     const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
-    const expiryDate = values.type === "Fixed" 
-      ? null 
-      : values.expiryDate 
+    const expiryDate = values.type === "Fixed"
+      ? null
+      : values.expiryDate
       ? values.expiryDate.format("YYYY-MM-DD")
       : null;
-
+ 
     const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
     const timestamp = new Date();
-
+ 
     const quantityNumber = Number(values.quantity);
-
+ 
     const inventoryItem = {
       itemId: generatedItemId,
       // itemName,
@@ -768,7 +768,7 @@ const printPdf = () => {
       status: "Available",
       ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
       rawTimestamp: new Date(),
-
+ 
       ...(values.category !== "Chemical" && values.category !== "Reagent" && {
         condition: {
           Good: quantityNumber,
@@ -778,40 +778,40 @@ const printPdf = () => {
         },
       }),
     };
-
+ 
     const encryptedData = CryptoJS.AES.encrypt(
       JSON.stringify(inventoryItem),
       SECRET_KEY
     ).toString();
-    
+   
     const newItem = {
       id: count + 1,
       itemId: generatedItemId,
       // item: itemName,
       item: finalItemName,
       itemDetails: itemDetails,
-      entryDate: entryCurrentDate, 
-      expiryDate: expiryDate, 
+      entryDate: entryCurrentDate,
+      expiryDate: expiryDate,
       qrCode: encryptedData,
       ...inventoryItem,
     };
-
+ 
      try {
-
+ 
       const inventoryDocRef = await addDoc(collection(db, "inventory"), {
         ...inventoryItem,
         qrCode: encryptedData,
       });
-
+ 
       const userId = localStorage.getItem("userId");
       const userName = localStorage.getItem("userName") || "User";
-
+ 
       await addDoc(collection(db, `accounts/${userId}/activitylog`), {
         action: `Added new item (${finalItemName}) to inventory`,
         userName: userName || "User",
         timestamp: serverTimestamp(),
       });
-
+ 
       await addDoc(collection(inventoryDocRef, "stockLog"), {
         date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
         noOfItems: quantityNumber,
@@ -819,38 +819,38 @@ const printPdf = () => {
         createdAt: serverTimestamp(),
         ...(expiryDate && { expiryDate }),
       });
-
+ 
       // 🔽 Check if labRoom with the given room number already exists
       const labRoomQuery = query(
         collection(db, "labRoom"),
         where("roomNumber", "==", values.labRoom)
       );
       const labRoomSnapshot = await getDocs(labRoomQuery);
-
+ 
       let labRoomRef;
-
+ 
       if (labRoomSnapshot.empty) {
         // 🔽 Create new labRoom document with generated ID
         labRoomRef = await addDoc(collection(db, "labRoom"), {
           roomNumber: values.labRoom,
           createdAt: new Date(),
         });
-
+ 
       } else {
         // 🔽 Use existing labRoom document
         labRoomRef = labRoomSnapshot.docs[0].ref;
       }
-
+ 
       // 🔽 Add item to the labRoom's subcollection
       await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
         ...inventoryItem,
         qrCode: encryptedData,
         roomNumber: values.labRoom,
       });
-
+ 
       // 🔽 Fetch all items under this labRoom
       const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
-
+ 
       // 🔽 Generate encrypted QR code with labRoom ID only
       const labRoomQRData = CryptoJS.AES.encrypt(
         JSON.stringify({
@@ -858,13 +858,13 @@ const printPdf = () => {
         }),
         SECRET_KEY
       ).toString();
-
+ 
       // 🔽 Update labRoom document with the generated QR code
       await updateDoc(labRoomRef, {
         qrCode: labRoomQRData,
         updatedAt: new Date(),
       });
-
+ 
       setDataSource([...dataSource, newItem]);
       setLogRefreshKey(prev => prev + 1);
       setCount(count + 1);
@@ -873,7 +873,7 @@ const printPdf = () => {
       setItemDetails("")
       setItemId("");
       setIsModalVisible(false);
-
+ 
     } catch (error) {
       console.error("Error adding document to Firestore:", error);
     }

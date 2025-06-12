@@ -104,3 +104,64 @@
 .select-department {
   margin: 10px;
 }
+
+
+.header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center; 
+  padding: 16px;
+  background: #fff; 
+}
+
+
+.header-center {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 30px;
+  font-weight: bold;
+}
+
+.header-center h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+
+.controls-row {
+  display: flex;
+  justify-content: space-between; /* space between filters and buttons */
+  align-items: center;
+  width: 100%;
+  margin-top: 16px; /* space from header */
+  flex-wrap: wrap; 
+}
+
+/* Filters styling */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px; 
+}
+
+/* Styles for only the "Add Account" and "Add Department" buttons */
+.add-buttons {
+  background-color: #0c4983 !important;
+  border-color: #0c1e85 !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+  padding: 8px 16px !important;
+
+  height: auto !important;
+}
+
+.add-buttons:hover {
+  background-color: #45a049 !important;
+  border-color: #45a049 !important;
+  color: #fff !important;
+}
+
+.add-buttons .anticon {
+  margin-right: 8px;
+}
+

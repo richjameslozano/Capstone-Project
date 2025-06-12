@@ -804,71 +804,80 @@ const AccountManagement = () => {
 
       <Layout className="site-layout">
         <Content className="account-content">
-          <div className="account-header">
-            <h2>Account Management</h2> 
-            
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => showModalHandler(null)}
-            >
-              Add Account
-            </Button>
+            <div className="header-container">
 
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              style={{ marginBottom: 16 }}
-              onClick={showDeptModal}
-            >
-              Add Department
-            </Button>
-          </div>
+    <div className="header-center">
+      <h2>Account Management</h2>
+    </div>
 
-          <div className="filters">
-            <Input
-              placeholder="Search by name or email"
-              value={searchTerm}
-               onInput={(e) => {
+    <div className="controls-row">
+
+      <div className="filters">
+        <Input
+          placeholder="Search by name or email"
+          value={searchTerm}
+          onInput={(e) => {
             const sanitized = sanitizeInput(e.target.value);
             e.target.value = sanitized;
             setSearchTerm(sanitized);
-               }}
-            />
+          }}
+        />
 
-            <Select
-              className="select-role"
-              placeholder="Select Role"
-              onChange={(value) => setRoleFilter(value)}
-              allowClear
-            >
-              <Option value="admin">Admin</Option>
-              <Option value="super-user">super-user</Option>
-              <Option value="User">User</Option>
-            </Select>
+        <Select
+          className="select-role"
+          placeholder="Select Role"
+          onChange={(value) => setRoleFilter(value)}
+          allowClear
+        >
+          <Option value="admin">Admin</Option>
+          <Option value="super-user">super-user</Option>
+          <Option value="User">User</Option>
+        </Select>
 
-            <Select
-             className="select-status"
-              placeholder="Select Status"
-              onChange={(value) => setStatusFilter(value)}
-              allowClear
-            >
-              <Option value="Active">Active</Option>
-              <Option value="Disabled">Disabled</Option>
-            </Select>
+        <Select
+          className="select-status"
+          placeholder="Select Status"
+          onChange={(value) => setStatusFilter(value)}
+          allowClear
+        >
+          <Option value="Active">Active</Option>
+          <Option value="Disabled">Disabled</Option>
+        </Select>
 
-            <Select
-             className="select-department"
-              placeholder="Select Department"
-              onChange={(value) => setDepartmentFilter(value)}
-              allowClear
-            >
-              <Option value="Nursing">Nursing</Option>
-              <Option value="Medical Technology">Medical Technology</Option>
-              <Option value="Dentistry">Dentistry</Option>
-              <Option value="Pharmacy">Pharmacy</Option>
-            </Select>
-          </div>
+        <Select
+          className="select-department"
+          placeholder="Select Department"
+          onChange={(value) => setDepartmentFilter(value)}
+          allowClear
+        >
+          <Option value="Nursing">Nursing</Option>
+          <Option value="Medical Technology">Medical Technology</Option>
+          <Option value="Dentistry">Dentistry</Option>
+          <Option value="Pharmacy">Pharmacy</Option>
+        </Select>
+      </div>
+
+      <div className="buttons-container">
+        <Button
+          className="add-buttons"
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => showModalHandler(null)}
+        >
+          Add Account
+        </Button>
+        <Button
+          type="primary"
+          className="add-buttons"
+          icon={<PlusOutlined />}
+          style={{ marginLeft: 8 }}
+          onClick={showDeptModal}
+        >
+          Add Department
+        </Button>
+      </div>
+    </div>
+     </div>
 
           <Table
             // dataSource={accounts}

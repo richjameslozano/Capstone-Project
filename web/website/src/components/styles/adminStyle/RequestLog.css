@@ -99,11 +99,11 @@
 
 /* Styles for "Returned" status button */
 .returned-status-button.ant-btn-primary {
-  background-color: #faad14 !important; /* Orange for warning/returned */
+  background-color: #faad14 !important; 
   border-color: #faad14 !important;
 }
 
 .returned-status-button.ant-btn-primary:hover {
-  background-color: #ffc53d !important; /* Lighter orange on hover */
+  background-color: #ffc53d !important; 
   border-color: #ffc53d !important;
 }

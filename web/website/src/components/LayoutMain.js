@@ -76,7 +76,6 @@ const LayoutMain = () => {
 
 const excludedPaths = useMemo(() => [
   "/main/inventory",
-  "/main/pending-request",
 ], []);
 const shouldShowSpinner = useMemo(() => {
   return !excludedPaths.some((route) => location.pathname.startsWith(route));

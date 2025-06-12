@@ -207,6 +207,7 @@
 .export-excel-button {
   background-color: #2e7d32 !important; /* Darker green */
   border-color: #2e7d32 !important;
+  margin-right: -1px !important;
 }
 
 .export-excel-button:hover {

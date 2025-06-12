@@ -178,3 +178,39 @@
   background-color: #40a9ff;
   border-color: #40a9ff;
 }
+
+.save-pdf-button {
+  background-color: #af2626 !important; /* Red */
+  border-color: #af2626 !important;
+}
+
+.save-pdf-button:hover {
+  background-color: #e53935 !important; /* Lighter red on hover */
+  border-color: #e53935 !important;
+}
+
+.print-pdf-button {
+  background-color: #d4d4d4 !important; /* Gray, consistent with "Print PDF" */
+  border-color: #8b8989 !important;
+  color: black;
+}
+
+.print-pdf-button:hover {
+  background-color: #9e9e9e !important; /* Lighter gray on hover */
+  border-color: #9e9e9e !important;
+  color: white !important;
+}
+
+.export-excel-button {
+  background-color: #2e7d32 !important; /* Darker green */
+  border-color: #2e7d32 !important;
+  margin-right: 8px;
+  margin-left: 5px;
+  color: white !important;
+}
+
+.export-excel-button:hover {
+  background-color: #388e3c !important; /* Slightly lighter green on hover */
+  border-color: #388e3c !important;
+  color: white !important;
+}
