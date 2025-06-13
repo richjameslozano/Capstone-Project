@@ -20,6 +20,9 @@ const CapexList = () => {
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const currentYear = new Date().getFullYear();
+  const nextYear = currentYear + 1;
+  const yearRange = `${currentYear}-${nextYear}`;
   const modalRef = useRef(null);
 
   // Calculate total cost of filtered requests
@@ -277,6 +280,10 @@ const CapexList = () => {
       <Content style={{ margin: "20px" }}>
         <Row gutter={24}>
           <Col span={24}>
+            <h2>
+              CAPEX Request for Materials Year {yearRange}
+            </h2>
+
             <Title level={4}>List of Requests</Title>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
