@@ -51,7 +51,7 @@
 }
 
 .analytics-box {
-  background: #fff;
+  background: #efefef;
   border-radius: 12px; 
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08); 
   margin-bottom: 20px; 
@@ -112,10 +112,10 @@ flex-direction: column;
   height: 100% !important;
 
 }
-.analytics-center-wrapper {
+/* .analytics-center-wrapper {
 justify-content: center;
 align-self: center;
-}
+} */
 
 .summary-card {
   color: rgb(0, 0, 0);
@@ -180,7 +180,7 @@ align-self: center;
 
 
 .critical-card .ant-card-head {
-  background-color: #ef5a52 !important;
+  background-color: #134b5f !important;
   color: white !important;
   border-bottom: none !important;
 }
@@ -241,4 +241,9 @@ align-self: center;
 
 .calendar{
   border-radius: 20px;
+}
+
+.critical-card .ant-card-body {
+  padding-top: 0 !important;
+  padding: 20px !important;
 }
