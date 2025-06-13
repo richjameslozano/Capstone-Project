@@ -135,7 +135,7 @@ const processData = (data, count) => {
   if (!barData) return <Empty description="No item request data available" />;
 
   return (
-    <Card style={{ padding: 16 }}>
+    <Card style={{ padding: 16, height: '100%' }}>
       <Title level={5}>Medical Supplies in Progress</Title>
       <Paragraph type="secondary" style={{ marginBottom: 16 }}>
         Materials needed in laboratory operations

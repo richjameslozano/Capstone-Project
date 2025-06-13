@@ -573,6 +573,7 @@ useEffect(() => {
   {/* === FIRST ROW === */}
   <Row gutter={16}>
 <Col flex="2">
+<div style={{flex: 1}}>
   {/* Fixed spacing below Pie Chart */}
   <div style={{ marginBottom: '24px' }}>
     <AIInventoryPieChart />
@@ -622,7 +623,18 @@ useEffect(() => {
     </Col>
 
     <Col flex="1">
-      <Card
+    <MonthlyRequestTrendLineChart />
+
+    </Col>
+  </Row>
+  </div>
+</Col>
+
+
+<Col flex="1" xs={24} md={8}>
+  <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%'}}>
+    <MostRequestedItemsBarChart />
+          <Card
         title={<div style={{display: 'flex',alignItems: 'center', gap: 12, fontSize: 18}}><MdAccessTime size={25} color="#4b5563" />Recently Added Items</div>}
         className="sales-card-header"
         style={{ marginBottom: 0, width: '100%' }}
@@ -654,17 +666,10 @@ useEffect(() => {
           
         </div>
       </Card>
-    </Col>
-  </Row>
+  </div>
 </Col>
 
 
-      <Col flex="1" xs={24} md={8}>
-
-        <MostRequestedItemsBarChart/>
-        <MonthlyRequestTrendLineChart/>
-
-      </Col>
   </Row>
 </div>
 

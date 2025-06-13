@@ -26,7 +26,9 @@ const MonthlyRequestTrendLineChart = () => {
   useEffect(() => {
     const fetchTrendData = async () => {
       try {
-        const res = await fetch("https://webnuls.onrender.com/ai-monthly-request-trend", { method: "POST" });
+        const res = await fetch("https://webnuls.onrender.com/ai-monthly-request-trend", {
+          method: "POST",
+        });
         const json = await res.json();
         setAvailableYears(json.years || []);
         setTrendData(json.data || []);
@@ -45,35 +47,80 @@ const MonthlyRequestTrendLineChart = () => {
   if (loading) return <Spin />;
   if (!trendData.length || !selectedYear) return <Empty description="No monthly request data" />;
 
-  const filteredData = trendData.filter(entry => entry.month.endsWith(String(selectedYear)));
+  const filteredData = trendData.filter(entry =>
+    entry.month.endsWith(String(selectedYear))
+  );
 
-  const chartData = {
-    labels: filteredData.map(entry => entry.month.replace(` ${selectedYear}`, "")),
-    datasets: [
-      {
-        label: "Requests",
-        data: filteredData.map(entry => entry.count),
-        borderColor: "#1890ff",
-        backgroundColor: "rgba(37, 67, 95, 0.3)",
-        fill: true,
-        tension: 0.3,
-      },
-    ],
-  };
+  const values = filteredData.map(entry => entry.count);
+  const labels = filteredData.map(entry =>
+    entry.month.replace(` ${selectedYear}`, "")
+  );
+
+const chartData = {
+  labels,
+  datasets: [
+    {
+      label: "Requests",
+      data: values,
+      fill: true,
+      tension: 0, // solid line
+      borderWidth: 2,
+      borderColor: "#165a72", // ← your desired line color
+      // backgroundColor: "rgba(19, 75, 95, 0.2)",
+      pointBackgroundColor: "#134b5f",
+      pointBorderColor: "#fff",
+      pointRadius: 4,
+      pointHoverRadius: 6,
+    },
+  ],
+};
+
+
 
   const chartOptions = {
     responsive: true,
+    elements: {
+      line: {
+        borderJoinStyle: "round",
+      },
+    },
     plugins: {
       legend: { display: false },
       tooltip: {
+        backgroundColor: "#1e293b",
+        titleColor: "#f8fafc",
+        bodyColor: "#cbd5e1",
         callbacks: {
           label: context => `${context.raw} requests`,
         },
       },
     },
     scales: {
-      x: { title: { display: true, text: "Month" } },
-      y: { beginAtZero: true, title: { display: true, text: "Request Count" } },
+      x: {
+        title: {
+          display: true,
+          text: "Month",
+          color: "#333",
+          font: { size: 14 },
+        },
+        grid: { display: false },
+        ticks: { color: "#666", font: { size: 12 } },
+      },
+      y: {
+          beginAtZero: true,
+          title: {
+            display: true,
+            text: "Request Count",
+            color: "#333",
+            font: { size: 14 },
+          },
+          grid: { color: "#e5e7eb" },
+          ticks: {
+            color: "#666",
+            font: { size: 12 },
+            stepSize: 5, // ← Set increment to 5
+          },
+        },
     },
   };
 
@@ -85,7 +132,9 @@ const MonthlyRequestTrendLineChart = () => {
         style={{ width: 140, marginBottom: 16 }}
       >
         {availableYears.map(y => (
-          <Option key={y} value={y}>{y}</Option>
+          <Option key={y} value={y}>
+            {y}
+          </Option>
         ))}
       </Select>
 

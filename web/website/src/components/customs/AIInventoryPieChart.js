@@ -63,17 +63,24 @@ const AIInventoryPieChart = () => {
     
   };
 
-  const pieOptions = {
+const pieOptions = {
   plugins: {
     legend: {
       position: 'bottom',
       labels: {
         usePointStyle: true,
-        pointStyle: 'rectRounded', // Change to rect, rectRounded, star, etc.
+        pointStyle: 'rectRounded',
         padding: 25,
         font: {
           size: 14,
         },
+      },
+    },
+    datalabels: {
+      color: '#ffffff', // Set label text color here
+      font: {
+        weight: 'bold',
+        size: 14,
       },
     },
   },
