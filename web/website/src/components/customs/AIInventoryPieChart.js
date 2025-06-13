@@ -7,10 +7,11 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bot } from 'lucide-react';
-import { FaRobot } from 'react-icons/fa';
-import { MdSmartToy } from 'react-icons/md';      // Material Icons
+import { Bot, LineChart, BarChart2  } from 'lucide-react';
+import { FaRobot, FaChartLine  } from 'react-icons/fa';
+import { MdSmartToy, MdAnalytics } from 'react-icons/md';      // Material Icons
 import { GiArtificialHive } from 'react-icons/gi';// Game Icons (AI-theme)
+import { LineChartOutlined } from '@ant-design/icons';
 
 const { Paragraph, Title } = Typography;
 
@@ -80,9 +81,16 @@ const AIInventoryPieChart = () => {
 };
 
   return (
-    <div style={{height: '100%', display: 'flex',flexDirection: 'column',gap: 10, padding: 30, backgroundColor: 'white', boxShadow: '0px 8px 14px rgba(0,0,0,0.1)', borderRadius: 10, justifyItems: 'flex-start', border: '1px solid #dcdcdc'}}>
-            <div className="analytics-center-wrapper">
-            <h1 style={{ fontWeight: "bold", fontSize: '26px',justifySelf: 'flex-start', borderRadius: 5}}>
+    <div style={{height: '100%', display: 'flex',flexDirection: 'column',gap: 10, padding: 30, backgroundColor: 'white', boxShadow: '0px 8px 14px rgba(0,0,0,0.1)', borderRadius: 10, justifyItems: 'flex-start', border: '1px solid #dcdcdc', paddingTop: 20}}>
+            <div className="analytics-center-wrapper" style={{display: 'flex', alignItems: 'center', justifyItems: 'center', padding: 5, gap: 15, marginBottom: 15}}>
+           <BarChart2
+              color="#fff"
+              width={25}
+              height={25}
+              style={{ padding: 5, backgroundColor: '#2187ab', borderRadius: 5 }}
+            />
+
+            <h1 style={{ fontWeight: "bold", fontSize: '26px',justifySelf: 'flex-start', borderRadius: 5, margin: 0}}>
               Analytics Center
             </h1>
             </div>
