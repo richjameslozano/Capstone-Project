@@ -19,7 +19,7 @@ import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import axios from "axios";
 import NotificationModal from "./customs/NotificationModal";
 import TermsModal from "./customs/TermsModal";
-
+import { MdEmail } from 'react-icons/md';
 import nulsLogo from './lablogo.svg'
 
 const Login = () => {
@@ -1859,36 +1859,42 @@ const Login = () => {
   
       {/* Forgot Password Modal */}
       {isForgotPasswordModalVisible && (
-        <div className="modal-overlay">
-          <div className="modal-content-forgot">
-            <h3>Forgot Password</h3>
-            <p>Enter your email to receive a reset link.</p>
+          <div className="modal-overlay">
+            <div className="modal-content-forgot">
+              <h3>Forgot Password</h3>
+              <p className="modal-instruction">Enter your email to receive a reset link</p>
+          <div className="input-with-icon">
+            <MdEmail className="email-icon" />
             <input
               type="email"
               value={forgotPasswordEmail}
               onChange={(e) => setForgotPasswordEmail(e.target.value)}
-              placeholder="Enter your email"
+              placeholder="Enter email"
               required
             />
-            {forgotPasswordError && (
-              <p className="error-message">{forgotPasswordError}</p>
-            )}
-            {forgotPasswordSuccess && (
-              <p className="success-message">{forgotPasswordSuccess}</p>
-            )}
-            <div className="modal-actions-forgot">
-              <button onClick={handleForgotPassword} className="modal-btn-send">
-                Send Link
-              </button>
-              <button
-                onClick={() => setIsForgotPasswordModalVisible(false)}
-                className="modal-cancel-btn"
-              >
-                Cancel
-              </button>
+          </div>
+
+              {forgotPasswordError && (
+                <p className="error-message">{forgotPasswordError}</p>
+              )}
+              {forgotPasswordSuccess && (
+                <p className="success-message">{forgotPasswordSuccess}</p>
+              )}
+
+              <div className="modal-actions-forgot">
+                <button onClick={handleForgotPassword} className="modal-btn-send">
+                  Send Reset Link
+                </button>
+                <button
+                  onClick={() => setIsForgotPasswordModalVisible(false)}
+                  className="modal-cancel-btn"
+                >
+                  Cancel
+                </button>
+              </div>
             </div>
           </div>
-        </div>
+
       )}
 
       <TermsModal isVisible={isTermModalVisible} onClose={closeTermsModal} />
