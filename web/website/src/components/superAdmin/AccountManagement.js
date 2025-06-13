@@ -543,6 +543,7 @@ const AccountManagement = () => {
         );
         setAccounts(updatedAccounts);
         setModalMessage(data.message || "Account updated successfully!");
+        
       } else {
         const newAccount = { ...sanitizedValues, id: data.id };
         setAccounts([...accounts, newAccount]);
