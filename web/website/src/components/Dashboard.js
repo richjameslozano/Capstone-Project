@@ -41,6 +41,7 @@ import {
   Chart as ChartJS, CategoryScale, LinearScale,
   BarElement, Title, Tooltip, Legend
 } from "chart.js";
+import MonthlyRequestTrendLineChart from "./customs/MonthlyRequestTrendLineChart";
 
 
 const { Content } = Layout;
@@ -650,6 +651,7 @@ useEffect(() => {
               </List.Item>
             )}
           />
+          
         </div>
       </Card>
     </Col>
@@ -660,6 +662,8 @@ useEffect(() => {
       <Col flex="1" xs={24} md={8}>
 
         <MostRequestedItemsBarChart/>
+        <MonthlyRequestTrendLineChart/>
+
       </Col>
   </Row>
 </div>
