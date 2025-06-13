@@ -1167,102 +1167,139 @@ useEffect(() => {
 <Content className="content">
   <Tabs defaultActiveKey="1" style={{ marginTop: 20 }}>
   <Tabs.TabPane tab="Analytics Center" key="1">
-    <Row gutter={[24, 24]}>
-      <Col xs={24} md={24}>
-        <div className="analytics-box">
-          <div className="analytics-center-wrapper">
-            <h1 style={{ fontWeight: "bold", marginTop: '30px', marginBottom: '40px', fontSize: '26px', marginLeft:'20px'}}>
-              Analytics Center
-            </h1>
+
+<div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+  {/* === FIRST ROW === */}
+  <Row gutter={16}>
+    <Col flex="2">
+      <AIInventoryPieChart />
+    </Col>
+
+    <Col flex="1" xs={24} md={8}>
+      <Card title="Critical Stocks" className="critical-card" style={{ height: '100%' }}>
+        <List
+          dataSource={criticalStockList}
+          locale={{ emptyText: 'No critical stock' }}
+          style={{ maxHeight: 375, overflowY: 'auto' }}
+          renderItem={(item) => {
+            const quantity = Number(item.quantity) || 0;
+            const criticalLevel = Number(item.criticalLevel) || 0;
+            const isBelowCritical = quantity <= criticalLevel;
+
+            return (
+              <List.Item>
+                <List.Item.Meta
+                  title={<Text strong>{item.itemName} (ID: {item.itemId})</Text>}
+                  description={
+                    <>
+                      <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
+                        Remaining Stock: {Math.round(quantity)} / Critical Level: {Math.round(criticalLevel)}
+                      </Text>
+                      {isBelowCritical && (
+                        <Tag color="red" style={{ marginLeft: 8 }}>
+                          Low Stock
+                        </Tag>
+                      )}
+                    </>
+                  }
+                />
+              </List.Item>
+            );
+          }}
+        />
+      </Card>
+    </Col>
+  </Row>
+
+  {/* === SECOND ROW === */}
+  <Row gutter={16}>
+    {/* Recently Added Items */}
+    <Col xs={24} md={8}>
+      <Card title="Recently Added Items" className="sales-card-header" style={{ marginBottom: '0' }}>
+        <div style={{ height: '234px', overflowY: 'auto' }}>
+          <List
+            dataSource={recentProducts}
+            renderItem={(item) => (
+              <List.Item>
+                <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
+                  <div>
+                    <div style={{ fontWeight: 500 }}>{item.itemName}</div>
+                    <small style={{ color: "#888" }}>{item.category}</small>
+                  </div>
+                  <div style={{ color: '#555', fontSize: '0.9em' }}>{item.entryCurrentDate}</div>
+                </div>
+              </List.Item>
+            )}
+          />
+        </div>
+      </Card>
+    </Col>
+
+    {/* AI Inventory Analysis */}
+    <Col xs={24} md={8}>
+      <Card title="AI Inventory Analysis (Gemini)" style={{ overflow: 'hidden' }}>
+        {loadingGemini ? (
+          <Spin tip="Loading AI analysis..." />
+        ) : (
+          <div style={{ flex: 1 }}>
+            <ul
+              style={{
+                paddingLeft: "20px",
+                overflowY: "auto",
+                marginTop: 0,
+                maxHeight: 350,
+                height: '100%',
+                alignSelf: 'flex-start',
+                justifySelf: 'flex-start',
+                lineHeight: "1.6",
+              }}
+            >
+              {predictedSales
+                .split("\n")
+                .filter((line) => line.trim().startsWith("-"))
+                .map((line, index) => (
+                  <li key={index} style={{ marginBottom: "8px", textAlign: "justify" }}>
+                    {line.replace(/^- /, "")}
+                  </li>
+                ))}
+            </ul>
           </div>
+        )}
+      </Card>
+    </Col>
 
-          <Row gutter={16}>
-            <Col xs={24} md={8}>
-             <Card title="Critical Stocks" className="critical-card" style={{ marginBottom: '24px' }}>
-                            <List
-                              dataSource={criticalStockList}
-                              locale={{ emptyText: 'No critical stock' }}
-                              style={{ maxHeight: 250, overflowY: 'auto' }}
-                              renderItem={(item) => {
-                                const quantity = Number(item.quantity) || 0;
-                                const criticalLevel = Number(item.criticalLevel) || 0;
-                                const isBelowCritical = quantity <= criticalLevel;
+    {/* Item Expiry */}
+    <Col xs={24} md={8}>
+      <Card title="Item Expiry" className="item-expiry-card">
+        <h4>Expired Items</h4>
+        <Table
+          dataSource={expiredItems}
+          columns={expiryColumns}
+          pagination={false}
+          size="small"
+          scroll={{ y: 100 }}
+          locale={{ emptyText: "No expired items" }}
+        />
+        <h4 style={{ marginTop: "20px" }}>Expiring Soon (Next 7 Days)</h4>
+        <Table
+          dataSource={expiringSoonItems}
+          columns={expiryColumns}
+          pagination={false}
+          size="small"
+          scroll={{ y: 100 }}
+          locale={{ emptyText: "No items expiring soon" }}
+        />
+      </Card>
+    </Col>
+  </Row>
+</div>
 
-                                return (
-                                  <List.Item>
-                                    <List.Item.Meta
-                                      title={
-                                        <Text strong>
-                                          {item.itemName} (ID: {item.itemId})
-                                        </Text>
-                                      }
-                                      description={
-                                        <>
-                                          <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
-                                            Remaining Stock: {Math.round(quantity)} / Critical Level: {Math.round(criticalLevel)}
-                                          </Text>
-                                          {isBelowCritical && (
-                                            <Tag color="red" style={{ marginLeft: 8 }}>
-                                              Low Stock
-                                            </Tag>
-                                          )}
-                                        </>
-                                      }
-                                    />
-                                  </List.Item>
-                                );
-                              }}
-                            />
-                          </Card>
 
-              <Card title="Item Expiry" className="item-expiry-card" style={{ marginBottom: '24px' }}>
-                <h4>Expired Items</h4>
-                <Table
-                  dataSource={expiredItems}
-                  columns={expiryColumns}
-                  pagination={false}
-                  size="small"
-                  scroll={{ y: 100 }}
-                  locale={{ emptyText: "No expired items" }}
-                />
-                <h4 style={{ marginTop: "20px" }}>Expiring Soon (Next 7 Days)</h4>
-                <Table
-                  dataSource={expiringSoonItems}
-                  columns={expiryColumns}
-                  pagination={false}
-                  size="small"
-                  scroll={{ y: 100 }}
-                  locale={{ emptyText: "No items expiring soon" }}
-                />
-              </Card>
 
-             
-            </Col>
 
-<Card title="AI Inventory Analysis (Gemini)" style={{ marginBottom: '24px',overflow:'hidden' }}>
-  {loadingGemini ? (
-    <Spin tip="Loading AI analysis..." />
-  ) : (
-    <ul style={{ paddingLeft: "20px", overflowY: "auto",marginTop:0,maxHeight: 350,height:'100%',alignSelf:'flex-start',justifySelf:'flex-start', lineHeight: "1.6" }}>
-      {predictedSales
-        .split("\n")
-        .filter((line) => line.trim().startsWith("-"))
-        .map((line, index) => (
-          <li key={index} style={{ marginBottom: "8px", textAlign: "justify" }}>
-            {line.replace(/^- /, "")}
-          </li>
-        ))}
-    </ul>
-  )}
-</Card>
 
-<Card title="AI-Powered Inventory Health Overview" style={{ marginBottom: '24px' }}>
-  <div style={{ maxHeight: 400, overflowY: 'auto', whiteSpace: 'pre-wrap' }}>
-    <AIInventoryPieChart />
-  </div>
-</Card>
 
-            <Col xs={24} md={8}>
+            {/* <Col xs={24} md={8}>
 
                 <Card title="Items for Replace" className="damaged-card" style={{ marginBottom: 24 }}>
                 <Table
@@ -1280,24 +1317,7 @@ useEffect(() => {
                 />
               </Card>
 
-              <Card title="Recently Added Items" style={{marginBottom:'24px'}} className="sales-card-header">
-                <div style={{ height: '234px', overflowY: 'auto'}}> 
-                  <List
-                    dataSource={recentProducts}
-                    renderItem={(item) => (
-                      <List.Item>
-                        <div style={{ width: "100%", display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
-                          <div>
-                            <div style={{ fontWeight: 500 }}>{item.itemName}</div>
-                            <small style={{ color: "#888" }}>{item.category}</small>
-                          </div>
-                          <div style={{ color: '#555', fontSize: '0.9em' }}>{item.entryCurrentDate}</div>
-                        </div>
-                      </List.Item>
-                    )}
-                  />
-                </div>
-              </Card>
+            
 
 
 
@@ -1318,12 +1338,11 @@ useEffect(() => {
                   locale={{ emptyText: "No defective items" }}
                 />
               </Card>
-            </Col>
-          </Row>
-        </div>
-      </Col>
-      
-    </Row>
+            </Col> */}
+          
+
+
+
   </Tabs.TabPane>
 
 <Tabs.TabPane tab="Calendar" key="2">
