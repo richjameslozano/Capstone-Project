@@ -76,116 +76,123 @@ const PendingAccounts = () => {
   };
 
   // FRONTEND
-    const handleApprove = async () => {
-    const auth = getAuth();
-
-    try {
-      await Promise.all(
-        selectedRequests.map(async (requestId) => {
-          const requestRef = doc(db, "pendingaccounts", requestId);
-          const requestSnapshot = await getDoc(requestRef);
-          const requestData = requestSnapshot.data();
-
-          if (!requestData) {
-
-            return;
-          }
-
-          // Check if user already exists in 'accounts' collection by email
-          const accountsRef = collection(db, "accounts");
-          const q = query(accountsRef, where("email", "==", requestData.email));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-
-            return;
-          }
-
-          // Extract password before saving to 'accounts'
-          const { password, ...restData } = requestData;
-
-          // Create a Firestore doc in 'accounts' without password and UID for now
-          const newAccountRef = doc(accountsRef); 
-          await setDoc(newAccountRef, {
-            ...restData,
-            uid: "", // UID will be set after user registers password
-            status: "approved",
-            approvedAt: new Date(),
-          });
-
-          // Send email notification
-          await sendEmailNotification({
-            to: requestData.email,
-            name: requestData.name,
-            status: "approved",
-          });
-
-          // Remove the document from the 'pendingaccounts' collection
-          await deleteDoc(requestRef);
-        })
-      );
-
-      notification.success({
-        message: "Requests Approved",
-        description: "The selected account requests have been approved and moved to the accounts collection.",
-      });
-
-      setModalMessage("Account added successfully!");
-      setIsNotificationVisible(true);
-
-      // Remove approved requests from UI
-      setRequests((prevRequests) =>
-        prevRequests.filter((request) => !selectedRequests.includes(request.id))
-      );
-      setSelectedRequests([]); // Clear selected rows
-
-    } catch (error) {
-
-      notification.error({
-        message: "Error",
-        description: "Failed to approve the selected requests.",
-      });
-    }
-  };
-
-  // BACKEND
   //   const handleApprove = async () => {
+  //   const auth = getAuth();
+
   //   try {
-  //     const response = await fetch("http://localhost:5000/account/approve", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ requestIds: selectedRequests }),
-  //     });
+  //     await Promise.all(
+  //       selectedRequests.map(async (requestId) => {
+  //         const requestRef = doc(db, "pendingaccounts", requestId);
+  //         const requestSnapshot = await getDoc(requestRef);
+  //         const requestData = requestSnapshot.data();
 
-  //     const data = await response.json();
+  //         if (!requestData) {
 
-  //     if (!response.ok) {
-  //       notification.error({
-  //         message: "Error",
-  //         description: data.error || "Failed to approve the selected requests.",
-  //       });
-  //       return;
-  //     }
+  //           return;
+  //         }
+
+  //         // Check if user already exists in 'accounts' collection by email
+  //         const accountsRef = collection(db, "accounts");
+  //         const q = query(accountsRef, where("email", "==", requestData.email));
+  //         const querySnapshot = await getDocs(q);
+  //         if (!querySnapshot.empty) {
+
+  //           return;
+  //         }
+
+  //         // Extract password before saving to 'accounts'
+  //         const { password, ...restData } = requestData;
+
+  //         // Create a Firestore doc in 'accounts' without password and UID for now
+  //         const newAccountRef = doc(accountsRef); 
+  //         await setDoc(newAccountRef, {
+  //           ...restData,
+  //           uid: "", // UID will be set after user registers password
+  //           status: "approved",
+  //           approvedAt: new Date(),
+  //         });
+
+  //         // Send email notification
+  //         await sendEmailNotification({
+  //           to: requestData.email,
+  //           name: requestData.name,
+  //           status: "approved",
+  //         });
+
+  //         // Remove the document from the 'pendingaccounts' collection
+  //         await deleteDoc(requestRef);
+  //       })
+  //     );
 
   //     notification.success({
   //       message: "Requests Approved",
-  //       description: data.message || "Selected account requests have been approved.",
+  //       description: "The selected account requests have been approved and moved to the accounts collection.",
   //     });
 
-  //     setModalMessage("Account(s) approved successfully!");
+  //     setModalMessage("Account added successfully!");
   //     setIsNotificationVisible(true);
 
-  //     // Update UI
-  //     setRequests(prev => prev.filter(req => !selectedRequests.includes(req.id)));
-  //     setSelectedRequests([]);
+  //     // Remove approved requests from UI
+  //     setRequests((prevRequests) =>
+  //       prevRequests.filter((request) => !selectedRequests.includes(request.id))
+  //     );
+  //     setSelectedRequests([]); // Clear selected rows
 
   //   } catch (error) {
-  //     console.error("Error approving request: ", error);
+
   //     notification.error({
-  //       message: "Network Error",
-  //       description: "Could not connect to the approval server.",
+  //       message: "Error",
+  //       description: "Failed to approve the selected requests.",
   //     });
   //   }
   // };
+
+  // BACKEND
+   const handleApprove = async () => {
+    try {
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName") || "Admin";
+
+      const response = await fetch("https://webnuls.onrender.com/account/approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          requestIds: selectedRequests,
+          userId,
+          userName,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        notification.error({
+          message: "Error",
+          description: data.error || "Failed to approve the selected requests.",
+        });
+        return;
+      }
+
+      notification.success({
+        message: "Requests Approved",
+        description: data.message || "Selected account requests have been approved.",
+      });
+
+      setModalMessage("Account(s) approved successfully!");
+      setIsNotificationVisible(true);
+
+      // Update UI
+      setRequests(prev => prev.filter(req => !selectedRequests.includes(req.id)));
+      setSelectedRequests([]);
+
+    } catch (error) {
+      console.error("Error approving request: ", error);
+      notification.error({
+        message: "Network Error",
+        description: "Could not connect to the approval server.",
+      });
+    }
+  };
   
   const handleReject = async () => {
     try {

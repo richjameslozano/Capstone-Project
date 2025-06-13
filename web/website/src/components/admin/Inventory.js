@@ -33,6 +33,7 @@ import { saveAs } from 'file-saver';
 import 'jspdf-autotable';
 import dayjs from 'dayjs';
 import StockLog from '../customs/StockLog.js'
+import axios from "axios";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -385,102 +386,188 @@ const openFullEditModal = (record) => {
   setIsFullEditModalVisible(true);
 };
 
+
+// FRONTEND
+// const handleFullUpdate = async (values) => {
+//   try {
+//     if (!editingItem || !editingItem.docId) {
+//       console.error("No item selected or docId missing.");
+//       return;
+//     }
+
+//     // Sanitize itemName and itemDetails (trim whitespace, ensure non-empty strings)
+//     const sanitizedItemName = values.itemName.trim();
+//     const sanitizedItemDetails = values.itemDetails.trim();
+
+//     if (!sanitizedItemName || !sanitizedItemDetails) {
+//       console.warn("❌ Item Name and Item Details are required.");
+//       return;
+//     }
+
+//     // Sanitize criticalLevel (ensure it's a number and >= 1)
+//    const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel), 1);
+
+
+//     // Sanitize category to ensure it's valid
+//     const validCategories = ["Glasswares", "Equipment", "Materials", "Chemical", "Reagent"];
+//     if (!validCategories.includes(values.category)) {
+//       console.warn(`❌ Invalid category: ${values.category}`);
+//       return;
+//     }
+
+//     const sanitizedLabRoom = values.labRoom ? values.labRoom.toString().padStart(4, '0') : null;
+
+//     // Handle condition (Good, Defect, Damage)
+//     const sanitizedCondition = {
+//       Good: Number(values.condition?.Good) || 0,
+//       Defect: Number(values.condition?.Defect) || 0,
+//       Damage: Number(values.condition?.Damage) || 0,
+//       Lost: Number(values.condition?.Lost) || 0,
+//     };
+
+//     // If the category requires condition, set quantity based on Good stock
+//     let sanitizedQuantity = sanitizedCondition.Good;
+//     if (["Glasswares", "Equipment", "Materials"].includes(values.category)) {
+//       sanitizedQuantity = sanitizedCondition.Good;
+//     }
+
+//     const updatedData = {
+//       itemName: sanitizedItemName,
+//       itemDetails: sanitizedItemDetails,
+//       category: values.category,
+//       department: values.department,
+//       criticalLevel: sanitizedCriticalLevel,
+//       labRoom: sanitizedLabRoom,
+//       status: values.status || "pending", // Default status if not provided
+//       unit: values.unit || null,
+//       condition: sanitizedCondition,
+//       quantity: sanitizedQuantity,
+//     };
+
+//     // Update main inventory doc
+//     const itemRef = doc(db, "inventory", editingItem.docId);
+//     await updateDoc(itemRef, updatedData);
+
+//     // Update labRoom subcollection item if labRoom is valid
+//     if (sanitizedLabRoom) {
+//       const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", sanitizedLabRoom));
+//       const labRoomSnapshot = await getDocs(labRoomQuery);
+
+//       if (!labRoomSnapshot.empty) {
+//         const labRoomDoc = labRoomSnapshot.docs[0];
+//         const labRoomRef = labRoomDoc.ref;
+//         const labRoomItemRef = doc(collection(labRoomRef, "items"), editingItem.itemId);
+//         const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+//         if (labRoomItemSnap.exists()) {
+//           await updateDoc(labRoomItemRef, updatedData);
+//         } else {
+//           console.warn(`⚠️ Item ${editingItem.itemId} not found in labRoom ${sanitizedLabRoom}/items`);
+//         }
+//       } else {
+//         console.warn(`⚠️ No labRoom found with roomNumber "${sanitizedLabRoom}"`);
+//       }
+//     }
+
+//     setDataSource((prevData) =>
+//       prevData.map((item) =>
+//         item.docId === editingItem.docId ? { ...item, ...updatedData } : item
+//       )
+//     );
+
+//     setNotificationMessage("Item updated successfully!");
+//     setIsNotificationVisible(true);
+//     setIsFullEditModalVisible(false);
+//     setIsRowModalVisible(false);
+//     setEditingItem(null);
+//     fullEditForm.resetFields();
+//   } catch (error) {
+//     console.error("Error updating item:", error);
+//     setNotificationMessage("Failed to update item. Please try again.");
+//     setIsNotificationVisible(true);
+//   }
+// };
+
+// BACKEND
 const handleFullUpdate = async (values) => {
   try {
     if (!editingItem || !editingItem.docId) {
-      console.error("No item selected or docId missing.");
+      console.error("❌ No item selected or docId missing.");
+      setNotificationMessage("Item selection error.");
+      setIsNotificationVisible(true);
       return;
     }
 
-    // Sanitize itemName and itemDetails (trim whitespace, ensure non-empty strings)
-    const sanitizedItemName = values.itemName.trim();
-    const sanitizedItemDetails = values.itemDetails.trim();
+    // Basic sanitization
+    const sanitizedItemName = values.itemName?.trim();
+    const sanitizedItemDetails = values.itemDetails?.trim();
+    const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel || 1), 1);
 
     if (!sanitizedItemName || !sanitizedItemDetails) {
-      console.warn("❌ Item Name and Item Details are required.");
+      setNotificationMessage("Item name and details are required.");
+      setIsNotificationVisible(true);
       return;
     }
 
-    // Sanitize criticalLevel (ensure it's a number and >= 1)
-   const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel), 1);
-
-
-    // Sanitize category to ensure it's valid
-    const validCategories = ["Glasswares", "Equipment", "Materials", "Chemical", "Reagent"];
-    if (!validCategories.includes(values.category)) {
-      console.warn(`❌ Invalid category: ${values.category}`);
-      return;
-    }
-
-    const sanitizedLabRoom = values.labRoom ? values.labRoom.toString().padStart(4, '0') : null;
-
-    // Handle condition (Good, Defect, Damage)
-    const sanitizedCondition = {
-      Good: Number(values.condition?.Good) || 0,
-      Defect: Number(values.condition?.Defect) || 0,
-      Damage: Number(values.condition?.Damage) || 0,
-      Lost: Number(values.condition?.Lost) || 0,
-    };
-
-    // If the category requires condition, set quantity based on Good stock
-    let sanitizedQuantity = sanitizedCondition.Good;
-    if (["Glasswares", "Equipment", "Materials"].includes(values.category)) {
-      sanitizedQuantity = sanitizedCondition.Good;
-    }
-
-    const updatedData = {
+    // Construct payload
+    const payload = {
       itemName: sanitizedItemName,
       itemDetails: sanitizedItemDetails,
       category: values.category,
       department: values.department,
       criticalLevel: sanitizedCriticalLevel,
-      labRoom: sanitizedLabRoom,
-      status: values.status || "pending", // Default status if not provided
-      unit: values.unit || null,
-      condition: sanitizedCondition,
-      quantity: sanitizedQuantity,
+      labRoom: values.labRoom,
+      unit: values.unit,
+      status: values.status,
+      condition: {
+        Good: Number(values.condition?.Good || 0),
+        Defect: Number(values.condition?.Defect || 0),
+        Damage: Number(values.condition?.Damage || 0),
+        Lost: Number(values.condition?.Lost || 0),
+      },
     };
 
-    // Update main inventory doc
-    const itemRef = doc(db, "inventory", editingItem.docId);
-    await updateDoc(itemRef, updatedData);
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName") || "User";
 
-    // Update labRoom subcollection item if labRoom is valid
-    if (sanitizedLabRoom) {
-      const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", sanitizedLabRoom));
-      const labRoomSnapshot = await getDocs(labRoomQuery);
+    const response = await axios.post("https://webnuls.onrender.com/update-inventory-full", {
+      values: payload,
+      editingItem,
+      userId,
+      userName,
+    });
 
-      if (!labRoomSnapshot.empty) {
-        const labRoomDoc = labRoomSnapshot.docs[0];
-        const labRoomRef = labRoomDoc.ref;
-        const labRoomItemRef = doc(collection(labRoomRef, "items"), editingItem.itemId);
-        const labRoomItemSnap = await getDoc(labRoomItemRef);
+    if (response.status === 200) {
+      setNotificationMessage("Item updated successfully!");
+      setIsNotificationVisible(true);
 
-        if (labRoomItemSnap.exists()) {
-          await updateDoc(labRoomItemRef, updatedData);
-        } else {
-          console.warn(`⚠️ Item ${editingItem.itemId} not found in labRoom ${sanitizedLabRoom}/items`);
-        }
-      } else {
-        console.warn(`⚠️ No labRoom found with roomNumber "${sanitizedLabRoom}"`);
-      }
+      // Update local state
+      const updatedItem = {
+        ...editingItem,
+        ...payload,
+        quantity: payload.condition.Good, // assumes quantity = Good
+      };
+
+      setDataSource((prev) =>
+        prev.map((item) =>
+          item.docId === editingItem.docId ? updatedItem : item
+        )
+      );
+
+      // Reset UI
+      setIsFullEditModalVisible(false);
+      setIsRowModalVisible(false);
+      setEditingItem(null);
+      fullEditForm.resetFields();
+      
+    } else {
+      setNotificationMessage("Failed to update item.");
+      setIsNotificationVisible(true);
     }
 
-    setDataSource((prevData) =>
-      prevData.map((item) =>
-        item.docId === editingItem.docId ? { ...item, ...updatedData } : item
-      )
-    );
-
-    setNotificationMessage("Item updated successfully!");
-    setIsNotificationVisible(true);
-    setIsFullEditModalVisible(false);
-    setIsRowModalVisible(false);
-    setEditingItem(null);
-    fullEditForm.resetFields();
   } catch (error) {
-    console.error("Error updating item:", error);
-    setNotificationMessage("Failed to update item. Please try again.");
+    console.error("Error in handleFullUpdate:", error);
+    setNotificationMessage("Error updating item. Check console.");
     setIsNotificationVisible(true);
   }
 };
@@ -689,257 +776,257 @@ const printPdf = () => {
 };
 
   // FRONTEND
-   const handleAdd = async (values) => {
-  if (!itemName || !values.department || !itemDetails) {
-    alert("Please fill up the form!");
-    return;
-  }
+  //  const handleAdd = async (values) => {
+  // if (!itemName || !values.department || !itemDetails) {
+  //   alert("Please fill up the form!");
+  //   return;
+  // }
 
-  const trimmedName = itemName.trim();
-  const normalizedInputName = trimmedName.toLowerCase();
-  const normalizedInputDetails = itemDetails.trim().toLowerCase();
-  const normalizedDepartment = values.department.trim().toLowerCase();
+  // const trimmedName = itemName.trim();
+  // const normalizedInputName = trimmedName.toLowerCase();
+  // const normalizedInputDetails = itemDetails.trim().toLowerCase();
+  // const normalizedDepartment = values.department.trim().toLowerCase();
 
-  // Find items with the same name (case-insensitive)
-  const sameNameItems = dataSource.filter(
-    (item) => item.item.toLowerCase().startsWith(normalizedInputName)
-  );
+  // // Find items with the same name (case-insensitive)
+  // const sameNameItems = dataSource.filter(
+  //   (item) => item.item.toLowerCase().startsWith(normalizedInputName)
+  // );
 
-  // Check if same name AND same details AND same department already exists
-  const exactMatch = sameNameItems.find((item) => {
-    const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
-    const itemNameSafe = item.item ? item.item.toLowerCase() : "";
-    const itemDepartmentSafe = item.department ? item.department.trim().toLowerCase() : "";
-    return (
-      itemDetailsSafe === normalizedInputDetails &&
-      itemNameSafe === normalizedInputName &&
-      itemDepartmentSafe === normalizedDepartment
-    );
-  });
+  // // Check if same name AND same details AND same department already exists
+  // const exactMatch = sameNameItems.find((item) => {
+  //   const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
+  //   const itemNameSafe = item.item ? item.item.toLowerCase() : "";
+  //   const itemDepartmentSafe = item.department ? item.department.trim().toLowerCase() : "";
+  //   return (
+  //     itemDetailsSafe === normalizedInputDetails &&
+  //     itemNameSafe === normalizedInputName &&
+  //     itemDepartmentSafe === normalizedDepartment
+  //   );
+  // });
 
-  if (exactMatch) {
-    setNotificationMessage(
-      "An item with the same name, details, and department already exists in the inventory."
-    );
-    setIsNotificationVisible(true);
-    return;
-  }
+  // if (exactMatch) {
+  //   setNotificationMessage(
+  //     "An item with the same name, details, and department already exists in the inventory."
+  //   );
+  //   setIsNotificationVisible(true);
+  //   return;
+  // }
 
-  const itemCategoryPrefixMap = {
-    Chemical: "CHEM",
-    Equipment: "EQP",
-    Reagent: "RGT",
-    Glasswares: "GLS",
-    Materials: "MAT",
-  };
+  // const itemCategoryPrefixMap = {
+  //   Chemical: "CHEM",
+  //   Equipment: "EQP",
+  //   Reagent: "RGT",
+  //   Glasswares: "GLS",
+  //   Materials: "MAT",
+  // };
 
-  const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
-  const formattedItemName = `${baseName}`;
-  const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
+  // const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
+  // const formattedItemName = `${baseName}`;
+  // const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
 
-  const itemCategoryPrefix = itemCategoryPrefixMap[values.category] || "UNK01";
-  const inventoryRef = collection(db, "inventory");
-  const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-  const defaultCriticalDays = 7;
-  let averageDailyUsage = 0;
+  // const itemCategoryPrefix = itemCategoryPrefixMap[values.category] || "UNK01";
+  // const inventoryRef = collection(db, "inventory");
+  // const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
+  // const defaultCriticalDays = 7;
+  // let averageDailyUsage = 0;
 
-  const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
+  // const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
 
-  let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
-  let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-  let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  // let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
+  // let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+  // let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
 
-  // 🔁 Keep trying until we find a unique ID
-  while (!idQuerySnapshot.empty) {
-    ItemCategoryCount++;
-    generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-    idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-  }
+  // // 🔁 Keep trying until we find a unique ID
+  // while (!idQuerySnapshot.empty) {
+  //   ItemCategoryCount++;
+  //   generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+  //   idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  // }
 
-  setItemId(generatedItemId);
+  // setItemId(generatedItemId);
 
  
  
-    const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
-    const expiryDate = values.type === "Fixed"
-      ? null
-      : values.expiryDate
-      ? values.expiryDate.format("YYYY-MM-DD")
-      : null;
+  //   const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
+  //   const expiryDate = values.type === "Fixed"
+  //     ? null
+  //     : values.expiryDate
+  //     ? values.expiryDate.format("YYYY-MM-DD")
+  //     : null;
  
-    const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-    const timestamp = new Date();
+  //   const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+  //   const timestamp = new Date();
  
-    const quantityNumber = Number(values.quantity);
+  //   const quantityNumber = Number(values.quantity);
  
-    const inventoryItem = {
-      itemId: generatedItemId,
-      // itemName,
-      itemName: finalItemName,
-      itemDetails,
-      entryCurrentDate,
-      expiryDate,
-      timestamp,
-      criticalLevel,
-      category: values.category,
-      labRoom: values.labRoom,
-      quantity: Number(values.quantity),
-      department: values.department,
-      type: values.type,
-      status: "Available",
-      ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
-      rawTimestamp: new Date(),
+  //   const inventoryItem = {
+  //     itemId: generatedItemId,
+  //     // itemName,
+  //     itemName: finalItemName,
+  //     itemDetails,
+  //     entryCurrentDate,
+  //     expiryDate,
+  //     timestamp,
+  //     criticalLevel,
+  //     category: values.category,
+  //     labRoom: values.labRoom,
+  //     quantity: Number(values.quantity),
+  //     department: values.department,
+  //     type: values.type,
+  //     status: "Available",
+  //     ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
+  //     rawTimestamp: new Date(),
  
-      ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-        condition: {
-          Good: quantityNumber,
-          Defect: 0,
-          Damage: 0,
-          Lost: 0,
-        },
-      }),
-    };
+  //     ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+  //       condition: {
+  //         Good: quantityNumber,
+  //         Defect: 0,
+  //         Damage: 0,
+  //         Lost: 0,
+  //       },
+  //     }),
+  //   };
  
-    const encryptedData = CryptoJS.AES.encrypt(
-      JSON.stringify(inventoryItem),
-      SECRET_KEY
-    ).toString();
+  //   const encryptedData = CryptoJS.AES.encrypt(
+  //     JSON.stringify(inventoryItem),
+  //     SECRET_KEY
+  //   ).toString();
    
-    const newItem = {
-      id: count + 1,
-      itemId: generatedItemId,
-      // item: itemName,
-      item: finalItemName,
-      itemDetails: itemDetails,
-      entryDate: entryCurrentDate,
-      expiryDate: expiryDate,
-      qrCode: encryptedData,
-      ...inventoryItem,
-    };
+  //   const newItem = {
+  //     id: count + 1,
+  //     itemId: generatedItemId,
+  //     // item: itemName,
+  //     item: finalItemName,
+  //     itemDetails: itemDetails,
+  //     entryDate: entryCurrentDate,
+  //     expiryDate: expiryDate,
+  //     qrCode: encryptedData,
+  //     ...inventoryItem,
+  //   };
  
-     try {
+  //    try {
  
-      const inventoryDocRef = await addDoc(collection(db, "inventory"), {
-        ...inventoryItem,
-        qrCode: encryptedData,
-      });
+  //     const inventoryDocRef = await addDoc(collection(db, "inventory"), {
+  //       ...inventoryItem,
+  //       qrCode: encryptedData,
+  //     });
  
-      const userId = localStorage.getItem("userId");
-      const userName = localStorage.getItem("userName") || "User";
+  //     const userId = localStorage.getItem("userId");
+  //     const userName = localStorage.getItem("userName") || "User";
  
-      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
-        action: `Added new item (${finalItemName}) to inventory`,
-        userName: userName || "User",
-        timestamp: serverTimestamp(),
-      });
-
-      await db.collection("allactivitylog").add({
-        action: `Added new item (${finalItemName}) to inventory`,
-        userName: userName || "User",
-        timestamp: serverTimestamp(),
-      });
-
-      setNotificationMessage("Item successfully added!");
-      setIsNotificationVisible(true);
-
-      await addDoc(collection(inventoryDocRef, "stockLog"), {
-        date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
-        noOfItems: quantityNumber,
-        deliveryNumber: "DLV-00001",
-        createdAt: serverTimestamp(),
-        ...(expiryDate && { expiryDate }),
-      });
- 
-      // 🔽 Check if labRoom with the given room number already exists
-      const labRoomQuery = query(
-        collection(db, "labRoom"),
-        where("roomNumber", "==", values.labRoom)
-      );
-      const labRoomSnapshot = await getDocs(labRoomQuery);
- 
-      let labRoomRef;
- 
-      if (labRoomSnapshot.empty) {
-        // 🔽 Create new labRoom document with generated ID
-        labRoomRef = await addDoc(collection(db, "labRoom"), {
-          roomNumber: values.labRoom,
-          createdAt: new Date(),
-        });
- 
-      } else {
-        // 🔽 Use existing labRoom document
-        labRoomRef = labRoomSnapshot.docs[0].ref;
-      }
- 
-      // 🔽 Add item to the labRoom's subcollection
-      await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
-        ...inventoryItem,
-        qrCode: encryptedData,
-        roomNumber: values.labRoom,
-      });
- 
-      // 🔽 Fetch all items under this labRoom
-      const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
- 
-      // 🔽 Generate encrypted QR code with labRoom ID only
-      const labRoomQRData = CryptoJS.AES.encrypt(
-        JSON.stringify({
-          labRoomId: labRoomRef.id,
-        }),
-        SECRET_KEY
-      ).toString();
- 
-      // 🔽 Update labRoom document with the generated QR code
-      await updateDoc(labRoomRef, {
-        qrCode: labRoomQRData,
-        updatedAt: new Date(),
-      });
- 
-      setDataSource([...dataSource, newItem]);
-      setLogRefreshKey(prev => prev + 1);
-      setCount(count + 1);
-      form.resetFields();
-      setItemName("");
-      setItemDetails("")
-      setItemId("");
-      setIsModalVisible(false);
- 
-    } catch (error) {
-      console.error("Error adding document to Firestore:", error);
-    }
-  };
-
-  // BACKEND ADD ITEM
-  // const handleAdd = async (values) => {
-  //   try {
-  //     const response = await fetch("http://localhost:5000/add-inventory", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         ...values,
-  //         itemName,
-  //         itemDetails,
-  //         userId: localStorage.getItem("userId"),
-  //         userName: localStorage.getItem("userName"),
-  //       }),
+  //     await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+  //       action: `Added new item (${finalItemName}) to inventory`,
+  //       userName: userName || "User",
+  //       timestamp: serverTimestamp(),
   //     });
 
-  //     const data = await response.json();
+  //     await db.collection("allactivitylog").add({
+  //       action: `Added new item (${finalItemName}) to inventory`,
+  //       userName: userName || "User",
+  //       timestamp: serverTimestamp(),
+  //     });
 
-  //     if (response.ok) {
-  //       setNotificationMessage("Item successfully added!");
-  //       setIsNotificationVisible(true);
-  //       setItemName("");
-  //       setItemDetails("");
-  //       form.resetFields();
-        
+  //     setNotificationMessage("Item successfully added!");
+  //     setIsNotificationVisible(true);
+
+  //     await addDoc(collection(inventoryDocRef, "stockLog"), {
+  //       date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
+  //       noOfItems: quantityNumber,
+  //       deliveryNumber: "DLV-00001",
+  //       createdAt: serverTimestamp(),
+  //       ...(expiryDate && { expiryDate }),
+  //     });
+ 
+  //     // 🔽 Check if labRoom with the given room number already exists
+  //     const labRoomQuery = query(
+  //       collection(db, "labRoom"),
+  //       where("roomNumber", "==", values.labRoom)
+  //     );
+  //     const labRoomSnapshot = await getDocs(labRoomQuery);
+ 
+  //     let labRoomRef;
+ 
+  //     if (labRoomSnapshot.empty) {
+  //       // 🔽 Create new labRoom document with generated ID
+  //       labRoomRef = await addDoc(collection(db, "labRoom"), {
+  //         roomNumber: values.labRoom,
+  //         createdAt: new Date(),
+  //       });
+ 
   //     } else {
-  //       alert(data.error || "Failed to add item.");
+  //       // 🔽 Use existing labRoom document
+  //       labRoomRef = labRoomSnapshot.docs[0].ref;
   //     }
+ 
+  //     // 🔽 Add item to the labRoom's subcollection
+  //     await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
+  //       ...inventoryItem,
+  //       qrCode: encryptedData,
+  //       roomNumber: values.labRoom,
+  //     });
+ 
+  //     // 🔽 Fetch all items under this labRoom
+  //     const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+ 
+  //     // 🔽 Generate encrypted QR code with labRoom ID only
+  //     const labRoomQRData = CryptoJS.AES.encrypt(
+  //       JSON.stringify({
+  //         labRoomId: labRoomRef.id,
+  //       }),
+  //       SECRET_KEY
+  //     ).toString();
+ 
+  //     // 🔽 Update labRoom document with the generated QR code
+  //     await updateDoc(labRoomRef, {
+  //       qrCode: labRoomQRData,
+  //       updatedAt: new Date(),
+  //     });
+ 
+  //     setDataSource([...dataSource, newItem]);
+  //     setLogRefreshKey(prev => prev + 1);
+  //     setCount(count + 1);
+  //     form.resetFields();
+  //     setItemName("");
+  //     setItemDetails("")
+  //     setItemId("");
+  //     setIsModalVisible(false);
+ 
   //   } catch (error) {
-  //     console.error("Error calling API:", error);
+  //     console.error("Error adding document to Firestore:", error);
   //   }
   // };
+
+  const handleAdd = async (values) => {
+    try {
+      const response = await fetch("https://webnuls.onrender.com/add-inventory", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...values,
+          itemName,
+          itemDetails,
+          userId: localStorage.getItem("userId"),
+          userName: localStorage.getItem("userName"),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setNotificationMessage("Item successfully added!");
+        setIsNotificationVisible(true);
+        setIsModalVisible(false);
+        setItemName("");
+        setItemDetails("");
+        form.resetFields();
+        
+      } else {
+        alert(data.error || "Failed to add item.");
+      }
+    } catch (error) {
+      console.error("Error calling API:", error);
+    }
+  };
 
   const editItem = (record, clearFields = true) => {
   editForm.resetFields();
@@ -965,152 +1052,213 @@ const printPdf = () => {
   setIsEditModalVisible(true);
 };
 
-const updateItem = async (values) => {
-  console.log("✅ Raw incoming values:", values);
+// FRONTEND
+// const updateItem = async (values) => {
+//   console.log("✅ Raw incoming values:", values);
 
-  const isChemicalOrReagent =
-    editingItem.category === "Chemical" || editingItem.category === "Reagent";
+//   const isChemicalOrReagent =
+//     editingItem.category === "Chemical" || editingItem.category === "Reagent";
 
-  // Sanitize quantity
-  const addedQuantity = Number(values.quantity);
-  if (isNaN(addedQuantity) || addedQuantity < 0) {
-    console.warn("❌ Invalid quantity value.");
-    return;
-  }
+//   // Sanitize quantity
+//   const addedQuantity = Number(values.quantity);
+//   if (isNaN(addedQuantity) || addedQuantity < 0) {
+//     console.warn("❌ Invalid quantity value.");
+//     return;
+//   }
 
-  // Ensure expiryDate is valid
-  let sanitizedExpiryDate = null;
-  if (isChemicalOrReagent && values.expiryDate) {
-    sanitizedExpiryDate = values.expiryDate.isValid() ? values.expiryDate.format("YYYY-MM-DD") : null;
-  }
+//   // Ensure expiryDate is valid
+//   let sanitizedExpiryDate = null;
+//   if (isChemicalOrReagent && values.expiryDate) {
+//     sanitizedExpiryDate = values.expiryDate.isValid() ? values.expiryDate.format("YYYY-MM-DD") : null;
+//   }
 
-  try {
-    const snapshot = await getDocs(collection(db, "inventory"));
+//   try {
+//     const snapshot = await getDocs(collection(db, "inventory"));
 
-    snapshot.forEach(async (docItem) => {
-      const data = docItem.data();
+//     snapshot.forEach(async (docItem) => {
+//       const data = docItem.data();
 
-      if (data.itemId === editingItem.itemId) {
-        const inventoryId = docItem.id;
-        const itemRef = doc(db, "inventory", inventoryId);
-        const existingLabRoom = data.labRoom;
+//       if (data.itemId === editingItem.itemId) {
+//         const inventoryId = docItem.id;
+//         const itemRef = doc(db, "inventory", inventoryId);
+//         const existingLabRoom = data.labRoom;
 
-        if (!existingLabRoom) {
-          console.warn("❌ Item has no labRoom, cannot update labRoom/items subcollection.");
-          return;
-        }
+//         if (!existingLabRoom) {
+//           console.warn("❌ Item has no labRoom, cannot update labRoom/items subcollection.");
+//           return;
+//         }
 
-        // Sanitize and compute new condition
-        const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
-        const newCondition = {
-          Good: prevCondition.Good + addedQuantity,
-          Defect: prevCondition.Defect,
-          Damage: prevCondition.Damage,
-          Lost: prevCondition.Lost,
-        };
+//         // Sanitize and compute new condition
+//         const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0 };
+//         const newCondition = {
+//           Good: prevCondition.Good + addedQuantity,
+//           Defect: prevCondition.Defect,
+//           Damage: prevCondition.Damage,
+//           Lost: prevCondition.Lost,
+//         };
 
-        // Ensure quantity is valid and sanitize it
-        const prevQuantity = Number(data.quantity) || 0;
-        const newQuantity = prevQuantity + addedQuantity;
+//         // Ensure quantity is valid and sanitize it
+//         const prevQuantity = Number(data.quantity) || 0;
+//         const newQuantity = prevQuantity + addedQuantity;
 
-        if (newQuantity < 0) {
-          console.warn("❌ Quantity cannot be negative.");
-          return;
-        }
+//         if (newQuantity < 0) {
+//           console.warn("❌ Quantity cannot be negative.");
+//           return;
+//         }
 
-        const updatedData = {
-          labRoom: existingLabRoom,
-          quantity: newQuantity,
-          condition: newCondition,
-        };
+//         const updatedData = {
+//           labRoom: existingLabRoom,
+//           quantity: newQuantity,
+//           condition: newCondition,
+//         };
 
-        if (sanitizedExpiryDate) {
-          updatedData.expiryDate = sanitizedExpiryDate;
-        }
+//         if (sanitizedExpiryDate) {
+//           updatedData.expiryDate = sanitizedExpiryDate;
+//         }
 
-        // 🔄 Update inventory document
-        await updateDoc(itemRef, updatedData);
+//         // 🔄 Update inventory document
+//         await updateDoc(itemRef, updatedData);
 
-        setIsNotificationVisible(true);
+//         setIsNotificationVisible(true);
+//         setNotificationMessage("Item updated successfully!");
+
+//           const userId = localStorage.getItem("userId");
+//           const userName = localStorage.getItem("userName") || "User";
+
+//           await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+//             action: `Item (${data.itemName}) updated`,
+//             userName: userName || "User",
+//             timestamp: serverTimestamp(),
+//           });
+
+
+//         const updatedItem = {
+//           ...editingItem,
+//           ...updatedData,
+//         };
+
+//         setDataSource((prevData) =>
+//           prevData.map((item) => (item.id === editingItem.id ? updatedItem : item))
+//         );
+
+//         // 🔄 Update labRoom subcollection
+//         const roomNumber = existingLabRoom.toString().padStart(4, "0");
+//         const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
+//         const labRoomSnapshot = await getDocs(labRoomQuery);
+
+//         if (!labRoomSnapshot.empty) {
+//           const labRoomDoc = labRoomSnapshot.docs[0];
+//           const labRoomRef = labRoomDoc.ref;
+
+//           const labRoomItemRef = doc(collection(labRoomRef, "items"), data.itemId);
+//           const labRoomItemSnap = await getDoc(labRoomItemRef);
+
+//           if (labRoomItemSnap.exists()) {
+//             await updateDoc(labRoomItemRef, updatedData);
+
+//             // 🧾 Stock log logic
+//             const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
+//             const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
+//             const latestSnapshot = await getDocs(latestLogQuery);
+
+//             let newDeliveryNumber = "DLV-00001";
+//             if (!latestSnapshot.empty) {
+//               const lastDeliveryNumber = latestSnapshot.docs[0].data().deliveryNumber;
+//               const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
+//               if (match) {
+//                 const nextNum = (parseInt(match[1], 10) + 1).toString().padStart(5, "0");
+//                 newDeliveryNumber = `DLV-${nextNum}`;
+//               }
+//             }
+
+//             const logPayload = {
+//               date: new Date().toISOString().split("T")[0],
+//               deliveryNumber: newDeliveryNumber,
+//               createdAt: serverTimestamp(),
+//               noOfItems: addedQuantity,
+//               ...(sanitizedExpiryDate && {
+//                 expiryDate: sanitizedExpiryDate,
+//               }),
+//             };
+
+//             await addDoc(stockLogRef, logPayload);
+//           } else {
+//             console.warn(`⚠️ Item ${data.itemId} not found in labRoom`);
+//           }
+//         } else {
+//           console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
+//         }
+
+//         setIsEditModalVisible(false);
+//         setIsRowModalVisible(false);
+//         setEditingItem(null);
+//         form.resetFields();
+//       }
+//     });
+//   } catch (error) {
+//     console.error("Error updating document in Firestore:", error);
+//   }
+// };
+
+// BACKEND
+ const updateItem = async (values) => {
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName") || "User";
+
+    if (!editingItem || !editingItem.itemId) {
+      setNotificationMessage("Failed Editing Item");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    const addedQuantity = Number(values.quantity);
+    if (isNaN(addedQuantity) || addedQuantity < 0) {
+      setNotificationMessage("Invalid Quantity!");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    const expiryDate =
+      values.expiryDate?.isValid?.() ? values.expiryDate.format("YYYY-MM-DD") : null;
+
+    try {
+      const response = await axios.post("https://webnuls.onrender.com/update-inventory-item", {
+        userId,
+        userName,
+        values: {
+          quantity: addedQuantity,
+          expiryDate,
+          editingItem, // includes itemId, category, labRoom, etc.
+        },
+      });
+
+      if (response.status === 200) {
         setNotificationMessage("Item updated successfully!");
-
-          const userId = localStorage.getItem("userId");
-          const userName = localStorage.getItem("userName") || "User";
-
-          await addDoc(collection(db, `accounts/${userId}/activitylog`), {
-            action: `Item (${data.itemName}) updated`,
-            userName: userName || "User",
-            timestamp: serverTimestamp(),
-          });
-
+        setIsNotificationVisible(true);
 
         const updatedItem = {
           ...editingItem,
-          ...updatedData,
+          quantity: editingItem.quantity + addedQuantity,
+          ...(expiryDate && { expiryDate }),
         };
 
-        setDataSource((prevData) =>
-          prevData.map((item) => (item.id === editingItem.id ? updatedItem : item))
+        setDataSource((prev) =>
+          prev.map((item) => (item.itemId === editingItem.itemId ? updatedItem : item))
         );
-
-        // 🔄 Update labRoom subcollection
-        const roomNumber = existingLabRoom.toString().padStart(4, "0");
-        const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", roomNumber));
-        const labRoomSnapshot = await getDocs(labRoomQuery);
-
-        if (!labRoomSnapshot.empty) {
-          const labRoomDoc = labRoomSnapshot.docs[0];
-          const labRoomRef = labRoomDoc.ref;
-
-          const labRoomItemRef = doc(collection(labRoomRef, "items"), data.itemId);
-          const labRoomItemSnap = await getDoc(labRoomItemRef);
-
-          if (labRoomItemSnap.exists()) {
-            await updateDoc(labRoomItemRef, updatedData);
-
-            // 🧾 Stock log logic
-            const stockLogRef = collection(db, "inventory", inventoryId, "stockLog");
-            const latestLogQuery = query(stockLogRef, orderBy("createdAt", "desc"), limit(1));
-            const latestSnapshot = await getDocs(latestLogQuery);
-
-            let newDeliveryNumber = "DLV-00001";
-            if (!latestSnapshot.empty) {
-              const lastDeliveryNumber = latestSnapshot.docs[0].data().deliveryNumber;
-              const match = lastDeliveryNumber?.match(/DLV-(\d+)/);
-              if (match) {
-                const nextNum = (parseInt(match[1], 10) + 1).toString().padStart(5, "0");
-                newDeliveryNumber = `DLV-${nextNum}`;
-              }
-            }
-
-            const logPayload = {
-              date: new Date().toISOString().split("T")[0],
-              deliveryNumber: newDeliveryNumber,
-              createdAt: serverTimestamp(),
-              noOfItems: addedQuantity,
-              ...(sanitizedExpiryDate && {
-                expiryDate: sanitizedExpiryDate,
-              }),
-            };
-
-            await addDoc(stockLogRef, logPayload);
-          } else {
-            console.warn(`⚠️ Item ${data.itemId} not found in labRoom`);
-          }
-        } else {
-          console.warn(`⚠️ No labRoom found with roomNumber "${roomNumber}"`);
-        }
 
         setIsEditModalVisible(false);
         setIsRowModalVisible(false);
         setEditingItem(null);
         form.resetFields();
+
+      } else {
+        setNotificationMessage("Failed to update Item!");
+        setIsNotificationVisible(true);
       }
-    });
-  } catch (error) {
-    console.error("Error updating document in Firestore:", error);
-  }
-};
+    } catch (err) {
+      console.error("Backend update failed:", err);
+    }
+  };
 
 useEffect(() => {
   if (isEditModalVisible) {
