@@ -56,28 +56,47 @@ const MostRequestedItemsBarChart = () => {
     fetchAIBarData();
   }, []);
 
-  const processData = (data, count) => {
-    const sorted = Object.entries(data)
-      .sort(([, a], [, b]) => b - a)
-      .slice(0, count);
+const generateBarColors = (count) => {
+  const palette = [
+    '#0f3c4c',
+    '#165a72',
+    '#2596be',
+    '#66b6d2',
+    '#92cbdf',
+    '#e6b01d',
+    '#ffc420',
+    '#ffe290',
+    '#ff924d',
+    '#ffb382',
+  ];
 
-    const labels = sorted.map(([label]) => label);
-    const values = sorted.map(([, value]) => value);
+  return Array.from({ length: count }, (_, i) => palette[i % palette.length]);
+};
 
-    setBarData({
-      labels,
-      datasets: [
-        {
-          label: "Requests",
-          data: values,
-          backgroundColor: "#1e88e5",
-          borderRadius: 4,
-          barThickness: 18,
-          borderSkipped: false,
-        },
-      ],
-    });
-  };
+const processData = (data, count) => {
+  const sorted = Object.entries(data)
+    .sort(([, a], [, b]) => b - a)
+    .slice(0, count);
+
+  const labels = sorted.map(([label]) => label);
+  const values = sorted.map(([, value]) => value);
+
+  setBarData({
+    labels,
+    datasets: [
+      {
+        label: "Requests",
+        data: values,
+        backgroundColor: generateBarColors(values.length),
+        borderRadius: 4,
+        barThickness: 18,
+        borderSkipped: false,
+      },
+    ],
+  });
+};
+
+
 
   const handleExportCSV = () => {
     if (!barData) return;
