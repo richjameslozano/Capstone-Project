@@ -114,7 +114,16 @@ const RequisitionReqestModal = ({
               Ask Approval
             </Button>
           ),
-          <Button key="approve" type="primary" onClick={handleApprove}>
+          // <Button key="approve" type="primary" onClick={handleApprove}>
+          //   {allItemsChecked ? "Approve" : "Next"}
+          // </Button>
+
+          <Button
+            key="approve"
+            type="primary"
+            onClick={handleApprove}
+            disabled={selectedRequest?.approvalRequested === false}
+          >
             {allItemsChecked ? "Approve" : "Next"}
           </Button>
         ]}
