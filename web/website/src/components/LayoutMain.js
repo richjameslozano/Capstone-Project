@@ -595,8 +595,8 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
             {/* Superadmin-only routes */}
             <Route element={<ProtectedRoute allowedRoles={["super-admin"]} />}>
+              <Route path="/accounts" element={<AccountManagement />} />
               <Route path="/pending-accounts" element={<PendingAccounts />} />
-              <Route path="/approval-request" element={<ApprovalRequest/>} />
             </Route>
 
             {/* Admin-only routes */}
@@ -612,7 +612,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />
-              <Route path="/accounts" element={<AccountManagement />} />
+              <Route path="/approval-request" element={<ApprovalRequest/>} />
             </Route>
 
             <Route element={<ProtectedRoute allowedRoles={["user"]} />}>
