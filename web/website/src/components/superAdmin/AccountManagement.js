@@ -314,168 +314,183 @@ const AccountManagement = () => {
   };
   
   // FRONTEND
+  // const handleSave = async (values) => {
+  //   const capitalizeWords = (str) =>
+  //     str
+  //       .trim()
+  //       .toLowerCase()
+  //       .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  //   // Sanitize input by trimming extra spaces and lowering the case
+  //   const sanitizedValues = {
+  //     ...values,
+  //     // name: values.name.trim().toLowerCase(),
+  //     name: capitalizeWords(values.name),
+  //     email: values.email.trim().toLowerCase(),
+  //   };
+
+  //   // Validate email domain
+  //   const email = sanitizedValues.email;
+  //   const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
+  //   const isValidEmail = validDomains.some(domain => email.endsWith(domain));
+
+  //   if (!isValidEmail) {
+  //     setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+
+  //   // Check if the employeeId already exists in the 'accounts' collection
+  //   const employeeQuery = query(
+  //     collection(db, "accounts"),
+  //     where("employeeId", "==", sanitizedValues.employeeId.trim())
+  //   );
+    
+  //   const employeeSnapshot = await getDocs(employeeQuery);
+    
+  //   if (!employeeSnapshot.empty && employeeSnapshot.docs[0].id !== (editingAccount?.id || null)) {
+  //     setModalMessage("This employee ID is already in use!");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+  
+  //   // Check for duplicates, ensuring all names and emails are unique
+  //   const isDuplicate = accounts.some(
+  //     (acc) =>
+  //       acc.id !== (editingAccount?.id || null) &&
+  //       (acc.name.toLowerCase() === sanitizedValues.name ||
+  //         acc.email.toLowerCase() === sanitizedValues.email)
+  //   );
+  
+  //   if (isDuplicate) {
+  //     setModalMessage("An account with the same name or email already exists!");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+  
+  //   try {
+  //     if (editingAccount) {
+  //       // If editing an existing account
+  //       const accountRef = doc(db, "accounts", editingAccount.id);
+  //       await updateDoc(accountRef, sanitizedValues);
+  
+  //       const updatedAccounts = accounts.map((acc) =>
+  //         acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
+  //       );
+  
+  //       setAccounts(updatedAccounts);
+  //       setModalMessage("Account updated successfully!");
+        
+  //     } else {
+  //       // If adding a new account
+  //       const docRef = await addDoc(collection(db, "accounts"), sanitizedValues);
+  //       const newAccount = { ...sanitizedValues, id: docRef.id };
+
+  //       await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify({
+  //           to: email.trim().toLowerCase(),
+  //           subject: "Account Registration - Pending Approval",
+  //           text: `Hi ${sanitizedValues.name},\n\nYour account has been added by the ITSO. You may now login your account. \n\nRegards,\nNU MOA ITSO Team`,
+  //           html: `<p>Hi ${sanitizedValues.name},</p><p>Your account has been added by the ITSO. You may now login your account.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+  //         }),
+  //       });
+  
+  //       setAccounts([...accounts, newAccount]);
+  //       setModalMessage("Account added successfully!");
+  //       setIsNotificationVisible(true);
+  //     }
+  
+  //     setIsNotificationVisible(true);
+
+  //   } catch (error) {
+
+  //     setModalMessage("Failed to update account.");
+  //     setIsNotificationVisible(true);
+  //   }
+  
+  //   setIsModalVisible(false);
+  // };  
+
+    // BACKEND
   const handleSave = async (values) => {
+    // Sanitize input locally
+    // const sanitizedValues = {
+    //   ...values,
+    //   name: values.name.trim().toLowerCase(),
+    //   email: values.email.trim().toLowerCase(),
+    //   employeeId: values.employeeId.trim(),
+    // };
+
     const capitalizeWords = (str) =>
       str
         .trim()
         .toLowerCase()
         .replace(/\b\w/g, (char) => char.toUpperCase());
 
-    // Sanitize input by trimming extra spaces and lowering the case
+    // Sanitize and format input
     const sanitizedValues = {
       ...values,
       // name: values.name.trim().toLowerCase(),
       name: capitalizeWords(values.name),
       email: values.email.trim().toLowerCase(),
+      employeeId: values.employeeId.trim(),
     };
 
-    // Validate email domain
-    const email = sanitizedValues.email;
+    // Validate email domain client-side early for quick feedback
     const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
-    const isValidEmail = validDomains.some(domain => email.endsWith(domain));
-
-    if (!isValidEmail) {
+    if (!validDomains.some(domain => sanitizedValues.email.endsWith(domain))) {
       setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
       setIsNotificationVisible(true);
       return;
     }
 
-    // Check if the employeeId already exists in the 'accounts' collection
-    const employeeQuery = query(
-      collection(db, "accounts"),
-      where("employeeId", "==", sanitizedValues.employeeId.trim())
-    );
-    
-    const employeeSnapshot = await getDocs(employeeQuery);
-    
-    if (!employeeSnapshot.empty && employeeSnapshot.docs[0].id !== (editingAccount?.id || null)) {
-      setModalMessage("This employee ID is already in use!");
-      setIsNotificationVisible(true);
-      return;
-    }
-  
-    // Check for duplicates, ensuring all names and emails are unique
-    const isDuplicate = accounts.some(
-      (acc) =>
-        acc.id !== (editingAccount?.id || null) &&
-        (acc.name.toLowerCase() === sanitizedValues.name ||
-          acc.email.toLowerCase() === sanitizedValues.email)
-    );
-  
-    if (isDuplicate) {
-      setModalMessage("An account with the same name or email already exists!");
-      setIsNotificationVisible(true);
-      return;
-    }
-  
     try {
+      const response = await fetch("https://webnuls.onrender.com/account/save", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingAccount?.id || undefined,  // send if editing, else undefined
+          ...sanitizedValues,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Show error message from backend
+        setModalMessage(data.error || "Failed to save account.");
+        setIsNotificationVisible(true);
+        return;
+      }
+
       if (editingAccount) {
-        // If editing an existing account
-        const accountRef = doc(db, "accounts", editingAccount.id);
-        await updateDoc(accountRef, sanitizedValues);
-  
-        const updatedAccounts = accounts.map((acc) =>
+        // Update account in local state
+        const updatedAccounts = accounts.map(acc =>
           acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
         );
-  
         setAccounts(updatedAccounts);
-        setModalMessage("Account updated successfully!");
-        
-      } else {
-        // If adding a new account
-        const docRef = await addDoc(collection(db, "accounts"), sanitizedValues);
-        const newAccount = { ...sanitizedValues, id: docRef.id };
+        setModalMessage(data.message || "Account updated successfully!");
 
-        await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: email.trim().toLowerCase(),
-            subject: "Account Registration - Pending Approval",
-            text: `Hi ${sanitizedValues.name},\n\nYour account has been added by the ITSO. You may now login your account. \n\nRegards,\nNU MOA ITSO Team`,
-            html: `<p>Hi ${sanitizedValues.name},</p><p>Your account has been added by the ITSO. You may now login your account.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
-          }),
-        });
-  
+      } else {
+        // Add new account to local state with id from backend
+        const newAccount = { ...sanitizedValues, id: data.id };
         setAccounts([...accounts, newAccount]);
-        setModalMessage("Account added successfully!");
-        setIsNotificationVisible(true);
+        setModalMessage(data.message || "Account added successfully!");
       }
-  
+
       setIsNotificationVisible(true);
+      setIsModalVisible(false);
 
     } catch (error) {
-
-      setModalMessage("Failed to update account.");
+      console.error("Error saving account:", error);
+      setModalMessage("Failed to save account due to a network or server error.");
       setIsNotificationVisible(true);
     }
-  
-    setIsModalVisible(false);
   };  
-
-  // BACKEND
-  //  const handleSave = async (values) => {
-  //   // Sanitize input locally
-  //   const sanitizedValues = {
-  //     ...values,
-  //     name: values.name.trim().toLowerCase(),
-  //     email: values.email.trim().toLowerCase(),
-  //     employeeId: values.employeeId.trim(),
-  //   };
-
-  //   // Validate email domain client-side early for quick feedback
-  //   const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
-  //   if (!validDomains.some(domain => sanitizedValues.email.endsWith(domain))) {
-  //     setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
-  //     setIsNotificationVisible(true);
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await fetch("http://localhost:5000/account/save", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         id: editingAccount?.id || undefined,  // send if editing, else undefined
-  //         ...sanitizedValues,
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (!response.ok) {
-  //       // Show error message from backend
-  //       setModalMessage(data.error || "Failed to save account.");
-  //       setIsNotificationVisible(true);
-  //       return;
-  //     }
-
-  //     if (editingAccount) {
-  //       // Update account in local state
-  //       const updatedAccounts = accounts.map(acc =>
-  //         acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
-  //       );
-  //       setAccounts(updatedAccounts);
-  //       setModalMessage(data.message || "Account updated successfully!");
-        
-  //     } else {
-  //       // Add new account to local state with id from backend
-  //       const newAccount = { ...sanitizedValues, id: data.id };
-  //       setAccounts([...accounts, newAccount]);
-  //       setModalMessage(data.message || "Account added successfully!");
-  //     }
-
-  //     setIsNotificationVisible(true);
-  //     setIsModalVisible(false);
-
-  //   } catch (error) {
-  //     console.error("Error saving account:", error);
-  //     setModalMessage("Failed to save account due to a network or server error.");
-  //     setIsNotificationVisible(true);
-  //   }
-  // };  
   
   const handleDisable = async (id) => {
     try {
