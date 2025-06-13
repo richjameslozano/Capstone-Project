@@ -1498,16 +1498,16 @@ const Requisition = () => {
   }, [requestList, tableData]);
   
   const courseDescriptions = {
-    MLSACHML: "ANALYTICAL CHEMISTRY",
-    MLSBIEPC: "BIOSTATISTICS AND EPIDEMIOLOGY",
-    MLSAUBFC: "ANALYSIS OF URINE AND OTHER BODY FLUIDS",
-    MLSHEM2L: "HEMATOLOGY 2",
-    MLSHPATL: "GENERAL PATHOLOGY WITH HISTOPATHOLOGIC AND CYTOLOGIC TECHNIQUES",
-    MLSIMHEL: "IMMUNOHEMATOLOGY",
-    MLSMOLBL: " MOLECULAR BIOLOGY AND DIAGNOSTICS",
-    MLSMYVIL: "MYCOLOGY AND VIROLOGY",
-    MLSPARAL: "CLINICAL PARASITOLOGY",
-    MLSPML2L: "PRINCIPLES OF MEDICAL LABORATORY SCIENCE PRACTICE 2 ",
+    MLSACHML: "Analytical Chemistry",
+    MLSBIEPC: "Biostatistics and Epidemiology",
+    MLSAUBFC: "Analysis of Urine and other body Body Fluids",
+    MLSHEM2L: "Hematology 2",
+    MLSHPATL: "General Pathology with Histopathologic and Cytologic Techniuques",
+    MLSIMHEL: "Immunohematology",
+    MLSMOLBL: "Molecular Biology and Diagnostics",
+    MLSMYVIL: "Mycology and Virology",
+    MLSPARAL: "Clinical Parasitology",
+    MLSPML2L: "Principles of Medical Laboratory Science Practice 2",
   };
 
   const columns = [
