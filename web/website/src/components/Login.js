@@ -1886,7 +1886,11 @@ const Login = () => {
                   Send Reset Link
                 </button>
                 <button
-                  onClick={() => setIsForgotPasswordModalVisible(false)}
+                   onClick={() => {
+    setIsForgotPasswordModalVisible(false);
+    setForgotPasswordEmail(""); // Clear the email input
+    setForgotPasswordError(""); // (Optional) Clear error
+    setForgotPasswordSuccess("");}} // (Optional) Clear success message
                   className="modal-cancel-btn"
                 >
                   Cancel
