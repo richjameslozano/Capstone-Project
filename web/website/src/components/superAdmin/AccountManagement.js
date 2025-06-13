@@ -416,31 +416,96 @@ const AccountManagement = () => {
   // };  
 
     // BACKEND
-  const handleSave = async (values) => {
-    // Sanitize input locally
-    // const sanitizedValues = {
-    //   ...values,
-    //   name: values.name.trim().toLowerCase(),
-    //   email: values.email.trim().toLowerCase(),
-    //   employeeId: values.employeeId.trim(),
-    // };
+  // const handleSave = async (values) => {
+  //   // Sanitize input locally
+  //   // const sanitizedValues = {
+  //   //   ...values,
+  //   //   name: values.name.trim().toLowerCase(),
+  //   //   email: values.email.trim().toLowerCase(),
+  //   //   employeeId: values.employeeId.trim(),
+  //   // };
 
+  //   const capitalizeWords = (str) =>
+  //     str
+  //       .trim()
+  //       .toLowerCase()
+  //       .replace(/\b\w/g, (char) => char.toUpperCase());
+
+  //   // Sanitize and format input
+  //   const sanitizedValues = {
+  //     ...values,
+  //     // name: values.name.trim().toLowerCase(),
+  //     name: capitalizeWords(values.name),
+  //     email: values.email.trim().toLowerCase(),
+  //     employeeId: values.employeeId.trim(),
+  //   };
+
+  //   // Validate email domain client-side early for quick feedback
+  //   const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
+  //   if (!validDomains.some(domain => sanitizedValues.email.endsWith(domain))) {
+  //     setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+
+  //   try {
+  //     const response = await fetch("https://webnuls.onrender.com/account/save", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         id: editingAccount?.id || undefined,  // send if editing, else undefined
+  //         ...sanitizedValues,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (!response.ok) {
+  //       // Show error message from backend
+  //       setModalMessage(data.error || "Failed to save account.");
+  //       setIsNotificationVisible(true);
+  //       return;
+  //     }
+
+  //     if (editingAccount) {
+  //       // Update account in local state
+  //       const updatedAccounts = accounts.map(acc =>
+  //         acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
+  //       );
+  //       setAccounts(updatedAccounts);
+  //       setModalMessage(data.message || "Account updated successfully!");
+
+  //     } else {
+  //       // Add new account to local state with id from backend
+  //       const newAccount = { ...sanitizedValues, id: data.id };
+  //       setAccounts([...accounts, newAccount]);
+  //       setModalMessage(data.message || "Account added successfully!");
+  //     }
+
+  //     setIsNotificationVisible(true);
+  //     setIsModalVisible(false);
+
+  //   } catch (error) {
+  //     console.error("Error saving account:", error);
+  //     setModalMessage("Failed to save account due to a network or server error.");
+  //     setIsNotificationVisible(true);
+  //   }
+  // };  
+
+   const handleSave = async (values) => {
     const capitalizeWords = (str) =>
       str
         .trim()
         .toLowerCase()
         .replace(/\b\w/g, (char) => char.toUpperCase());
 
-    // Sanitize and format input
     const sanitizedValues = {
       ...values,
-      // name: values.name.trim().toLowerCase(),
       name: capitalizeWords(values.name),
       email: values.email.trim().toLowerCase(),
       employeeId: values.employeeId.trim(),
     };
 
-    // Validate email domain client-side early for quick feedback
     const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
     if (!validDomains.some(domain => sanitizedValues.email.endsWith(domain))) {
       setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
@@ -448,35 +513,37 @@ const AccountManagement = () => {
       return;
     }
 
+    // ✨ Fetch from localStorage for logging
+    const userId = localStorage.getItem("userId") || "unknown";
+    const userName = localStorage.getItem("userName") || "User";
+
     try {
       const response = await fetch("https://webnuls.onrender.com/account/save", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          id: editingAccount?.id || undefined,  // send if editing, else undefined
+          id: editingAccount?.id || undefined,
           ...sanitizedValues,
+          userId,
+          userName,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        // Show error message from backend
         setModalMessage(data.error || "Failed to save account.");
         setIsNotificationVisible(true);
         return;
       }
 
       if (editingAccount) {
-        // Update account in local state
         const updatedAccounts = accounts.map(acc =>
           acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
         );
         setAccounts(updatedAccounts);
         setModalMessage(data.message || "Account updated successfully!");
-
       } else {
-        // Add new account to local state with id from backend
         const newAccount = { ...sanitizedValues, id: data.id };
         setAccounts([...accounts, newAccount]);
         setModalMessage(data.message || "Account added successfully!");
@@ -490,7 +557,7 @@ const AccountManagement = () => {
       setModalMessage("Failed to save account due to a network or server error.");
       setIsNotificationVisible(true);
     }
-  };  
+  };
   
   const handleDisable = async (id) => {
     try {

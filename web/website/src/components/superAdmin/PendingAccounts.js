@@ -148,12 +148,19 @@ const PendingAccounts = () => {
   // };
 
   // BACKEND
-  const handleApprove = async () => {
+   const handleApprove = async () => {
     try {
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName") || "Admin";
+
       const response = await fetch("https://webnuls.onrender.com/account/approve", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ requestIds: selectedRequests }),
+        body: JSON.stringify({
+          requestIds: selectedRequests,
+          userId,
+          userName,
+        }),
       });
 
       const data = await response.json();
