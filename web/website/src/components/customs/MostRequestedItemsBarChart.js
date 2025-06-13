@@ -1,4 +1,3 @@
-// components/MostRequestedItemsBarChart.jsx
 import React, { useEffect, useState } from "react";
 import { Bar } from "react-chartjs-2";
 import { Card, Spin, Empty, Typography, Button, Select, Space } from "antd";
@@ -22,7 +21,7 @@ ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend, ChartD
 const MostRequestedItemsBarChart = () => {
   const [barData, setBarData] = useState(null);
   const [rawData, setRawData] = useState({});
-  const [explanation, setExplanation] = useState("");
+  const [summary, setSummary] = useState("");
   const [loading, setLoading] = useState(true);
   const [topN, setTopN] = useState(5);
 
@@ -34,8 +33,7 @@ const MostRequestedItemsBarChart = () => {
         });
         const json = await response.json();
         const items = json.data?.items;
-        // const explanationText = json.data?.explanation;
-        const summary = json.data?.summary;
+        const summaryText = json.data?.summary;
 
         if (!items || Object.keys(items).length === 0) {
           setBarData(null);
@@ -43,7 +41,7 @@ const MostRequestedItemsBarChart = () => {
         }
 
         setRawData(items);
-        setExplanation(summary || null);
+        setSummary(summaryText || "");
         processData(items, topN);
       } catch (err) {
         console.error("Failed to load AI-generated item request data", err);
@@ -100,7 +98,6 @@ const MostRequestedItemsBarChart = () => {
 
   const handleExportPDF = async () => {
     const chartElement = document.getElementById("most-requested-bar-chart");
-
     if (!chartElement) return;
 
     const canvas = await html2canvas(chartElement);
@@ -136,9 +133,7 @@ const MostRequestedItemsBarChart = () => {
                 anchor: "end",
                 align: "right",
                 color: "#fff",
-                font: {
-                  weight: "bold",
-                },
+                font: { weight: "bold" },
                 formatter: value => `${value}`,
               },
               legend: { display: false },
@@ -163,22 +158,11 @@ const MostRequestedItemsBarChart = () => {
         />
       </div>
 
-     {explanation && (
-  <>
-    <Paragraph style={{ marginTop: 16 }}><strong>AI Insight Summary</strong></Paragraph>
-    <ul>
-      {explanation.patterns?.map((point, idx) => (
-        <li key={`pattern-${idx}`}>🧩 {point}</li>
-      ))}
-      {explanation.reasons?.map((point, idx) => (
-        <li key={`reason-${idx}`}>📌 {point}</li>
-      ))}
-      {explanation.forecasts?.map((point, idx) => (
-        <li key={`forecast-${idx}`}>📈 {point}</li>
-      ))}
-    </ul>
-  </>
-)}
+      {summary && (
+        <Paragraph style={{ marginTop: 16 }}>
+          <strong>AI Insight Summary:</strong> {summary}
+        </Paragraph>
+      )}
 
       <Space style={{ marginTop: 24, justifyContent: "space-between", width: "100%" }} wrap>
         <Select defaultValue={5} onChange={handleTopNChange}>
