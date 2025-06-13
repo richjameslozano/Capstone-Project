@@ -1865,13 +1865,21 @@ const Login = () => {
               <p className="modal-instruction">Enter your email to receive a reset link</p>
           <div className="input-with-icon">
             <MdEmail className="email-icon" />
-            <input
-              type="email"
-              value={forgotPasswordEmail}
-              onChange={(e) => setForgotPasswordEmail(e.target.value)}
-              placeholder="Enter email"
-              required
-            />
+           <input
+  type="email"
+  value={forgotPasswordEmail}
+  onChange={(e) => {
+    const value = e.target.value;
+    setForgotPasswordEmail(value);
+
+    // Clear error message in real-time if the input is not empty
+    if (value.trim() !== "") {
+      setForgotPasswordError("");
+    }
+  }}
+  placeholder="Enter email"
+  required
+/>
           </div>
 
               {forgotPasswordError && (
@@ -1886,7 +1894,11 @@ const Login = () => {
                   Send Reset Link
                 </button>
                 <button
-                  onClick={() => setIsForgotPasswordModalVisible(false)}
+                   onClick={() => {
+    setIsForgotPasswordModalVisible(false);
+    setForgotPasswordEmail(""); // Clear the email input
+    setForgotPasswordError(""); // (Optional) Clear error
+    setForgotPasswordSuccess("");}} // (Optional) Clear success message
                   className="modal-cancel-btn"
                 >
                   Cancel

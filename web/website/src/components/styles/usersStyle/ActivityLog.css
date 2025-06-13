@@ -168,8 +168,8 @@
   }
 }
 
-/* Tabs Container */
-.custom-tabs .ant-tabs-nav {
+
+/* .custom-tabs .ant-tabs-nav {
   background: white;
   padding: 8px 16px;
   border-radius: 12px;
@@ -177,7 +177,7 @@
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
-/* Tab Labels */
+
 .custom-tabs .ant-tabs-tab {
   font-size: 16px;
   font-weight: 600;
@@ -193,7 +193,7 @@
   color: #012257;
 }
 
-/* Active Tab */
+
 .custom-tabs .ant-tabs-tab-active {
   background-color: #012257;
   color: white !important;
@@ -203,7 +203,69 @@
   color: white !important;
 }
 
-/* Remove default indicator bar */
+
 .custom-tabs .ant-tabs-ink-bar {
   background: transparent;
+} */
+
+/* Tabs wrapper */
+.two-step-tabs .ant-tabs-nav {
+  background-color: transparent;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+  position: relative;
+  padding: 16px 0;
 }
+
+/* Tab items */
+.two-step-tabs .ant-tabs-tab {
+  background-color: #edf2ff;
+  color: #012257;
+  border-radius: 30px;
+  padding: 10px 24px;
+  font-weight: bold;
+  position: relative;
+  z-index: 1;
+  transition: background 0.3s, color 0.3s;
+  margin-right: 8px;
+}
+
+/* Active tab */
+.two-step-tabs .ant-tabs-tab-active {
+  background-color: #012257 !important;
+  color: white !important;
+}
+
+.two-step-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: white !important;
+}
+
+/* Add arrow → between tabs */
+.two-step-tabs .ant-tabs-tab:nth-child(1)::after {
+  content: "➝";
+  color: gray;
+  font-weight: bold;
+  font-size: 18px;
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Remove default underline */
+.two-step-tabs .ant-tabs-ink-bar {
+  display: none;
+}
+
+/* Optional: reduce gray space if needed */
+.two-step-tabs {
+  background: #f8f8f8; /* Or change this to your desired background */
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
+  margin-bottom: 24px;
+}
+
+
+
