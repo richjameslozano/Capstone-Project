@@ -352,12 +352,14 @@ input {
   align-items: center;
 }
 
-.modal-content {
+.modal-content-forgot {
   background-color: white;
   padding: 20px;
   border-radius: 8px;
+  text-align: center;
   width: 100%;
   max-width: 400px;
+  height: auto;
 }
 
 h3 {
@@ -367,16 +369,20 @@ h3 {
   text-align: center;
 }
 
-.modal-actions {
+.modal-actions-forgot {
   display: flex;
-  justify-content: space-between;
+  justify-content: space-evenly;
+  padding-top: 10px;
 }
 
-.modal-btn, .modal-cancel-btn {
-  padding: 10px 20px;
-  border-radius: 4px;
+.modal-btn-send, .modal-cancel-btn {
+  padding: 10px 10px 10px 10px;
+  background-color: green;
+  color:white;
+  border-radius: 10px;
   cursor: pointer;
   font-size: 14px;
+
 }
 
 .modal-btn {

@@ -1860,7 +1860,7 @@ const Login = () => {
       {/* Forgot Password Modal */}
       {isForgotPasswordModalVisible && (
         <div className="modal-overlay">
-          <div className="modal-content">
+          <div className="modal-content-forgot">
             <h3>Forgot Password</h3>
             <p>Enter your email to receive a reset link.</p>
             <input
@@ -1876,9 +1876,9 @@ const Login = () => {
             {forgotPasswordSuccess && (
               <p className="success-message">{forgotPasswordSuccess}</p>
             )}
-            <div className="modal-actions">
-              <button onClick={handleForgotPassword} className="modal-btn">
-                Send Reset Link
+            <div className="modal-actions-forgot">
+              <button onClick={handleForgotPassword} className="modal-btn-send">
+                Send Link
               </button>
               <button
                 onClick={() => setIsForgotPasswordModalVisible(false)}
