@@ -16,9 +16,7 @@ import { notification, Modal, message } from "antd";
 import bcrypt from "bcryptjs";
 import "./styles/Login.css";
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
-
-
-
+import axios from "axios";
 import NotificationModal from "./customs/NotificationModal";
 import TermsModal from "./customs/TermsModal";
 
@@ -712,221 +710,224 @@ const Login = () => {
   // };
 
   // LOGIN WITH VERIFICATION
+  // const checkUserAndLogin = async () => {
+  //   setIsLoading(true);
+
+  //   try {
+  //     const { email, password } = formData;
+  //     const usersRef = collection(db, "accounts");
+  //     const q = query(usersRef, where("email", "==", email));
+  //     const querySnapshot = await getDocs(q);
+
+  //     let userDoc, userData, isSuperAdmin = false;
+
+  //     // Check regular accounts
+  //     if (!querySnapshot.empty) {
+  //       userDoc = querySnapshot.docs[0];
+  //       userData = userDoc.data();
+  //     } else {
+  //       // Check super-admin
+  //       const superAdminRef = collection(db, "super-admin");
+  //       const superAdminQuery = query(superAdminRef, where("email", "==", email));
+  //       const superAdminSnapshot = await getDocs(superAdminQuery);
+
+  //       if (!superAdminSnapshot.empty) {
+  //         userDoc = superAdminSnapshot.docs[0];
+  //         userData = userDoc.data();
+  //         isSuperAdmin = true;
+  //       }
+  //     }
+
+  //     if (!userData) {
+  //       setError("User not found. Please contact admin.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     if (userData.disabled) {
+  //       setError("Your account has been disabled.");
+  //       await signOut(auth);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     // New user without password set yet
+  //     if (!isSuperAdmin && !userData.uid) {
+  //       setIsNewUser(true);
+  //       setIsLoading(false);
+  //       return;
+  //     }
+
+  //     if (isSuperAdmin) {
+  //       // Super-admin login using Firestore-stored password
+  //       if (userData.password === password) {
+  //         await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
+  //         const userName = userData.name || "Super Admin";
+  //         localStorage.setItem("userId", userDoc.id);
+  //         localStorage.setItem("userEmail", userData.email);
+  //         localStorage.setItem("userName", userName);
+  //         localStorage.setItem("userDepartment", userData.department || "Admin");
+  //         localStorage.setItem("userPosition", "super-admin");
+  //         localStorage.setItem("userJobTitle", userData.jobTitle || "User");
+
+  //         navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+
+  //       } else {
+  //         setError("Invalid password.");
+  //       }
+
+  //     } else {
+  //       // Firebase Auth login for regular users/admins
+  //       try {
+  //         const userCredential = await signInWithEmailAndPassword(auth, email, password);
+  //         const signedInUser = userCredential.user;
+
+  //         // Force reload to ensure latest email verification status
+  //         await signedInUser.reload();
+  //         const refreshedUser = auth.currentUser;
+
+  //         if (!refreshedUser || !refreshedUser.emailVerified) {
+  //           await signOut(auth);
+  //           setError("Please verify your email before logging in.");
+  //           setIsLoading(false);
+  //           return;
+  //         }
+
+  //         await updateDoc(userDoc.ref, { loginAttempts: 0 });
+
+  //         let role = (userData.role || "user").toLowerCase().trim().replace(/[\s_]/g, '-');
+  //         if (role === "admin1" || role === "admin2") {
+  //           role = "admin";
+  //         }
+
+  //         const userName = userData.name || "User";
+  //         localStorage.setItem("userId", userDoc.id);
+  //         localStorage.setItem("userEmail", userData.email);
+  //         localStorage.setItem("userName", userName);
+  //         localStorage.setItem("userDepartment", userData.department || "");
+  //         localStorage.setItem("userPosition", role);
+  //         localStorage.setItem("userJobTitle", userData.jobTitle || "User");
+
+  //         await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
+  //           action: "User Logged In (Website)",
+  //           userName,
+  //           timestamp: serverTimestamp(),
+  //         });
+
+  //         switch (role) {
+  //           case "admin":
+  //           case "super-user":
+  //             navigate("/main/dashboard", { state: { loginSuccess: true, role } });
+  //             break;
+              
+  //           case "user":
+  //             navigate("/main/requisition", { state: { loginSuccess: true, role } });
+  //             break;
+
+  //           default:
+  //             setError("Unknown role. Please contact admin.");
+  //             break;
+  //         }
+
+  //       } catch (authError) {
+  //         console.error("Firebase Auth login failed:", authError.message);
+  //         setError("Invalid password.");
+  //       }
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error during login:", error.message);
+  //     setError("Unexpected error. Please try again.");
+
+  //   } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
+
+  // BACKEND LOGIN
   const checkUserAndLogin = async () => {
     setIsLoading(true);
-
     try {
       const { email, password } = formData;
-      const usersRef = collection(db, "accounts");
-      const q = query(usersRef, where("email", "==", email));
-      const querySnapshot = await getDocs(q);
+      const response = await axios.post("https://webnuls.onrender.com/login", { email, password });
+      const data = response.data;
+      const user = data.user;
 
-      let userDoc, userData, isSuperAdmin = false;
-
-      // Check regular accounts
-      if (!querySnapshot.empty) {
-        userDoc = querySnapshot.docs[0];
-        userData = userDoc.data();
-      } else {
-        // Check super-admin
-        const superAdminRef = collection(db, "super-admin");
-        const superAdminQuery = query(superAdminRef, where("email", "==", email));
-        const superAdminSnapshot = await getDocs(superAdminQuery);
-
-        if (!superAdminSnapshot.empty) {
-          userDoc = superAdminSnapshot.docs[0];
-          userData = userDoc.data();
-          isSuperAdmin = true;
-        }
-      }
-
-      if (!userData) {
-        setError("User not found. Please contact admin.");
+      if (!user) {
+        setError("Invalid response from server.");
         setIsLoading(false);
         return;
       }
+      console.log("User role from backend:", user.role);
 
-      if (userData.disabled) {
-        setError("Your account has been disabled.");
-        await signOut(auth);
-        setIsLoading(false);
-        return;
-      }
-
-      // New user without password set yet
-      if (!isSuperAdmin && !userData.uid) {
-        setIsNewUser(true);
-        setIsLoading(false);
-        return;
-      }
-
-      if (isSuperAdmin) {
-        // Super-admin login using Firestore-stored password
-        if (userData.password === password) {
-          await updateDoc(userDoc.ref, { loginAttempts: 0 });
-
-          const userName = userData.name || "Super Admin";
-          localStorage.setItem("userId", userDoc.id);
-          localStorage.setItem("userEmail", userData.email);
-          localStorage.setItem("userName", userName);
-          localStorage.setItem("userDepartment", userData.department || "Admin");
-          localStorage.setItem("userPosition", "super-admin");
-          localStorage.setItem("userJobTitle", userData.jobTitle || "User");
-
-          navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
-
-        } else {
-          setError("Invalid password.");
-        }
-
-      } else {
-        // Firebase Auth login for regular users/admins
+      if (user.requiresFirebaseLogin) {
         try {
           const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const signedInUser = userCredential.user;
+          const firebaseUser = userCredential.user;
+          await firebaseUser.reload();
 
-          // Force reload to ensure latest email verification status
-          await signedInUser.reload();
-          const refreshedUser = auth.currentUser;
-
-          if (!refreshedUser || !refreshedUser.emailVerified) {
+          if (!firebaseUser.emailVerified) {
             await signOut(auth);
             setError("Please verify your email before logging in.");
             setIsLoading(false);
             return;
           }
 
-          await updateDoc(userDoc.ref, { loginAttempts: 0 });
+          // Save user info to localStorage
+          localStorage.setItem("userId", user.userId);
+          localStorage.setItem("userEmail", user.email);
+          localStorage.setItem("userName", user.name);
+          localStorage.setItem("userDepartment", user.department || "");
+          localStorage.setItem("userPosition", user.role?.toLowerCase());
+          localStorage.setItem("userJobTitle", user.jobTitle || "User");
 
-          let role = (userData.role || "user").toLowerCase().trim().replace(/[\s_]/g, '-');
-          if (role === "admin1" || role === "admin2") {
-            role = "admin";
-          }
+          console.log("User role from backend:", user.role);
 
-          const userName = userData.name || "User";
-          localStorage.setItem("userId", userDoc.id);
-          localStorage.setItem("userEmail", userData.email);
-          localStorage.setItem("userName", userName);
-          localStorage.setItem("userDepartment", userData.department || "");
-          localStorage.setItem("userPosition", role);
-          localStorage.setItem("userJobTitle", userData.jobTitle || "User");
-
-          await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
-            action: "User Logged In (Website)",
-            userName,
-            timestamp: serverTimestamp(),
-          });
-
-          switch (role) {
+          // Navigate based on role
+          switch (user.role?.toLowerCase()) {
             case "admin":
             case "super-user":
-              navigate("/main/dashboard", { state: { loginSuccess: true, role } });
+              navigate("/main/dashboard", { state: { loginSuccess: true, role: user.role.toLowerCase() } });
               break;
-              
+
             case "user":
-              navigate("/main/requisition", { state: { loginSuccess: true, role } });
+              navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
               break;
 
             default:
               setError("Unknown role. Please contact admin.");
-              break;
           }
 
         } catch (authError) {
-          console.error("Firebase Auth login failed:", authError.message);
           setError("Invalid password.");
         }
+      } else if (user.role?.toLowerCase() === "super-admin") {
+        // For super-admins, no Firebase login
+        localStorage.setItem("userId", user.userId);
+        localStorage.setItem("userEmail", user.email);
+        localStorage.setItem("userName", user.name);
+        localStorage.setItem("userDepartment", user.department || "Admin");
+        localStorage.setItem("userPosition", "super-admin");
+        localStorage.setItem("userJobTitle", user.jobTitle || "User");
+
+        navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+      } else {
+        setError("Login flow not defined for this role.");
       }
 
-    } catch (error) {
-      console.error("Error during login:", error.message);
-      setError("Unexpected error. Please try again.");
+    } catch (err) {
+      console.error("Login error:", err);
+      if (err.response?.data?.error) {
+        setError(err.response.data.error);
 
+      } else {
+        setError("Unexpected error. Please try again.");
+      }
     } finally {
-        setIsLoading(false);
-      }
-    };
-
-  // BACKEND LOGIN
-//   const checkUserAndLogin = async () => {
-//   setIsLoading(true);
-//   try {
-//     const { email, password } = formData;
-//     const response = await axios.post("http://localhost:5000/login", { email, password });
-//     const data = response.data;
-//     const user = data.user;
-
-//     if (!user) {
-//       setError("Invalid response from server.");
-//       setIsLoading(false);
-//       return;
-//     }
-//      console.log("User role from backend:", user.role);
-
-//     if (user.requiresFirebaseLogin) {
-//       try {
-//         const userCredential = await signInWithEmailAndPassword(auth, email, password);
-//         const firebaseUser = userCredential.user;
-//         await firebaseUser.reload();
-
-//         if (!firebaseUser.emailVerified) {
-//           await signOut(auth);
-//           setError("Please verify your email before logging in.");
-//           setIsLoading(false);
-//           return;
-//         }
-
-//         // Save user info to localStorage
-//         localStorage.setItem("userId", user.userId);
-//         localStorage.setItem("userEmail", user.email);
-//         localStorage.setItem("userName", user.name);
-//         localStorage.setItem("userDepartment", user.department || "");
-//         localStorage.setItem("userPosition", user.role?.toLowerCase());
-//         localStorage.setItem("userJobTitle", user.jobTitle || "User");
-
-//         console.log("User role from backend:", user.role);
-
-
-//         // Navigate based on role
-//         switch (user.role?.toLowerCase()) {
-//           case "admin":
-//           case "super-user":
-//             navigate("/main/dashboard", { state: { loginSuccess: true, role: user.role.toLowerCase() } });
-//             break;
-//           case "user":
-//             navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
-//             break;
-//           default:
-//             setError("Unknown role. Please contact admin.");
-//         }
-//       } catch (authError) {
-//         setError("Invalid password.");
-//       }
-//     } else if (user.role?.toLowerCase() === "super-admin") {
-//       // For super-admins, no Firebase login
-//       localStorage.setItem("userId", user.userId);
-//       localStorage.setItem("userEmail", user.email);
-//       localStorage.setItem("userName", user.name);
-//       localStorage.setItem("userDepartment", user.department || "Admin");
-//       localStorage.setItem("userPosition", "super-admin");
-//       localStorage.setItem("userJobTitle", user.jobTitle || "User");
-
-//       navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
-//     } else {
-//       setError("Login flow not defined for this role.");
-//     }
-
-//   } catch (err) {
-//     console.error("Login error:", err);
-//     if (err.response?.data?.error) {
-//       setError(err.response.data.error);
-//     } else {
-//       setError("Unexpected error. Please try again.");
-//     }
-//   } finally {
-//     setIsLoading(false);
-//   }
-// };
+      setIsLoading(false);
+    }
+  };
 
   // const handleRegisterPassword = async () => {
   //   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
@@ -1091,254 +1092,257 @@ const Login = () => {
   };
 
   // FRONTEND
-  const handleSignUp = async () => {
-    const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
-    const auth = getAuth();
-    setIsLoading(true)
-
-    const formattedName = capitalizeWords(name);
-
-    if (!termsChecked) {
-      setError("You must accept the terms and conditions before signing up.");
-      setIsLoading(false);
-      return;
-    }
-
-    // Step 0: Validate employee ID format
-    const employeeIdPattern = /^\d{2}-\d{4}$/;
-    if (!employeeIdPattern.test(employeeId.trim())) {
-      setError("Invalid employee ID format. Please use the format ##-#### (e.g., 12-3456).");
-      setIsLoading(false);
-      return;
-    }
-  
-    // Step 1: Ensure the email domain is valid
-    const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
-    const emailDomain = email.split('@')[1];
-  
-    if (!validDomains.includes(emailDomain)) {
-      setError("Invalid email domain. Only @nu-moa.edu.ph and @students.nu-moa.edu.ph are allowed.");
-      setIsLoading(false);
-      return;
-    }
-  
-    // Step 2: Ensure passwords match
-    if (password !== confirmPassword) {
-      setError("Passwords do not match.");
-      setIsLoading(false);
-      return;
-    }
-
-    // Step 2.1: Validate department if jobTitle is not 'Laboratory Custodian'
-    if (
-      jobTitle.toLowerCase() !== "laboratory custodian" &&
-      (!department || department.trim() === "")
-    ) {
-      setError("Please select a department.");
-      setIsLoading(false);
-      return;
-    }
-
-    try {
-      // Step 3: Check if the employeeId already exists in Firestore in both 'pendingaccounts' and 'accounts'
-      const employeeQueryPending = query(
-        collection(db, "pendingaccounts"),
-        where("employeeId", "==", employeeId.trim())
-      );
-      const employeeQueryAccounts = query(
-        collection(db, "accounts"),
-        where("employeeId", "==", employeeId.trim())
-      );
-  
-      const emailQueryPending = query(
-        collection(db, "pendingaccounts"),
-        where("email", "==", email.trim().toLowerCase())
-      );
-      
-      const emailQueryAccounts = query(
-        collection(db, "accounts"),
-        where("email", "==", email.trim().toLowerCase())
-      );
-  
-      const [
-        employeeSnapshotPending,
-        employeeSnapshotAccounts,
-        emailSnapshotPending,
-        emailSnapshotAccounts,
-      ] = await Promise.all([
-        getDocs(employeeQueryPending),
-        getDocs(employeeQueryAccounts),
-        getDocs(emailQueryPending),
-        getDocs(emailQueryAccounts),
-      ]);
-  
-      if (!employeeSnapshotPending.empty || !employeeSnapshotAccounts.empty) {
-        setError("This employee ID is already registered.");
-        setIsLoading(false);
-        return;
-      }
-  
-      if (!emailSnapshotPending.empty || !emailSnapshotAccounts.empty) {
-        setError("This email is already registered.");
-        setIsLoading(false);
-        return;
-      }
-  
-      // Step 5: Determine the role based on the job title
-      // let role = "user"; 
-      // if (jobTitle.toLowerCase() === "dean") {
-      //   role = "admin";
-
-      // } else if (jobTitle.toLowerCase() === "program chair") {
-      //   role = "admin";
-
-      // } else if (jobTitle.toLowerCase().includes("custodian")) {
-      //   role = "super-user";
-
-      // } else if (jobTitle.toLowerCase() === "faculty") {
-      //   role = "user";
-      // }
-
-      // Step 5: Determine the role based on the job title and department
-      let role = "user"; 
-
-      if (jobTitle.toLowerCase() === "dean") {
-        if (department.toLowerCase() === "sah") {
-          role = "admin";
-
-        } else {
-          role = "user";
-        }
-      } else if (jobTitle.toLowerCase() === "program chair") {
-        role = "admin";
-
-      } else if (jobTitle.toLowerCase().includes("custodian")) {
-        role = "super-user";
-
-      } else if (jobTitle.toLowerCase() === "faculty") {
-        role = "user";
-      }
-
-        // Save data to 'pendingaccounts' collection without creating the Firebase Auth user
-      const sanitizedData = {
-        // name: name.trim().toLowerCase(),
-        name: formattedName,
-        email: email.trim().toLowerCase(),
-        employeeId: employeeId.trim().replace(/[^\d-]/g, ''),
-        jobTitle,
-        department,
-        role, // Function to determine role based on job title
-        createdAt: serverTimestamp(),
-        status: "pending",
-        // password, // Include password here temporarily for approval process
-      };
-
-      await addDoc(collection(db, "pendingaccounts"), sanitizedData);
-
-     // Step 6.1: Send confirmation email
-      await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: email.trim().toLowerCase(),
-          subject: "Account Registration - Pending Approval",
-          text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
-          html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
-        }),
-      });
-  
-      // Step 7: Set the modal message and show the modal
-      setModalMessage("Successfully Registered! Please check your email junk for the status. Your account is pending approval from the ITSO.");
-      setIsModalVisible(true); // Open the modal
-  
-      // Clear input fields after successful registration
-      setSignUpData({
-        name: "",
-        email: "",
-        employeeId: '',
-        password: "",
-        confirmPassword: "",
-        jobTitle: "",
-        department: "",
-      });
-  
-    } catch (error) {
-
-
-      if (error.code === "auth/email-already-in-use") {
-        setError("Email already in use.");
-        setIsLoading(false);
-
-      } else {
-        setError("Failed to create account. Try again.");
-        setIsLoading(false);
-      }
-      
-    } finally{
-      setIsLoading(false)
-      setSignUpMode(false)
-    }
-  };
-
-  // BACKEND
   // const handleSignUp = async () => {
   //   const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
+  //   const auth = getAuth();
+  //   setIsLoading(true)
 
-  //   setIsLoading(true);
-  //   setError("");
+  //   const formattedName = capitalizeWords(name);
+
+  //   if (!termsChecked) {
+  //     setError("You must accept the terms and conditions before signing up.");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+
+  //   // Step 0: Validate employee ID format
+  //   const employeeIdPattern = /^\d{2}-\d{4}$/;
+  //   if (!employeeIdPattern.test(employeeId.trim())) {
+  //     setError("Invalid employee ID format. Please use the format ##-#### (e.g., 12-3456).");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  
+  //   // Step 1: Ensure the email domain is valid
+  //   const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+  //   const emailDomain = email.split('@')[1];
+  
+  //   if (!validDomains.includes(emailDomain)) {
+  //     setError("Invalid email domain. Only @nu-moa.edu.ph and @students.nu-moa.edu.ph are allowed.");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+  
+  //   // Step 2: Ensure passwords match
+  //   if (password !== confirmPassword) {
+  //     setError("Passwords do not match.");
+  //     setIsLoading(false);
+  //     return;
+  //   }
+
+  //   // Step 2.1: Validate department if jobTitle is not 'Laboratory Custodian'
+  //   if (
+  //     jobTitle.toLowerCase() !== "laboratory custodian" &&
+  //     (!department || department.trim() === "")
+  //   ) {
+  //     setError("Please select a department.");
+  //     setIsLoading(false);
+  //     return;
+  //   }
 
   //   try {
-  //     const response = await fetch("http://localhost:5000/signup", { 
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify({
-  //         name,
-  //         email,
-  //         employeeId,
-  //         password,
-  //         confirmPassword,
-  //         jobTitle,
-  //         department,
-  //         termsChecked,
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (!response.ok) {
-  //       // Backend returned error
-  //       setError(data.error || "Something went wrong");
+  //     // Step 3: Check if the employeeId already exists in Firestore in both 'pendingaccounts' and 'accounts'
+  //     const employeeQueryPending = query(
+  //       collection(db, "pendingaccounts"),
+  //       where("employeeId", "==", employeeId.trim())
+  //     );
+  //     const employeeQueryAccounts = query(
+  //       collection(db, "accounts"),
+  //       where("employeeId", "==", employeeId.trim())
+  //     );
+  
+  //     const emailQueryPending = query(
+  //       collection(db, "pendingaccounts"),
+  //       where("email", "==", email.trim().toLowerCase())
+  //     );
+      
+  //     const emailQueryAccounts = query(
+  //       collection(db, "accounts"),
+  //       where("email", "==", email.trim().toLowerCase())
+  //     );
+  
+  //     const [
+  //       employeeSnapshotPending,
+  //       employeeSnapshotAccounts,
+  //       emailSnapshotPending,
+  //       emailSnapshotAccounts,
+  //     ] = await Promise.all([
+  //       getDocs(employeeQueryPending),
+  //       getDocs(employeeQueryAccounts),
+  //       getDocs(emailQueryPending),
+  //       getDocs(emailQueryAccounts),
+  //     ]);
+  
+  //     if (!employeeSnapshotPending.empty || !employeeSnapshotAccounts.empty) {
+  //       setError("This employee ID is already registered.");
   //       setIsLoading(false);
   //       return;
   //     }
+  
+  //     if (!emailSnapshotPending.empty || !emailSnapshotAccounts.empty) {
+  //       setError("This email is already registered.");
+  //       setIsLoading(false);
+  //       return;
+  //     }
+  
+  //     // Step 5: Determine the role based on the job title
+  //     // let role = "user"; 
+  //     // if (jobTitle.toLowerCase() === "dean") {
+  //     //   role = "admin";
 
-  //     // Success – show modal
-  //     setModalMessage(data.message || "Successfully registered!");
-  //     setIsModalVisible(true);
+  //     // } else if (jobTitle.toLowerCase() === "program chair") {
+  //     //   role = "admin";
 
-  //     // Clear form
+  //     // } else if (jobTitle.toLowerCase().includes("custodian")) {
+  //     //   role = "super-user";
+
+  //     // } else if (jobTitle.toLowerCase() === "faculty") {
+  //     //   role = "user";
+  //     // }
+
+  //     // Step 5: Determine the role based on the job title and department
+  //     let role = "user"; 
+
+  //     if (jobTitle.toLowerCase() === "dean") {
+  //       if (department.toLowerCase() === "sah") {
+  //         role = "admin";
+
+  //       } else {
+  //         role = "user";
+  //       }
+  //     } else if (jobTitle.toLowerCase() === "program chair") {
+  //       role = "admin";
+
+  //     } else if (jobTitle.toLowerCase().includes("custodian")) {
+  //       role = "super-user";
+
+  //     } else if (jobTitle.toLowerCase() === "faculty") {
+  //       role = "user";
+  //     }
+
+  //       // Save data to 'pendingaccounts' collection without creating the Firebase Auth user
+  //     const sanitizedData = {
+  //       // name: name.trim().toLowerCase(),
+  //       name: formattedName,
+  //       email: email.trim().toLowerCase(),
+  //       employeeId: employeeId.trim().replace(/[^\d-]/g, ''),
+  //       jobTitle,
+  //       department,
+  //       role, // Function to determine role based on job title
+  //       createdAt: serverTimestamp(),
+  //       status: "pending",
+  //       // password, // Include password here temporarily for approval process
+  //     };
+
+  //     await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+
+  //    // Step 6.1: Send confirmation email
+  //     await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         to: email.trim().toLowerCase(),
+  //         subject: "Account Registration - Pending Approval",
+  //         text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
+  //         html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+  //       }),
+  //     });
+  
+  //     // Step 7: Set the modal message and show the modal
+  //     setModalMessage("Successfully Registered! Please check your email junk for the status. Your account is pending approval from the ITSO.");
+  //     setIsModalVisible(true); // Open the modal
+  
+  //     // Clear input fields after successful registration
   //     setSignUpData({
   //       name: "",
   //       email: "",
-  //       employeeId: "",
+  //       employeeId: '',
   //       password: "",
   //       confirmPassword: "",
   //       jobTitle: "",
   //       department: "",
   //     });
-  //   } catch (err) {
-  //     setError("Failed to register. Please try again later.");
-  //     console.error("Sign-up error:", err);
+  
+  //   } catch (error) {
+
+
+  //     if (error.code === "auth/email-already-in-use") {
+  //       setError("Email already in use.");
+  //       setIsLoading(false);
+
+  //     } else {
+  //       setError("Failed to create account. Try again.");
+  //       setIsLoading(false);
+  //     }
       
-  //   } finally {
-  //     setIsLoading(false);
-  //     setSignUpMode(false);
+  //   } finally{
+  //     setIsLoading(false)
+  //     setSignUpMode(false)
   //   }
   // };
+
+  // BACKEND
+  const handleSignUp = async () => {
+    const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
+
+    
+    const formattedName = capitalizeWords(name);
+
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("https://webnuls.onrender.com/signup", { 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formattedName,
+          email,
+          employeeId,
+          password,
+          confirmPassword,
+          jobTitle,
+          department,
+          termsChecked,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        // Backend returned error
+        setError(data.error || "Something went wrong");
+        setIsLoading(false);
+        return;
+      }
+
+      // Success – show modal
+      setModalMessage(data.message || "Successfully registered!");
+      setIsModalVisible(true);
+
+      // Clear form
+      setSignUpData({
+        name: "",
+        email: "",
+        employeeId: "",
+        password: "",
+        confirmPassword: "",
+        jobTitle: "",
+        department: "",
+      });
+    } catch (err) {
+      setError("Failed to register. Please try again later.");
+      console.error("Sign-up error:", err);
+      
+    } finally {
+      setIsLoading(false);
+      setSignUpMode(false);
+    }
+  };
   
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail) {
