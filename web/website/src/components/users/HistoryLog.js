@@ -17,6 +17,7 @@ import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc,
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
+import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import StickyBox from 'react-sticky-box';
 
 const { Option } = Select;
@@ -632,15 +633,33 @@ const renderProcessedTab = () => (
   );
   return (
     <Layout style={{ minHeight: "100vh"}}>
-      <Tabs
-        activeKey={activeTabKey}
-        onChange={(key) => setActiveTabKey(key)}
-        className="custom-tabs"
-        items={[
-          { label: "Pending Requests", key: "pending", children: renderPendingTab() },
-          { label: "Processed Requests", key: "processed", children: renderProcessedTab() },
-        ]}
-      />
+<Tabs
+  activeKey={activeTabKey}
+  onChange={(key) => setActiveTabKey(key)}
+  className="two-step-tabs"
+  items={[
+    {
+      key: "pending",
+      label: (
+        <>
+          <ClockCircleOutlined style={{ marginRight: 8 }} />
+          Step 1: Pending
+        </>
+      ),
+      children: renderPendingTab(),
+    },
+    {
+      key: "processed",
+      label: (
+        <>
+          <CheckCircleOutlined style={{ marginRight: 8 }} />
+          Step 2: Processed
+        </>
+      ),
+      children: renderProcessedTab(),
+    },
+  ]}
+/>
     </Layout>
   );
 };
