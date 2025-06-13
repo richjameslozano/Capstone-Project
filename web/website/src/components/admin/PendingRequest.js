@@ -649,1014 +649,1268 @@ try {
 
  
 
-   const handleRejectConfirm = async () => {  
-    setIsMultiRejectModalVisible(false);
+// FRONTEND 
+//   const handleRejectConfirm = async () => {  
+//     setIsMultiRejectModalVisible(false);
   
+//     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
+
+//     try {
+//       const accountRef = doc(db, "accounts", selectedRequest.accountId);
+//       const accountSnap = await getDoc(accountRef);
+
+//       if (accountSnap.exists()) {
+//         const accountData = accountSnap.data();
+//         const isDisabled = accountData.disabled || false; // Adjust field name if different
+
+//         if (isDisabled) {
+//           setNotificationMessage("Cannot approve: The user's account is disabled.");
+//           setIsNotificationVisible(true);
+//           return;
+//         }
+        
+//       } else {
+      
+//       }
+
+//     } catch (error) {
+     
+//       setNotificationMessage("Error verifying account status. Please try again.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+  
+//     try {
+//       const rejectedItems = await Promise.all(
+//         uncheckedItems.map(async (item, index) => {
+//           const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+//           let itemType = "Unknown";
+      
+//           if (selectedItemId) {
+//             try {
+//               const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+//               if (inventoryDoc.exists()) {
+//                 itemType = inventoryDoc.data().type || "Unknown";
+//               }
+//             } catch (err) {
+            
+//             }
+//           }
+      
+//           const itemKey = `${selectedItemId}-${index}`;
+//           const rejectionReason = rejectionReasons[itemKey] || "No reason provided";
+      
+//           return {
+//             ...item,
+//             selectedItemId,
+//             itemType,
+//             rejectionReason,
+//           };
+//         })
+//       );
+  
+//       const auth = getAuth();
+//       const currentUser = auth.currentUser;
+//       const userEmail = currentUser.email;
+  
+//       // Fetch the user name from Firestore
+//       let userName = "Unknown";
+//       try {
+//         const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+//         const userSnapshot = await getDocs(userQuery);
+  
+//         if (!userSnapshot.empty) {
+//           const userDoc = userSnapshot.docs[0];
+//           const userData = userDoc.data();
+//           userName = userData.name || "Unknown";
+//         }
+
+//       } catch (error) {
+       
+//       }
+  
+//       const requestLogEntry = {
+//         accountId: selectedRequest.accountId || "N/A",
+//         userName: selectedRequest.userName || "N/A",
+//         room: selectedRequest.room || "N/A",
+//         course: selectedRequest.course || "N/A",
+//         courseDescription: selectedRequest.courseDescription || "N/A",
+//         dateRequired: selectedRequest.dateRequired || "N/A",
+//         timeFrom: selectedRequest.timeFrom || "N/A",
+//         timeTo: selectedRequest.timeTo || "N/A",
+//         timestamp: selectedRequest.timestamp || "N/A",
+//         rawTimestamp: new Date(),
+//         requestList: enrichedItems,
+//         status: "Approved",
+//         approvedBy: userName,
+//         reason: selectedRequest.reason || "No reason provided",
+//         program: selectedRequest.program,
+//       };
+  
+//       const rejectLogEntry = {
+//         accountId: selectedRequest.accountId || "N/A",
+//         userName: selectedRequest.userName || "N/A",
+//         room: selectedRequest.room || "N/A",
+//         course: selectedRequest.course || "N/A",
+//         courseDescription: selectedRequest.courseDescription || "N/A",
+//         dateRequired: selectedRequest.dateRequired || "N/A",
+//         timeFrom: selectedRequest.timeFrom || "N/A",
+//         timeTo: selectedRequest.timeTo || "N/A",
+//         timestamp: selectedRequest.timestamp || "N/A",
+//         rawTimestamp: new Date(),
+//         requestList: rejectedItems,
+//         status: "Rejected",
+//         rejectedBy: userName,
+//         program: selectedRequest.program,
+//       };
+  
+//       const logRequestOrReturn = async (
+//         userId,
+//         userName,
+//         action,
+//         requestDetails,
+//         extraInfo = {}
+//       ) => {
+//         await addDoc(collection(db, `accounts/${userId}/historylog`), {
+//           action,
+//           userName,
+//           timestamp: serverTimestamp(),
+//           requestList: requestDetails,
+//           ...extraInfo,
+//         });
+//       };
+  
+
+//       if (enrichedItems.length > 0) {
+//         await addDoc(collection(db, "requestlog"), requestLogEntry);
+
+//         await logRequestOrReturn(
+//           selectedRequest.accountId,
+//           selectedRequest.userName,
+//           "Request Approved",
+//           enrichedItems,
+//           {
+//             approvedBy: userName,
+//             course: selectedRequest.course || "N/A",
+//             courseDescription: selectedRequest.courseDescription || "N/A",
+//             dateRequired: selectedRequest.dateRequired,
+//             reason: selectedRequest.reason,
+//             room: selectedRequest.room,
+//             program: selectedRequest.program,
+//             timeFrom: selectedRequest.timeFrom || "N/A",
+//             timeTo: selectedRequest.timeTo || "N/A",
+//             timestamp: selectedRequest.timestamp || "N/A",
+//             rawTimestamp: new Date(),
+//           }
+//         );
+//       }
+  
+//       // Log rejected items
+//       if (rejectedItems.length > 0) {
+//         await logRequestOrReturn(
+//           selectedRequest.accountId,
+//           selectedRequest.userName,
+//           "Request Rejected",
+//           rejectedItems,
+//           {
+//             rejectedBy: userName,
+//             course: selectedRequest.course || "N/A",
+//             courseDescription: selectedRequest.courseDescription || "N/A",
+//             dateRequired: selectedRequest.dateRequired,
+//             reason: rejectionReason || "No reason provided",
+//             room: selectedRequest.room,
+//             program: selectedRequest.program,
+//             timeFrom: selectedRequest.timeFrom || "N/A",
+//             timeTo: selectedRequest.timeTo || "N/A",
+//             timestamp: selectedRequest.timestamp || "N/A",
+//             rawTimestamp: new Date(),
+//           }
+//         );
+//       }
+
+   
+   
+// try {
+//         for (const item of enrichedItems) {
+//           const inventoryId = item.selectedItemId;
+//           const requestedQty = Number(item.quantity);
+//           const labRoomId = item.labRoom;
+
+//           if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+           
+//             continue;
+//           }
+
+//           if (!labRoomId) {
+           
+//             continue;
+//           }
+
+//           const inventoryRef = doc(db, "inventory", inventoryId);
+//           const inventorySnap = await getDoc(inventoryRef);
+//           if (!inventorySnap.exists()) {
+           
+//             continue;
+//           }
+
+//           const data = inventorySnap.data();
+//           const currentQty = Number(data.quantity || 0);
+//           const newQty = Math.max(currentQty - requestedQty, 0);
+//           await updateDoc(inventoryRef, { quantity: newQty });
+
+//           // Log item usage
+//           await addDoc(collection(db, "itemUsage"), {
+//             itemId: data.itemId, // Make sure this is correct
+//             usedQuantity: requestedQty, // How much was used
+//             timestamp: serverTimestamp(), // So it's traceable over time
+//           });
+
+      
+
+//           // ⚙️ Update inventory condition breakdown
+//           let remaining = requestedQty;
+//           const good = data.condition?.Good ?? 0;
+//           const damage = data.condition?.Damage ?? 0;
+//           const defect = data.condition?.Defect ?? 0;
+//           const lost = data.condition?.Lost ?? 0;
+
+//           let newGood = good;
+//           let newDamage = damage;
+//           let newDefect = defect;
+//           let newLost = lost;
+
+//           if (remaining > 0) {
+//             const deductFromGood = Math.min(newGood, remaining);
+//             newGood -= deductFromGood;
+//             remaining -= deductFromGood;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromDamage = Math.min(newDamage, remaining);
+//             newDamage -= deductFromDamage;
+//             remaining -= deductFromDamage;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromDefect = Math.min(newDefect, remaining);
+//             newDefect -= deductFromDefect;
+//             remaining -= deductFromDefect;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromLost = Math.min(newLost, remaining);
+//             newLost -= deductFromLost;
+//             remaining -= deductFromLost;
+//           }
+
+//           await updateDoc(inventoryRef, {
+//             'condition.Good': newGood,
+//             'condition.Damage': newDamage,
+//             'condition.Defect': newDefect,
+//             'condition.Lost' : newLost,
+//           });
+          
+//           // 🔁 Update labRoom item quantity
+//           const roomNumber = item.labRoom; // e.g. "0930"
+//           const labRoomCollectionRef = collection(db, "labRoom");
+//           const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+//           const querySnapshot = await getDocs(q);
+
+//           if (querySnapshot.empty) {
+          
+//             return;
+//           }
+
+//           // 2. Get Firestore doc ID of the labRoom
+//           const labRoomDoc = querySnapshot.docs[0];
+//           const labRoomDocId = labRoomDoc.id;
+
+//           // 3. Query items subcollection for item with matching itemId
+//           const itemId = data.itemId; // e.g. "DENT02"
+//           const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+//           const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+//           const itemSnapshot = await getDocs(itemQuery);
+
+//           if (itemSnapshot.empty) {
+           
+//             return;
+//           }
+
+//           // 4. Get the Firestore doc ID of the item document
+//           const itemDoc = itemSnapshot.docs[0];
+//           const itemDocId = itemDoc.id;
+//           const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+//           const labData = itemDoc.data();
+
+//           const currentLabQty = Number(labData.quantity || 0);
+//           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+//           await updateDoc(labRoomItemRef, { quantity: newLabQty });
+         
+
+//           // Update condition breakdown
+//           let labGood = labData.condition?.Good ?? 0;
+//           let labDamage = labData.condition?.Damage ?? 0;
+//           let labDefect = labData.condition?.Defect ?? 0;
+//           let labLost = labData.condition?.Lost ?? 0;
+
+//           let remainingLab = requestedQty;
+
+//           if (remainingLab > 0) {
+//             const deductFromLabGood = Math.min(labGood, remainingLab);
+//             labGood -= deductFromLabGood;
+//             remainingLab -= deductFromLabGood;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabDamage = Math.min(labDamage, remainingLab);
+//             labDamage -= deductFromLabDamage;
+//             remainingLab -= deductFromLabDamage;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabDefect = Math.min(labDefect, remainingLab);
+//             labDefect -= deductFromLabDefect;
+//             remainingLab -= deductFromLabDefect;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabLost = Math.min(labLost, remainingLab);
+//             labLost -= deductFromLabLost;
+//             remainingLab -= deductFromLabLost;
+//           }
+
+//           await updateDoc(labRoomItemRef, {
+//             'condition.Good': labGood,
+//             'condition.Damage': labDamage,
+//             'condition.Defect': labDefect,
+//             'condition.Lost' : labLost,
+//           });
+
+          
+//         }
+        
+//       } catch (err) {
+       
+//       }  
+
+//       // await addDoc(collection(db, "requestlog"), requestLogEntry);
+  
+//       if (rejectedItems.length > 0) {
+//         await addDoc(collection(db, "requestlog"), rejectLogEntry);
+//       }
+  
+   
+//       // Process Borrow Catalog
+//       const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+  
+//       if (fixedItems.length > 0) {
+//         const formattedItems = fixedItems.map(item => ({
+//           category: item.category || "N/A",
+//           condition: item.condition || "N/A",
+//           department: item.department || "N/A",
+//           itemName: item.itemName || "N/A",
+//           itemDetails: item.itemDetails || "N/A",
+//           itemId: item.itemIdFromInventory,
+//           quantity: item.quantity || "1",
+//           selectedItemId: item.selectedItemId || "N/A",
+//           status: item.status || "Available",
+//           program: item.program || "N/A",
+//           course: item.course || "N/A",
+//           courseDescription: item.courseDescription || "N/A",
+//           reason: item.reason || "No reason provided",
+//           labRoom: item.labRoom || "N/A",
+//           timeFrom: item.timeFrom || "N/A",
+//           timeTo: item.timeTo || "N/A",
+//           usageType: item.usageType || "N/A",
+//           scannedCount: 0,
+//         }));
+  
+//         const borrowCatalogEntry = {
+//           accountId: selectedRequest.accountId || "N/A",
+//           userName: selectedRequest.userName || "N/A",
+//           room: selectedRequest.room || "N/A",
+//           course: selectedRequest.course || "N/A",
+//           courseDescription: selectedRequest.courseDescription || "N/A",
+//           dateRequired: selectedRequest.dateRequired || "N/A",
+//           timeFrom: selectedRequest.timeFrom || "N/A",
+//           timeTo: selectedRequest.timeTo || "N/A",
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//           requestList: formattedItems,
+//           status: "Borrowed",
+//           approvedBy: userName,
+//           reason: selectedRequest.reason || "No reason provided",
+//           program: selectedRequest.program,
+//         };
+  
+//         const userRequestLogEntry = {
+//           ...requestLogEntry,
+//           status: "Approved",
+//           approvedBy: userName,
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//         };
+  
+//         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  
+//         await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+//       }
+  
+//       await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+  
+//       // Delete matching user request subcollection doc
+//       const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+//       const subDocsSnap = await getDocs(subCollectionRef);
+  
+//       subDocsSnap.forEach(async (docSnap) => {
+//         const data = docSnap.data();
+//         const match = (
+//           data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+//           data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+//         );
+  
+//         if (match) {
+      
+//           await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+//         }
+//       });
+  
+//       setApprovedRequests(prev => [...prev, requestLogEntry]);
+//       setRequests(prev => prev.filter(req => req.id !== selectedRequest.id));
+//       setCheckedItems({});
+//       setIsModalVisible(false);
+//       setSelectedRequest(null);
+//       setIsFinalizeModalVisible(false)
+  
+//       notification.success({
+//         message: "Request Processed",
+//         description: "Approval and rejection have been logged successfully.",
+//       });
+  
+//     } catch (error) {
+    
+//       notification.error({
+//         message: "Error",
+//         description: "Failed to process the request after rejection confirmation.",
+//       });
+//     }
+//   };
+
+
+// BACKEND
+  const handleRejectConfirm = async () => {
+    setIsMultiRejectModalVisible(false);
+
     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
 
+    // ⚠️ Check if account is disabled
     try {
       const accountRef = doc(db, "accounts", selectedRequest.accountId);
       const accountSnap = await getDoc(accountRef);
-
-      if (accountSnap.exists()) {
-        const accountData = accountSnap.data();
-        const isDisabled = accountData.disabled || false; // Adjust field name if different
-
-        if (isDisabled) {
-          setNotificationMessage("Cannot approve: The user's account is disabled.");
-          setIsNotificationVisible(true);
-          return;
-        }
-        
-      } else {
-      
+      if (accountSnap.exists() && accountSnap.data().disabled) {
+        setNotificationMessage("Cannot approve: The user's account is disabled.");
+        setIsNotificationVisible(true);
+        return;
       }
-
     } catch (error) {
-     
       setNotificationMessage("Error verifying account status. Please try again.");
       setIsNotificationVisible(true);
       return;
     }
-  
-    try {
-      const rejectedItems = await Promise.all(
-        uncheckedItems.map(async (item, index) => {
-          const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-          let itemType = "Unknown";
-      
-          if (selectedItemId) {
-            try {
-              const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-              if (inventoryDoc.exists()) {
-                itemType = inventoryDoc.data().type || "Unknown";
-              }
-            } catch (err) {
-            
-            }
-          }
-      
-          const itemKey = `${selectedItemId}-${index}`;
-          const rejectionReason = rejectionReasons[itemKey] || "No reason provided";
-      
-          return {
-            ...item,
-            selectedItemId,
-            itemType,
-            rejectionReason,
-          };
-        })
-      );
-  
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      const userEmail = currentUser.email;
-  
-      // Fetch the user name from Firestore
-      let userName = "Unknown";
+
+    // 🔍 Prepare rejected items
+    const rejectedItems = await Promise.all(
+      uncheckedItems.map(async (item, index) => {
+        const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+        let itemType = "Unknown";
+        if (selectedItemId) {
+          try {
+            const snap = await getDoc(doc(db, "inventory", selectedItemId));
+            if (snap.exists()) itemType = snap.data().type || "Unknown";
+          } catch {}
+        }
+        const itemKey = `${selectedItemId}-${index}`;
+        const rejectionReason = rejectionReasons[itemKey] || "No reason provided";
+        return {
+          ...item,
+          selectedItemId,
+          itemType,
+          rejectionReason,
+        };
+      })
+    );
+
+    // 🧑‍💼 Get current user
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    const userEmail = currentUser?.email;
+
+    let userName = "Unknown";
+    let userId = "system";
+
+    if (userEmail) {
       try {
-        const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-        const userSnapshot = await getDocs(userQuery);
-  
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          const userData = userDoc.data();
+        const q = query(collection(db, "accounts"), where("email", "==", userEmail));
+        const snap = await getDocs(q);
+        if (!snap.empty) {
+          const doc = snap.docs[0];
+          const userData = doc.data();
           userName = userData.name || "Unknown";
+          userId = doc.id;
         }
+      } catch {}
+    }
 
-      } catch (error) {
-       
-      }
-  
-      const requestLogEntry = {
-        accountId: selectedRequest.accountId || "N/A",
-        userName: selectedRequest.userName || "N/A",
-        room: selectedRequest.room || "N/A",
-        course: selectedRequest.course || "N/A",
-        courseDescription: selectedRequest.courseDescription || "N/A",
-        dateRequired: selectedRequest.dateRequired || "N/A",
-        timeFrom: selectedRequest.timeFrom || "N/A",
-        timeTo: selectedRequest.timeTo || "N/A",
-        timestamp: selectedRequest.timestamp || "N/A",
-        rawTimestamp: new Date(),
-        requestList: enrichedItems,
-        status: "Approved",
-        approvedBy: userName,
-        reason: selectedRequest.reason || "No reason provided",
-        program: selectedRequest.program,
-      };
-  
-      const rejectLogEntry = {
-        accountId: selectedRequest.accountId || "N/A",
-        userName: selectedRequest.userName || "N/A",
-        room: selectedRequest.room || "N/A",
-        course: selectedRequest.course || "N/A",
-        courseDescription: selectedRequest.courseDescription || "N/A",
-        dateRequired: selectedRequest.dateRequired || "N/A",
-        timeFrom: selectedRequest.timeFrom || "N/A",
-        timeTo: selectedRequest.timeTo || "N/A",
-        timestamp: selectedRequest.timestamp || "N/A",
-        rawTimestamp: new Date(),
-        requestList: rejectedItems,
-        status: "Rejected",
-        rejectedBy: userName,
-        program: selectedRequest.program,
-      };
-  
-      const logRequestOrReturn = async (
-        userId,
-        userName,
-        action,
-        requestDetails,
-        extraInfo = {}
-      ) => {
-        await addDoc(collection(db, `accounts/${userId}/historylog`), {
-          action,
-          userName,
-          timestamp: serverTimestamp(),
-          requestList: requestDetails,
-          ...extraInfo,
-        });
-      };
-  
-
-      if (enrichedItems.length > 0) {
-        await addDoc(collection(db, "requestlog"), requestLogEntry);
-
-        await logRequestOrReturn(
-          selectedRequest.accountId,
-          selectedRequest.userName,
-          "Request Approved",
+    // 🌐 Call Express backend
+    try {
+      const response = await fetch("https://webnuls.onrender.com/request/multireject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          selectedRequest,
           enrichedItems,
-          {
-            approvedBy: userName,
-            course: selectedRequest.course || "N/A",
-            courseDescription: selectedRequest.courseDescription || "N/A",
-            dateRequired: selectedRequest.dateRequired,
-            reason: selectedRequest.reason,
-            room: selectedRequest.room,
-            program: selectedRequest.program,
-            timeFrom: selectedRequest.timeFrom || "N/A",
-            timeTo: selectedRequest.timeTo || "N/A",
-            timestamp: selectedRequest.timestamp || "N/A",
-            rawTimestamp: new Date(),
-          }
-        );
-      }
-  
-      // Log rejected items
-      if (rejectedItems.length > 0) {
-        await logRequestOrReturn(
-          selectedRequest.accountId,
-          selectedRequest.userName,
-          "Request Rejected",
           rejectedItems,
-          {
-            rejectedBy: userName,
-            course: selectedRequest.course || "N/A",
-            courseDescription: selectedRequest.courseDescription || "N/A",
-            dateRequired: selectedRequest.dateRequired,
-            reason: rejectionReason || "No reason provided",
-            room: selectedRequest.room,
-            program: selectedRequest.program,
-            timeFrom: selectedRequest.timeFrom || "N/A",
-            timeTo: selectedRequest.timeTo || "N/A",
-            timestamp: selectedRequest.timestamp || "N/A",
-            rawTimestamp: new Date(),
-          }
-        );
-      }
-
-   
-   
-try {
-        for (const item of enrichedItems) {
-          const inventoryId = item.selectedItemId;
-          const requestedQty = Number(item.quantity);
-          const labRoomId = item.labRoom;
-
-          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-           
-            continue;
-          }
-
-          if (!labRoomId) {
-           
-            continue;
-          }
-
-          const inventoryRef = doc(db, "inventory", inventoryId);
-          const inventorySnap = await getDoc(inventoryRef);
-          if (!inventorySnap.exists()) {
-           
-            continue;
-          }
-
-          const data = inventorySnap.data();
-          const currentQty = Number(data.quantity || 0);
-          const newQty = Math.max(currentQty - requestedQty, 0);
-          await updateDoc(inventoryRef, { quantity: newQty });
-
-          // Log item usage
-          await addDoc(collection(db, "itemUsage"), {
-            itemId: data.itemId, // Make sure this is correct
-            usedQuantity: requestedQty, // How much was used
-            timestamp: serverTimestamp(), // So it's traceable over time
-          });
-
-      
-
-          // ⚙️ Update inventory condition breakdown
-          let remaining = requestedQty;
-          const good = data.condition?.Good ?? 0;
-          const damage = data.condition?.Damage ?? 0;
-          const defect = data.condition?.Defect ?? 0;
-          const lost = data.condition?.Lost ?? 0;
-
-          let newGood = good;
-          let newDamage = damage;
-          let newDefect = defect;
-          let newLost = lost;
-
-          if (remaining > 0) {
-            const deductFromGood = Math.min(newGood, remaining);
-            newGood -= deductFromGood;
-            remaining -= deductFromGood;
-          }
-
-          if (remaining > 0) {
-            const deductFromDamage = Math.min(newDamage, remaining);
-            newDamage -= deductFromDamage;
-            remaining -= deductFromDamage;
-          }
-
-          if (remaining > 0) {
-            const deductFromDefect = Math.min(newDefect, remaining);
-            newDefect -= deductFromDefect;
-            remaining -= deductFromDefect;
-          }
-
-          if (remaining > 0) {
-            const deductFromLost = Math.min(newLost, remaining);
-            newLost -= deductFromLost;
-            remaining -= deductFromLost;
-          }
-
-          await updateDoc(inventoryRef, {
-            'condition.Good': newGood,
-            'condition.Damage': newDamage,
-            'condition.Defect': newDefect,
-            'condition.Lost' : newLost,
-          });
-          
-          // 🔁 Update labRoom item quantity
-          const roomNumber = item.labRoom; // e.g. "0930"
-          const labRoomCollectionRef = collection(db, "labRoom");
-          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
-          const querySnapshot = await getDocs(q);
-
-          if (querySnapshot.empty) {
-          
-            return;
-          }
-
-          // 2. Get Firestore doc ID of the labRoom
-          const labRoomDoc = querySnapshot.docs[0];
-          const labRoomDocId = labRoomDoc.id;
-
-          // 3. Query items subcollection for item with matching itemId
-          const itemId = data.itemId; // e.g. "DENT02"
-          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
-          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
-          const itemSnapshot = await getDocs(itemQuery);
-
-          if (itemSnapshot.empty) {
-           
-            return;
-          }
-
-          // 4. Get the Firestore doc ID of the item document
-          const itemDoc = itemSnapshot.docs[0];
-          const itemDocId = itemDoc.id;
-          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
-          const labData = itemDoc.data();
-
-          const currentLabQty = Number(labData.quantity || 0);
-          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          await updateDoc(labRoomItemRef, { quantity: newLabQty });
-         
-
-          // Update condition breakdown
-          let labGood = labData.condition?.Good ?? 0;
-          let labDamage = labData.condition?.Damage ?? 0;
-          let labDefect = labData.condition?.Defect ?? 0;
-          let labLost = labData.condition?.Lost ?? 0;
-
-          let remainingLab = requestedQty;
-
-          if (remainingLab > 0) {
-            const deductFromLabGood = Math.min(labGood, remainingLab);
-            labGood -= deductFromLabGood;
-            remainingLab -= deductFromLabGood;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabDamage = Math.min(labDamage, remainingLab);
-            labDamage -= deductFromLabDamage;
-            remainingLab -= deductFromLabDamage;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabDefect = Math.min(labDefect, remainingLab);
-            labDefect -= deductFromLabDefect;
-            remainingLab -= deductFromLabDefect;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabLost = Math.min(labLost, remainingLab);
-            labLost -= deductFromLabLost;
-            remainingLab -= deductFromLabLost;
-          }
-
-          await updateDoc(labRoomItemRef, {
-            'condition.Good': labGood,
-            'condition.Damage': labDamage,
-            'condition.Defect': labDefect,
-            'condition.Lost' : labLost,
-          });
-
-          
-        }
-        
-      } catch (err) {
-       
-      }  
-
-      // await addDoc(collection(db, "requestlog"), requestLogEntry);
-  
-      if (rejectedItems.length > 0) {
-        await addDoc(collection(db, "requestlog"), rejectLogEntry);
-      }
-  
-   
-      // Process Borrow Catalog
-      const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
-  
-      if (fixedItems.length > 0) {
-        const formattedItems = fixedItems.map(item => ({
-          category: item.category || "N/A",
-          condition: item.condition || "N/A",
-          department: item.department || "N/A",
-          itemName: item.itemName || "N/A",
-          itemDetails: item.itemDetails || "N/A",
-          itemId: item.itemIdFromInventory,
-          quantity: item.quantity || "1",
-          selectedItemId: item.selectedItemId || "N/A",
-          status: item.status || "Available",
-          program: item.program || "N/A",
-          course: item.course || "N/A",
-          courseDescription: item.courseDescription || "N/A",
-          reason: item.reason || "No reason provided",
-          labRoom: item.labRoom || "N/A",
-          timeFrom: item.timeFrom || "N/A",
-          timeTo: item.timeTo || "N/A",
-          usageType: item.usageType || "N/A",
-          scannedCount: 0,
-        }));
-  
-        const borrowCatalogEntry = {
-          accountId: selectedRequest.accountId || "N/A",
-          userName: selectedRequest.userName || "N/A",
-          room: selectedRequest.room || "N/A",
-          course: selectedRequest.course || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired || "N/A",
-          timeFrom: selectedRequest.timeFrom || "N/A",
-          timeTo: selectedRequest.timeTo || "N/A",
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-          requestList: formattedItems,
-          status: "Borrowed",
-          approvedBy: userName,
-          reason: selectedRequest.reason || "No reason provided",
-          program: selectedRequest.program,
-        };
-  
-        const userRequestLogEntry = {
-          ...requestLogEntry,
-          status: "Approved",
-          approvedBy: userName,
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-        };
-  
-        await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
-  
-        await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
-      }
-  
-      await deleteDoc(doc(db, "userrequests", selectedRequest.id));
-  
-      // Delete matching user request subcollection doc
-      const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
-      const subDocsSnap = await getDocs(subCollectionRef);
-  
-      subDocsSnap.forEach(async (docSnap) => {
-        const data = docSnap.data();
-        const match = (
-          data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
-          data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
-        );
-  
-        if (match) {
-      
-          await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
-        }
+          rejectionReasons,
+          userName,
+          userId,
+        }),
       });
-  
-      setApprovedRequests(prev => [...prev, requestLogEntry]);
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        notification.error({
+          message: "Request Failed",
+          description: result.error || "Could not process the request.",
+        });
+        return;
+      }
+
+      // ✅ Success
+      setApprovedRequests(prev => [...prev, selectedRequest]);
       setRequests(prev => prev.filter(req => req.id !== selectedRequest.id));
       setCheckedItems({});
-      setIsModalVisible(false);
       setSelectedRequest(null);
-      setIsFinalizeModalVisible(false)
-  
+      setIsModalVisible(false);
+      setIsFinalizeModalVisible(false);
+
       notification.success({
         message: "Request Processed",
-        description: "Approval and rejection have been logged successfully.",
+        description: result.message || "Request has been processed successfully.",
       });
-  
     } catch (error) {
-    
+      console.error("Error calling /request/multireject:", error);
       notification.error({
-        message: "Error",
-        description: "Failed to process the request after rejection confirmation.",
+        message: "Network Error",
+        description: "Failed to connect to server for multi-reject.",
       });
     }
   };
-  
  
+// FRONTEND
+//   const handleApprove = async () => {  
+//   const isChecked = Object.values(checkedItems).some((checked) => checked);
 
-  const handleApprove = async () => {  
+//   if (!isChecked) {
+//     setNotificationMessage("No Items selected");
+//     setIsNotificationVisible(true);
+//     return;
+//   }
+
+//   if (selectedRequest) {
+
+//     try {
+//       const accountRef = doc(db, "accounts", selectedRequest.accountId);
+//       const accountSnap = await getDoc(accountRef);
+
+//       if (accountSnap.exists()) {
+//         const accountData = accountSnap.data();
+//         const isDisabled = accountData.disabled || false; // Adjust field name if different
+
+//         if (isDisabled) {
+//           setNotificationMessage("Cannot approve: The user's account is disabled.");
+//           setIsNotificationVisible(true);
+//           return;
+//         }
+        
+//       } else {
+      
+//       }
+
+//     } catch (error) {
+     
+//       setNotificationMessage("Error verifying account status. Please try again.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+
+//     // Filter checked items and prepare for approval
+//     const filteredItems = selectedRequest.requestList.filter((item, index) => {
+//       const key = `${selectedRequest.id}-${index}`;
+//       return checkedItems[key];
+//     });
+
+//     if (filteredItems.length === 0) {
+//       setNotificationMessage("No Items selected");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+    
+
+
+//     const enrichedItems = await Promise.all(
+//   filteredItems.map(async (item) => {
+//     const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+//     let itemType = "Unknown";
+
+//     if (selectedItemId) {
+//       try {
+//         const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+//         if (inventoryDoc.exists()) {
+//           itemType = inventoryDoc.data().type || "Unknown";
+//         }
+//       } catch (err) {
+//         console.error("Failed to fetch inventory item:", err);
+//       }
+//     }
+
+//     return {
+//       ...item,
+//       selectedItemId,
+//       itemType,
+//     };
+//   })
+// );
+//  for (const item of enrichedItems) {
+//   const requestedQty = item.quantity;
+//   const itemId = item.selectedItemId;
+//   const itemName = item.itemName
+
+//   console.log("📦 Logging itemUsage for:", itemId);
+
+//   try {
+//     // 1. Log the usage
+//     await addDoc(collection(db, "itemUsage"), {
+//       itemId: itemId,
+//       usedQuantity: requestedQty,
+//       timestamp: serverTimestamp(),
+//       itemName:itemName
+//     });
+
+//     // 2. Fetch all past usage logs
+//     const usageQuery = query(
+//       collection(db, "itemUsage"),
+//       where("itemId", "==", itemId)
+//     );
+//     const usageSnap = await getDocs(usageQuery);
+
+//     let total = 0;
+//     const uniqueDates = new Set();
+
+//     usageSnap.forEach((doc) => {
+//       const data = doc.data();
+//       if (data.usedQuantity && data.timestamp?.toDate) {
+//         total += data.usedQuantity;
+//         const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
+//         uniqueDates.add(dateStr);
+//       }
+//     });
+
+//     const daysWithUsage = uniqueDates.size;
+//     const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
+
+//     // 🔄 Assumed buffer of 5 days for critical stock level
+//     const bufferDays = 7;
+//     const criticalLevel = average * bufferDays;
+
+//     // 3. Update inventory with new average and critical level
+//     const itemRef = doc(db, "inventory", itemId);
+//     await updateDoc(itemRef, {
+//       averageDailyUsage: average,
+//       criticalLevel: criticalLevel,
+//     });
+
+//     console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
+//   } catch (e) {
+//     console.error(`❌ Error processing usage for ${itemId}:`, e);
+//   }
+// }
+//     // Filter out unchecked items (for rejection)
+//     const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
+//       const key = `${selectedRequest.id}-${index}`;
+//       return !checkedItems[key]; // This will get the unchecked items
+//     });
+
+//     // Define rejectionReason variable outside of the condition
+//     let rejectionReason = null;
+
+
+//     if (uncheckedItems.length > 0) {
+     
+//       setPendingApprovalData({
+//         enrichedItems,
+//         uncheckedItems,
+//         selectedRequest,
+//       });
+//       setIsMultiRejectModalVisible(true); // ✅ Show new modal for multiple items
+//       return;
+//     }
+
+//     // Process rejected items
+//     const rejectedItems = await Promise.all(
+//       uncheckedItems.map(async (item) => {
+//         const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+//         let itemType = "Unknown";
+
+//         if (selectedItemId) {
+//           try {
+//             const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+//             if (inventoryDoc.exists()) {
+//               itemType = inventoryDoc.data().type || "Unknown";
+//             }
+
+//           } catch (err) {
+        
+//           }
+//         }
+
+//         return {
+//           ...item,
+//           selectedItemId,
+//           itemType, 
+//           volume: item.volume ?? "N/A", // <-- add this
+//         };
+//       })
+//     );
+
+//     const auth = getAuth();
+//     const currentUser = auth.currentUser;
+//     const userEmail = currentUser.email;
+
+//     // Fetch the user name from Firestore
+//     let userName = "Unknown";
+//     try {
+//       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+//       const userSnapshot = await getDocs(userQuery);
+
+//       if (!userSnapshot.empty) {
+//         const userDoc = userSnapshot.docs[0];
+//         const userData = userDoc.data();
+//         userName = userData.name || "Unknown";
+//       }
+
+//     } catch (error) {
+
+//     }
+
+//     const requestLogEntry = {
+//       accountId: selectedRequest.accountId || "N/A",
+//       userName: selectedRequest.userName || "N/A",
+//       room: selectedRequest.room || "N/A",
+//       course: selectedRequest.course || "N/A",
+//       courseDescription: selectedRequest.courseDescription || "N/A",
+//       dateRequired: selectedRequest.dateRequired || "N/A",
+//       timeFrom: selectedRequest.timeFrom || "N/A",  
+//       timeTo: selectedRequest.timeTo || "N/A",  
+//       timestamp: selectedRequest.timestamp || "N/A",
+//       rawTimestamp: new Date(),
+//       requestList: enrichedItems, 
+//       status: "Approved", 
+//       approvedBy: userName, 
+//       reason: selectedRequest.reason || "No reason provided",
+//       program: selectedRequest.program,
+//     };
+
+//     const rejectLogEntry = {
+//       accountId: selectedRequest.accountId || "N/A",
+//       userName: selectedRequest.userName || "N/A",
+//       room: selectedRequest.room || "N/A",
+//       course: selectedRequest.couse || "N/A",
+//       courseDescription: selectedRequest.courseDescription || "N/A",
+//       dateRequired: selectedRequest.dateRequired || "N/A",
+//       timeFrom: selectedRequest.timeFrom || "N/A",  
+//       timeTo: selectedRequest.timeTo || "N/A",  
+//       timestamp: selectedRequest.timestamp || "N/A",
+//       rawTimestamp: new Date(),
+//       requestList: rejectedItems, 
+//       status: "Rejected", 
+//       rejectedBy: userName, 
+//       reason: rejectionReason || "No reason provided",  // Use the rejection reason from the input prompt
+//       program: selectedRequest.program,
+//     };
+
+//     // Log approved items in historylog subcollection
+//     const logRequestOrReturn = async (
+//       userId,
+//       userName,
+//       action,
+//       requestDetails,
+//       extraInfo = {} // for fields like dateRequired, approvedBy, etc.
+//     ) => {
+//       await addDoc(collection(db, `accounts/${userId}/historylog`), {
+//         action,
+//         userName,
+//         timestamp: serverTimestamp(),
+//         requestList: requestDetails,
+//         ...extraInfo, // merge additional data like dateRequired, reason, etc.
+//       });
+//     };
+
+//     // Log approved items
+//     await logRequestOrReturn(
+//       selectedRequest.accountId,     // user ID
+//       selectedRequest.userName,      // user name
+//       "Request Approved",            // action
+//       enrichedItems,                 // request list
+//       {
+//         approvedBy: userName, // whoever approved
+//         course: selectedRequest.course || "N/A",
+//         courseDescription: selectedRequest.courseDescription || "N/A",
+//         dateRequired: selectedRequest.dateRequired,
+//         reason: selectedRequest.reason,
+//         room: selectedRequest.room,
+//         program: selectedRequest.program,
+//         timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+//         timeTo: selectedRequest.timeTo || "N/A",  
+//         timestamp: selectedRequest.timestamp || "N/A",
+//         rawTimestamp: new Date(),
+//       }
+//     );
+
+//     // Log rejected items
+//     if (rejectedItems.length > 0) {
+//       await logRequestOrReturn(
+//         selectedRequest.accountId,     // user ID
+//         selectedRequest.userName,      // user name
+//         "Request Rejected",            // action
+//         rejectedItems,                 // request list
+//         {
+//           rejectedBy: userName, // whoever rejected
+//           course: selectedRequest.course || "N/A",
+//           courseDescription: selectedRequest.courseDescription || "N/A",
+//           dateRequired: selectedRequest.dateRequired,
+//           reason: rejectionReason || "No reason provided",  // Reason for rejection
+//           room: selectedRequest.room,
+//           program: selectedRequest.program,
+//           timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+//           timeTo: selectedRequest.timeTo || "N/A",  
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//         }
+//       );
+//     }
+
+
+// try {
+//         for (const item of enrichedItems) {
+//           const inventoryId = item.selectedItemId;
+//           const requestedQty = Number(item.quantity);
+//           const labRoomId = item.labRoom;
+
+//           if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        
+//             continue;
+//           }
+
+//           if (!labRoomId) {
+
+//             continue;
+//           }
+
+//           const inventoryRef = doc(db, "inventory", inventoryId);
+//           const inventorySnap = await getDoc(inventoryRef);
+//           if (!inventorySnap.exists()) {
+      
+//             continue;
+//           }
+
+//           const data = inventorySnap.data();
+//           const currentQty = Number(data.quantity || 0);
+//           const newQty = Math.max(currentQty - requestedQty, 0);
+//           await updateDoc(inventoryRef, { quantity: newQty });
+        
+
+//           // ⚙️ Update inventory condition breakdown
+//           let remaining = requestedQty;
+//           const good = data.condition?.Good ?? 0;
+//           const damage = data.condition?.Damage ?? 0;
+//           const defect = data.condition?.Defect ?? 0;
+//           const lost = data.condition?.Lost ?? 0;
+
+//           let newGood = good;
+//           let newDamage = damage;
+//           let newDefect = defect;
+//           let newLost = lost;
+
+//           if (remaining > 0) {
+//             const deductFromGood = Math.min(newGood, remaining);
+//             newGood -= deductFromGood;
+//             remaining -= deductFromGood;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromDamage = Math.min(newDamage, remaining);
+//             newDamage -= deductFromDamage;
+//             remaining -= deductFromDamage;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromDefect = Math.min(newDefect, remaining);
+//             newDefect -= deductFromDefect;
+//             remaining -= deductFromDefect;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromLost = Math.min(newLost, remaining);
+//             newLost -= deductFromLost;
+//             remaining -= deductFromLost;
+//           }
+
+//           await updateDoc(inventoryRef, {
+//             'condition.Good': newGood,
+//             'condition.Damage': newDamage,
+//             'condition.Defect': newDefect,
+//             'condition.Lost' : newLost,
+//           });
+
+         
+           
+
+//           // 🔁 Update labRoom item quantity
+//           const roomNumber = item.labRoom; // e.g. "0930"
+//           const labRoomCollectionRef = collection(db, "labRoom");
+//           const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+//           const querySnapshot = await getDocs(q);
+
+//           if (querySnapshot.empty) {
+          
+
+//             return;
+//           }
+
+//           // 2. Get Firestore doc ID of the labRoom
+//           const labRoomDoc = querySnapshot.docs[0];
+//           const labRoomDocId = labRoomDoc.id;
+
+//           // 3. Query items subcollection for item with matching itemId
+//           const itemId = data.itemId; // e.g. "DENT02"
+//           const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+//           const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+//           const itemSnapshot = await getDocs(itemQuery);
+
+//           if (itemSnapshot.empty) {
+       
+//             return;
+//           }
+
+//           // 4. Get the Firestore doc ID of the item document
+//           const itemDoc = itemSnapshot.docs[0];
+//           const itemDocId = itemDoc.id;
+//           const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+//           const labData = itemDoc.data();
+
+//           const currentLabQty = Number(labData.quantity || 0);
+//           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+//           await updateDoc(labRoomItemRef, { quantity: newLabQty });
+         
+
+//           // Update condition breakdown
+//           let labGood = labData.condition?.Good ?? 0;
+//           let labDamage = labData.condition?.Damage ?? 0;
+//           let labDefect = labData.condition?.Defect ?? 0;
+//           let labLost = labData.condition?.Lost ?? 0;
+
+//           let remainingLab = requestedQty;
+
+//           if (remainingLab > 0) {
+//             const deductFromLabGood = Math.min(labGood, remainingLab);
+//             labGood -= deductFromLabGood;
+//             remainingLab -= deductFromLabGood;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabDamage = Math.min(labDamage, remainingLab);
+//             labDamage -= deductFromLabDamage;
+//             remainingLab -= deductFromLabDamage;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabDefect = Math.min(labDefect, remainingLab);
+//             labDefect -= deductFromLabDefect;
+//             remainingLab -= deductFromLabDefect;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabLost = Math.min(labLost, remainingLab);
+//             labLost -= deductFromLabLost;
+//             remainingLab -= deductFromLabLost;
+//           }
+
+//           await updateDoc(labRoomItemRef, {
+//             'condition.Good': labGood,
+//             'condition.Damage': labDamage,
+//             'condition.Defect': labDefect,
+//             'condition.Lost' : labLost,
+//           });
+
+          
+//         }
+        
+//       } catch (err) {
+
+//       }
+    
+
+//     try {
+//       // Add to requestlog for approval
+//       await addDoc(collection(db, "requestlog"), requestLogEntry);
+
+//       // Add to requestlog for rejection
+//       if (rejectedItems.length > 0) {
+//         await addDoc(collection(db, "requestlog"), rejectLogEntry);
+//       }
+
+//       // Proceed with borrow catalog logic for approved items
+//       // Filter to get all "Fixed" items
+//       // Process Borrow Catalog
+//       const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+  
+//       if (fixedItems.length > 0) {
+//         const formattedItems = fixedItems.map(item => ({
+//           category: item.category || "N/A",
+//           condition: item.condition || "N/A",
+//           department: item.department || "N/A",
+//           itemName: item.itemName || "N/A",
+//           itemDetails: item.itemDetails || "N/A",
+//           itemId: item.itemIdFromInventory,
+//           quantity: item.quantity || "1",
+//           selectedItemId: item.selectedItemId || "N/A",
+//           status: item.status || "Available",
+//           program: item.program || "N/A",
+//           course: item.course || "N/A",
+//           courseDescription: item.courseDescription || "N/A",
+//           reason: item.reason || "No reason provided",
+//           labRoom: item.labRoom || "N/A",
+//           timeFrom: item.timeFrom || "N/A",
+//           timeTo: item.timeTo || "N/A",
+//           usageType: item.usageType || "N/A",
+//           scannedCount: 0,
+//         }));
+  
+//         const borrowCatalogEntry = {
+//           accountId: selectedRequest.accountId || "N/A",
+//           userName: selectedRequest.userName || "N/A",
+//           room: selectedRequest.room || "N/A",
+//           course: selectedRequest.course || "N/A",
+//           courseDescription: selectedRequest.courseDescription || "N/A",
+//           dateRequired: selectedRequest.dateRequired || "N/A",
+//           timeFrom: selectedRequest.timeFrom || "N/A",
+//           timeTo: selectedRequest.timeTo || "N/A",
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//           requestList: formattedItems,
+//           status: "Borrowed",
+//           approvedBy: userName,
+//           reason: selectedRequest.reason || "No reason provided",
+//           program: selectedRequest.program,
+//         };
+  
+//         const userRequestLogEntry = {
+//           ...requestLogEntry,
+//           status: "Approved",
+//           approvedBy: userName,
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//         };
+  
+//         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  
+//         await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+//       }
+
+//         await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+
+//         // Cleanup the user requests subcollection
+//         const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+//         const subDocsSnap = await getDocs(subCollectionRef);
+
+//         subDocsSnap.forEach(async (docSnap) => {
+//           const data = docSnap.data();
+//           const match = (
+//             data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+//             data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+//           );
+
+//           if (match) {
+       
+//             await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+//           }
+//         });
+
+//         setApprovedRequests([...approvedRequests, requestLogEntry]);
+//         setRequests(requests.filter((req) => req.id !== selectedRequest.id));
+//         setCheckedItems({});
+//         setIsModalVisible(false);
+//         setSelectedRequest(null);
+//         setIsFinalizeModalVisible(false)
+
+//         notification.success({
+//           message: "Request Approved",
+//           description: "Request has been approved and logged.",
+//         });
+
+//       } catch (error) {
+     
+//         notification.error({
+//           message: "Approval Failed",
+//           description: "There was an error logging the approved request.",
+//         });
+//       }
+//     }
+//   };
+
+// BACKEND
+const handleApprove = async () => {
   const isChecked = Object.values(checkedItems).some((checked) => checked);
-
   if (!isChecked) {
     setNotificationMessage("No Items selected");
     setIsNotificationVisible(true);
     return;
   }
 
-  if (selectedRequest) {
+  if (!selectedRequest) return;
 
-    try {
-      const accountRef = doc(db, "accounts", selectedRequest.accountId);
-      const accountSnap = await getDoc(accountRef);
-
-      if (accountSnap.exists()) {
-        const accountData = accountSnap.data();
-        const isDisabled = accountData.disabled || false; // Adjust field name if different
-
-        if (isDisabled) {
-          setNotificationMessage("Cannot approve: The user's account is disabled.");
-          setIsNotificationVisible(true);
-          return;
-        }
-        
-      } else {
-      
-      }
-
-    } catch (error) {
-     
-      setNotificationMessage("Error verifying account status. Please try again.");
+  // Check if account is disabled
+  try {
+    const accountRef = doc(db, "accounts", selectedRequest.accountId);
+    const accountSnap = await getDoc(accountRef);
+    if (accountSnap.exists() && accountSnap.data().disabled) {
+      setNotificationMessage("Cannot approve: The user's account is disabled.");
       setIsNotificationVisible(true);
       return;
     }
+  } catch (error) {
+    setNotificationMessage("Error verifying account status. Please try again.");
+    setIsNotificationVisible(true);
+    return;
+  }
 
-    // Filter checked items and prepare for approval
-    const filteredItems = selectedRequest.requestList.filter((item, index) => {
-      const key = `${selectedRequest.id}-${index}`;
-      return checkedItems[key];
+  // ✅ Prepare enriched approved items
+  const filteredItems = selectedRequest.requestList.filter((item, index) =>
+    checkedItems[`${selectedRequest.id}-${index}`]
+  );
+
+  if (filteredItems.length === 0) {
+    setNotificationMessage("No Items selected");
+    setIsNotificationVisible(true);
+    return;
+  }
+
+  const enrichedItems = await Promise.all(
+    filteredItems.map(async (item) => {
+      const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+      let itemType = "Unknown";
+
+      if (selectedItemId) {
+        try {
+          const docSnap = await getDoc(doc(db, "inventory", selectedItemId));
+          if (docSnap.exists()) {
+            itemType = docSnap.data()?.type || "Unknown";
+          }
+        } catch {}
+      }
+
+      return {
+        ...item,
+        selectedItemId,
+        itemType,
+        volume: item.volume ?? "N/A",
+      };
+    })
+  );
+
+  // ⛔ Check for unchecked items
+  const uncheckedItems = selectedRequest.requestList.filter((item, index) =>
+    !checkedItems[`${selectedRequest.id}-${index}`]
+  );
+
+  // ❗ If there are unchecked items, trigger rejection modal and pause flow
+  if (uncheckedItems.length > 0) {
+    setPendingApprovalData({
+      enrichedItems,
+      uncheckedItems,
+      selectedRequest,
     });
+    setIsMultiRejectModalVisible(true); // ← show modal for rejection reasons
+    return; // ⛔ Don't continue to backend until modal is handled
+  }
 
-    if (filteredItems.length === 0) {
-      setNotificationMessage("No Items selected");
-      setIsNotificationVisible(true);
-      return;
-    }
-    
+  // ✅ If no unchecked items, proceed to backend approval
+  const auth = getAuth();
+  const currentUser = auth.currentUser;
+  const userEmail = currentUser?.email;
+  let userName = "Unknown";
+  let userId = "system";
 
-
-    const enrichedItems = await Promise.all(
-  filteredItems.map(async (item) => {
-    const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-    let itemType = "Unknown";
-
-    if (selectedItemId) {
-      try {
-        const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-        if (inventoryDoc.exists()) {
-          itemType = inventoryDoc.data().type || "Unknown";
-        }
-      } catch (err) {
-        console.error("Failed to fetch inventory item:", err);
+  if (userEmail) {
+    try {
+      const querySnap = await getDocs(
+        query(collection(db, "accounts"), where("email", "==", userEmail))
+      );
+      if (!querySnap.empty) {
+        const doc = querySnap.docs[0];
+        userName = doc.data().name || "Unknown";
+        userId = doc.id;
       }
-    }
-
-    return {
-      ...item,
-      selectedItemId,
-      itemType,
-    };
-  })
-);
- for (const item of enrichedItems) {
-  const requestedQty = item.quantity;
-  const itemId = item.selectedItemId;
-  const itemName = item.itemName
-
-  console.log("📦 Logging itemUsage for:", itemId);
+    } catch {}
+  }
 
   try {
-    // 1. Log the usage
-    await addDoc(collection(db, "itemUsage"), {
-      itemId: itemId,
-      usedQuantity: requestedQty,
-      timestamp: serverTimestamp(),
-      itemName:itemName
-    });
-
-    // 2. Fetch all past usage logs
-    const usageQuery = query(
-      collection(db, "itemUsage"),
-      where("itemId", "==", itemId)
-    );
-    const usageSnap = await getDocs(usageQuery);
-
-    let total = 0;
-    const uniqueDates = new Set();
-
-    usageSnap.forEach((doc) => {
-      const data = doc.data();
-      if (data.usedQuantity && data.timestamp?.toDate) {
-        total += data.usedQuantity;
-        const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
-        uniqueDates.add(dateStr);
-      }
-    });
-
-    const daysWithUsage = uniqueDates.size;
-    const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
-
-    // 🔄 Assumed buffer of 5 days for critical stock level
-    const bufferDays = 7;
-    const criticalLevel = average * bufferDays;
-
-    // 3. Update inventory with new average and critical level
-    const itemRef = doc(db, "inventory", itemId);
-    await updateDoc(itemRef, {
-      averageDailyUsage: average,
-      criticalLevel: criticalLevel,
-    });
-
-    console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
-  } catch (e) {
-    console.error(`❌ Error processing usage for ${itemId}:`, e);
-  }
-}
-    // Filter out unchecked items (for rejection)
-    const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
-      const key = `${selectedRequest.id}-${index}`;
-      return !checkedItems[key]; // This will get the unchecked items
-    });
-
-    // Define rejectionReason variable outside of the condition
-    let rejectionReason = null;
-
-
-    if (uncheckedItems.length > 0) {
-     
-      setPendingApprovalData({
-        enrichedItems,
-        uncheckedItems,
+    const response = await fetch("https://webnuls.onrender.com/request/approve", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
         selectedRequest,
+        enrichedItems,
+        rejectedItems: [], // no rejected items in this case
+        userName,
+        userId,
+      }),
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      notification.error({
+        message: "Approval Failed",
+        description: result.error || "There was a problem approving the request.",
       });
-      setIsMultiRejectModalVisible(true); // ✅ Show new modal for multiple items
       return;
     }
 
-    // Process rejected items
-    const rejectedItems = await Promise.all(
-      uncheckedItems.map(async (item) => {
-        const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-        let itemType = "Unknown";
+    // ✅ Clean up UI
+    setApprovedRequests((prev) => [...prev, selectedRequest]);
+    setRequests((prev) => prev.filter((r) => r.id !== selectedRequest.id));
+    setCheckedItems({});
+    setSelectedRequest(null);
+    setIsModalVisible(false);
+    setIsFinalizeModalVisible(false);
+    setNotificationMessage(result.message || "Request approved.");
+    setIsNotificationVisible(true);
 
-        if (selectedItemId) {
-          try {
-            const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-            if (inventoryDoc.exists()) {
-              itemType = inventoryDoc.data().type || "Unknown";
-            }
-
-          } catch (err) {
-        
-          }
-        }
-
-        return {
-          ...item,
-          selectedItemId,
-          itemType, 
-          volume: item.volume ?? "N/A", // <-- add this
-        };
-      })
-    );
-
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    const userEmail = currentUser.email;
-
-    // Fetch the user name from Firestore
-    let userName = "Unknown";
-    try {
-      const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-      const userSnapshot = await getDocs(userQuery);
-
-      if (!userSnapshot.empty) {
-        const userDoc = userSnapshot.docs[0];
-        const userData = userDoc.data();
-        userName = userData.name || "Unknown";
-      }
-
-    } catch (error) {
-
-    }
-
-    const requestLogEntry = {
-      accountId: selectedRequest.accountId || "N/A",
-      userName: selectedRequest.userName || "N/A",
-      room: selectedRequest.room || "N/A",
-      course: selectedRequest.course || "N/A",
-      courseDescription: selectedRequest.courseDescription || "N/A",
-      dateRequired: selectedRequest.dateRequired || "N/A",
-      timeFrom: selectedRequest.timeFrom || "N/A",  
-      timeTo: selectedRequest.timeTo || "N/A",  
-      timestamp: selectedRequest.timestamp || "N/A",
-      rawTimestamp: new Date(),
-      requestList: enrichedItems, 
-      status: "Approved", 
-      approvedBy: userName, 
-      reason: selectedRequest.reason || "No reason provided",
-      program: selectedRequest.program,
-    };
-
-    const rejectLogEntry = {
-      accountId: selectedRequest.accountId || "N/A",
-      userName: selectedRequest.userName || "N/A",
-      room: selectedRequest.room || "N/A",
-      course: selectedRequest.couse || "N/A",
-      courseDescription: selectedRequest.courseDescription || "N/A",
-      dateRequired: selectedRequest.dateRequired || "N/A",
-      timeFrom: selectedRequest.timeFrom || "N/A",  
-      timeTo: selectedRequest.timeTo || "N/A",  
-      timestamp: selectedRequest.timestamp || "N/A",
-      rawTimestamp: new Date(),
-      requestList: rejectedItems, 
-      status: "Rejected", 
-      rejectedBy: userName, 
-      reason: rejectionReason || "No reason provided",  // Use the rejection reason from the input prompt
-      program: selectedRequest.program,
-    };
-
-    // Log approved items in historylog subcollection
-    const logRequestOrReturn = async (
-      userId,
-      userName,
-      action,
-      requestDetails,
-      extraInfo = {} // for fields like dateRequired, approvedBy, etc.
-    ) => {
-      await addDoc(collection(db, `accounts/${userId}/historylog`), {
-        action,
-        userName,
-        timestamp: serverTimestamp(),
-        requestList: requestDetails,
-        ...extraInfo, // merge additional data like dateRequired, reason, etc.
-      });
-    };
-
-    // Log approved items
-    await logRequestOrReturn(
-      selectedRequest.accountId,     // user ID
-      selectedRequest.userName,      // user name
-      "Request Approved",            // action
-      enrichedItems,                 // request list
-      {
-        approvedBy: userName, // whoever approved
-        course: selectedRequest.course || "N/A",
-        courseDescription: selectedRequest.courseDescription || "N/A",
-        dateRequired: selectedRequest.dateRequired,
-        reason: selectedRequest.reason,
-        room: selectedRequest.room,
-        program: selectedRequest.program,
-        timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
-        timeTo: selectedRequest.timeTo || "N/A",  
-        timestamp: selectedRequest.timestamp || "N/A",
-        rawTimestamp: new Date(),
-      }
-    );
-
-    // Log rejected items
-    if (rejectedItems.length > 0) {
-      await logRequestOrReturn(
-        selectedRequest.accountId,     // user ID
-        selectedRequest.userName,      // user name
-        "Request Rejected",            // action
-        rejectedItems,                 // request list
-        {
-          rejectedBy: userName, // whoever rejected
-          course: selectedRequest.course || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired,
-          reason: rejectionReason || "No reason provided",  // Reason for rejection
-          room: selectedRequest.room,
-          program: selectedRequest.program,
-          timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
-          timeTo: selectedRequest.timeTo || "N/A",  
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-        }
-      );
-    }
-
-
-try {
-        for (const item of enrichedItems) {
-          const inventoryId = item.selectedItemId;
-          const requestedQty = Number(item.quantity);
-          const labRoomId = item.labRoom;
-
-          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-        
-            continue;
-          }
-
-          if (!labRoomId) {
-
-            continue;
-          }
-
-          const inventoryRef = doc(db, "inventory", inventoryId);
-          const inventorySnap = await getDoc(inventoryRef);
-          if (!inventorySnap.exists()) {
-      
-            continue;
-          }
-
-          const data = inventorySnap.data();
-          const currentQty = Number(data.quantity || 0);
-          const newQty = Math.max(currentQty - requestedQty, 0);
-          await updateDoc(inventoryRef, { quantity: newQty });
-        
-
-          // ⚙️ Update inventory condition breakdown
-          let remaining = requestedQty;
-          const good = data.condition?.Good ?? 0;
-          const damage = data.condition?.Damage ?? 0;
-          const defect = data.condition?.Defect ?? 0;
-          const lost = data.condition?.Lost ?? 0;
-
-          let newGood = good;
-          let newDamage = damage;
-          let newDefect = defect;
-          let newLost = lost;
-
-          if (remaining > 0) {
-            const deductFromGood = Math.min(newGood, remaining);
-            newGood -= deductFromGood;
-            remaining -= deductFromGood;
-          }
-
-          if (remaining > 0) {
-            const deductFromDamage = Math.min(newDamage, remaining);
-            newDamage -= deductFromDamage;
-            remaining -= deductFromDamage;
-          }
-
-          if (remaining > 0) {
-            const deductFromDefect = Math.min(newDefect, remaining);
-            newDefect -= deductFromDefect;
-            remaining -= deductFromDefect;
-          }
-
-          if (remaining > 0) {
-            const deductFromLost = Math.min(newLost, remaining);
-            newLost -= deductFromLost;
-            remaining -= deductFromLost;
-          }
-
-          await updateDoc(inventoryRef, {
-            'condition.Good': newGood,
-            'condition.Damage': newDamage,
-            'condition.Defect': newDefect,
-            'condition.Lost' : newLost,
-          });
-
-         
-           
-
-          // 🔁 Update labRoom item quantity
-          const roomNumber = item.labRoom; // e.g. "0930"
-          const labRoomCollectionRef = collection(db, "labRoom");
-          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
-          const querySnapshot = await getDocs(q);
-
-          if (querySnapshot.empty) {
-          
-
-            return;
-          }
-
-          // 2. Get Firestore doc ID of the labRoom
-          const labRoomDoc = querySnapshot.docs[0];
-          const labRoomDocId = labRoomDoc.id;
-
-          // 3. Query items subcollection for item with matching itemId
-          const itemId = data.itemId; // e.g. "DENT02"
-          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
-          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
-          const itemSnapshot = await getDocs(itemQuery);
-
-          if (itemSnapshot.empty) {
-       
-            return;
-          }
-
-          // 4. Get the Firestore doc ID of the item document
-          const itemDoc = itemSnapshot.docs[0];
-          const itemDocId = itemDoc.id;
-          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
-          const labData = itemDoc.data();
-
-          const currentLabQty = Number(labData.quantity || 0);
-          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          await updateDoc(labRoomItemRef, { quantity: newLabQty });
-         
-
-          // Update condition breakdown
-          let labGood = labData.condition?.Good ?? 0;
-          let labDamage = labData.condition?.Damage ?? 0;
-          let labDefect = labData.condition?.Defect ?? 0;
-          let labLost = labData.condition?.Lost ?? 0;
-
-          let remainingLab = requestedQty;
-
-          if (remainingLab > 0) {
-            const deductFromLabGood = Math.min(labGood, remainingLab);
-            labGood -= deductFromLabGood;
-            remainingLab -= deductFromLabGood;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabDamage = Math.min(labDamage, remainingLab);
-            labDamage -= deductFromLabDamage;
-            remainingLab -= deductFromLabDamage;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabDefect = Math.min(labDefect, remainingLab);
-            labDefect -= deductFromLabDefect;
-            remainingLab -= deductFromLabDefect;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabLost = Math.min(labLost, remainingLab);
-            labLost -= deductFromLabLost;
-            remainingLab -= deductFromLabLost;
-          }
-
-          await updateDoc(labRoomItemRef, {
-            'condition.Good': labGood,
-            'condition.Damage': labDamage,
-            'condition.Defect': labDefect,
-            'condition.Lost' : labLost,
-          });
-
-          
-        }
-        
-      } catch (err) {
-
-      }
+    notification.success({
+      message: "Request Approved",
+      description: result.message || "Request has been approved and logged.",
+    });
     
-
-    try {
-      // Add to requestlog for approval
-      await addDoc(collection(db, "requestlog"), requestLogEntry);
-
-      // Add to requestlog for rejection
-      if (rejectedItems.length > 0) {
-        await addDoc(collection(db, "requestlog"), rejectLogEntry);
-      }
-
-      // Proceed with borrow catalog logic for approved items
-      // Filter to get all "Fixed" items
-      // Process Borrow Catalog
-      const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
-  
-      if (fixedItems.length > 0) {
-        const formattedItems = fixedItems.map(item => ({
-          category: item.category || "N/A",
-          condition: item.condition || "N/A",
-          department: item.department || "N/A",
-          itemName: item.itemName || "N/A",
-          itemDetails: item.itemDetails || "N/A",
-          itemId: item.itemIdFromInventory,
-          quantity: item.quantity || "1",
-          selectedItemId: item.selectedItemId || "N/A",
-          status: item.status || "Available",
-          program: item.program || "N/A",
-          course: item.course || "N/A",
-          courseDescription: item.courseDescription || "N/A",
-          reason: item.reason || "No reason provided",
-          labRoom: item.labRoom || "N/A",
-          timeFrom: item.timeFrom || "N/A",
-          timeTo: item.timeTo || "N/A",
-          usageType: item.usageType || "N/A",
-          scannedCount: 0,
-        }));
-  
-        const borrowCatalogEntry = {
-          accountId: selectedRequest.accountId || "N/A",
-          userName: selectedRequest.userName || "N/A",
-          room: selectedRequest.room || "N/A",
-          course: selectedRequest.course || "N/A",
-          courseDescription: selectedRequest.courseDescription || "N/A",
-          dateRequired: selectedRequest.dateRequired || "N/A",
-          timeFrom: selectedRequest.timeFrom || "N/A",
-          timeTo: selectedRequest.timeTo || "N/A",
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-          requestList: formattedItems,
-          status: "Borrowed",
-          approvedBy: userName,
-          reason: selectedRequest.reason || "No reason provided",
-          program: selectedRequest.program,
-        };
-  
-        const userRequestLogEntry = {
-          ...requestLogEntry,
-          status: "Approved",
-          approvedBy: userName,
-          timestamp: selectedRequest.timestamp || "N/A",
-          rawTimestamp: new Date(),
-        };
-  
-        await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
-  
-        await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
-      }
-
-        await deleteDoc(doc(db, "userrequests", selectedRequest.id));
-
-        // Cleanup the user requests subcollection
-        const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
-        const subDocsSnap = await getDocs(subCollectionRef);
-
-        subDocsSnap.forEach(async (docSnap) => {
-          const data = docSnap.data();
-          const match = (
-            data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
-            data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
-          );
-
-          if (match) {
-       
-            await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
-          }
-        });
-
-        setApprovedRequests([...approvedRequests, requestLogEntry]);
-        setRequests(requests.filter((req) => req.id !== selectedRequest.id));
-        setCheckedItems({});
-        setIsModalVisible(false);
-        setSelectedRequest(null);
-        setIsFinalizeModalVisible(false)
-
-        notification.success({
-          message: "Request Approved",
-          description: "Request has been approved and logged.",
-        });
-
-      } catch (error) {
-     
-        notification.error({
-          message: "Approval Failed",
-          description: "There was an error logging the approved request.",
-        });
-      }
-    }
-  };
+  } catch (err) {
+    console.error("Approval error:", err);
+    notification.error({
+      message: "Network Error",
+      description: "Could not connect to the server.",
+    });
+  }
+};
 
   const handleReject = () => { 
     if (!selectedRequest) return;
@@ -1682,140 +1936,242 @@ try {
     setIsMultiRejectModalVisible(true);
   };
 
+  // BACKEND
+  // const handleRejectSubmit = async () => {
+  //   const isChecked = Object.values(checkedItems).some((checked) => checked);
+  
+  //   if (!isChecked) {
+  //     setNotificationMessage("No Items selected");
+  //     setIsNotificationVisible(true);
+  //     return;
+  //   }
+  
+  //   if (selectedRequest) {
+  //     const filteredItems = selectedRequest.requestList.filter((item, index) => {
+  //       const key = `${selectedRequest.id}-${index}`;
+  //       return checkedItems[key];
+  //     });
+  
+  //     if (filteredItems.length === 0) {
+  //       setNotificationMessage("No Items selected");
+  //       setIsNotificationVisible(true);
+  //       return;
+  //     }
+  
+  //     const enrichedItems = await Promise.all(
+  //       filteredItems.map(async (item) => {
+  //         const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+  //         let itemType = "Unknown";
+  
+  //         if (selectedItemId) {
+  //           try {
+  //             const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+  //             if (inventoryDoc.exists()) {
+  //               itemType = inventoryDoc.data().type || "Unknown";
+  //             }
+  //           } catch (err) {
+            
+  //           }
+  //         }
+  
+  //         return {
+  //           ...item,
+  //           selectedItemId,
+  //           itemType,
+  //         };
+  //       })
+  //     );
+  
+  //     const auth = getAuth();
+  //     const currentUser = auth.currentUser;
+  //     const userEmail = currentUser.email;
+  
+  //     // Fetch the user name from Firestore
+  //     let userName = "Unknown";
+  //     try {
+  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+  //       const userSnapshot = await getDocs(userQuery);
+  
+  //       if (!userSnapshot.empty) {
+  //         const userDoc = userSnapshot.docs[0];
+  //         const userData = userDoc.data();
+  //         userName = userData.name || "Unknown";
+  //       }
+  //     } catch (error) {
+
+  //     }
+  
+  //     const rejectLogEntry = {
+  //       accountId: selectedRequest.accountId || "N/A",
+  //       userName: selectedRequest.userName || "N/A",
+  //       room: selectedRequest.room || "N/A",
+  //       course: selectedRequest.course || "N/A",
+  //       courseDescription: selectedRequest.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.dateRequired || "N/A",
+  //       timeFrom: selectedRequest.timeFrom || "N/A",  
+  //       timeTo: selectedRequest.timeTo || "N/A",  
+  //       timestamp: new Date(),
+  //       requestList: enrichedItems, 
+  //       status: "Rejected", 
+  //       rejectedBy: userName, 
+  //       reason: rejectReason || "No reason provided",
+  //       program: selectedRequest.program,
+  //     };
+  
+  //     try {
+  //       // Add to rejection log (requestlog collection)
+  //       await addDoc(collection(db, "requestlog"), rejectLogEntry);
+
+  //       // Add to historylog subcollection for the user
+  //       await addDoc(
+  //         collection(db, "accounts", selectedRequest.accountId, "historylog"), 
+  //         {
+  //           ...rejectLogEntry, 
+  //           action: "Request Rejected", 
+  //           timestamp: serverTimestamp(),
+  //         }
+  //       );        
+  
+  //       // Delete rejected request from userrequests
+  //       await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+  
+  //       // Delete from subcollection with matching timestamp and selectedItemId
+  //       const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+  //       const subDocsSnap = await getDocs(subCollectionRef);
+
+  //       subDocsSnap.forEach(async (docSnap) => {
+  //         const data = docSnap.data();
+  //         const match = (
+  //           data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+  //           data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+  //         );
+
+  //         if (match) {
+            
+  //           await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+  //         }
+  //       });
+  
+  //       // Update state
+  //       setRequests(requests.filter((req) => req.id !== selectedRequest.id));
+  //       setCheckedItems({});
+  //       setIsRejectModalVisible(false);
+  //       setRejectReason(""); 
+  //       setIsModalVisible(false);
+  
+  //       notification.success({
+  //         message: "Request Rejected",
+  //         description: "Request has been rejected and logged.",
+  //       });
+
+  //     } catch (error) {
+
+  //       notification.error({
+  //         message: "Rejection Failed",
+  //         description: "There was an error logging the rejected request.",
+  //       });
+  //     }
+  //   }
+  // };
+
+  // BACKEND
   const handleRejectSubmit = async () => {
     const isChecked = Object.values(checkedItems).some((checked) => checked);
-  
+
     if (!isChecked) {
-      setNotificationMessage("No Items selected");
+      setNotificationMessage("No items selected");
       setIsNotificationVisible(true);
       return;
     }
-  
-    if (selectedRequest) {
-      const filteredItems = selectedRequest.requestList.filter((item, index) => {
-        const key = `${selectedRequest.id}-${index}`;
-        return checkedItems[key];
-      });
-  
-      if (filteredItems.length === 0) {
-        setNotificationMessage("No Items selected");
-        setIsNotificationVisible(true);
-        return;
-      }
-  
-      const enrichedItems = await Promise.all(
-        filteredItems.map(async (item) => {
-          const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-          let itemType = "Unknown";
-  
-          if (selectedItemId) {
-            try {
-              const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-              if (inventoryDoc.exists()) {
-                itemType = inventoryDoc.data().type || "Unknown";
-              }
-            } catch (err) {
-            
+
+    if (!selectedRequest) {
+      setNotificationMessage("No request selected");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    const filteredItems = selectedRequest.requestList.filter((item, index) => {
+      const key = `${selectedRequest.id}-${index}`;
+      return checkedItems[key];
+    });
+
+    if (filteredItems.length === 0) {
+      setNotificationMessage("No items selected");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    const enrichedItems = await Promise.all(
+      filteredItems.map(async (item) => {
+        const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+        let itemType = "Unknown";
+
+        if (selectedItemId) {
+          try {
+            const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+            if (inventoryDoc.exists()) {
+              itemType = inventoryDoc.data().type || "Unknown";
             }
+          } catch (err) {
+            console.warn("Failed to fetch item type", err);
           }
-  
-          return {
-            ...item,
-            selectedItemId,
-            itemType,
-          };
-        })
-      );
-  
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      const userEmail = currentUser.email;
-  
-      // Fetch the user name from Firestore
-      let userName = "Unknown";
-      try {
-        const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-        const userSnapshot = await getDocs(userQuery);
-  
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          const userData = userDoc.data();
-          userName = userData.name || "Unknown";
         }
-      } catch (error) {
 
-      }
-  
-      const rejectLogEntry = {
-        accountId: selectedRequest.accountId || "N/A",
-        userName: selectedRequest.userName || "N/A",
-        room: selectedRequest.room || "N/A",
-        course: selectedRequest.course || "N/A",
-        courseDescription: selectedRequest.courseDescription || "N/A",
-        dateRequired: selectedRequest.dateRequired || "N/A",
-        timeFrom: selectedRequest.timeFrom || "N/A",  
-        timeTo: selectedRequest.timeTo || "N/A",  
-        timestamp: new Date(),
-        requestList: enrichedItems, 
-        status: "Rejected", 
-        rejectedBy: userName, 
-        reason: rejectReason || "No reason provided",
-        program: selectedRequest.program,
-      };
-  
-      try {
-        // Add to rejection log (requestlog collection)
-        await addDoc(collection(db, "requestlog"), rejectLogEntry);
+        return {
+          ...item,
+          selectedItemId,
+          itemType,
+        };
+      })
+    );
 
-        // Add to historylog subcollection for the user
-        await addDoc(
-          collection(db, "accounts", selectedRequest.accountId, "historylog"), 
-          {
-            ...rejectLogEntry, 
-            action: "Request Rejected", 
-            timestamp: serverTimestamp(),
-          }
-        );        
-  
-        // Delete rejected request from userrequests
-        await deleteDoc(doc(db, "userrequests", selectedRequest.id));
-  
-        // Delete from subcollection with matching timestamp and selectedItemId
-        const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
-        const subDocsSnap = await getDocs(subCollectionRef);
+    // 🔐 Get logged-in user info
+    const userId = localStorage.getItem("userId") || "system";
+    const userName = localStorage.getItem("userName") || "Unknown";
 
-        subDocsSnap.forEach(async (docSnap) => {
-          const data = docSnap.data();
-          const match = (
-            data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
-            data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
-          );
+    try {
+      const response = await fetch("https://webnuls.onrender.com/reject", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          selectedRequest,
+          enrichedItems,
+          rejectReason,
+          userId,
+          userName,
+        }),
+      });
 
-          if (match) {
-            
-            await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
-          }
-        });
-  
-        // Update state
-        setRequests(requests.filter((req) => req.id !== selectedRequest.id));
-        setCheckedItems({});
-        setIsRejectModalVisible(false);
-        setRejectReason(""); 
-        setIsModalVisible(false);
-  
-        notification.success({
-          message: "Request Rejected",
-          description: "Request has been rejected and logged.",
-        });
+      const data = await response.json();
 
-      } catch (error) {
-
+      if (!response.ok) {
         notification.error({
           message: "Rejection Failed",
-          description: "There was an error logging the rejected request.",
+          description: data.error || "There was a problem rejecting the request.",
         });
+        return;
       }
+
+      notification.success({
+        message: "Request Rejected",
+        description: data.message || "Request has been successfully rejected and logged.",
+      });
+
+      // 🧼 Clean up UI
+      setRequests((prev) => prev.filter((req) => req.id !== selectedRequest.id));
+      setCheckedItems({});
+      setIsRejectModalVisible(false);
+      setRejectReason("");
+      setIsModalVisible(false);
+      setNotificationMessage("Request rejected successfully");
+      setIsNotificationVisible(true);
+
+    } catch (error) {
+      console.error("Error submitting rejection:", error);
+      notification.error({
+        message: "Network Error",
+        description: "Could not connect to the rejection server.",
+      });
     }
   };
 
