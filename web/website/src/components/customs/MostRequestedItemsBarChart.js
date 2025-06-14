@@ -179,7 +179,8 @@ const processData = (data, count) => {
 
       {summary && (
         <Paragraph style={{ marginTop: 16 }}>
-          <strong>AI Insight Summary:</strong> {summary}
+          <strong>AI Insight Summary:</strong>
+          <p>{summary}</p> 
         </Paragraph>
       )}
 

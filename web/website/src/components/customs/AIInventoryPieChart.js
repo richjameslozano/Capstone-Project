@@ -117,7 +117,7 @@ const pieOptions = {
           <MdSmartToy size={28} color="gray" />
           <GiArtificialHive size={28} color="purple" /> */}
         <Bot size={28} color="#0f3c4c" />
-        <Title level={5} style={{margin: 0, padding: 0, fontSize: 20}}>Pixie Prescripion</Title>
+        <Title level={5} style={{margin: 0, padding: 0, fontSize: 20}}>Pixie Prescription</Title>
         </div>
         <Paragraph>
           {chartData.Explanation || "No explanation provided by the AI."}
