@@ -499,11 +499,23 @@ const AccountManagement = () => {
         .toLowerCase()
         .replace(/\b\w/g, (char) => char.toUpperCase());
 
+    const role =
+      values.jobTitle === "Dean"
+        ? "admin"
+        : values.jobTitle === "Laboratory Custodian"
+        ? "super-user"
+        : values.jobTitle === "Program Chair"
+        ? "admin"
+        : values.jobTitle === "Faculty"
+        ? "User"
+        : "";
+
     const sanitizedValues = {
       ...values,
       name: capitalizeWords(values.name),
       email: values.email.trim().toLowerCase(),
       employeeId: values.employeeId.trim(),
+      role,
     };
 
     const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
