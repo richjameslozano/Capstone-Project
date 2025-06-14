@@ -403,13 +403,12 @@ useEffect(() => {
     useEffect(() => {
       // Query to fetch recent products ordered by 'entryDate' and limit to a certain number (e.g., last 5 products)
       const fetchRecentProducts = async () => {
-        const productsRef = collection(db, "inventory"); // Assuming "inventory" is the collection name
+        const productsRef = collection(db, "allactivitylog"); // Assuming "inventory" is the collection name
 
         // Query to fetch the most recent products
         const q = query(
           productsRef, 
-          orderBy("entryCurrentDate", "desc"),  // Order by the entry date in descending order
-          limit(10)  // Limit the number of recent products (e.g., 5)
+          orderBy("timestamp", "desc"),  // Order by the entry date in descending order
         );
 
         const querySnapshot = await getDocs(q);
@@ -634,8 +633,13 @@ useEffect(() => {
 <Col flex="1" xs={24} md={8}>
   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px', width: '100%'}}>
     <MostRequestedItemsBarChart />
+
+
+
+
+
           <Card
-        title={<div style={{display: 'flex',alignItems: 'center', gap: 12, fontSize: 18}}><MdAccessTime size={25} color="#4b5563" />Recently Added Items</div>}
+        title={<div style={{display: 'flex',alignItems: 'center', gap: 12, fontSize: 18}}><MdAccessTime size={25} color="#4b5563" />Inventory History</div>}
         className="sales-card-header"
         style={{ marginBottom: 0, width: '100%' }}
       >
@@ -653,16 +657,17 @@ useEffect(() => {
                   }}
                 >
                   <div>
-                    <div style={{ fontWeight: 500 }}>{item.itemName}</div>
-                    <small style={{ color: "#888" }}>{item.category}</small>
+                    <div style={{ fontWeight: 500 }}>{item.action}</div>
+                    <small style={{ color: "#888" }}>{item.userName}</small>
                   </div>
                   <div style={{ color: "#555", fontSize: "0.9em" }}>
-                    {item.entryCurrentDate}
+                    {item.timestamp?.toDate().toLocaleDateString()}
                   </div>
                 </div>
               </List.Item>
             )}
           />
+
           
         </div>
       </Card>
