@@ -372,23 +372,6 @@ const shouldShowSpinner = useMemo(() => {
       ],
     },
     {
-      key: 'account-panel',
-      icon: <UserSwitchOutlined />,
-      label: 'Account Panel',
-      children: [
-        {
-          key: "/main/accounts",
-          icon: <UserOutlined />,
-          label: "Accounts",
-        },
-        {
-          key: "/main/pending-accounts",
-          icon: <UserOutlined />,
-          label: "Pending Accounts",
-        },
-      ],
-    },
-    {
       key: "/main/admin-activity-log",
       icon: <HistoryOutlined />,
       label: "Activity Log",
@@ -599,12 +582,15 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               <Route path="/pending-accounts" element={<PendingAccounts />} />
             </Route>
 
+            <Route element={<ProtectedRoute allowedRoles={["super-super"]} />}>
+              <Route path="/borrow-catalog" element={<BorrowCatalog />} />
+            </Route>
+
             {/* Admin-only routes */}
             <Route element={<ProtectedRoute allowedRoles={["admin", "super-user"]} />}>
               <Route path="/dashboard" element={<Dashboard />} />
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/pending-request" element={<PendingRequest />} />
-              <Route path="/borrow-catalog" element={<BorrowCatalog />} />
               <Route path="/request-log" element={<RequestLog />} />
               <Route path="/admin-activity-log" element={<AdminActivityLog />} />
               <Route path="/lab-room" element={<LabRoomQR/>} />
