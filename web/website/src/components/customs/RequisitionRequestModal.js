@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Modal, Button, Row, Col, Typography, Table } from "antd";
-import { collection, addDoc, serverTimestamp, doc, updateDoc } from "firebase/firestore";
+import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/PendingRequest.css";
 import NotificationModal from "./NotificationModal";
@@ -19,10 +19,13 @@ const RequisitionReqestModal = ({
   college,
 }) => {
 
-  const [checkedItemIds, setCheckedItemIds] = useState([]);
-  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState("");
-  const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
+    const [checkedItemIds, setCheckedItemIds] = useState([]);
+    const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+    const [notificationMessage, setNotificationMessage] = useState("");
+    const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
+    const [requestCollege, setRequestCollege] = useState(null);
+    const userDepartment = (localStorage.getItem("userDepartment") || "").trim().toUpperCase();
+    const userJobTitle = (localStorage.getItem("userJobTitle") || "").trim().toLowerCase();
 
   useEffect(() => {
     if (selectedRequest) {
@@ -30,29 +33,31 @@ const RequisitionReqestModal = ({
     }
   }, [selectedRequest]);
 
-  const capitalizeName = (name) => {
-    return name.replace(/\b\w/g, char => char.toUpperCase());
-  };  
+  useEffect(() => {
+    const fetchCollegeFromDepartment = async () => {
+      if (!selectedRequest?.department) return;
 
-  // const handleAskApproval = async () => {
-  //   if (!selectedRequest) return;
+      try {
+        const q = query(
+          collection(db, "departments"),
+          where("name", "==", selectedRequest.department)
+        );
+        const snapshot = await getDocs(q);
+        if (!snapshot.empty) {
+          const college = snapshot.docs[0].data().college;
+          setRequestCollege(college?.toUpperCase() || null);
+        } else {
+          setRequestCollege(null);
+        }
+      } catch (error) {
+        console.error("Error fetching department college:", error);
+        setRequestCollege(null);
+      }
+    };
 
-  //   try {
-  //     await addDoc(collection(db, "approvalrequestcollection"), {
-  //       ...selectedRequest,
-  //       forwardedAt: serverTimestamp(),
-  //       status: "Pending Approval",
-  //     });
+    fetchCollegeFromDepartment();
+  }, [selectedRequest]);
 
-  //     setNotificationMessage("Request successfully forwarded for approval.");
-  //     setIsNotificationVisible(true);
-  //     handleCancel(); // Optionally close the modal
-  //   } catch (error) {
-  //     console.error("Error forwarding request:", error);
-  //     setNotificationMessage("Failed to forward request for approval.");
-  //     setIsNotificationVisible(true);
-  //   }
-  // };
 
   const handleAskApproval = async () => {
     if (!selectedRequest) return;
@@ -86,139 +91,69 @@ const RequisitionReqestModal = ({
     }
   };
 
+  const isDeanOfSAH = userDepartment === "SAH" && userJobTitle === "dean";
+  const shouldShowAskApproval = requestCollege !== "SAH" && !isDeanOfSAH;
+
+  console.log("Dean of SAH:", isDeanOfSAH);
+
+  console.log("Selected Request Department:", selectedRequest?.department);
+  console.log("Resolved College from Firestore:", requestCollege);
+  console.log("User Department:", userDepartment);
+  console.log("User Job Title:", userJobTitle);
+  console.log("Should show Ask Approval button?", shouldShowAskApproval);
+
   return (
     <>
       <Modal
-        // title={
-        //   <div style={{ background: "#f60", padding: "12px", color: "#fff" }}>
-        //     <Text strong style={{ color: "#fff" }}>📄 Requisition Slip</Text>
-            
-        //   </div>
-        // }
         open={isModalVisible}
         onCancel={handleCancel}
-        width={1000}
+        width={800}
         zIndex={1022}
-        // footer={[
-        //   <Button key="cancel" onClick={handleCancel}>Cancel</Button>,
-        //   <Button key="reject" type="default" onClick={handleReturn}>Reject</Button>,
-        //   <Button key="approve" type="primary" onClick={handleApprove}>
-        //     {allItemsChecked ? "Approve" : "Next"}
-        //   </Button>
-        // ]}
+
         footer={[
           <Button key="cancel" onClick={handleCancel}>Cancel</Button>,
           <Button key="reject" type="default" onClick={handleReturn}>Reject</Button>,
-          college?.toUpperCase() !== "SAH" && (
-            <Button key="askApproval" type="dashed" onClick={handleAskApproval} disabled={selectedRequest?.approvalRequested === false}>
+
+          requestCollege !== null && shouldShowAskApproval && (
+            <Button
+              key="askApproval"
+              type="dashed"
+              onClick={handleAskApproval}
+              disabled={selectedRequest?.approvalRequested === false}
+            >
               Ask Approval
             </Button>
           ),
-          // <Button key="approve" type="primary" onClick={handleApprove}>
-          //   {allItemsChecked ? "Approve" : "Next"}
-          // </Button>
 
           <Button
             key="approve"
             type="primary"
             onClick={handleApprove}
-            disabled={selectedRequest?.approvalRequested === false}
+            disabled={
+              // If approvalRequested exists...
+              typeof selectedRequest?.approvalRequested !== "undefined"
+                ? selectedRequest.approvalRequested || selectedRequest.deanStatus !== "Approved by Dean"
+                : false // If approvalRequested does not exist, enable
+            }
           >
             {allItemsChecked ? "Approve" : "Next"}
           </Button>
         ]}
-        className="request-modal"
-
       >
         {selectedRequest && (
           <>
           <div className="requisition-slip-title">
             <strong>Requisition Slip</strong>
-            {/* <span style={{ float: "right", fontStyle: "italic", fontSize: '15px' }}>
+            <span style={{ float: "right", fontStyle: "italic", fontSize: '15px' }}>
               Requisition ID: {selectedRequest?.id}
-            </span> */}
+            </span>
           </div>
               <div className="whole-slip">
-      
-      <div className="table-container">
-                <div className="table-wrapper2">
-                    <table class="horizontal-table">
-                        <tbody>
-                          <tr>
-                            <th>Requestor</th>
-                            <td>{capitalizeName(selectedRequest.userName)}</td>
-                          </tr>
-
-                          <tr>
-                            <th>Date Submitted</th>
-                            <td>{formatDate(selectedRequest.timestamp)}</td>
-                          </tr>
-
-                          <tr>
-                            <th>Program</th>
-                            <td>{selectedRequest.program}</td>
-                          </tr>
-
-                          <tr>
-                            <th>Course Code</th>
-                            <td>
-                              {selectedRequest.course}
-                            </td>
-                          </tr>
-
-                          <tr>
-                            <th>Course Description</th>
-                            <td>{selectedRequest.courseDescription || 'N/A'}</td>
-                          </tr> 
-                        </tbody>
-                      </table>
-                      </div>
-
-                      <div className="table-wrapper2">
-                    <table class="horizontal-table">
-                        <tbody>
-                          <tr>
-                            <th>Date Needed</th>
-                            <td>{selectedRequest.dateRequired}</td>
-                          </tr>
-
-                          <tr>
-                            <th>Room</th>
-                            <td>{selectedRequest.room}</td>
-                          </tr>
-
-                          <tr>
-                            <th>Time Needed</th>
-                            <td>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</td>
-                          </tr>
-
-                          <tr>
-                            <th>Usage Type</th>
-                            <td>
-                              {selectedRequest.usageType}
-                            </td>
-                          </tr>
-
-                          {/* <tr>
-                            <th>Category</th>
-                            <td>{selectedRequest.category}</td>
-                          </tr>
-
-                          <tr>
-                            <th>Item Type</th>
-                            <td>{selectedRequest.type}</td>
-                          </tr> */}
-
-                        </tbody>
-                      </table>
-                      </div>
-                </div>
-
                 <div className="left-slip">
                   <div> <strong>Requestor:</strong><p> {selectedRequest.userName}</p></div>
-                  <div>< strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p> </div>
-                  <div>< strong>Date Needed:</strong> <p>{selectedRequest.dateRequired}</p></div>
-                  <div>< strong>Time Needed:</strong> <p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p> </div>
+                <div>< strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p> </div>
+                <div>< strong>Date Needed:</strong> <p>{selectedRequest.dateRequired}</p></div>
+                <div>< strong>Time Needed:</strong> <p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p> </div>
                 </div>
                 
 
@@ -229,23 +164,18 @@ const RequisitionReqestModal = ({
                   <div><strong>Program:</strong> <p>{selectedRequest.program}</p></div>
                   <div><strong>Usage Type:</strong> <p>{selectedRequest.usageType}</p></div>
                 </div>
-                
               </div>
-              
-          
-          <div style={{padding: 20}}>
-            <Title level={5} style={{ marginTop: 10 }}>Requested Items:</Title>
+
+            <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
             <Table
               dataSource={selectedRequest.requestList}
               columns={columns}
               rowKey="id"
               pagination={false}
               bordered
-              className="requested-item-tbl"
             />
 
-            <div style={{display: 'flex', marginTop: '20px'}}><p style={{textDecoration: 'italics'}}><strong>Note:</strong> {selectedRequest.reason || 'None'}</p></div>
-          </div>
+            <div style={{display: 'flex', marginTop: '20px'}}><p><strong>Note:</strong> {selectedRequest.reason}</p></div>
 
             {selectedRequest.deanComment && (
               <div style={{ display: 'flex', marginTop: '10px' }}>
@@ -256,6 +186,7 @@ const RequisitionReqestModal = ({
                 </p>
               </div>
             )}
+
           </>
         )}
       </Modal>
@@ -270,3 +201,4 @@ const RequisitionReqestModal = ({
 };
 
 export default RequisitionReqestModal;
+
