@@ -582,7 +582,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               <Route path="/pending-accounts" element={<PendingAccounts />} />
             </Route>
 
-            <Route element={<ProtectedRoute allowedRoles={["super-super"]} />}>
+            <Route element={<ProtectedRoute allowedRoles={["super-user"]} />}>
               <Route path="/borrow-catalog" element={<BorrowCatalog />} />
             </Route>
 
