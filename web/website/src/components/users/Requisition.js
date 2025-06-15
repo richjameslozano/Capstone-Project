@@ -1199,6 +1199,14 @@ const Requisition = () => {
             accountId: userId,
           });
 
+          await addDoc(collection(db, "allNotifications"), {
+            action: `New requisition submitted by ${userName}`,
+            userId: userId,
+            userName: userName,
+            read: false,
+            timestamp: serverTimestamp()
+          });
+
           await logRequestOrReturn(userId, userName, "Requested Items", sanitizedFilteredData); 
   
           const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
