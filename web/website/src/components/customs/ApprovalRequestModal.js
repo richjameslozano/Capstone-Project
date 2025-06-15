@@ -252,7 +252,7 @@ const ApprovalRequestModal = ({
           <Row gutter={[16, 16]}>
             <Col span={12}>
               <Text strong>Name:</Text> {selectedApprovedRequest.userName || "N/A"}<br />
-              <Text strong>Names:</Text> {selectedApprovedRequest.firestoreId || "N/A"}<br />
+              <Text strong>Department:</Text> {selectedApprovedRequest.department || "N/A"}<br />
               <Text strong>Request Date:</Text>{" "}
               {selectedApprovedRequest?.timestamp
                 ? formatDate(selectedApprovedRequest.timestamp)

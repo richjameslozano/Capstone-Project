@@ -144,9 +144,6 @@ const RequisitionReqestModal = ({
           <>
           <div className="requisition-slip-title">
             <strong>Requisition Slip</strong>
-            <span style={{ float: "right", fontStyle: "italic", fontSize: '15px' }}>
-              Requisition ID: {selectedRequest?.id}
-            </span>
           </div>
               <div className="whole-slip">
                 <div className="left-slip">
