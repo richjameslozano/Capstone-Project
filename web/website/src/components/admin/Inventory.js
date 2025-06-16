@@ -996,61 +996,118 @@ const printPdf = () => {
   //   }
   // };
 
+  // BACKEND
+  // const handleAdd = async (values) => {
+  //   try {
+  //     const response = await fetch("https://webnuls.onrender.com/add-inventory", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({
+  //         ...values,
+  //         itemName,
+  //         itemDetails,
+  //         userId: localStorage.getItem("userId"),
+  //         userName: localStorage.getItem("userName"),
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       setNotificationMessage("Item successfully added!");
+  //       setIsNotificationVisible(true);
+  //       setIsModalVisible(false);
+  //       setItemName("");
+  //       setItemDetails("");
+  //       form.resetFields();
+        
+  //     } else {
+  //       alert(data.error || "Failed to add item.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error calling API:", error);
+  //   }
+  // };
+
+  // BACKEND WITH CRITICAL LEVEL
   const handleAdd = async (values) => {
     try {
+      // Validate local inputs
+      if (!itemName || !values.department || !itemDetails) {
+        alert("Please fill up the form!");
+        return;
+      }
+
+      // Prepare core fields
+      const trimmedName = itemName.trim();
+      const trimmedDetails = itemDetails.trim();
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName");
+
+      // Format dates
+      const formattedEntryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
+      const formattedExpiryDate = values.expiryDate
+        ? values.expiryDate.format("YYYY-MM-DD")
+        : null;
+
+      // Build payload for backend
+      const payload = {
+        ...values,
+        itemName: trimmedName,
+        itemDetails: trimmedDetails,
+        entryDate: formattedEntryDate,
+        expiryDate: values.type === "Fixed" ? null : formattedExpiryDate,
+        userId,
+        userName,
+      };
+
       const response = await fetch("https://webnuls.onrender.com/add-inventory", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...values,
-          itemName,
-          itemDetails,
-          userId: localStorage.getItem("userId"),
-          userName: localStorage.getItem("userName"),
-        }),
+        body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const result = await response.json();
 
       if (response.ok) {
-        setNotificationMessage("Item successfully added!");
+        setNotificationMessage(result.message || "Item successfully added!");
         setIsNotificationVisible(true);
         setIsModalVisible(false);
         setItemName("");
         setItemDetails("");
         form.resetFields();
-        
       } else {
-        alert(data.error || "Failed to add item.");
+        alert(result.error || "Failed to add item.");
       }
     } catch (error) {
       console.error("Error calling API:", error);
+      alert("An unexpected error occurred while adding the item.");
     }
   };
 
   const editItem = (record, clearFields = true) => {
-  editForm.resetFields();
-  setEditingItem(record);
-  setSelectedCategory(record.category);
+    editForm.resetFields();
+    setEditingItem(record);
+    setSelectedCategory(record.category);
 
-  const hasExpiry = record.category === "Chemical" || record.category === "Reagent";
-  setHasExpiryDate(hasExpiry); // This controls if the Expiry field is shown
+    const hasExpiry = record.category === "Chemical" || record.category === "Reagent";
+    setHasExpiryDate(hasExpiry); // This controls if the Expiry field is shown
 
-  editForm.setFieldsValue({
-    quantity: clearFields ? null : record.quantity,
-    expiryDate: hasExpiry
-      ? (clearFields ? null : (record.expiryDate ? dayjs(record.expiryDate) : null))
-      : null,
-    condition: {
-      Good: record.condition?.Good ?? 0,
-      Defect: record.condition?.Defect ?? 0,
-      Damage: record.condition?.Damage ?? 0,
-      Lost: record.condition?.Lost ?? 0,
-    },
-  });
+    editForm.setFieldsValue({
+      quantity: clearFields ? null : record.quantity,
+      expiryDate: hasExpiry
+        ? (clearFields ? null : (record.expiryDate ? dayjs(record.expiryDate) : null))
+        : null,
+      condition: {
+        Good: record.condition?.Good ?? 0,
+        Defect: record.condition?.Defect ?? 0,
+        Damage: record.condition?.Damage ?? 0,
+        Lost: record.condition?.Lost ?? 0,
+      },
+    });
 
-  setIsEditModalVisible(true);
-};
+    setIsEditModalVisible(true);
+  };
 
 // FRONTEND
 // const updateItem = async (values) => {
