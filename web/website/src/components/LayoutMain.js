@@ -344,11 +344,11 @@ const shouldShowSpinner = useMemo(() => {
           icon: <FileTextOutlined />,
           label: "Pending Requests",
         },
-        {
-          key: "/main/borrow-catalog",
-          icon: <ShoppingOutlined />,
-          label: "Borrow Catalog",
-        },
+        // {
+        //   key: "/main/borrow-catalog",
+        //   icon: <ShoppingOutlined />,
+        //   label: "Borrow Catalog",
+        // },
         {
           key: "/main/approval-request",
           icon: <ShoppingOutlined />,
