@@ -1208,709 +1208,709 @@ try {
   };
  
 // FRONTEND
-//   const handleApprove = async () => {  
-//   const isChecked = Object.values(checkedItems).some((checked) => checked);
-
-//   if (!isChecked) {
-//     setNotificationMessage("No Items selected");
-//     setIsNotificationVisible(true);
-//     return;
-//   }
-
-//   if (selectedRequest) {
-
-//     try {
-//       const accountRef = doc(db, "accounts", selectedRequest.accountId);
-//       const accountSnap = await getDoc(accountRef);
-
-//       if (accountSnap.exists()) {
-//         const accountData = accountSnap.data();
-//         const isDisabled = accountData.disabled || false; // Adjust field name if different
-
-//         if (isDisabled) {
-//           setNotificationMessage("Cannot approve: The user's account is disabled.");
-//           setIsNotificationVisible(true);
-//           return;
-//         }
-        
-//       } else {
-      
-//       }
-
-//     } catch (error) {
-     
-//       setNotificationMessage("Error verifying account status. Please try again.");
-//       setIsNotificationVisible(true);
-//       return;
-//     }
-
-//     // Filter checked items and prepare for approval
-//     const filteredItems = selectedRequest.requestList.filter((item, index) => {
-//       const key = `${selectedRequest.id}-${index}`;
-//       return checkedItems[key];
-//     });
-
-//     if (filteredItems.length === 0) {
-//       setNotificationMessage("No Items selected");
-//       setIsNotificationVisible(true);
-//       return;
-//     }
-    
-
-
-//     const enrichedItems = await Promise.all(
-//   filteredItems.map(async (item) => {
-//     const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-//     let itemType = "Unknown";
-
-//     if (selectedItemId) {
-//       try {
-//         const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-//         if (inventoryDoc.exists()) {
-//           itemType = inventoryDoc.data().type || "Unknown";
-//         }
-//       } catch (err) {
-//         console.error("Failed to fetch inventory item:", err);
-//       }
-//     }
-
-//     return {
-//       ...item,
-//       selectedItemId,
-//       itemType,
-//     };
-//   })
-// );
-//  for (const item of enrichedItems) {
-//   const requestedQty = item.quantity;
-//   const itemId = item.selectedItemId;
-//   const itemName = item.itemName
-
-//   console.log("📦 Logging itemUsage for:", itemId);
-
-//   try {
-//     // 1. Log the usage
-//     await addDoc(collection(db, "itemUsage"), {
-//       itemId: itemId,
-//       usedQuantity: requestedQty,
-//       timestamp: serverTimestamp(),
-//       itemName:itemName
-//     });
-
-//     // 2. Fetch all past usage logs
-//     const usageQuery = query(
-//       collection(db, "itemUsage"),
-//       where("itemId", "==", itemId)
-//     );
-//     const usageSnap = await getDocs(usageQuery);
-
-//     let total = 0;
-//     const uniqueDates = new Set();
-
-//     usageSnap.forEach((doc) => {
-//       const data = doc.data();
-//       if (data.usedQuantity && data.timestamp?.toDate) {
-//         total += data.usedQuantity;
-//         const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
-//         uniqueDates.add(dateStr);
-//       }
-//     });
-
-//     const daysWithUsage = uniqueDates.size;
-//     const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
-
-//     // 🔄 Assumed buffer of 5 days for critical stock level
-//     const bufferDays = 7;
-//     const criticalLevel = average * bufferDays;
-
-//     // 3. Update inventory with new average and critical level
-//     const itemRef = doc(db, "inventory", itemId);
-//     await updateDoc(itemRef, {
-//       averageDailyUsage: average,
-//       criticalLevel: criticalLevel,
-//     });
-
-//     console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
-//   } catch (e) {
-//     console.error(`❌ Error processing usage for ${itemId}:`, e);
-//   }
-// }
-//     // Filter out unchecked items (for rejection)
-//     const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
-//       const key = `${selectedRequest.id}-${index}`;
-//       return !checkedItems[key]; // This will get the unchecked items
-//     });
-
-//     // Define rejectionReason variable outside of the condition
-//     let rejectionReason = null;
-
-
-//     if (uncheckedItems.length > 0) {
-     
-//       setPendingApprovalData({
-//         enrichedItems,
-//         uncheckedItems,
-//         selectedRequest,
-//       });
-//       setIsMultiRejectModalVisible(true); // ✅ Show new modal for multiple items
-//       return;
-//     }
-
-//     // Process rejected items
-//     const rejectedItems = await Promise.all(
-//       uncheckedItems.map(async (item) => {
-//         const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-//         let itemType = "Unknown";
-
-//         if (selectedItemId) {
-//           try {
-//             const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
-//             if (inventoryDoc.exists()) {
-//               itemType = inventoryDoc.data().type || "Unknown";
-//             }
-
-//           } catch (err) {
-        
-//           }
-//         }
-
-//         return {
-//           ...item,
-//           selectedItemId,
-//           itemType, 
-//           volume: item.volume ?? "N/A", // <-- add this
-//         };
-//       })
-//     );
-
-//     const auth = getAuth();
-//     const currentUser = auth.currentUser;
-//     const userEmail = currentUser.email;
-
-//     // Fetch the user name from Firestore
-//     let userName = "Unknown";
-//     try {
-//       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-//       const userSnapshot = await getDocs(userQuery);
-
-//       if (!userSnapshot.empty) {
-//         const userDoc = userSnapshot.docs[0];
-//         const userData = userDoc.data();
-//         userName = userData.name || "Unknown";
-//       }
-
-//     } catch (error) {
-
-//     }
-
-//     const requestLogEntry = {
-//       accountId: selectedRequest.accountId || "N/A",
-//       userName: selectedRequest.userName || "N/A",
-//       room: selectedRequest.room || "N/A",
-//       course: selectedRequest.course || "N/A",
-//       courseDescription: selectedRequest.courseDescription || "N/A",
-//       dateRequired: selectedRequest.dateRequired || "N/A",
-//       timeFrom: selectedRequest.timeFrom || "N/A",  
-//       timeTo: selectedRequest.timeTo || "N/A",  
-//       timestamp: selectedRequest.timestamp || "N/A",
-//       rawTimestamp: new Date(),
-//       requestList: enrichedItems, 
-//       status: "Approved", 
-//       approvedBy: userName, 
-//       reason: selectedRequest.reason || "No reason provided",
-//       program: selectedRequest.program,
-//     };
-
-//     const rejectLogEntry = {
-//       accountId: selectedRequest.accountId || "N/A",
-//       userName: selectedRequest.userName || "N/A",
-//       room: selectedRequest.room || "N/A",
-//       course: selectedRequest.couse || "N/A",
-//       courseDescription: selectedRequest.courseDescription || "N/A",
-//       dateRequired: selectedRequest.dateRequired || "N/A",
-//       timeFrom: selectedRequest.timeFrom || "N/A",  
-//       timeTo: selectedRequest.timeTo || "N/A",  
-//       timestamp: selectedRequest.timestamp || "N/A",
-//       rawTimestamp: new Date(),
-//       requestList: rejectedItems, 
-//       status: "Rejected", 
-//       rejectedBy: userName, 
-//       reason: rejectionReason || "No reason provided",  // Use the rejection reason from the input prompt
-//       program: selectedRequest.program,
-//     };
-
-//     // Log approved items in historylog subcollection
-//     const logRequestOrReturn = async (
-//       userId,
-//       userName,
-//       action,
-//       requestDetails,
-//       extraInfo = {} // for fields like dateRequired, approvedBy, etc.
-//     ) => {
-//       await addDoc(collection(db, `accounts/${userId}/historylog`), {
-//         action,
-//         userName,
-//         timestamp: serverTimestamp(),
-//         requestList: requestDetails,
-//         ...extraInfo, // merge additional data like dateRequired, reason, etc.
-//       });
-//     };
-
-//     // Log approved items
-//     await logRequestOrReturn(
-//       selectedRequest.accountId,     // user ID
-//       selectedRequest.userName,      // user name
-//       "Request Approved",            // action
-//       enrichedItems,                 // request list
-//       {
-//         approvedBy: userName, // whoever approved
-//         course: selectedRequest.course || "N/A",
-//         courseDescription: selectedRequest.courseDescription || "N/A",
-//         dateRequired: selectedRequest.dateRequired,
-//         reason: selectedRequest.reason,
-//         room: selectedRequest.room,
-//         program: selectedRequest.program,
-//         timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
-//         timeTo: selectedRequest.timeTo || "N/A",  
-//         timestamp: selectedRequest.timestamp || "N/A",
-//         rawTimestamp: new Date(),
-//       }
-//     );
-
-//     // Log rejected items
-//     if (rejectedItems.length > 0) {
-//       await logRequestOrReturn(
-//         selectedRequest.accountId,     // user ID
-//         selectedRequest.userName,      // user name
-//         "Request Rejected",            // action
-//         rejectedItems,                 // request list
-//         {
-//           rejectedBy: userName, // whoever rejected
-//           course: selectedRequest.course || "N/A",
-//           courseDescription: selectedRequest.courseDescription || "N/A",
-//           dateRequired: selectedRequest.dateRequired,
-//           reason: rejectionReason || "No reason provided",  // Reason for rejection
-//           room: selectedRequest.room,
-//           program: selectedRequest.program,
-//           timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
-//           timeTo: selectedRequest.timeTo || "N/A",  
-//           timestamp: selectedRequest.timestamp || "N/A",
-//           rawTimestamp: new Date(),
-//         }
-//       );
-//     }
-
-
-// try {
-//         for (const item of enrichedItems) {
-//           const inventoryId = item.selectedItemId;
-//           const requestedQty = Number(item.quantity);
-//           const labRoomId = item.labRoom;
-
-//           if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-        
-//             continue;
-//           }
-
-//           if (!labRoomId) {
-
-//             continue;
-//           }
-
-//           const inventoryRef = doc(db, "inventory", inventoryId);
-//           const inventorySnap = await getDoc(inventoryRef);
-//           if (!inventorySnap.exists()) {
-      
-//             continue;
-//           }
-
-//           const data = inventorySnap.data();
-//           const currentQty = Number(data.quantity || 0);
-//           const newQty = Math.max(currentQty - requestedQty, 0);
-//           await updateDoc(inventoryRef, { quantity: newQty });
-        
-
-//           // ⚙️ Update inventory condition breakdown
-//           let remaining = requestedQty;
-//           const good = data.condition?.Good ?? 0;
-//           const damage = data.condition?.Damage ?? 0;
-//           const defect = data.condition?.Defect ?? 0;
-//           const lost = data.condition?.Lost ?? 0;
-
-//           let newGood = good;
-//           let newDamage = damage;
-//           let newDefect = defect;
-//           let newLost = lost;
-
-//           if (remaining > 0) {
-//             const deductFromGood = Math.min(newGood, remaining);
-//             newGood -= deductFromGood;
-//             remaining -= deductFromGood;
-//           }
-
-//           if (remaining > 0) {
-//             const deductFromDamage = Math.min(newDamage, remaining);
-//             newDamage -= deductFromDamage;
-//             remaining -= deductFromDamage;
-//           }
-
-//           if (remaining > 0) {
-//             const deductFromDefect = Math.min(newDefect, remaining);
-//             newDefect -= deductFromDefect;
-//             remaining -= deductFromDefect;
-//           }
-
-//           if (remaining > 0) {
-//             const deductFromLost = Math.min(newLost, remaining);
-//             newLost -= deductFromLost;
-//             remaining -= deductFromLost;
-//           }
-
-//           await updateDoc(inventoryRef, {
-//             'condition.Good': newGood,
-//             'condition.Damage': newDamage,
-//             'condition.Defect': newDefect,
-//             'condition.Lost' : newLost,
-//           });
-
-         
-           
-
-//           // 🔁 Update labRoom item quantity
-//           const roomNumber = item.labRoom; // e.g. "0930"
-//           const labRoomCollectionRef = collection(db, "labRoom");
-//           const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
-//           const querySnapshot = await getDocs(q);
-
-//           if (querySnapshot.empty) {
-          
-
-//             return;
-//           }
-
-//           // 2. Get Firestore doc ID of the labRoom
-//           const labRoomDoc = querySnapshot.docs[0];
-//           const labRoomDocId = labRoomDoc.id;
-
-//           // 3. Query items subcollection for item with matching itemId
-//           const itemId = data.itemId; // e.g. "DENT02"
-//           const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
-//           const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
-//           const itemSnapshot = await getDocs(itemQuery);
-
-//           if (itemSnapshot.empty) {
-       
-//             return;
-//           }
-
-//           // 4. Get the Firestore doc ID of the item document
-//           const itemDoc = itemSnapshot.docs[0];
-//           const itemDocId = itemDoc.id;
-//           const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
-//           const labData = itemDoc.data();
-
-//           const currentLabQty = Number(labData.quantity || 0);
-//           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-//           await updateDoc(labRoomItemRef, { quantity: newLabQty });
-         
-
-//           // Update condition breakdown
-//           let labGood = labData.condition?.Good ?? 0;
-//           let labDamage = labData.condition?.Damage ?? 0;
-//           let labDefect = labData.condition?.Defect ?? 0;
-//           let labLost = labData.condition?.Lost ?? 0;
-
-//           let remainingLab = requestedQty;
-
-//           if (remainingLab > 0) {
-//             const deductFromLabGood = Math.min(labGood, remainingLab);
-//             labGood -= deductFromLabGood;
-//             remainingLab -= deductFromLabGood;
-//           }
-
-//           if (remainingLab > 0) {
-//             const deductFromLabDamage = Math.min(labDamage, remainingLab);
-//             labDamage -= deductFromLabDamage;
-//             remainingLab -= deductFromLabDamage;
-//           }
-
-//           if (remainingLab > 0) {
-//             const deductFromLabDefect = Math.min(labDefect, remainingLab);
-//             labDefect -= deductFromLabDefect;
-//             remainingLab -= deductFromLabDefect;
-//           }
-
-//           if (remainingLab > 0) {
-//             const deductFromLabLost = Math.min(labLost, remainingLab);
-//             labLost -= deductFromLabLost;
-//             remainingLab -= deductFromLabLost;
-//           }
-
-//           await updateDoc(labRoomItemRef, {
-//             'condition.Good': labGood,
-//             'condition.Damage': labDamage,
-//             'condition.Defect': labDefect,
-//             'condition.Lost' : labLost,
-//           });
-
-          
-//         }
-        
-//       } catch (err) {
-
-//       }
-    
-
-//     try {
-//       // Add to requestlog for approval
-//       await addDoc(collection(db, "requestlog"), requestLogEntry);
-
-//       // Add to requestlog for rejection
-//       if (rejectedItems.length > 0) {
-//         await addDoc(collection(db, "requestlog"), rejectLogEntry);
-//       }
-
-//       // Proceed with borrow catalog logic for approved items
-//       // Filter to get all "Fixed" items
-//       // Process Borrow Catalog
-//       const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
-  
-//       if (fixedItems.length > 0) {
-//         const formattedItems = fixedItems.map(item => ({
-//           category: item.category || "N/A",
-//           condition: item.condition || "N/A",
-//           department: item.department || "N/A",
-//           itemName: item.itemName || "N/A",
-//           itemDetails: item.itemDetails || "N/A",
-//           itemId: item.itemIdFromInventory,
-//           quantity: item.quantity || "1",
-//           selectedItemId: item.selectedItemId || "N/A",
-//           status: item.status || "Available",
-//           program: item.program || "N/A",
-//           course: item.course || "N/A",
-//           courseDescription: item.courseDescription || "N/A",
-//           reason: item.reason || "No reason provided",
-//           labRoom: item.labRoom || "N/A",
-//           timeFrom: item.timeFrom || "N/A",
-//           timeTo: item.timeTo || "N/A",
-//           usageType: item.usageType || "N/A",
-//           scannedCount: 0,
-//         }));
-  
-//         const borrowCatalogEntry = {
-//           accountId: selectedRequest.accountId || "N/A",
-//           userName: selectedRequest.userName || "N/A",
-//           room: selectedRequest.room || "N/A",
-//           course: selectedRequest.course || "N/A",
-//           courseDescription: selectedRequest.courseDescription || "N/A",
-//           dateRequired: selectedRequest.dateRequired || "N/A",
-//           timeFrom: selectedRequest.timeFrom || "N/A",
-//           timeTo: selectedRequest.timeTo || "N/A",
-//           timestamp: selectedRequest.timestamp || "N/A",
-//           rawTimestamp: new Date(),
-//           requestList: formattedItems,
-//           status: "Borrowed",
-//           approvedBy: userName,
-//           reason: selectedRequest.reason || "No reason provided",
-//           program: selectedRequest.program,
-//         };
-  
-//         const userRequestLogEntry = {
-//           ...requestLogEntry,
-//           status: "Approved",
-//           approvedBy: userName,
-//           timestamp: selectedRequest.timestamp || "N/A",
-//           rawTimestamp: new Date(),
-//         };
-  
-//         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
-  
-//         await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
-//       }
-
-//         await deleteDoc(doc(db, "userrequests", selectedRequest.id));
-
-//         // Cleanup the user requests subcollection
-//         const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
-//         const subDocsSnap = await getDocs(subCollectionRef);
-
-//         subDocsSnap.forEach(async (docSnap) => {
-//           const data = docSnap.data();
-//           const match = (
-//             data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
-//             data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
-//           );
-
-//           if (match) {
-       
-//             await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
-//           }
-//         });
-
-//         setApprovedRequests([...approvedRequests, requestLogEntry]);
-//         setRequests(requests.filter((req) => req.id !== selectedRequest.id));
-//         setCheckedItems({});
-//         setIsModalVisible(false);
-//         setSelectedRequest(null);
-//         setIsFinalizeModalVisible(false)
-
-//         notification.success({
-//           message: "Request Approved",
-//           description: "Request has been approved and logged.",
-//         });
-
-//       } catch (error) {
-     
-//         notification.error({
-//           message: "Approval Failed",
-//           description: "There was an error logging the approved request.",
-//         });
-//       }
-//     }
-//   };
-
-// BACKEND
-const handleApprove = async () => {
+  const handleApprove = async () => {  
   const isChecked = Object.values(checkedItems).some((checked) => checked);
+
   if (!isChecked) {
     setNotificationMessage("No Items selected");
     setIsNotificationVisible(true);
     return;
   }
 
-  if (!selectedRequest) return;
+  if (selectedRequest) {
 
-  // Check if account is disabled
-  try {
-    const accountRef = doc(db, "accounts", selectedRequest.accountId);
-    const accountSnap = await getDoc(accountRef);
-    if (accountSnap.exists() && accountSnap.data().disabled) {
-      setNotificationMessage("Cannot approve: The user's account is disabled.");
+    try {
+      const accountRef = doc(db, "accounts", selectedRequest.accountId);
+      const accountSnap = await getDoc(accountRef);
+
+      if (accountSnap.exists()) {
+        const accountData = accountSnap.data();
+        const isDisabled = accountData.disabled || false; // Adjust field name if different
+
+        if (isDisabled) {
+          setNotificationMessage("Cannot approve: The user's account is disabled.");
+          setIsNotificationVisible(true);
+          return;
+        }
+        
+      } else {
+      
+      }
+
+    } catch (error) {
+     
+      setNotificationMessage("Error verifying account status. Please try again.");
       setIsNotificationVisible(true);
       return;
     }
-  } catch (error) {
-    setNotificationMessage("Error verifying account status. Please try again.");
-    setIsNotificationVisible(true);
-    return;
-  }
 
-  // ✅ Prepare enriched approved items
-  const filteredItems = selectedRequest.requestList.filter((item, index) =>
-    checkedItems[`${selectedRequest.id}-${index}`]
-  );
-
-  if (filteredItems.length === 0) {
-    setNotificationMessage("No Items selected");
-    setIsNotificationVisible(true);
-    return;
-  }
-
-  const enrichedItems = await Promise.all(
-    filteredItems.map(async (item) => {
-      const selectedItemId = item.selectedItemId || item.selectedItem?.value;
-      let itemType = "Unknown";
-
-      if (selectedItemId) {
-        try {
-          const docSnap = await getDoc(doc(db, "inventory", selectedItemId));
-          if (docSnap.exists()) {
-            itemType = docSnap.data()?.type || "Unknown";
-          }
-        } catch {}
-      }
-
-      return {
-        ...item,
-        selectedItemId,
-        itemType,
-        volume: item.volume ?? "N/A",
-      };
-    })
-  );
-
-  // ⛔ Check for unchecked items
-  const uncheckedItems = selectedRequest.requestList.filter((item, index) =>
-    !checkedItems[`${selectedRequest.id}-${index}`]
-  );
-
-  // ❗ If there are unchecked items, trigger rejection modal and pause flow
-  if (uncheckedItems.length > 0) {
-    setPendingApprovalData({
-      enrichedItems,
-      uncheckedItems,
-      selectedRequest,
+    // Filter checked items and prepare for approval
+    const filteredItems = selectedRequest.requestList.filter((item, index) => {
+      const key = `${selectedRequest.id}-${index}`;
+      return checkedItems[key];
     });
-    setIsMultiRejectModalVisible(true); // ← show modal for rejection reasons
-    return; // ⛔ Don't continue to backend until modal is handled
-  }
 
-  // ✅ If no unchecked items, proceed to backend approval
-  const auth = getAuth();
-  const currentUser = auth.currentUser;
-  const userEmail = currentUser?.email;
-  let userName = "Unknown";
-  let userId = "system";
+    if (filteredItems.length === 0) {
+      setNotificationMessage("No Items selected");
+      setIsNotificationVisible(true);
+      return;
+    }
+    
 
-  if (userEmail) {
-    try {
-      const querySnap = await getDocs(
-        query(collection(db, "accounts"), where("email", "==", userEmail))
-      );
-      if (!querySnap.empty) {
-        const doc = querySnap.docs[0];
-        userName = doc.data().name || "Unknown";
-        userId = doc.id;
+
+    const enrichedItems = await Promise.all(
+  filteredItems.map(async (item) => {
+    const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+    let itemType = "Unknown";
+
+    if (selectedItemId) {
+      try {
+        const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+        if (inventoryDoc.exists()) {
+          itemType = inventoryDoc.data().type || "Unknown";
+        }
+      } catch (err) {
+        console.error("Failed to fetch inventory item:", err);
       }
-    } catch {}
-  }
+    }
+
+    return {
+      ...item,
+      selectedItemId,
+      itemType,
+    };
+  })
+);
+ for (const item of enrichedItems) {
+  const requestedQty = item.quantity;
+  const itemId = item.selectedItemId;
+  const itemName = item.itemName
+
+  console.log("📦 Logging itemUsage for:", itemId);
 
   try {
-    const response = await fetch("https://webnuls.onrender.com/request/approve", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        selectedRequest,
-        enrichedItems,
-        rejectedItems: [], // no rejected items in this case
-        userName,
-        userId,
-      }),
+    // 1. Log the usage
+    await addDoc(collection(db, "itemUsage"), {
+      itemId: itemId,
+      usedQuantity: requestedQty,
+      timestamp: serverTimestamp(),
+      itemName:itemName
     });
 
-    const result = await response.json();
+    // 2. Fetch all past usage logs
+    const usageQuery = query(
+      collection(db, "itemUsage"),
+      where("itemId", "==", itemId)
+    );
+    const usageSnap = await getDocs(usageQuery);
 
-    if (!response.ok) {
-      notification.error({
-        message: "Approval Failed",
-        description: result.error || "There was a problem approving the request.",
+    let total = 0;
+    const uniqueDates = new Set();
+
+    usageSnap.forEach((doc) => {
+      const data = doc.data();
+      if (data.usedQuantity && data.timestamp?.toDate) {
+        total += data.usedQuantity;
+        const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
+        uniqueDates.add(dateStr);
+      }
+    });
+
+    const daysWithUsage = uniqueDates.size;
+    const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
+
+    // 🔄 Assumed buffer of 5 days for critical stock level
+    const bufferDays = 7;
+    const criticalLevel = average * bufferDays;
+
+    // 3. Update inventory with new average and critical level
+    const itemRef = doc(db, "inventory", itemId);
+    await updateDoc(itemRef, {
+      averageDailyUsage: average,
+      criticalLevel: criticalLevel,
+    });
+
+    console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
+  } catch (e) {
+    console.error(`❌ Error processing usage for ${itemId}:`, e);
+  }
+}
+    // Filter out unchecked items (for rejection)
+    const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
+      const key = `${selectedRequest.id}-${index}`;
+      return !checkedItems[key]; // This will get the unchecked items
+    });
+
+    // Define rejectionReason variable outside of the condition
+    let rejectionReason = null;
+
+
+    if (uncheckedItems.length > 0) {
+     
+      setPendingApprovalData({
+        enrichedItems,
+        uncheckedItems,
+        selectedRequest,
       });
+      setIsMultiRejectModalVisible(true); // ✅ Show new modal for multiple items
       return;
     }
 
-    // ✅ Clean up UI
-    setApprovedRequests((prev) => [...prev, selectedRequest]);
-    setRequests((prev) => prev.filter((r) => r.id !== selectedRequest.id));
-    setCheckedItems({});
-    setSelectedRequest(null);
-    setIsModalVisible(false);
-    setIsFinalizeModalVisible(false);
-    setNotificationMessage(result.message || "Request approved.");
-    setIsNotificationVisible(true);
+    // Process rejected items
+    const rejectedItems = await Promise.all(
+      uncheckedItems.map(async (item) => {
+        const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+        let itemType = "Unknown";
 
-    notification.success({
-      message: "Request Approved",
-      description: result.message || "Request has been approved and logged.",
-    });
+        if (selectedItemId) {
+          try {
+            const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+            if (inventoryDoc.exists()) {
+              itemType = inventoryDoc.data().type || "Unknown";
+            }
+
+          } catch (err) {
+        
+          }
+        }
+
+        return {
+          ...item,
+          selectedItemId,
+          itemType, 
+          volume: item.volume ?? "N/A", // <-- add this
+        };
+      })
+    );
+
+    const auth = getAuth();
+    const currentUser = auth.currentUser;
+    const userEmail = currentUser.email;
+
+    // Fetch the user name from Firestore
+    let userName = "Unknown";
+    try {
+      const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+      const userSnapshot = await getDocs(userQuery);
+
+      if (!userSnapshot.empty) {
+        const userDoc = userSnapshot.docs[0];
+        const userData = userDoc.data();
+        userName = userData.name || "Unknown";
+      }
+
+    } catch (error) {
+
+    }
+
+    const requestLogEntry = {
+      accountId: selectedRequest.accountId || "N/A",
+      userName: selectedRequest.userName || "N/A",
+      room: selectedRequest.room || "N/A",
+      course: selectedRequest.course || "N/A",
+      courseDescription: selectedRequest.courseDescription || "N/A",
+      dateRequired: selectedRequest.dateRequired || "N/A",
+      timeFrom: selectedRequest.timeFrom || "N/A",  
+      timeTo: selectedRequest.timeTo || "N/A",  
+      timestamp: selectedRequest.timestamp || "N/A",
+      rawTimestamp: new Date(),
+      requestList: enrichedItems, 
+      status: "Approved", 
+      approvedBy: userName, 
+      reason: selectedRequest.reason || "No reason provided",
+      program: selectedRequest.program,
+    };
+
+    const rejectLogEntry = {
+      accountId: selectedRequest.accountId || "N/A",
+      userName: selectedRequest.userName || "N/A",
+      room: selectedRequest.room || "N/A",
+      course: selectedRequest.couse || "N/A",
+      courseDescription: selectedRequest.courseDescription || "N/A",
+      dateRequired: selectedRequest.dateRequired || "N/A",
+      timeFrom: selectedRequest.timeFrom || "N/A",  
+      timeTo: selectedRequest.timeTo || "N/A",  
+      timestamp: selectedRequest.timestamp || "N/A",
+      rawTimestamp: new Date(),
+      requestList: rejectedItems, 
+      status: "Rejected", 
+      rejectedBy: userName, 
+      reason: rejectionReason || "No reason provided",  // Use the rejection reason from the input prompt
+      program: selectedRequest.program,
+    };
+
+    // Log approved items in historylog subcollection
+    const logRequestOrReturn = async (
+      userId,
+      userName,
+      action,
+      requestDetails,
+      extraInfo = {} // for fields like dateRequired, approvedBy, etc.
+    ) => {
+      await addDoc(collection(db, `accounts/${userId}/historylog`), {
+        action,
+        userName,
+        timestamp: serverTimestamp(),
+        requestList: requestDetails,
+        ...extraInfo, // merge additional data like dateRequired, reason, etc.
+      });
+    };
+
+    // Log approved items
+    await logRequestOrReturn(
+      selectedRequest.accountId,     // user ID
+      selectedRequest.userName,      // user name
+      "Request Approved",            // action
+      enrichedItems,                 // request list
+      {
+        approvedBy: userName, // whoever approved
+        course: selectedRequest.course || "N/A",
+        courseDescription: selectedRequest.courseDescription || "N/A",
+        dateRequired: selectedRequest.dateRequired,
+        reason: selectedRequest.reason,
+        room: selectedRequest.room,
+        program: selectedRequest.program,
+        timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+        timeTo: selectedRequest.timeTo || "N/A",  
+        timestamp: selectedRequest.timestamp || "N/A",
+        rawTimestamp: new Date(),
+      }
+    );
+
+    // Log rejected items
+    if (rejectedItems.length > 0) {
+      await logRequestOrReturn(
+        selectedRequest.accountId,     // user ID
+        selectedRequest.userName,      // user name
+        "Request Rejected",            // action
+        rejectedItems,                 // request list
+        {
+          rejectedBy: userName, // whoever rejected
+          course: selectedRequest.course || "N/A",
+          courseDescription: selectedRequest.courseDescription || "N/A",
+          dateRequired: selectedRequest.dateRequired,
+          reason: rejectionReason || "No reason provided",  // Reason for rejection
+          room: selectedRequest.room,
+          program: selectedRequest.program,
+          timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+          timeTo: selectedRequest.timeTo || "N/A",  
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
+        }
+      );
+    }
+
+
+try {
+        for (const item of enrichedItems) {
+          const inventoryId = item.selectedItemId;
+          const requestedQty = Number(item.quantity);
+          const labRoomId = item.labRoom;
+
+          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        
+            continue;
+          }
+
+          if (!labRoomId) {
+
+            continue;
+          }
+
+          const inventoryRef = doc(db, "inventory", inventoryId);
+          const inventorySnap = await getDoc(inventoryRef);
+          if (!inventorySnap.exists()) {
+      
+            continue;
+          }
+
+          const data = inventorySnap.data();
+          const currentQty = Number(data.quantity || 0);
+          const newQty = Math.max(currentQty - requestedQty, 0);
+          await updateDoc(inventoryRef, { quantity: newQty });
+        
+
+          // ⚙️ Update inventory condition breakdown
+          let remaining = requestedQty;
+          const good = data.condition?.Good ?? 0;
+          const damage = data.condition?.Damage ?? 0;
+          const defect = data.condition?.Defect ?? 0;
+          const lost = data.condition?.Lost ?? 0;
+
+          let newGood = good;
+          let newDamage = damage;
+          let newDefect = defect;
+          let newLost = lost;
+
+          if (remaining > 0) {
+            const deductFromGood = Math.min(newGood, remaining);
+            newGood -= deductFromGood;
+            remaining -= deductFromGood;
+          }
+
+          if (remaining > 0) {
+            const deductFromDamage = Math.min(newDamage, remaining);
+            newDamage -= deductFromDamage;
+            remaining -= deductFromDamage;
+          }
+
+          if (remaining > 0) {
+            const deductFromDefect = Math.min(newDefect, remaining);
+            newDefect -= deductFromDefect;
+            remaining -= deductFromDefect;
+          }
+
+          if (remaining > 0) {
+            const deductFromLost = Math.min(newLost, remaining);
+            newLost -= deductFromLost;
+            remaining -= deductFromLost;
+          }
+
+          await updateDoc(inventoryRef, {
+            'condition.Good': newGood,
+            'condition.Damage': newDamage,
+            'condition.Defect': newDefect,
+            'condition.Lost' : newLost,
+          });
+
+         
+           
+
+          // 🔁 Update labRoom item quantity
+          const roomNumber = item.labRoom; // e.g. "0930"
+          const labRoomCollectionRef = collection(db, "labRoom");
+          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+          const querySnapshot = await getDocs(q);
+
+          if (querySnapshot.empty) {
+          
+
+            return;
+          }
+
+          // 2. Get Firestore doc ID of the labRoom
+          const labRoomDoc = querySnapshot.docs[0];
+          const labRoomDocId = labRoomDoc.id;
+
+          // 3. Query items subcollection for item with matching itemId
+          const itemId = data.itemId; // e.g. "DENT02"
+          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+          const itemSnapshot = await getDocs(itemQuery);
+
+          if (itemSnapshot.empty) {
+       
+            return;
+          }
+
+          // 4. Get the Firestore doc ID of the item document
+          const itemDoc = itemSnapshot.docs[0];
+          const itemDocId = itemDoc.id;
+          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+          const labData = itemDoc.data();
+
+          const currentLabQty = Number(labData.quantity || 0);
+          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+          await updateDoc(labRoomItemRef, { quantity: newLabQty });
+         
+
+          // Update condition breakdown
+          let labGood = labData.condition?.Good ?? 0;
+          let labDamage = labData.condition?.Damage ?? 0;
+          let labDefect = labData.condition?.Defect ?? 0;
+          let labLost = labData.condition?.Lost ?? 0;
+
+          let remainingLab = requestedQty;
+
+          if (remainingLab > 0) {
+            const deductFromLabGood = Math.min(labGood, remainingLab);
+            labGood -= deductFromLabGood;
+            remainingLab -= deductFromLabGood;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDamage = Math.min(labDamage, remainingLab);
+            labDamage -= deductFromLabDamage;
+            remainingLab -= deductFromLabDamage;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabDefect = Math.min(labDefect, remainingLab);
+            labDefect -= deductFromLabDefect;
+            remainingLab -= deductFromLabDefect;
+          }
+
+          if (remainingLab > 0) {
+            const deductFromLabLost = Math.min(labLost, remainingLab);
+            labLost -= deductFromLabLost;
+            remainingLab -= deductFromLabLost;
+          }
+
+          await updateDoc(labRoomItemRef, {
+            'condition.Good': labGood,
+            'condition.Damage': labDamage,
+            'condition.Defect': labDefect,
+            'condition.Lost' : labLost,
+          });
+
+          
+        }
+        
+      } catch (err) {
+
+      }
     
-  } catch (err) {
-    console.error("Approval error:", err);
-    notification.error({
-      message: "Network Error",
-      description: "Could not connect to the server.",
-    });
-  }
-};
+
+    try {
+      // Add to requestlog for approval
+      await addDoc(collection(db, "requestlog"), requestLogEntry);
+
+      // Add to requestlog for rejection
+      if (rejectedItems.length > 0) {
+        await addDoc(collection(db, "requestlog"), rejectLogEntry);
+      }
+
+      // Proceed with borrow catalog logic for approved items
+      // Filter to get all "Fixed" items
+      // Process Borrow Catalog
+      const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+  
+      if (fixedItems.length > 0) {
+        const formattedItems = fixedItems.map(item => ({
+          category: item.category || "N/A",
+          condition: item.condition || "N/A",
+          department: item.department || "N/A",
+          itemName: item.itemName || "N/A",
+          itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
+          quantity: item.quantity || "1",
+          selectedItemId: item.selectedItemId || "N/A",
+          status: item.status || "Available",
+          program: item.program || "N/A",
+          course: item.course || "N/A",
+          courseDescription: item.courseDescription || "N/A",
+          reason: item.reason || "No reason provided",
+          labRoom: item.labRoom || "N/A",
+          timeFrom: item.timeFrom || "N/A",
+          timeTo: item.timeTo || "N/A",
+          usageType: item.usageType || "N/A",
+          scannedCount: 0,
+        }));
+  
+        const borrowCatalogEntry = {
+          accountId: selectedRequest.accountId || "N/A",
+          userName: selectedRequest.userName || "N/A",
+          room: selectedRequest.room || "N/A",
+          course: selectedRequest.course || "N/A",
+          courseDescription: selectedRequest.courseDescription || "N/A",
+          dateRequired: selectedRequest.dateRequired || "N/A",
+          timeFrom: selectedRequest.timeFrom || "N/A",
+          timeTo: selectedRequest.timeTo || "N/A",
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
+          requestList: formattedItems,
+          status: "Borrowed",
+          approvedBy: userName,
+          reason: selectedRequest.reason || "No reason provided",
+          program: selectedRequest.program,
+        };
+  
+        const userRequestLogEntry = {
+          ...requestLogEntry,
+          status: "Approved",
+          approvedBy: userName,
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
+        };
+  
+        await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  
+        await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+      }
+
+        await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+
+        // Cleanup the user requests subcollection
+        const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+        const subDocsSnap = await getDocs(subCollectionRef);
+
+        subDocsSnap.forEach(async (docSnap) => {
+          const data = docSnap.data();
+          const match = (
+            data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+            data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+          );
+
+          if (match) {
+       
+            await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+          }
+        });
+
+        setApprovedRequests([...approvedRequests, requestLogEntry]);
+        setRequests(requests.filter((req) => req.id !== selectedRequest.id));
+        setCheckedItems({});
+        setIsModalVisible(false);
+        setSelectedRequest(null);
+        setIsFinalizeModalVisible(false)
+
+        notification.success({
+          message: "Request Approved",
+          description: "Request has been approved and logged.",
+        });
+
+      } catch (error) {
+     
+        notification.error({
+          message: "Approval Failed",
+          description: "There was an error logging the approved request.",
+        });
+      }
+    }
+  };
+
+// BACKEND
+// const handleApprove = async () => {
+//   const isChecked = Object.values(checkedItems).some((checked) => checked);
+//   if (!isChecked) {
+//     setNotificationMessage("No Items selected");
+//     setIsNotificationVisible(true);
+//     return;
+//   }
+
+//   if (!selectedRequest) return;
+
+//   // Check if account is disabled
+//   try {
+//     const accountRef = doc(db, "accounts", selectedRequest.accountId);
+//     const accountSnap = await getDoc(accountRef);
+//     if (accountSnap.exists() && accountSnap.data().disabled) {
+//       setNotificationMessage("Cannot approve: The user's account is disabled.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+//   } catch (error) {
+//     setNotificationMessage("Error verifying account status. Please try again.");
+//     setIsNotificationVisible(true);
+//     return;
+//   }
+
+//   // ✅ Prepare enriched approved items
+//   const filteredItems = selectedRequest.requestList.filter((item, index) =>
+//     checkedItems[`${selectedRequest.id}-${index}`]
+//   );
+
+//   if (filteredItems.length === 0) {
+//     setNotificationMessage("No Items selected");
+//     setIsNotificationVisible(true);
+//     return;
+//   }
+
+//   const enrichedItems = await Promise.all(
+//     filteredItems.map(async (item) => {
+//       const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+//       let itemType = "Unknown";
+
+//       if (selectedItemId) {
+//         try {
+//           const docSnap = await getDoc(doc(db, "inventory", selectedItemId));
+//           if (docSnap.exists()) {
+//             itemType = docSnap.data()?.type || "Unknown";
+//           }
+//         } catch {}
+//       }
+
+//       return {
+//         ...item,
+//         selectedItemId,
+//         itemType,
+//         volume: item.volume ?? "N/A",
+//       };
+//     })
+//   );
+
+//   // ⛔ Check for unchecked items
+//   const uncheckedItems = selectedRequest.requestList.filter((item, index) =>
+//     !checkedItems[`${selectedRequest.id}-${index}`]
+//   );
+
+//   // ❗ If there are unchecked items, trigger rejection modal and pause flow
+//   if (uncheckedItems.length > 0) {
+//     setPendingApprovalData({
+//       enrichedItems,
+//       uncheckedItems,
+//       selectedRequest,
+//     });
+//     setIsMultiRejectModalVisible(true); // ← show modal for rejection reasons
+//     return; // ⛔ Don't continue to backend until modal is handled
+//   }
+
+//   // ✅ If no unchecked items, proceed to backend approval
+//   const auth = getAuth();
+//   const currentUser = auth.currentUser;
+//   const userEmail = currentUser?.email;
+//   let userName = "Unknown";
+//   let userId = "system";
+
+//   if (userEmail) {
+//     try {
+//       const querySnap = await getDocs(
+//         query(collection(db, "accounts"), where("email", "==", userEmail))
+//       );
+//       if (!querySnap.empty) {
+//         const doc = querySnap.docs[0];
+//         userName = doc.data().name || "Unknown";
+//         userId = doc.id;
+//       }
+//     } catch {}
+//   }
+
+//   try {
+//     const response = await fetch("https://webnuls.onrender.com/request/approve", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         selectedRequest,
+//         enrichedItems,
+//         rejectedItems: [], // no rejected items in this case
+//         userName,
+//         userId,
+//       }),
+//     });
+
+//     const result = await response.json();
+
+//     if (!response.ok) {
+//       notification.error({
+//         message: "Approval Failed",
+//         description: result.error || "There was a problem approving the request.",
+//       });
+//       return;
+//     }
+
+//     // ✅ Clean up UI
+//     setApprovedRequests((prev) => [...prev, selectedRequest]);
+//     setRequests((prev) => prev.filter((r) => r.id !== selectedRequest.id));
+//     setCheckedItems({});
+//     setSelectedRequest(null);
+//     setIsModalVisible(false);
+//     setIsFinalizeModalVisible(false);
+//     setNotificationMessage(result.message || "Request approved.");
+//     setIsNotificationVisible(true);
+
+//     notification.success({
+//       message: "Request Approved",
+//       description: result.message || "Request has been approved and logged.",
+//     });
+    
+//   } catch (err) {
+//     console.error("Approval error:", err);
+//     notification.error({
+//       message: "Network Error",
+//       description: "Could not connect to the server.",
+//     });
+//   }
+// };
 
   const handleReject = () => { 
     if (!selectedRequest) return;
