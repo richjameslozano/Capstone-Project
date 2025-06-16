@@ -776,225 +776,225 @@ const printPdf = () => {
 };
 
   // FRONTEND
-  //  const handleAdd = async (values) => {
-  // if (!itemName || !values.department || !itemDetails) {
-  //   alert("Please fill up the form!");
-  //   return;
-  // }
+   const handleAdd = async (values) => {
+  if (!itemName || !values.department || !itemDetails) {
+    alert("Please fill up the form!");
+    return;
+  }
 
-  // const trimmedName = itemName.trim();
-  // const normalizedInputName = trimmedName.toLowerCase();
-  // const normalizedInputDetails = itemDetails.trim().toLowerCase();
-  // const normalizedDepartment = values.department.trim().toLowerCase();
+  const trimmedName = itemName.trim();
+  const normalizedInputName = trimmedName.toLowerCase();
+  const normalizedInputDetails = itemDetails.trim().toLowerCase();
+  const normalizedDepartment = values.department.trim().toLowerCase();
 
-  // // Find items with the same name (case-insensitive)
-  // const sameNameItems = dataSource.filter(
-  //   (item) => item.item.toLowerCase().startsWith(normalizedInputName)
-  // );
+  // Find items with the same name (case-insensitive)
+  const sameNameItems = dataSource.filter(
+    (item) => item.item.toLowerCase().startsWith(normalizedInputName)
+  );
 
-  // // Check if same name AND same details AND same department already exists
-  // const exactMatch = sameNameItems.find((item) => {
-  //   const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
-  //   const itemNameSafe = item.item ? item.item.toLowerCase() : "";
-  //   const itemDepartmentSafe = item.department ? item.department.trim().toLowerCase() : "";
-  //   return (
-  //     itemDetailsSafe === normalizedInputDetails &&
-  //     itemNameSafe === normalizedInputName &&
-  //     itemDepartmentSafe === normalizedDepartment
-  //   );
-  // });
+  // Check if same name AND same details AND same department already exists
+  const exactMatch = sameNameItems.find((item) => {
+    const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
+    const itemNameSafe = item.item ? item.item.toLowerCase() : "";
+    const itemDepartmentSafe = item.department ? item.department.trim().toLowerCase() : "";
+    return (
+      itemDetailsSafe === normalizedInputDetails &&
+      itemNameSafe === normalizedInputName &&
+      itemDepartmentSafe === normalizedDepartment
+    );
+  });
 
-  // if (exactMatch) {
-  //   setNotificationMessage(
-  //     "An item with the same name, details, and department already exists in the inventory."
-  //   );
-  //   setIsNotificationVisible(true);
-  //   return;
-  // }
+  if (exactMatch) {
+    setNotificationMessage(
+      "An item with the same name, details, and department already exists in the inventory."
+    );
+    setIsNotificationVisible(true);
+    return;
+  }
 
-  // const itemCategoryPrefixMap = {
-  //   Chemical: "CHEM",
-  //   Equipment: "EQP",
-  //   Reagent: "RGT",
-  //   Glasswares: "GLS",
-  //   Materials: "MAT",
-  // };
+  const itemCategoryPrefixMap = {
+    Chemical: "CHEM",
+    Equipment: "EQP",
+    Reagent: "RGT",
+    Glasswares: "GLS",
+    Materials: "MAT",
+  };
 
-  // const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
-  // const formattedItemName = `${baseName}`;
-  // const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
+  const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
+  const formattedItemName = `${baseName}`;
+  const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
 
-  // const itemCategoryPrefix = itemCategoryPrefixMap[values.category] || "UNK01";
-  // const inventoryRef = collection(db, "inventory");
-  // const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-  // const defaultCriticalDays = 7;
-  // let averageDailyUsage = 0;
+  const itemCategoryPrefix = itemCategoryPrefixMap[values.category] || "UNK01";
+  const inventoryRef = collection(db, "inventory");
+  const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
+  const defaultCriticalDays = 7;
+  let averageDailyUsage = 0;
 
-  // const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
+  const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
 
-  // let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
-  // let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-  // let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
+  let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+  let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
 
-  // // 🔁 Keep trying until we find a unique ID
-  // while (!idQuerySnapshot.empty) {
-  //   ItemCategoryCount++;
-  //   generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-  //   idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-  // }
+  // 🔁 Keep trying until we find a unique ID
+  while (!idQuerySnapshot.empty) {
+    ItemCategoryCount++;
+    generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
+    idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
+  }
 
-  // setItemId(generatedItemId);
+  setItemId(generatedItemId);
 
  
  
-  //   const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
-  //   const expiryDate = values.type === "Fixed"
-  //     ? null
-  //     : values.expiryDate
-  //     ? values.expiryDate.format("YYYY-MM-DD")
-  //     : null;
+    const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
+    const expiryDate = values.type === "Fixed"
+      ? null
+      : values.expiryDate
+      ? values.expiryDate.format("YYYY-MM-DD")
+      : null;
  
-  //   const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-  //   const timestamp = new Date();
+    const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
+    const timestamp = new Date();
  
-  //   const quantityNumber = Number(values.quantity);
+    const quantityNumber = Number(values.quantity);
  
-  //   const inventoryItem = {
-  //     itemId: generatedItemId,
-  //     // itemName,
-  //     itemName: finalItemName,
-  //     itemDetails,
-  //     entryCurrentDate,
-  //     expiryDate,
-  //     timestamp,
-  //     criticalLevel,
-  //     category: values.category,
-  //     labRoom: values.labRoom,
-  //     quantity: Number(values.quantity),
-  //     department: values.department,
-  //     type: values.type,
-  //     status: "Available",
-  //     ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
-  //     rawTimestamp: new Date(),
+    const inventoryItem = {
+      itemId: generatedItemId,
+      // itemName,
+      itemName: finalItemName,
+      itemDetails,
+      entryCurrentDate,
+      expiryDate,
+      timestamp,
+      criticalLevel,
+      category: values.category,
+      labRoom: values.labRoom,
+      quantity: Number(values.quantity),
+      department: values.department,
+      type: values.type,
+      status: "Available",
+      ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
+      rawTimestamp: new Date(),
  
-  //     ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-  //       condition: {
-  //         Good: quantityNumber,
-  //         Defect: 0,
-  //         Damage: 0,
-  //         Lost: 0,
-  //       },
-  //     }),
-  //   };
+      ...(values.category !== "Chemical" && values.category !== "Reagent" && {
+        condition: {
+          Good: quantityNumber,
+          Defect: 0,
+          Damage: 0,
+          Lost: 0,
+        },
+      }),
+    };
  
-  //   const encryptedData = CryptoJS.AES.encrypt(
-  //     JSON.stringify(inventoryItem),
-  //     SECRET_KEY
-  //   ).toString();
+    const encryptedData = CryptoJS.AES.encrypt(
+      JSON.stringify(inventoryItem),
+      SECRET_KEY
+    ).toString();
    
-  //   const newItem = {
-  //     id: count + 1,
-  //     itemId: generatedItemId,
-  //     // item: itemName,
-  //     item: finalItemName,
-  //     itemDetails: itemDetails,
-  //     entryDate: entryCurrentDate,
-  //     expiryDate: expiryDate,
-  //     qrCode: encryptedData,
-  //     ...inventoryItem,
-  //   };
+    const newItem = {
+      id: count + 1,
+      itemId: generatedItemId,
+      // item: itemName,
+      item: finalItemName,
+      itemDetails: itemDetails,
+      entryDate: entryCurrentDate,
+      expiryDate: expiryDate,
+      qrCode: encryptedData,
+      ...inventoryItem,
+    };
  
-  //    try {
+     try {
  
-  //     const inventoryDocRef = await addDoc(collection(db, "inventory"), {
-  //       ...inventoryItem,
-  //       qrCode: encryptedData,
-  //     });
+      const inventoryDocRef = await addDoc(collection(db, "inventory"), {
+        ...inventoryItem,
+        qrCode: encryptedData,
+      });
  
-  //     const userId = localStorage.getItem("userId");
-  //     const userName = localStorage.getItem("userName") || "User";
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName") || "User";
  
-  //     await addDoc(collection(db, `accounts/${userId}/activitylog`), {
-  //       action: `Added new item (${finalItemName}) to inventory`,
-  //       userName: userName || "User",
-  //       timestamp: serverTimestamp(),
-  //     });
+      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+        action: `Added new item (${finalItemName}) to inventory`,
+        userName: userName || "User",
+        timestamp: serverTimestamp(),
+      });
 
-  //     await db.collection("allactivitylog").add({
-  //       action: `Added new item (${finalItemName}) to inventory`,
-  //       userName: userName || "User",
-  //       timestamp: serverTimestamp(),
-  //     });
+      await db.collection("allactivitylog").add({
+        action: `Added new item (${finalItemName}) to inventory`,
+        userName: userName || "User",
+        timestamp: serverTimestamp(),
+      });
 
-  //     setNotificationMessage("Item successfully added!");
-  //     setIsNotificationVisible(true);
+      setNotificationMessage("Item successfully added!");
+      setIsNotificationVisible(true);
 
-  //     await addDoc(collection(inventoryDocRef, "stockLog"), {
-  //       date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
-  //       noOfItems: quantityNumber,
-  //       deliveryNumber: "DLV-00001",
-  //       createdAt: serverTimestamp(),
-  //       ...(expiryDate && { expiryDate }),
-  //     });
+      await addDoc(collection(inventoryDocRef, "stockLog"), {
+        date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
+        noOfItems: quantityNumber,
+        deliveryNumber: "DLV-00001",
+        createdAt: serverTimestamp(),
+        ...(expiryDate && { expiryDate }),
+      });
  
-  //     // 🔽 Check if labRoom with the given room number already exists
-  //     const labRoomQuery = query(
-  //       collection(db, "labRoom"),
-  //       where("roomNumber", "==", values.labRoom)
-  //     );
-  //     const labRoomSnapshot = await getDocs(labRoomQuery);
+      // 🔽 Check if labRoom with the given room number already exists
+      const labRoomQuery = query(
+        collection(db, "labRoom"),
+        where("roomNumber", "==", values.labRoom)
+      );
+      const labRoomSnapshot = await getDocs(labRoomQuery);
  
-  //     let labRoomRef;
+      let labRoomRef;
  
-  //     if (labRoomSnapshot.empty) {
-  //       // 🔽 Create new labRoom document with generated ID
-  //       labRoomRef = await addDoc(collection(db, "labRoom"), {
-  //         roomNumber: values.labRoom,
-  //         createdAt: new Date(),
-  //       });
+      if (labRoomSnapshot.empty) {
+        // 🔽 Create new labRoom document with generated ID
+        labRoomRef = await addDoc(collection(db, "labRoom"), {
+          roomNumber: values.labRoom,
+          createdAt: new Date(),
+        });
  
-  //     } else {
-  //       // 🔽 Use existing labRoom document
-  //       labRoomRef = labRoomSnapshot.docs[0].ref;
-  //     }
+      } else {
+        // 🔽 Use existing labRoom document
+        labRoomRef = labRoomSnapshot.docs[0].ref;
+      }
  
-  //     // 🔽 Add item to the labRoom's subcollection
-  //     await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
-  //       ...inventoryItem,
-  //       qrCode: encryptedData,
-  //       roomNumber: values.labRoom,
-  //     });
+      // 🔽 Add item to the labRoom's subcollection
+      await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
+        ...inventoryItem,
+        qrCode: encryptedData,
+        roomNumber: values.labRoom,
+      });
  
-  //     // 🔽 Fetch all items under this labRoom
-  //     const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
+      // 🔽 Fetch all items under this labRoom
+      const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
  
-  //     // 🔽 Generate encrypted QR code with labRoom ID only
-  //     const labRoomQRData = CryptoJS.AES.encrypt(
-  //       JSON.stringify({
-  //         labRoomId: labRoomRef.id,
-  //       }),
-  //       SECRET_KEY
-  //     ).toString();
+      // 🔽 Generate encrypted QR code with labRoom ID only
+      const labRoomQRData = CryptoJS.AES.encrypt(
+        JSON.stringify({
+          labRoomId: labRoomRef.id,
+        }),
+        SECRET_KEY
+      ).toString();
  
-  //     // 🔽 Update labRoom document with the generated QR code
-  //     await updateDoc(labRoomRef, {
-  //       qrCode: labRoomQRData,
-  //       updatedAt: new Date(),
-  //     });
+      // 🔽 Update labRoom document with the generated QR code
+      await updateDoc(labRoomRef, {
+        qrCode: labRoomQRData,
+        updatedAt: new Date(),
+      });
  
-  //     setDataSource([...dataSource, newItem]);
-  //     setLogRefreshKey(prev => prev + 1);
-  //     setCount(count + 1);
-  //     form.resetFields();
-  //     setItemName("");
-  //     setItemDetails("")
-  //     setItemId("");
-  //     setIsModalVisible(false);
+      setDataSource([...dataSource, newItem]);
+      setLogRefreshKey(prev => prev + 1);
+      setCount(count + 1);
+      form.resetFields();
+      setItemName("");
+      setItemDetails("")
+      setItemId("");
+      setIsModalVisible(false);
  
-  //   } catch (error) {
-  //     console.error("Error adding document to Firestore:", error);
-  //   }
-  // };
+    } catch (error) {
+      console.error("Error adding document to Firestore:", error);
+    }
+  };
 
   // BACKEND
   // const handleAdd = async (values) => {
@@ -1030,60 +1030,60 @@ const printPdf = () => {
   // };
 
   // BACKEND WITH CRITICAL LEVEL
-  const handleAdd = async (values) => {
-    try {
-      // Validate local inputs
-      if (!itemName || !values.department || !itemDetails) {
-        alert("Please fill up the form!");
-        return;
-      }
+  // const handleAdd = async (values) => {
+  //   try {
+  //     // Validate local inputs
+  //     if (!itemName || !values.department || !itemDetails) {
+  //       alert("Please fill up the form!");
+  //       return;
+  //     }
 
-      // Prepare core fields
-      const trimmedName = itemName.trim();
-      const trimmedDetails = itemDetails.trim();
-      const userId = localStorage.getItem("userId");
-      const userName = localStorage.getItem("userName");
+  //     // Prepare core fields
+  //     const trimmedName = itemName.trim();
+  //     const trimmedDetails = itemDetails.trim();
+  //     const userId = localStorage.getItem("userId");
+  //     const userName = localStorage.getItem("userName");
 
-      // Format dates
-      const formattedEntryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
-      const formattedExpiryDate = values.expiryDate
-        ? values.expiryDate.format("YYYY-MM-DD")
-        : null;
+  //     // Format dates
+  //     const formattedEntryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
+  //     const formattedExpiryDate = values.expiryDate
+  //       ? values.expiryDate.format("YYYY-MM-DD")
+  //       : null;
 
-      // Build payload for backend
-      const payload = {
-        ...values,
-        itemName: trimmedName,
-        itemDetails: trimmedDetails,
-        entryDate: formattedEntryDate,
-        expiryDate: values.type === "Fixed" ? null : formattedExpiryDate,
-        userId,
-        userName,
-      };
+  //     // Build payload for backend
+  //     const payload = {
+  //       ...values,
+  //       itemName: trimmedName,
+  //       itemDetails: trimmedDetails,
+  //       entryDate: formattedEntryDate,
+  //       expiryDate: values.type === "Fixed" ? null : formattedExpiryDate,
+  //       userId,
+  //       userName,
+  //     };
 
-      const response = await fetch("https://webnuls.onrender.com/add-inventory", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+  //     const response = await fetch("https://webnuls.onrender.com/add-inventory", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify(payload),
+  //     });
 
-      const result = await response.json();
+  //     const result = await response.json();
 
-      if (response.ok) {
-        setNotificationMessage(result.message || "Item successfully added!");
-        setIsNotificationVisible(true);
-        setIsModalVisible(false);
-        setItemName("");
-        setItemDetails("");
-        form.resetFields();
-      } else {
-        alert(result.error || "Failed to add item.");
-      }
-    } catch (error) {
-      console.error("Error calling API:", error);
-      alert("An unexpected error occurred while adding the item.");
-    }
-  };
+  //     if (response.ok) {
+  //       setNotificationMessage(result.message || "Item successfully added!");
+  //       setIsNotificationVisible(true);
+  //       setIsModalVisible(false);
+  //       setItemName("");
+  //       setItemDetails("");
+  //       form.resetFields();
+  //     } else {
+  //       alert(result.error || "Failed to add item.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error calling API:", error);
+  //     alert("An unexpected error occurred while adding the item.");
+  //   }
+  // };
 
   const editItem = (record, clearFields = true) => {
     editForm.resetFields();
