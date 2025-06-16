@@ -605,6 +605,17 @@ try {
         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
   
         await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+
+        // ✅ Notify the user who submitted the request
+        if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
+          await addDoc(collection(db, `accounts/${selectedRequest.accountId}/userNotifications`), {
+            action: `Rejected request for ${selectedRequest.userName}`,
+            requestId: selectedRequest.id,
+            userName: selectedRequest.userName,
+            read: false,
+            timestamp: serverTimestamp(),
+          });
+        }
       }
   
       await deleteDoc(doc(db, "userrequests", selectedRequest.id));
@@ -1054,6 +1065,17 @@ try {
         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
   
         await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+
+        // ✅ Notify the user who submitted the request
+        if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
+          await addDoc(collection(db, `accounts/${selectedRequest.accountId}/userNotifications`), {
+            action: `Rejected request for ${selectedRequest.userName}`,
+            requestId: selectedRequest.id,
+            userName: selectedRequest.userName,
+            read: false,
+            timestamp: serverTimestamp(),
+          });
+        }
       }
   
       await deleteDoc(doc(db, "userrequests", selectedRequest.id));
@@ -1726,6 +1748,18 @@ try {
         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
   
         await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+
+        // ✅ Notify the user who submitted the request
+        if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
+          await addDoc(collection(db, `accounts/${selectedRequest.accountId}/userNotifications`), {
+            action: `Approved request for ${selectedRequest.userName}`,
+            requestId: selectedRequest.id,
+            userName: selectedRequest.userName,
+            read: false,
+            timestamp: serverTimestamp(),
+          });
+        }
+
       }
 
         await deleteDoc(doc(db, "userrequests", selectedRequest.id));
