@@ -24,7 +24,7 @@
   cursor: pointer;
   margin-bottom: 12px;
   display: flex;
-  flex-direction: row;
+  /* flex-direction: row; */
   width: 100%;
 }
 
@@ -152,4 +152,39 @@
 .requested-item-tbl .ant-table-thead >tr>th{
   background-color: #3f627e !important;
   color: white !important;
+}
+
+.whole-slip{
+  background-color: #eaefff;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  width: 800px;
+  padding-top: 15px;
+  margin-left: -24px;
+  padding-left: 20px;
+  font-size: 16px;
+}
+
+.left-slip{
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+  padding-right: 30px;
+}
+
+
+.left-slip div{
+  display: flex;
+  justify-content: space-between;
+}
+
+.right-slip{
+  width: 50%;
+  padding-right: 30px;
+}
+
+.right-slip div{
+  display: flex;
+  justify-content: space-between;
 }
