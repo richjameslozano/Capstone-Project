@@ -1,27 +1,8 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, SafeAreaView } from 'react-native';
-import styles from './notificationStyles'; // Import external stylesheet
-
-const notifications = [
-  {
-    id: '1',
-    title: 'Request Approved',
-    message: 'Your inventory request for "Microscopes" has been approved.',
-    timestamp: 'June 17, 2025, 10:30 AM',
-  },
-  {
-    id: '2',
-    title: 'Low Stock Alert',
-    message: 'The item "Ethanol 99%" is running low in stock.',
-    timestamp: 'June 16, 2025, 2:15 PM',
-  },
-  {
-    id: '3',
-    title: 'System Update',
-    message: 'A new version of the lab system is now live.',
-    timestamp: 'June 15, 2025, 9:00 AM',
-  },
-];
+import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
+import { db } from '../backend/firebase/FirebaseConfig';
+import styles from './notificationStyles';
 
 const NotificationItem = ({ title, message, timestamp }) => (
   <View style={styles.notificationCard}>
@@ -31,17 +12,43 @@ const NotificationItem = ({ title, message, timestamp }) => (
   </View>
 );
 
-const Notifications = () => {
+const Notifications = ({ userId, role = 'user' }) => {
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    if (!userId || userId === "system") return;
+
+    let notifRef;
+    if (role === 'user') {
+      notifRef = collection(db, 'accounts', userId, 'userNotifications');
+    } else {
+      notifRef = collection(db, 'allNotifications');
+    }
+
+    const q = query(notifRef, orderBy('timestamp', 'desc'));
+
+    const unsubscribe = onSnapshot(q, (snapshot) => {
+      const notifList = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+        timestamp: doc.data().timestamp?.toDate().toLocaleString() || '', // format Firestore timestamp
+      }));
+      setNotifications(notifList);
+    });
+
+    return () => unsubscribe();
+  }, [userId, role]);
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Notifications</Text>
       <FlatList
         data={notifications}
-        keyExtractor={item => item.id}
+        keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <NotificationItem
-            title={item.title}
-            message={item.message}
+            title={item.title || 'No Title'}
+            message={item.message || item.action || 'No Message'}
             timestamp={item.timestamp}
           />
         )}
