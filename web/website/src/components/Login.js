@@ -1019,10 +1019,10 @@ const Login = () => {
 
   const handleRegisterPassword = async () => {
     // Password validation regex: min 8 chars, at least one letter, one number, and one special character
-    const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
 
     if (!passwordRegex.test(formData.password)) {
-      setError("Password must be at least 8 characters long and include at least one letter, one number, and one special character.");
+      setError("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
       return;
     }
 
