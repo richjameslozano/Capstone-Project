@@ -36,6 +36,8 @@ const PendingRequest = () => {
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);
   const [firstRequestMap, setFirstRequestMap] = useState({});
   const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
+  const [requestOrderMap, setRequestOrderMap] = useState({});
+  const [loading, setLoading] = useState(true);
 
 const sanitizeInput = (input) =>
   input
@@ -71,95 +73,202 @@ const getCollegeByDepartment = async (departmentName) => {
   return null;
 };
 
-useEffect(() => {
-  const userRequestRef = collection(db, "userrequests");
-  const q = query(userRequestRef, orderBy("timestamp", "desc"));
+// useEffect(() => {
+//   const userRequestRef = collection(db, "userrequests");
+//   const q = query(userRequestRef, orderBy("timestamp", "desc"));
 
-  const unsubscribe = onSnapshot(
-    q,
-    async (querySnapshot) => {
+//   const unsubscribe = onSnapshot(
+//     q,
+//     async (querySnapshot) => {
   
 
-      const fetched = [];
+//       const fetched = [];
 
-      for (const docSnap of querySnapshot.docs) {
-        const data = docSnap.data();
+//       for (const docSnap of querySnapshot.docs) {
+//         const data = docSnap.data();
 
-        const enrichedItems = await Promise.all(
-          (data.filteredMergedData || []).map(async (item) => {
-            const inventoryId = item.selectedItemId || item.selectedItem?.value;
-            let itemId = "N/A";
+//         const enrichedItems = await Promise.all(
+//           (data.filteredMergedData || []).map(async (item) => {
+//             const inventoryId = item.selectedItemId || item.selectedItem?.value;
+//             let itemId = "N/A";
 
-            if (inventoryId) {
-              try {
-                const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
-                if (invDoc.exists()) {
-                  itemId = invDoc.data().itemId || "N/A";
-                }
-              } catch (err) {
-                console.error("Error fetching inventory item:", err);
-              }
-            }
+//             if (inventoryId) {
+//               try {
+//                 const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
+//                 if (invDoc.exists()) {
+//                   itemId = invDoc.data().itemId || "N/A";
+//                 }
+//               } catch (err) {
+//                 console.error("Error fetching inventory item:", err);
+//               }
+//             }
 
-            return {
-              ...item,
-              itemIdFromInventory: itemId,
-            };
-          })
-        );
+//             return {
+//               ...item,
+//               itemIdFromInventory: itemId,
+//             };
+//           })
+//         );
 
-        fetched.push({
-          // id: docSnap.id,
-          // ...data,
-          ...data,
-          id: docSnap.id,
-          firestoreId: docSnap.id,
-          requestList: enrichedItems,
-          timeFrom: data.timeFrom || "N/A",
-          timeTo: data.timeTo || "N/A",
-        });
-      }
+//         fetched.push({
+//           // id: docSnap.id,
+//           // ...data,
+//           ...data,
+//           id: docSnap.id,
+//           firestoreId: docSnap.id,
+//           requestList: enrichedItems,
+//           timeFrom: data.timeFrom || "N/A",
+//           timeTo: data.timeTo || "N/A",
+//         });
+//       }
 
-      // setRequests(fetched);
+//       // setRequests(fetched);
 
-      // Determine first requests per item per date
-      const firstRequestsMap = {};
+//       // Determine first requests per item per date
+//       const firstRequestsMap = {};
 
-      fetched.forEach((req) => {
-        const date = req.dateRequired;
-        const timestamp = req.timestamp?.toDate?.() || new Date(); // make sure it's a Date object
+//       fetched.forEach((req) => {
+//         const date = req.dateRequired;
+//         const timestamp = req.timestamp?.toDate?.() || new Date(); // make sure it's a Date object
 
-        (req.requestList || []).forEach((item) => {
-          const key = `${item.selectedItemId}_${date}`;
+//         (req.requestList || []).forEach((item) => {
+//           const key = `${item.selectedItemId}_${date}`;
           
-          // If key is not set or current request is earlier, update it
-          if (!firstRequestsMap[key] || timestamp < firstRequestsMap[key].timestamp) {
-            firstRequestsMap[key] = {
-              requestId: req.id,
-              timestamp,
-            };
-          }
-        });
-      });
+//           // If key is not set or current request is earlier, update it
+//           if (!firstRequestsMap[key] || timestamp < firstRequestsMap[key].timestamp) {
+//             firstRequestsMap[key] = {
+//               requestId: req.id,
+//               timestamp,
+//             };
+//           }
+//         });
+//       });
 
-      const simpleFirstRequestMap = {};
-      for (const key in firstRequestsMap) {
-        simpleFirstRequestMap[key] = firstRequestsMap[key].requestId;
-      }
+//       const simpleFirstRequestMap = {};
+//       for (const key in firstRequestsMap) {
+//         simpleFirstRequestMap[key] = firstRequestsMap[key].requestId;
+//       }
 
-      setRequests(fetched);
-      setFirstRequestMap(simpleFirstRequestMap);
+//       setRequests(fetched);
+//       setFirstRequestMap(simpleFirstRequestMap);
 
     
-    },
-    (error) => {
+//     },
+//     (error) => {
   
-      console.error("Error fetching user requests:", error);
-    }
-  );
+//       console.error("Error fetching user requests:", error);
+//     }
+//   );
 
-  return () => unsubscribe();
-}, []);
+//   return () => unsubscribe();
+// }, []);
+
+ useEffect(() => {
+    const userRequestRef = collection(db, "userrequests");
+    const q = query(userRequestRef, orderBy("timestamp", "desc"));
+
+    const unsubscribe = onSnapshot(
+      q,
+      async (querySnapshot) => {
+        setLoading(true); // Start loading
+
+        const fetched = [];
+
+        for (const docSnap of querySnapshot.docs) {
+          const data = docSnap.data();
+
+          const enrichedItems = await Promise.all(
+            (data.filteredMergedData || []).map(async (item) => {
+              const inventoryId = item.selectedItemId || item.selectedItem?.value;
+              let itemId = "N/A";
+
+              if (inventoryId) {
+                try {
+                  const invDoc = await getDoc(doc(db, `inventory/${inventoryId}`));
+                  if (invDoc.exists()) {
+                    itemId = invDoc.data().itemId || "N/A";
+                  }
+                } catch (err) {
+                  console.error("Error fetching inventory item:", err);
+                }
+              }
+
+              return {
+                ...item,
+                itemIdFromInventory: itemId,
+              };
+            })
+          );
+
+          fetched.push({
+            ...data,
+            id: docSnap.id,
+            firestoreId: docSnap.id,
+            requestList: enrichedItems,
+            timeFrom: data.timeFrom || "N/A",
+            timeTo: data.timeTo || "N/A",
+          });
+        }
+
+        // Determine first request per item+date
+        const firstRequestsMap = {};
+        const requestRankMap = {};
+
+        fetched.forEach((req) => {
+          const date = req.dateRequired;
+          const timestamp = req.timestamp?.toDate?.() || new Date();
+
+          (req.requestList || []).forEach((item) => {
+            const key = `${item.selectedItemId}_${date}`;
+
+            // First request logic
+            if (!firstRequestsMap[key] || timestamp < firstRequestsMap[key].timestamp) {
+              firstRequestsMap[key] = {
+                requestId: req.id,
+                timestamp,
+              };
+            }
+
+            // Build list for rank ordering
+            if (!requestRankMap[key]) {
+              requestRankMap[key] = [];
+            }
+            requestRankMap[key].push({ requestId: req.id, timestamp });
+          });
+        });
+
+        const simpleFirstRequestMap = {};
+        for (const key in firstRequestsMap) {
+          simpleFirstRequestMap[key] = firstRequestsMap[key].requestId;
+        }
+
+        // Sort and compute rank per request per item+date
+        const requestPositionMap = {};
+        for (const key in requestRankMap) {
+          const sorted = requestRankMap[key].sort((a, b) => a.timestamp - b.timestamp);
+          sorted.forEach((entry, index) => {
+            if (!requestPositionMap[entry.requestId]) {
+              requestPositionMap[entry.requestId] = {};
+            }
+            requestPositionMap[entry.requestId][key] = index + 1; // 1-based index
+          });
+        }
+
+        // Final state updates
+        setRequests(fetched);
+        setFirstRequestMap(simpleFirstRequestMap);
+        setRequestOrderMap(requestPositionMap);
+
+        setLoading(false); // End loading
+      },
+      (error) => {
+        setLoading(false);
+        console.error("Error fetching user requests:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   // const handleViewDetails = (request) => {
   //   setSelectedRequest(request);
@@ -2675,6 +2784,20 @@ useEffect(() => {
                 <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
                 <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
                 <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.course}{request.courseDescription}</p>
+
+                {request.requestList?.map((item, index) => {
+                const key = `${item.selectedItemId}_${request.dateRequired}`;
+                const position = requestOrderMap?.[request.id]?.[key];
+
+                return (
+                  <p
+                    key={index}
+                    style={{ color: '#5a5a5a', fontSize: 13, marginBottom: 2 }}
+                  >
+                    • {item.itemName} - #{position ?? 'N/A'} to request
+                  </p>
+                );
+              })}
               </div>
 
               {/* {isDisabled && (
