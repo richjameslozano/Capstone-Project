@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Layout, Row, Col, Card, Button, Typography, Space, Modal, Table, notification, Input, Select, Spin } from "antd";
+import { Layout, Row, Col, Card, Button, Typography, Space, Modal, Table, notification, Input, Select, Spin, Tooltip } from "antd";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import "../styles/adminStyle/PendingRequest.css";
@@ -38,6 +38,7 @@ const PendingRequest = () => {
   const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
   const [requestOrderMap, setRequestOrderMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const [editableItems, setEditableItems] = useState([]);
 
 const sanitizeInput = (input) =>
   input
@@ -163,7 +164,18 @@ const getCollegeByDepartment = async (departmentName) => {
 //   return () => unsubscribe();
 // }, []);
 
- useEffect(() => {
+  useEffect(() => {
+    if (selectedRequest?.requestList) {
+      const itemsWithMax = selectedRequest.requestList.map((item) => ({
+        ...item,
+        quantity: item.quantity,            // Editable
+        maxQuantity: item.quantity,         // Store original as max
+      }));
+      setEditableItems(itemsWithMax);
+    }
+  }, [selectedRequest]);
+
+  useEffect(() => {
     const userRequestRef = collection(db, "userrequests");
     const q = query(userRequestRef, orderBy("timestamp", "desc"));
 
@@ -2334,10 +2346,67 @@ try {
       dataIndex: "itemDetails",
       key: "itemDetails",
     },
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   key: "quantity",
+    // },
     {
       title: "Quantity",
       dataIndex: "quantity",
       key: "quantity",
+      render: (text, record, index) => {
+        const value = editableItems[index]?.quantity ?? "";
+        const maxQuantity = editableItems[index]?.maxQuantity ?? Infinity;
+
+        return (
+          <Tooltip title={`Max allowed: ${maxQuantity}`}>
+            <Input
+              type="number"
+              min={1}
+              max={maxQuantity}
+              value={value}
+              onChange={(e) => {
+                const inputValue = e.target.value;
+
+                if (inputValue === "") {
+                  const updatedItems = [...editableItems];
+                  updatedItems[index] = {
+                    ...updatedItems[index],
+                    quantity: "",
+                  };
+                  setEditableItems(updatedItems);
+                  return;
+                }
+
+                const parsed = parseInt(inputValue, 10);
+                if (!isNaN(parsed) && parsed <= maxQuantity) {
+                  const updatedItems = [...editableItems];
+                  updatedItems[index] = {
+                    ...updatedItems[index],
+                    quantity: parsed,
+                  };
+                  setEditableItems(updatedItems);
+                }
+              }}
+              onBlur={() => {
+                const updatedItems = [...editableItems];
+                let value = updatedItems[index]?.quantity;
+
+                if (value === "" || isNaN(value) || value < 1) {
+                  value = 1;
+                }
+
+                updatedItems[index] = {
+                  ...updatedItems[index],
+                  quantity: value,
+                };
+                setEditableItems(updatedItems);
+              }}
+            />
+          </Tooltip>
+        );
+      }
     },
     {
       title: "Reason for Rejection",

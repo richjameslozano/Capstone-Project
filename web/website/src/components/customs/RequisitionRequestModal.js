@@ -26,10 +26,22 @@ const RequisitionReqestModal = ({
     const [requestCollege, setRequestCollege] = useState(null);
     const userDepartment = (localStorage.getItem("userDepartment") || "").trim().toUpperCase();
     const userJobTitle = (localStorage.getItem("userJobTitle") || "").trim().toLowerCase();
+    const [editableItems, setEditableItems] = useState([]);
 
   useEffect(() => {
     if (selectedRequest) {
       setCheckedItemIds([]); // reset when modal opens
+    }
+  }, [selectedRequest]);
+
+  useEffect(() => {
+    if (selectedRequest?.requestList) {
+      const itemsWithMax = selectedRequest.requestList.map((item) => ({
+        ...item,
+        quantity: item.quantity,            // Editable
+        maxQuantity: item.quantity,         // Store original as max
+      }));
+      setEditableItems(itemsWithMax);
     }
   }, [selectedRequest]);
 
@@ -164,10 +176,18 @@ const RequisitionReqestModal = ({
               </div>
 
             <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
-            <Table
+            {/* <Table
               dataSource={selectedRequest.requestList}
               columns={columns}
               rowKey="id"
+              pagination={false}
+              bordered
+            /> */}
+
+            <Table
+              dataSource={editableItems}
+              columns={columns}
+              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
               pagination={false}
               bordered
             />
