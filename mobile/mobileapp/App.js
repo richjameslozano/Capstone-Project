@@ -157,6 +157,11 @@ const CustomDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Activity Log</Title>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.5}>
+        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Notifications</Title>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('CapexRequestScreen')}>
         <Icon2 name="cash-multiple" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Capex Request</Title>
@@ -261,6 +266,11 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Capex Request List</Title>
       </TouchableOpacity>
 
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.5}>
+        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Notifications</Title>
+      </TouchableOpacity>
+
       <TouchableOpacity onPress={() => navigation.navigate('ActivityLogScreen')} style={styles.drawerItem}>
         <Icon2 name="chart-timeline-variant" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Activity Log</Title>
@@ -343,6 +353,11 @@ const CustomSuperUserDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>My Account</Title>
       </TouchableOpacity>
     </View>
+
+      <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.5}>
+        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Title style={styles.titleStyle}>Notifications</Title>
+      </TouchableOpacity>
 
       <TouchableOpacity onPress={() => navigation.navigate('InventoryStocks')} style={styles.drawerItem}>
         <Icon2 name="package-variant" size={25} style={styles.icon} />
