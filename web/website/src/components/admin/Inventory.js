@@ -2175,6 +2175,12 @@ useEffect(() => {
                           <th>Item Type</th>
                           <td>{selectedRow.type}</td>
                         </tr>
+
+                        <tr>
+                          <th>Category</th>
+                          <td>{selectedRow.category}</td>
+                        </tr>
+
                         {/* <tr>
                           <th>Date of Entry (latest)</th>
                           <td>{selectedRow.entryCurrentDate || 'N/A'}</td>
@@ -2196,10 +2202,10 @@ useEffect(() => {
                           <td>{selectedRow.department}</td>
                         </tr>
 
-                        <tr>
+                        {/* <tr>
                           <th>Category</th>
                           <td>{selectedRow.category}</td>
-                        </tr>
+                        </tr> */}
 
                         <tr>
                           <th>Critical Level</th>
@@ -2216,7 +2222,11 @@ useEffect(() => {
                           <td>{selectedRow.labRoom}</td>
                         </tr>
                         
-                      
+                       <tr>
+                          <th>Shelf</th>
+                          <td>{selectedRow.shelves}, {selectedRow.row}</td>
+                        </tr>
+
                       </tbody>
                     </table>
                     </div>
