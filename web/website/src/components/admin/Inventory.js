@@ -1802,6 +1802,27 @@ useEffect(() => {
 
           <Col xs={24} md={8}>
             <Form.Item
+              name="department"
+              label="Department"
+              rules={[{ required: true, message: "Please select a department" }]}
+            >
+              <Select
+              className="add-input"
+                placeholder="Select department"
+                loading={!departmentsAll.length}
+                disabled={!departmentsAll.length}
+              >
+                {departmentsAll.map((dept) => (
+                  <Option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>  
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Form.Item
               name="labRoom"
               label="Stock Room"
               rules={[
@@ -1834,23 +1855,28 @@ useEffect(() => {
 
           <Col xs={24} md={8}>
             <Form.Item
-              name="department"
-              label="Department"
-              rules={[{ required: true, message: "Please select a department" }]}
+              name="shelves"
+              label="Shelves"
+              rules={[{ required: false }]} // Optional field
             >
-              <Select
-              className="add-input"
-                placeholder="Select department"
-                loading={!departmentsAll.length}
-                disabled={!departmentsAll.length}
-              >
-                {departmentsAll.map((dept) => (
-                  <Option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>  
+              <Input
+                className="add-input"
+                placeholder="Enter Shelves"
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} md={8}>
+            <Form.Item
+              name="row"
+              label="Row"
+              rules={[{ required: false }]} // Optional field
+            >
+              <Input
+                className="add-input"
+                placeholder="Enter Row"
+              />
+            </Form.Item>
           </Col>
         </Row>
 
