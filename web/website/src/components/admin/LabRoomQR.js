@@ -1,13 +1,12 @@
-
-
-// VERSION 4
 import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
-import { Layout, Row, Col, Table, Input, Button, Typography, Modal } from "antd";
+import { Layout, Row, Col, Table, Input, Button, Typography, Modal, Tabs } from "antd";
 import { collection, getDocs, onSnapshot, doc, updateDoc, writeBatch, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/LabRoomQR.css";
 import { QRCodeSVG } from "qrcode.react";
+
+const { TabPane } = Tabs;
 
 const LabRoomQR = () => {
   const [labRooms, setLabRooms] = useState([]);
@@ -17,24 +16,112 @@ const LabRoomQR = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [expandedRooms, setExpandedRooms] = useState({});
   const [itemSearchTerms, setItemSearchTerms] = useState({});
+  const [selectedRoom, setSelectedRoom] = useState(null);
+  const [activeTab, setActiveTab] = useState("1"); 
   const qrRefs = useRef({});
 
-   useEffect(() => {
+  //  useEffect(() => {
+  //   const unsubscribeFunctions = [];
+
+  //   const fetchLabRoomsWithItems = async () => {
+  //     try {
+  //       const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
+  //       const rooms = labRoomSnapshot.docs.map(doc => {
+  //         const data = doc.data();
+  //         return {
+  //           id: doc.id,
+  //           name: data.name || "N/A",
+  //           roomNumber: data.roomNumber || "N/A",
+  //           qrCode: data.qrCode || "",
+  //           items: [],
+  //         };
+  //       });
+
+  //         // Set initial rooms (empty items for now)
+  //         setLabRooms(rooms);
+
+  //         const originalNumbers = {};
+  //         rooms.forEach(room => {
+  //           originalNumbers[room.id] = room.roomNumber;
+  //         });
+  //         setOriginalRoomNumbers(originalNumbers);
+
+  //         // Set up item listeners per room
+  //         labRoomSnapshot.docs.forEach((roomDoc) => {
+  //           const roomId = roomDoc.id;
+  //           const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
+
+  //           const unsub = onSnapshot(itemsCollectionRef, (itemsSnapshot) => {
+  //             const updatedItems = itemsSnapshot.docs.map(itemDoc => {
+  //               const itemData = itemDoc.data();
+  //               return {
+  //                 id: itemDoc.id,
+  //                 category: itemData.category || "N/A",
+  //                 condition: itemData.condition
+  //                   ? `Good: ${itemData.condition.Good ?? 0}, Defect: ${itemData.condition.Defect ?? 0}, Damage: ${itemData.condition.Damage ?? 0}, Lost: ${itemData.condition.Lost ?? 0}`
+  //                   : "N/A",
+  //                 department: itemData.department || "N/A",
+  //                 entryCurrentDate: itemData.entryCurrentDate || "N/A",
+  //                 expiryDate: itemData.expiryDate || null,
+  //                 itemId: itemData.itemId || "N/A",
+  //                 itemName: itemData.itemName || "N/A",
+  //                 itemDetails: itemData.itemDetails || "N/A",
+  //                 labRoom: itemData.labRoom || "N/A",
+  //                 // quantity: itemData.quantity || 0,
+  //                 // quantity: itemData.quantity ?? (itemData.category === "Glasswares" ? [] : 0),
+  //                 quantity: itemData.quantity || 0,
+  //                 status: itemData.status || "N/A", 
+  //                 type: itemData.type || "N/A",
+  //                 rawTimestamp: itemData.rawTimestamp || "N/A",
+  //                 timestamp: itemData.timestamp || "N/A",
+  //                 // unit: itemData.unit || "N/A",
+  //                 // volume: itemData.volume || "N/A",
+  //                 unit: ["Chemical", "Reagent"].includes(itemData.category) ? itemData.unit || "N/A" : "N/A",
+  //               };
+  //             });
+
+  //             setLabRooms(prevRooms =>
+  //               prevRooms.map(room =>
+  //                 room.id === roomId ? { ...room, items: updatedItems } : room
+  //               )
+  //             );
+  //           });
+
+  //           unsubscribeFunctions.push(unsub);
+  //         });
+  //       });
+
+  //       unsubscribeFunctions.push(labRoomUnsub);
+
+  //     } catch (error) {
+        
+  //     }
+  //   };
+
+  //   fetchLabRoomsWithItems();
+
+  //   return () => {
+  //     unsubscribeFunctions.forEach(unsub => unsub());
+  //   };
+  // }, []);
+
+  useEffect(() => {
     const unsubscribeFunctions = [];
 
     const fetchLabRoomsWithItems = async () => {
       try {
         const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
-        const rooms = labRoomSnapshot.docs.map(doc => {
-          const data = doc.data();
-          return {
-            id: doc.id,
-            name: data.name || "N/A",
-            roomNumber: data.roomNumber || "N/A",
-            qrCode: data.qrCode || "",
-            items: [],
-          };
-        });
+          const rooms = labRoomSnapshot.docs.map(doc => {
+            const data = doc.data();
+            return {
+              id: doc.id,
+              name: data.name || "N/A",
+              roomNumber: data.roomNumber || "N/A", // 🟢 get roomNumber here
+              qrCode: data.qrCode || "",
+              items: [],
+              shelves: {},
+            };
+          });
 
           // Set initial rooms (empty items for now)
           setLabRooms(rooms);
@@ -43,6 +130,7 @@ const LabRoomQR = () => {
           rooms.forEach(room => {
             originalNumbers[room.id] = room.roomNumber;
           });
+
           setOriginalRoomNumbers(originalNumbers);
 
           // Set up item listeners per room
@@ -66,15 +154,11 @@ const LabRoomQR = () => {
                   itemName: itemData.itemName || "N/A",
                   itemDetails: itemData.itemDetails || "N/A",
                   labRoom: itemData.labRoom || "N/A",
-                  // quantity: itemData.quantity || 0,
-                  // quantity: itemData.quantity ?? (itemData.category === "Glasswares" ? [] : 0),
                   quantity: itemData.quantity || 0,
-                  status: itemData.status || "N/A", 
+                  status: itemData.status || "N/A",
                   type: itemData.type || "N/A",
                   rawTimestamp: itemData.rawTimestamp || "N/A",
                   timestamp: itemData.timestamp || "N/A",
-                  // unit: itemData.unit || "N/A",
-                  // volume: itemData.volume || "N/A",
                   unit: ["Chemical", "Reagent"].includes(itemData.category) ? itemData.unit || "N/A" : "N/A",
                 };
               });
@@ -87,13 +171,44 @@ const LabRoomQR = () => {
             });
 
             unsubscribeFunctions.push(unsub);
+
+            // Fetch shelves for each room
+            const shelvesCollectionRef = collection(db, `labRoom/${roomId}/shelves`);
+            const shelvesUnsub = onSnapshot(shelvesCollectionRef, async (shelvesSnapshot) => {
+              const updatedShelves = {};
+
+              // Loop through shelves and fetch rows for each shelf
+              for (const shelfDoc of shelvesSnapshot.docs) {
+                const shelfId = shelfDoc.id;
+                const shelfData = shelfDoc.data();
+
+                // Fetch rows for each shelf
+                const rowsCollectionRef = collection(db, `labRoom/${roomId}/shelves/${shelfId}/rows`);
+                const rowsSnapshot = await getDocs(rowsCollectionRef);
+                const rows = rowsSnapshot.docs.map(rowDoc => rowDoc.data());
+
+                // Add shelf and rows data
+                updatedShelves[shelfId] = {
+                  ...shelfData,
+                  rows: rows,
+                };
+              }
+
+              setLabRooms(prevRooms =>
+                prevRooms.map(room =>
+                  room.id === roomId ? { ...room, shelves: updatedShelves } : room
+                )
+              );
+            });
+
+            unsubscribeFunctions.push(shelvesUnsub);
           });
         });
 
         unsubscribeFunctions.push(labRoomUnsub);
 
       } catch (error) {
-        
+        console.error("Error setting up real-time listeners:", error);
       }
     };
 
@@ -235,6 +350,104 @@ const LabRoomQR = () => {
 
     return roomMatch || itemMatch;
   });
+
+  const renderShelves = (roomId) => {
+    const room = labRooms.find((r) => r.id === roomId);
+    if (!room || !room.shelves || Object.keys(room.shelves).length === 0) {
+      return <div>No shelves available for this room.</div>;
+    }
+
+    const shelfColumns = [
+      {
+        title: 'Shelf',
+        dataIndex: 'shelf',
+        key: 'shelf',
+        render: (text, record) => <span>{record.shelfName || `Shelf ${record.shelfId}`}</span>,
+      },
+      {
+        title: 'Shelf QR Code',
+        dataIndex: 'shelfQR',
+        key: 'shelfQR',
+        render: (text) => <QRCodeSVG value={text} size={128} />,
+      },
+      {
+        title: 'Row Numbers',
+        dataIndex: 'rows',
+        key: 'rows',
+        render: (rows) => (
+          <div>
+            {rows.map((row, index) => (
+              <div key={index}>
+                <span>Row {row.row}</span>
+                <QRCodeSVG value={row.rowQR} size={128} />
+              </div>
+            ))}
+          </div>
+        ),
+      },
+    ];
+
+    const rowData = [];
+
+    // Iterate over each shelf
+    Object.entries(room.shelves).forEach(([shelfId, shelfData]) => {
+      if (shelfData.rows) {
+        // Group rows under each shelf
+        rowData.push({
+          shelfId,
+          shelfName: shelfData.name,
+          shelfQR: shelfData.shelvesQR,
+          rows: shelfData.rows, // Group all rows under the shelf
+        });
+      }
+    });
+
+    return <Table columns={shelfColumns} dataSource={rowData} rowKey="shelfId" />;
+  };
+
+  const renderRows = (roomId) => {
+    const room = labRooms.find((r) => r.id === roomId);
+    if (!room || !room.shelves || Object.keys(room.shelves).length === 0) {
+      return <div>No rows available for this room.</div>;
+    }
+
+    const rowColumns = [
+      {
+        title: 'Row Number',
+        dataIndex: 'row',
+        key: 'row',
+        render: (text) => <span>{text}</span>,
+      },
+      {
+        title: 'Item ID',
+        dataIndex: 'itemId',
+        key: 'itemId',
+        render: (text) => <span>{text}</span>,
+      },
+      {
+        title: 'Row QR Code',
+        dataIndex: 'rowQR',
+        key: 'rowQR',
+        render: (text) => <QRCodeSVG value={text} size={128} />,
+      },
+    ];
+
+    // Prepare row data
+    const rowData = [];
+    Object.entries(room.shelves).forEach(([shelfId, shelfData]) => {
+      if (shelfData.rows && shelfData.rows.length > 0) {
+        shelfData.rows.forEach((row) => {
+          rowData.push({
+            row: row.row,
+            itemId: row.itemId,
+            rowQR: row.rowQR,
+          });
+        });
+      }
+    });
+
+    return <Table columns={rowColumns} dataSource={rowData} rowKey="row" />;
+  };
 
   return (
     <div className="labroom-container">
@@ -404,95 +617,116 @@ const LabRoomQR = () => {
                   style={{ marginBottom: 10, padding: 5, width: "100%" }}
                 />
 
-                <table className="labroom-table">
-                  <thead>
-                    <tr>
-                      <th>QR Code</th>
-                      <th>Item Name</th>
-                      <th>Item Description</th>
-                      <th>Category</th>
-                      <th>Condition</th>
-                      <th>Department</th>
-                      <th>Quantity</th>
-                      <th>Unit</th>
-                      <th>Status</th>
-                      <th>Type</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {/* {room.items.map((item, index) => (
-                      <tr key={item.id}>
-                        {index === 0 ? (
-                          <td
-                            rowSpan={room.items.length}
-                            className="labroom-qr-cell"
-                          >
-                            <div
-                              ref={(el) => (qrRefs.current[room.id] = el)}
-                              className="labroom-qr"
-                            >
-                              <QRCodeSVG
-                                value={room.qrCode || "No QR code available"}
-                                size={128}
-                              />
-                              <button
-                                onClick={() => downloadQRCode(room.id)}
-                                className="labroom-download-button"
-                              >
-                                Download QR
-                              </button>
-                            </div>
-                          </td>
-                        ) : null}
-                        <td>{item.itemName}</td>
-                        <td>{item.itemDetails}</td>
-                        <td>{item.category}</td>
-                        <td>{item.condition}</td>
-                        <td>{item.department}</td>
-                        <td>{item.quantity}</td>
-                        <td>{item.unit}</td>
-                        <td>{item.status}</td>
-                        <td>{item.type}</td>
-                      </tr>
-                    ))} */}
+                  <Tabs defaultActiveKey="1">
+                  <TabPane tab="Stock Room" key="1">
+                      <table className="labroom-table">
+                        <thead>
+                          <tr>
+                            <th>QR Code</th>
+                            <th>Item Name</th>
+                            <th>Item Description</th>
+                            <th>Category</th>
+                            <th>Condition</th>
+                            <th>Department</th>
+                            <th>Quantity</th>
+                            <th>Status</th>
+                            <th>Type</th>
+                            <th>Unit</th>
+                          </tr>
+                        </thead>
 
-                    {filteredItems.map((item, index) => (
-                      <tr key={item.id}>
-                        {index === 0 ? (
-                          <td
-                            rowSpan={filteredItems.length}
-                            className="labroom-qr-cell"
-                          >
-                            <div
-                              ref={(el) => (qrRefs.current[room.id] = el)}
-                              className="labroom-qr"
-                            >
-                              <QRCodeSVG
-                                value={room.qrCode || "No QR code available"}
-                                size={128}
-                              />
-                              <button
-                                onClick={() => downloadQRCode(room.id)}
-                                className="labroom-download-button"
-                              >
-                                Download QR
-                              </button>
-                            </div>
-                          </td>
-                        ) : null}
-                        <td>{item.itemName}</td>
-                        <td>{item.itemDetails}</td>
-                        <td>{item.category}</td>
-                        <td>{item.condition}</td>
-                        <td>{item.department}</td>
-                        <td>{item.quantity}</td>
-                        <td>{item.status}</td>
-                        <td>{item.type}</td>
-                        <td>{item.unit}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        <tbody>
+                          {/* {room.items.map((item, index) => (
+                            <tr key={item.id}>
+                              {index === 0 ? (
+                                <td
+                                  rowSpan={room.items.length}
+                                  className="labroom-qr-cell"
+                                >
+                                  <div
+                                    ref={(el) => (qrRefs.current[room.id] = el)}
+                                    className="labroom-qr"
+                                  >
+                                    <QRCodeSVG
+                                      value={room.qrCode || "No QR code available"}
+                                      size={128}
+                                    />
+                                    <button
+                                      onClick={() => downloadQRCode(room.id)}
+                                      className="labroom-download-button"
+                                    >
+                                      Download QR
+                                    </button>
+                                  </div>
+                                </td>
+                              ) : null}
+                              <td>{item.itemName}</td>
+                              <td>{item.itemDetails}</td>
+                              <td>{item.category}</td>
+                              <td>{item.condition}</td>
+                              <td>{item.department}</td>
+                              <td>{item.quantity}</td>
+                              <td>{item.status}</td>
+                              <td>{item.type}</td>
+                              <td>{item.unit}</td>
+                            </tr>
+                          ))} */}
+
+                          {filteredItems.map((item, index) => (
+                            <tr key={item.id}>
+                              {index === 0 ? (
+                                <td
+                                  rowSpan={filteredItems.length}
+                                  className="labroom-qr-cell"
+                                >
+                                  <div
+                                    ref={(el) => (qrRefs.current[room.id] = el)}
+                                    className="labroom-qr"
+                                  >
+                                    <QRCodeSVG
+                                      value={room.qrCode || "No QR code available"}
+                                      size={128}
+                                    />
+                                    <button
+                                      onClick={() => downloadQRCode(room.id)}
+                                      className="labroom-download-button"
+                                    >
+                                      Download QR
+                                    </button>
+                                  </div>
+                                </td>
+                              ) : null}
+                              <td>{item.itemName}</td>
+                              <td>{item.itemDetails}</td>
+                              <td>{item.category}</td>
+                              <td>{item.condition}</td>
+                              <td>{item.department}</td>
+                              <td>{item.quantity}</td>
+                              <td>{item.status}</td>
+                              <td>{item.type}</td>
+                              <td>{item.unit}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                  </TabPane>
+
+                  <TabPane tab="Shelves" key="2">
+                      {selectedRoom ? (
+                        renderShelves(selectedRoom) // Automatically show shelves when room is expanded
+                      ) : (
+                        <div>Select a room to view shelves</div>
+                      )}
+                    </TabPane>
+
+                    <TabPane tab="Rows" key="3">
+                      {selectedRoom ? (
+                        renderRows(selectedRoom) // Automatically show rows when room is expanded
+                      ) : (
+                        <div>Select a room to view rows</div>
+                      )}
+                    </TabPane>
+                </Tabs>
                 </>
               )}
             </div>
