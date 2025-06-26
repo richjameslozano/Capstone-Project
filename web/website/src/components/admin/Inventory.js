@@ -1857,11 +1857,21 @@ useEffect(() => {
             <Form.Item
               name="shelves"
               label="Shelves"
-              rules={[{ required: false }]} // Optional field
+              rules={[
+                { required: false }, // Optional field
+                {
+                  pattern: /^[a-zA-Z0-9]*$/, // Only allows letters and numbers (no spaces or special characters)
+                  message: 'Shelves can only contain letters and numbers (no spaces or special characters).',
+                },
+              ]}
             >
               <Input
                 className="add-input"
                 placeholder="Enter Shelves"
+                onInput={(e) => {
+                  // Prevent entering spaces or special characters
+                  e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
+                }}
               />
             </Form.Item>
           </Col>
@@ -1870,11 +1880,21 @@ useEffect(() => {
             <Form.Item
               name="row"
               label="Row"
-              rules={[{ required: false }]} // Optional field
+              rules={[
+                { required: false }, // Optional field
+                {
+                  pattern: /^[a-zA-Z0-9]*$/, // Only allows letters and numbers (no spaces or special characters)
+                  message: 'Row can only contain letters and numbers (no spaces or special characters).',
+                },
+              ]}
             >
               <Input
                 className="add-input"
                 placeholder="Enter Row"
+                onInput={(e) => {
+                  // Prevent entering spaces or special characters
+                  e.target.value = e.target.value.replace(/[^a-zA-Z0-9]/g, "");
+                }}
               />
             </Form.Item>
           </Col>
