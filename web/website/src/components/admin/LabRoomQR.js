@@ -368,20 +368,40 @@ const LabRoomQR = () => {
         title: 'Shelf QR Code',
         dataIndex: 'shelfQR',
         key: 'shelfQR',
-        render: (text) => <QRCodeSVG value={text} size={128} />,
+        render: (text) => <QRCodeSVG value={text || "No QR code available"} size={128} />,
       },
       {
         title: 'Row Numbers',
-        dataIndex: 'rows',
-        key: 'rows',
+        dataIndex: 'rowNumbers',
+        key: 'rowNumbers',
         render: (rows) => (
           <div>
-            {rows.map((row, index) => (
-              <div key={index}>
-                <span>Row {row.row}</span>
-                <QRCodeSVG value={row.rowQR} size={128} />
-              </div>
-            ))}
+            {rows && rows.length > 0 ? (
+              rows.map((row, index) => (
+                <div key={index}>
+                  <span>Row {row.row || "N/A"}</span>
+                  <QRCodeSVG value={row.rowQR || "No QR code available"} size={128} />
+                </div>
+              ))
+            ) : (
+              <div>No rows available</div>
+            )}
+          </div>
+        ),
+      },
+      {
+        title: 'Item Name',
+        dataIndex: 'itemName',
+        key: 'itemName',
+        render: (itemNames) => (
+          <div>
+            {itemNames && itemNames.length > 0 ? (
+              itemNames.map((itemName, index) => (
+                <div key={index}>{itemName || "No item name available"}</div>
+              ))
+            ) : (
+              <div>No item name available</div>
+            )}
           </div>
         ),
       },
@@ -389,15 +409,22 @@ const LabRoomQR = () => {
 
     const rowData = [];
 
-    // Iterate over each shelf
+    // Iterate over each shelf and group all rows under the same shelf
     Object.entries(room.shelves).forEach(([shelfId, shelfData]) => {
       if (shelfData.rows) {
-        // Group rows under each shelf
+        // Map through the rows and get the item details
+        const itemNames = shelfData.rows.map(row => {
+          // Assuming each row contains an itemId or details pointing to the item in the items collection
+          const item = room.items.find(item => item.itemId === row.itemId);
+          return item ? item.itemName : "No item name available"; // Fallback if no item found
+        });
+
         rowData.push({
           shelfId,
           shelfName: shelfData.name,
           shelfQR: shelfData.shelvesQR,
-          rows: shelfData.rows, // Group all rows under the shelf
+          rowNumbers: shelfData.rows, // Group rows for the same shelf
+          itemName: itemNames, // Collect all item names for the rows
         });
       }
     });
@@ -719,13 +746,13 @@ const LabRoomQR = () => {
                       )}
                     </TabPane>
 
-                    <TabPane tab="Rows" key="3">
+                    {/* <TabPane tab="Rows" key="3">
                       {selectedRoom ? (
                         renderRows(selectedRoom) // Automatically show rows when room is expanded
                       ) : (
                         <div>Select a room to view rows</div>
                       )}
-                    </TabPane>
+                    </TabPane> */}
                 </Tabs>
                 </>
               )}
