@@ -370,6 +370,8 @@ const openFullEditModal = (record) => {
     department: record.department,
     criticalLevel: record.criticalLevel,
     labRoom: record.labRoom,
+    shelves: record.shelves,
+    row: record.row,
     status: record.status,
     type: record.type,
     unit: record.unit,
@@ -517,6 +519,8 @@ const handleFullUpdate = async (values) => {
       department: values.department,
       criticalLevel: sanitizedCriticalLevel,
       labRoom: values.labRoom,
+      shelves: values.shelves,
+      row: values.row, 
       unit: values.unit,
       status: values.status,
       condition: {
@@ -2049,6 +2053,26 @@ useEffect(() => {
               <Col span={12}>
                 <Form.Item label="Lab/ Stock Room" name="labRoom">
                   <Input />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Shelf"
+                  name="shelves"
+                  rules={[{ required: true, message: "Enter shelf ID (e.g., A)" }]}
+                >
+                  <Input maxLength={2} />
+                </Form.Item>
+              </Col>
+
+              <Col span={12}>
+                <Form.Item
+                  label="Row"
+                  name="row"
+                  rules={[{ required: true, message: "Enter row number" }]}
+                >
+                  <InputNumber min={1} style={{ width: "100%" }} />
                 </Form.Item>
               </Col>
             </Row>
