@@ -20,6 +20,12 @@ const LabRoomQR = () => {
   const [activeTab, setActiveTab] = useState("1"); 
   const qrRefs = useRef({});
 
+  const [qrModal, setQrModal] = useState({
+    visible: false,
+    title: "",
+    value: "",
+  });
+
   //  useEffect(() => {
   //   const unsubscribeFunctions = [];
 
@@ -105,117 +111,267 @@ const LabRoomQR = () => {
   //   };
   // }, []);
 
+  // useEffect(() => {
+  //   const unsubscribeFunctions = [];
+
+  //   const fetchLabRoomsWithItems = async () => {
+  //     try {
+  //       const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
+  //         const rooms = labRoomSnapshot.docs.map(doc => {
+  //           const data = doc.data();
+  //           return {
+  //             id: doc.id,
+  //             name: data.name || "N/A",
+  //             roomNumber: data.roomNumber || "N/A", // 🟢 get roomNumber here
+  //             qrCode: data.qrCode || "",
+  //             items: [],
+  //             shelves: {},
+  //           };
+  //         });
+
+  //         // Set initial rooms (empty items for now)
+  //         setLabRooms(rooms);
+
+  //         const originalNumbers = {};
+  //         rooms.forEach(room => {
+  //           originalNumbers[room.id] = room.roomNumber;
+  //         });
+
+  //         setOriginalRoomNumbers(originalNumbers);
+
+  //         // Set up item listeners per room
+  //         labRoomSnapshot.docs.forEach((roomDoc) => {
+  //           const roomId = roomDoc.id;
+  //           const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
+
+  //           const unsub = onSnapshot(itemsCollectionRef, (itemsSnapshot) => {
+  //             const updatedItems = itemsSnapshot.docs.map(itemDoc => {
+  //               const itemData = itemDoc.data();
+  //               return {
+  //                 id: itemDoc.id,
+  //                 category: itemData.category || "N/A",
+  //                 condition: itemData.condition
+  //                   ? `Good: ${itemData.condition.Good ?? 0}, Defect: ${itemData.condition.Defect ?? 0}, Damage: ${itemData.condition.Damage ?? 0}, Lost: ${itemData.condition.Lost ?? 0}`
+  //                   : "N/A",
+  //                 department: itemData.department || "N/A",
+  //                 entryCurrentDate: itemData.entryCurrentDate || "N/A",
+  //                 expiryDate: itemData.expiryDate || null,
+  //                 itemId: itemData.itemId || "N/A",
+  //                 itemName: itemData.itemName || "N/A",
+  //                 itemDetails: itemData.itemDetails || "N/A",
+  //                 labRoom: itemData.labRoom || "N/A",
+  //                 quantity: itemData.quantity || 0,
+  //                 status: itemData.status || "N/A",
+  //                 type: itemData.type || "N/A",
+  //                 rawTimestamp: itemData.rawTimestamp || "N/A",
+  //                 timestamp: itemData.timestamp || "N/A",
+  //                 unit: ["Chemical", "Reagent"].includes(itemData.category) ? itemData.unit || "N/A" : "N/A",
+  //               };
+  //             });
+
+  //             setLabRooms(prevRooms =>
+  //               prevRooms.map(room =>
+  //                 room.id === roomId ? { ...room, items: updatedItems } : room
+  //               )
+  //             );
+  //           });
+
+  //           unsubscribeFunctions.push(unsub);
+
+  //           // Fetch shelves for each room
+  //           const shelvesCollectionRef = collection(db, `labRoom/${roomId}/shelves`);
+  //           const shelvesUnsub = onSnapshot(shelvesCollectionRef, async (shelvesSnapshot) => {
+  //             const updatedShelves = {};
+
+  //             // Loop through shelves and fetch rows for each shelf
+  //             for (const shelfDoc of shelvesSnapshot.docs) {
+  //               const shelfId = shelfDoc.id;
+  //               const shelfData = shelfDoc.data();
+
+  //               // Fetch rows for each shelf
+  //               const rowsCollectionRef = collection(db, `labRoom/${roomId}/shelves/${shelfId}/rows`);
+  //               const rowsSnapshot = await getDocs(rowsCollectionRef);
+  //               const rows = rowsSnapshot.docs.map(rowDoc => rowDoc.data());
+
+  //               // Add shelf and rows data
+  //               updatedShelves[shelfId] = {
+  //                 ...shelfData,
+  //                 rows: rows,
+  //               };
+  //             }
+
+  //             setLabRooms(prevRooms =>
+  //               prevRooms.map(room =>
+  //                 room.id === roomId ? { ...room, shelves: updatedShelves } : room
+  //               )
+  //             );
+  //           });
+
+  //           unsubscribeFunctions.push(shelvesUnsub);
+  //         });
+  //       });
+
+  //       unsubscribeFunctions.push(labRoomUnsub);
+
+  //     } catch (error) {
+  //       console.error("Error setting up real-time listeners:", error);
+  //     }
+  //   };
+
+  //   fetchLabRoomsWithItems();
+
+  //   return () => {
+  //     unsubscribeFunctions.forEach(unsub => unsub());
+  //   };
+  // }, []);
+
+
   useEffect(() => {
     const unsubscribeFunctions = [];
 
     const fetchLabRoomsWithItems = async () => {
       try {
-        const labRoomUnsub = onSnapshot(collection(db, "labRoom"), (labRoomSnapshot) => {
-          const rooms = labRoomSnapshot.docs.map(doc => {
-            const data = doc.data();
-            return {
-              id: doc.id,
-              name: data.name || "N/A",
-              roomNumber: data.roomNumber || "N/A", // 🟢 get roomNumber here
-              qrCode: data.qrCode || "",
-              items: [],
-              shelves: {},
-            };
-          });
+        /* ---------- STEP 1: listen to every lab room ---------- */
+        const labRoomUnsub = onSnapshot(
+          collection(db, "labRoom"),
+          (labRoomSnapshot) => {
+            /* ---------- skeleton rooms ---------- */
+            const rooms = labRoomSnapshot.docs.map((doc) => {
+              const data = doc.data();
+              return {
+                id: doc.id,
+                name: data.name || "N/A",
+                roomNumber: data.roomNumber || "N/A",
+                qrCode: data.qrCode || "",
+                items: [],     // will fill later
+                shelves: {},   // will fill later
+              };
+            });
 
-          // Set initial rooms (empty items for now)
-          setLabRooms(rooms);
+            setLabRooms(rooms);
 
-          const originalNumbers = {};
-          rooms.forEach(room => {
-            originalNumbers[room.id] = room.roomNumber;
-          });
+            /* store original room numbers */
+            const originalNumbers = {};
+            rooms.forEach((room) => (originalNumbers[room.id] = room.roomNumber));
+            setOriginalRoomNumbers(originalNumbers);
 
-          setOriginalRoomNumbers(originalNumbers);
+            /* ---------- STEP 2: listeners inside each room ---------- */
+            labRoomSnapshot.docs.forEach((roomDoc) => {
+              const roomId = roomDoc.id;
 
-          // Set up item listeners per room
-          labRoomSnapshot.docs.forEach((roomDoc) => {
-            const roomId = roomDoc.id;
-            const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
+              /* 2‑A  items at /labRoom/{roomId}/items  (might be empty) */
+              const itemsCollectionRef = collection(db, `labRoom/${roomId}/items`);
+              const itemsUnsub = onSnapshot(itemsCollectionRef, (itemsSnap) => {
+                const updatedItems = itemsSnap.docs.map((itemDoc) => {
+                  const d = itemDoc.data();
+                  return {
+                    id: itemDoc.id,
+                    category: d.category || "N/A",
+                    condition: d.condition
+                      ? `Good: ${d.condition.Good ?? 0}, Defect: ${
+                          d.condition.Defect ?? 0
+                        }, Damage: ${d.condition.Damage ?? 0}, Lost: ${
+                          d.condition.Lost ?? 0
+                        }`
+                      : "N/A",
+                    department: d.department || "N/A",
+                    entryCurrentDate: d.entryCurrentDate || "N/A",
+                    expiryDate: d.expiryDate || null,
+                    itemId: d.itemId || "N/A",
+                    itemName: d.itemName || "N/A",
+                    itemDetails: d.itemDetails || "N/A",
+                    labRoom: d.labRoom || "N/A",
+                    quantity: d.quantity || 0,
+                    status: d.status || "N/A",
+                    type: d.type || "N/A",
+                    rawTimestamp: d.rawTimestamp || "N/A",
+                    timestamp: d.timestamp || "N/A",
+                    unit: ["Chemical", "Reagent"].includes(d.category)
+                      ? d.unit || "N/A"
+                      : "N/A",
+                  };
+                });
 
-            const unsub = onSnapshot(itemsCollectionRef, (itemsSnapshot) => {
-              const updatedItems = itemsSnapshot.docs.map(itemDoc => {
-                const itemData = itemDoc.data();
-                return {
-                  id: itemDoc.id,
-                  category: itemData.category || "N/A",
-                  condition: itemData.condition
-                    ? `Good: ${itemData.condition.Good ?? 0}, Defect: ${itemData.condition.Defect ?? 0}, Damage: ${itemData.condition.Damage ?? 0}, Lost: ${itemData.condition.Lost ?? 0}`
-                    : "N/A",
-                  department: itemData.department || "N/A",
-                  entryCurrentDate: itemData.entryCurrentDate || "N/A",
-                  expiryDate: itemData.expiryDate || null,
-                  itemId: itemData.itemId || "N/A",
-                  itemName: itemData.itemName || "N/A",
-                  itemDetails: itemData.itemDetails || "N/A",
-                  labRoom: itemData.labRoom || "N/A",
-                  quantity: itemData.quantity || 0,
-                  status: itemData.status || "N/A",
-                  type: itemData.type || "N/A",
-                  rawTimestamp: itemData.rawTimestamp || "N/A",
-                  timestamp: itemData.timestamp || "N/A",
-                  unit: ["Chemical", "Reagent"].includes(itemData.category) ? itemData.unit || "N/A" : "N/A",
-                };
+                setLabRooms((prev) =>
+                  prev.map((r) =>
+                    r.id === roomId ? { ...r, items: updatedItems } : r
+                  )
+                );
+              });
+              unsubscribeFunctions.push(itemsUnsub);
+
+              /* 2‑B  shelves & rows listener */
+              const shelvesRef = collection(db, `labRoom/${roomId}/shelves`);
+              const shelvesUnsub = onSnapshot(shelvesRef, async (shelfSnap) => {
+                const updatedShelves = {};
+
+                /* ---------- STEP 3: for each shelf → rows → items ---------- */
+                for (const shelfDoc of shelfSnap.docs) {
+                  const shelfId = shelfDoc.id;
+                  const shelfData = shelfDoc.data();
+
+                  /* rows under this shelf */
+                  const rowsRef = collection(
+                    db,
+                    `labRoom/${roomId}/shelves/${shelfId}/rows`
+                  );
+                  const rowsSnap = await getDocs(rowsRef);
+
+                  /* build rows with *items* sub‑collection */
+                  const rows = await Promise.all(
+                    rowsSnap.docs.map(async (rowDoc) => {
+                      const rowData = rowDoc.data(); // rowQR, createdAt, etc.
+                      const rowId = rowDoc.id;
+
+                      /* items under this row */
+                      const itemsRef = collection(
+                        db,
+                        `labRoom/${roomId}/shelves/${shelfId}/rows/${rowId}/items`
+                      );
+                      const itemsSnap = await getDocs(itemsRef);
+                      const items = itemsSnap.docs.map((it) => ({
+                        id: it.id,
+                        ...it.data(),
+                      }));
+
+                      return {
+                        rowId,
+                        ...rowData,
+                        items, // ← aggregated items for this row
+                      };
+                    })
+                  );
+
+                  updatedShelves[shelfId] = {
+                    ...shelfData,
+                    rows,
+                  };
+                }
+
+                /* ---------- STEP 4: write shelves back to room ---------- */
+                setLabRooms((prev) =>
+                  prev.map((r) =>
+                    r.id === roomId ? { ...r, shelves: updatedShelves } : r
+                  )
+                );
               });
 
-              setLabRooms(prevRooms =>
-                prevRooms.map(room =>
-                  room.id === roomId ? { ...room, items: updatedItems } : room
-                )
-              );
+              unsubscribeFunctions.push(shelvesUnsub);
             });
-
-            unsubscribeFunctions.push(unsub);
-
-            // Fetch shelves for each room
-            const shelvesCollectionRef = collection(db, `labRoom/${roomId}/shelves`);
-            const shelvesUnsub = onSnapshot(shelvesCollectionRef, async (shelvesSnapshot) => {
-              const updatedShelves = {};
-
-              // Loop through shelves and fetch rows for each shelf
-              for (const shelfDoc of shelvesSnapshot.docs) {
-                const shelfId = shelfDoc.id;
-                const shelfData = shelfDoc.data();
-
-                // Fetch rows for each shelf
-                const rowsCollectionRef = collection(db, `labRoom/${roomId}/shelves/${shelfId}/rows`);
-                const rowsSnapshot = await getDocs(rowsCollectionRef);
-                const rows = rowsSnapshot.docs.map(rowDoc => rowDoc.data());
-
-                // Add shelf and rows data
-                updatedShelves[shelfId] = {
-                  ...shelfData,
-                  rows: rows,
-                };
-              }
-
-              setLabRooms(prevRooms =>
-                prevRooms.map(room =>
-                  room.id === roomId ? { ...room, shelves: updatedShelves } : room
-                )
-              );
-            });
-
-            unsubscribeFunctions.push(shelvesUnsub);
-          });
-        });
+          }
+        );
 
         unsubscribeFunctions.push(labRoomUnsub);
-
-      } catch (error) {
-        console.error("Error setting up real-time listeners:", error);
+      } catch (err) {
+        console.error("Error setting up real‑time listeners:", err);
       }
     };
 
     fetchLabRoomsWithItems();
 
+    /* cleanup */
     return () => {
-      unsubscribeFunctions.forEach(unsub => unsub());
+      unsubscribeFunctions.forEach((unsub) => unsub && unsub());
     };
   }, []);
 
@@ -225,6 +381,9 @@ const LabRoomQR = () => {
         [roomId]: !prev[roomId],
       }));
     };
+
+    const closeQrModal = () =>
+      setQrModal((prev) => ({ ...prev, visible: false }));
 
     const updateRoomNumber = async (roomId, oldRoomNumber, newRoomNumber) => {
     try {
@@ -351,85 +510,198 @@ const LabRoomQR = () => {
     return roomMatch || itemMatch;
   });
 
+  // const renderShelves = (roomId) => {
+  //   const room = labRooms.find((r) => r.id === roomId);
+  //   if (!room || !room.shelves || Object.keys(room.shelves).length === 0) {
+  //     return <div>No shelves available for this room.</div>;
+  //   }
+
+  //   const shelfColumns = [
+  //     {
+  //       title: 'Shelf',
+  //       dataIndex: 'shelf',
+  //       key: 'shelf',
+  //       render: (text, record) => <span>{record.shelfName || `Shelf ${record.shelfId}`}</span>,
+  //     },
+  //     {
+  //       title: 'Shelf QR Code',
+  //       dataIndex: 'shelfQR',
+  //       key: 'shelfQR',
+  //       render: (text) => <QRCodeSVG value={text || "No QR code available"} size={128} />,
+  //     },
+  //     {
+  //       title: 'Row Numbers',
+  //       dataIndex: 'rowNumbers',
+  //       key: 'rowNumbers',
+  //       render: (rows) => (
+  //         <div>
+  //           {rows && rows.length > 0 ? (
+  //             rows.map((row, index) => (
+  //               <div key={index}>
+  //                 <span>Row {row.row || "N/A"}</span>
+  //                 <QRCodeSVG value={row.rowQR || "No QR code available"} size={128} />
+  //               </div>
+  //             ))
+  //           ) : (
+  //             <div>No rows available</div>
+  //           )}
+  //         </div>
+  //       ),
+  //     },
+  //     {
+  //       title: 'Item Name',
+  //       dataIndex: 'itemName',
+  //       key: 'itemName',
+  //       render: (itemNames) => (
+  //         <div>
+  //           {itemNames && itemNames.length > 0 ? (
+  //             itemNames.map((itemName, index) => (
+  //               <div key={index}>{itemName || "No item name available"}</div>
+  //             ))
+  //           ) : (
+  //             <div>No item name available</div>
+  //           )}
+  //         </div>
+  //       ),
+  //     },
+  //   ];
+
+  //   const rowData = [];
+
+  //   // Iterate over each shelf and group all rows under the same shelf
+  //   Object.entries(room.shelves).forEach(([shelfId, shelfData]) => {
+  //     if (shelfData.rows) {
+  //       // Map through the rows and get the item details
+  //       const itemNames = shelfData.rows.map(row => {
+  //         // Assuming each row contains an itemId or details pointing to the item in the items collection
+  //         const item = room.items.find(item => item.itemId === row.itemId);
+  //         return item ? item.itemName : "No item name available"; // Fallback if no item found
+  //       });
+
+  //       rowData.push({
+  //         shelfId,
+  //         shelfName: shelfData.name,
+  //         shelfQR: shelfData.shelvesQR,
+  //         rowNumbers: shelfData.rows, // Group rows for the same shelf
+  //         itemName: itemNames, // Collect all item names for the rows
+  //       });
+  //     }
+  //   });
+
+  //   return <Table columns={shelfColumns} dataSource={rowData} rowKey="shelfId" />;
+  // };
+
   const renderShelves = (roomId) => {
     const room = labRooms.find((r) => r.id === roomId);
-    if (!room || !room.shelves || Object.keys(room.shelves).length === 0) {
+
+    /* guard */
+    if (!room || !room.shelves || typeof room.shelves !== "object") {
       return <div>No shelves available for this room.</div>;
     }
 
-    const shelfColumns = [
+    /* ---------- table columns (one record per shelf) ---------- */
+    const cols = [
       {
-        title: 'Shelf',
-        dataIndex: 'shelf',
-        key: 'shelf',
-        render: (text, record) => <span>{record.shelfName || `Shelf ${record.shelfId}`}</span>,
+        title: "Shelf",
+        dataIndex: "shelfLabel",
+        key: "shelfLabel",
       },
       {
-        title: 'Shelf QR Code',
-        dataIndex: 'shelfQR',
-        key: 'shelfQR',
-        render: (text) => <QRCodeSVG value={text || "No QR code available"} size={128} />,
+        title: "Shelf QR",
+        dataIndex: "shelfQR",
+        key: "shelfQR",
+        render: (qr) => <QRCodeSVG value={qr || "No QR"} size={96} />,
       },
       {
-        title: 'Row Numbers',
-        dataIndex: 'rowNumbers',
-        key: 'rowNumbers',
-        render: (rows) => (
-          <div>
-            {rows && rows.length > 0 ? (
-              rows.map((row, index) => (
-                <div key={index}>
-                  <span>Row {row.row || "N/A"}</span>
-                  <QRCodeSVG value={row.rowQR || "No QR code available"} size={128} />
-                </div>
-              ))
-            ) : (
-              <div>No rows available</div>
-            )}
-          </div>
-        ),
+        /* list of row numbers under this shelf */
+        title: "Rows",
+        dataIndex: "rows",
+        key: "rows",
+        render: (rows) =>
+          rows.length ? (
+            rows.map((r) => <div key={r.rowId}>Row {r.rowId}</div>)
+          ) : (
+            <i>No rows</i>
+          ),
+      },
+      // {
+      //   /* every row’s QR stacked */
+      //   title: "Row QR",
+      //   dataIndex: "rows",
+      //   key: "rowQR",
+      //   render: (rows) =>
+      //     rows.length ? (
+      //       rows.map((r) => (
+      //         <div key={r.rowId}>
+      //           <QRCodeSVG value={r.rowQR || "No QR"} size={96} />
+      //         </div>
+      //       ))
+      //     ) : (
+      //       <i>No rows</i>
+      //     ),
+      // },
+      {
+        title: "Row QR",
+        dataIndex: "rows",
+        key: "rowQR",
+        render: (rows, record) =>
+          rows.length ? (
+            rows.map((r) => (
+              <div key={r.rowId} style={{ marginBottom: 8 }}>
+                <Button
+                  size="small"
+                  type="link"
+                  onClick={() =>
+                    setQrModal({
+                      visible: true,
+                      title: `${record.shelfLabel} – Row ${r.rowId}`,
+                      value: r.rowQR || "No QR",
+                    })
+                  }
+                >
+                  View QR
+                </Button>
+              </div>
+            ))
+          ) : (
+            <i>No rows</i>
+          ),
       },
       {
-        title: 'Item Name',
-        dataIndex: 'itemName',
-        key: 'itemName',
-        render: (itemNames) => (
-          <div>
-            {itemNames && itemNames.length > 0 ? (
-              itemNames.map((itemName, index) => (
-                <div key={index}>{itemName || "No item name available"}</div>
-              ))
-            ) : (
-              <div>No item name available</div>
-            )}
-          </div>
-        ),
+        title: "Items on Row",
+        dataIndex: "rows",
+        key: "itemNames",
+        render: (rows) =>
+          rows.length ? (
+            rows.map((r) => (
+              <div key={r.rowId} style={{ marginBottom: 8 }}>
+                <strong>Row {r.rowId}</strong>
+                {Array.isArray(r.items) && r.items.length ? (
+                  <ul style={{ margin: "4px 0 0 16px", padding: 0 }}>
+                    {r.items.map((it) => (
+                      <li key={it.id || it.itemId}>{it.itemName || "(Unnamed)"}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <i style={{ marginLeft: 6 }}>No items</i>
+                )}
+              </div>
+            ))
+          ) : (
+            <i>No rows</i>
+          ),
       },
     ];
 
-    const rowData = [];
+    /* ---------- one table row per shelf ---------- */
+    const data = Object.entries(room.shelves).map(([shelfId, shelfData]) => ({
+      key: shelfId,
+      shelfLabel: shelfData.name || `Shelf ${shelfId}`,
+      shelfQR: shelfData.shelvesQR,
+      rows: shelfData.rows || [], // contains rowId, rowQR, items[]
+    }));
 
-    // Iterate over each shelf and group all rows under the same shelf
-    Object.entries(room.shelves).forEach(([shelfId, shelfData]) => {
-      if (shelfData.rows) {
-        // Map through the rows and get the item details
-        const itemNames = shelfData.rows.map(row => {
-          // Assuming each row contains an itemId or details pointing to the item in the items collection
-          const item = room.items.find(item => item.itemId === row.itemId);
-          return item ? item.itemName : "No item name available"; // Fallback if no item found
-        });
-
-        rowData.push({
-          shelfId,
-          shelfName: shelfData.name,
-          shelfQR: shelfData.shelvesQR,
-          rowNumbers: shelfData.rows, // Group rows for the same shelf
-          itemName: itemNames, // Collect all item names for the rows
-        });
-      }
-    });
-
-    return <Table columns={shelfColumns} dataSource={rowData} rowKey="shelfId" />;
+    return <Table columns={cols} dataSource={data} pagination={false} />;
   };
 
   const renderRows = (roomId) => {
@@ -787,6 +1059,19 @@ const LabRoomQR = () => {
             <strong>{originalRoomNumbers[confirmRoomId]}</strong>" to "
             <strong>{labRooms.find(r => r.id === confirmRoomId)?.roomNumber}</strong>"?
           </p>
+        </Modal>
+
+        <Modal
+          open={qrModal.visible}
+          onCancel={closeQrModal}
+          footer={null}
+          title={qrModal.title}
+          destroyOnClose
+          centered
+        >
+          <div style={{ textAlign: "center", marginTop: 16 }}>
+            <QRCodeSVG value={qrModal.value} size={200} />
+          </div>
         </Modal>
     </div>
   );
