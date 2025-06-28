@@ -150,7 +150,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
   const location = useLocation();
   
   const userId = localStorage.getItem("userId");
-  const role = localStorage.getItem("userPosition") || location.state?.role || "user"; // 🟢 FIXED
+  const role = localStorage.getItem("userPosition") || location.state?.role || "user";
 
   const [userName, setUserName] = useState("User");
   const [jobTitle, setJobTitle] = useState("");
@@ -158,6 +158,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 408);
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5); 
 
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
@@ -179,6 +180,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     let notifRef;
     if (role === "user") {
       notifRef = collection(db, "accounts", userId, "userNotifications");
+
     } else {
       notifRef = collection(db, "allNotifications");
     }
@@ -211,29 +213,33 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
       let notifDocRef;
       if (role === "user") {
         notifDocRef = doc(db, "accounts", userId, "userNotifications", notif.id);
+        
       } else {
         notifDocRef = doc(db, "allNotifications", notif.id);
       }
+
       await updateDoc(notifDocRef, { read: true });
+
     } catch (error) {
       console.error("Failed to update notification:", error);
     }
 
     if (notif.link) {
       navigate(notif.link);
+
     } else {
       message.info(notif.action || "Notification clicked");
     }
   };
 
   const notificationMenu = (
-    <div className="notification-dropdown">
+    <div className="notification-dropdown" style={{ maxHeight: 300, overflowY: "auto", width: 250 }}>
       {loadingNotifications ? (
         <Spin size="small" />
       ) : (
         <List
           size="small"
-          dataSource={notifications.slice(0, 5)}
+          dataSource={notifications.slice(0, visibleCount)}
           renderItem={(item) => (
             <List.Item
               style={{ cursor: "pointer" }}
@@ -246,6 +252,14 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
             </List.Item>
           )}
         />
+      )}
+
+      {notifications.length > visibleCount && (
+        <div style={{ textAlign: "center", marginTop: 8 }}>
+          <Button type="link" onClick={() => setVisibleCount(visibleCount + 5)}>
+            Show More
+          </Button>
+        </div>
       )}
     </div>
   );
