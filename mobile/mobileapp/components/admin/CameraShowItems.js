@@ -254,75 +254,276 @@ const CameraShowItems = ({ onClose }) => {
   //   setTimeout(() => setScanned(false), 1500);
   // };
 
+  // const handleBarCodeScanned = async ({ data }) => {
+  //   if (scanned) return;
+  //   setScanned(true);
+
+  //   try {
+  //     // Decrypt the QR code data
+  //     const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
+  //     const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
+  //     console.log("Decrypted QR data raw:", decryptedData);
+  //     if (!decryptedData) throw new Error("Invalid QR Code");
+
+  //     let parsedData;
+  //     try {
+  //       parsedData = JSON.parse(decryptedData);
+
+  //     } catch {
+  //       parsedData = decryptedData;
+  //     }
+
+  //     const todayDate = getTodayDate();
+
+  //     console.log("Parsed QR data:", parsedData);
+
+  //     if (parsedData.itemName) {
+  //       // It's an item QR code
+  //       const { itemName } = parsedData;
+
+  //       const inventoryQuery = query(collection(db, "inventory"), where("itemName", "==", itemName));
+  //       const querySnapshot = await getDocs(inventoryQuery);
+
+  //       let foundItem = null;
+  //       querySnapshot.forEach(docSnap => {
+  //         const itemData = docSnap.data();
+
+  //         if (itemData.itemName === itemName) {
+  //           foundItem = itemData;
+  //         }
+  //       });
+
+  //       if (foundItem) {
+  //         const borrowQuery = query(collection(db, "borrowcatalog"));
+  //         const borrowSnapshot = await getDocs(borrowQuery);
+
+  //         let borrowedCount = 0;
+  //         borrowSnapshot.forEach(doc => {
+  //           const borrowData = doc.data();
+  //           if ((borrowData.status || "").trim() === "Borrowed" && (borrowData.dateRequired || "").trim() === todayDate) {
+  //             borrowData.requestList?.forEach(requestItem => {
+
+  //               if ((requestItem.itemName || "").trim() === itemName) {
+  //                 borrowedCount += requestItem.quantity || 0;
+  //               }
+  //             });
+  //           }
+  //         });
+
+  //         let deployedCount = 0;
+  //         let deployedInfo = [];
+
+  //         borrowSnapshot.forEach(doc => {
+  //           const borrowData = doc.data();
+  //           if (
+  //             (borrowData.status || "").trim() === "Deployed" &&
+  //             (borrowData.dateRequired || "").trim() === todayDate
+  //           ) {
+  //             borrowData.requestList?.forEach(requestItem => {
+  //               if ((requestItem.itemName || "").trim() === itemName) {
+  //                 deployedCount += requestItem.quantity || 0;
+
+  //                 deployedInfo.push({
+  //                   requestor: borrowData.userName || "Unknown",
+  //                   room: borrowData.room || borrowData.roomNumber || "N/A",
+  //                   quantity: requestItem.quantity || 0,
+  //                 });
+  //               }
+  //             });
+  //           }
+  //         });
+
+  //         showItemDetails(foundItem, borrowedCount, deployedCount, deployedInfo);
+
+  //       } else {
+  //         Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
+  //       }
+
+
+
+  //     } else if (parsedData.labRoomId) {
+  //       const labRoomId = parsedData.labRoomId;
+
+  //       try {
+  //         const labRoomRef = doc(db, "labRoom", labRoomId);
+  //         const labRoomDoc = await getDoc(labRoomRef);
+
+  //         if (!labRoomDoc.exists()) {
+  //           Alert.alert("Error", "Lab room not found.");
+  //           return;
+  //         }
+
+  //         const itemsSnap = await getDocs(collection(labRoomRef, "items"));
+  //         const itemsDetailArray = [];
+
+  //         itemsSnap.forEach((docItem) => {
+  //           const data = docItem.data();
+  //           if (data.status !== "archived") {
+  //             itemsDetailArray.push(data);
+  //           }
+  //         });
+
+  //         if (itemsDetailArray.length === 0) {
+  //           Alert.alert("Inventory", "No valid items found in lab room.");
+  //           return;
+  //         }
+
+  //         await addBorrowedAndDeployedCountToItems(itemsDetailArray);
+
+  //         // Show modal with roomId and items
+  //         showLabRoomDetails(labRoomDoc.data().roomNumber || labRoomId, itemsDetailArray);
+
+  //       } catch (error) {
+  //         console.error("Error fetching lab room data:", error);
+  //         Alert.alert("Error", "Failed to fetch lab room or items.");
+  //       }
+
+  //     } else if (parsedData.shelves && !parsedData.row) {
+  //     const shelfId = parsedData.shelves;           // e.g., "A"
+  //     try {
+  //       const labRoomsSnap = await getDocs(collection(db, "labRoom"));
+  //       const rowsSummary = [];
+
+  //       for (const roomDoc of labRoomsSnap.docs) {
+  //         const rowsSnap = await getDocs(
+  //           collection(db, `labRoom/${roomDoc.id}/shelves/${shelfId}/rows`)
+  //         );
+  //         rowsSnap.forEach((rowDoc) => {
+  //           rowsSummary.push({
+  //             room: roomDoc.data().roomNumber,
+  //             rowId: rowDoc.id,
+  //           });
+  //         });
+  //       }
+
+  //       if (!rowsSummary.length) {
+  //         Alert.alert("Shelf Scan", `Shelf ${shelfId} not found in any room.`);
+  //       } else {
+  //         let msg = `Shelf ${shelfId} found in:\n`;
+  //         rowsSummary.forEach((r) => (msg += `• Room ${r.room} — Row ${r.rowId}\n`));
+  //         Alert.alert("Shelf Scan", msg);
+  //       }
+  //     } catch (e) {
+  //       console.error("Shelf QR error:", e);
+  //       Alert.alert("Shelf Scan", "Error reading shelf data.");
+  //     }
+  //   }
+
+  //   /* ---------- ROW QR (NEW) ----------------- */
+  //   else if (parsedData.row && parsedData.itemId) {
+  //     const rowId = parsedData.row;                 // e.g., "2"
+  //     try {
+  //       const labRoomsSnap = await getDocs(collection(db, "labRoom"));
+  //       let found = false;
+
+  //       for (const roomDoc of labRoomsSnap.docs) {
+  //         const shelvesSnap = await getDocs(
+  //           collection(db, `labRoom/${roomDoc.id}/shelves`)
+  //         );
+
+  //         for (const shelfDoc of shelvesSnap.docs) {
+  //           const rowRef = doc(
+  //             db,
+  //             `labRoom/${roomDoc.id}/shelves/${shelfDoc.id}/rows/${rowId}`
+  //           );
+  //           const rowDoc = await getDoc(rowRef);
+  //           if (rowDoc.exists()) {
+  //             found = true;
+  //             const itemsSnap = await getDocs(collection(rowRef, "items"));
+  //             let msg = `Room ${roomDoc.data().roomNumber}\nShelf ${shelfDoc.id} / Row ${rowId}\n\nItems:\n`;
+  //             itemsSnap.forEach((d) => {
+  //               const it = d.data();
+  //               msg += `• ${it.itemName} (Qty: ${it.quantity})\n`;
+  //             });
+  //             Alert.alert("Row Scan", msg);
+  //             break;
+  //           }
+  //         }
+  //         if (found) break;
+  //       }
+
+  //       if (!found) {
+  //         Alert.alert("Row Scan", `Row ${rowId} not found in any shelf.`);
+  //       }
+  //     } catch (e) {
+  //       console.error("Row QR error:", e);
+  //       Alert.alert("Row Scan", "Error reading row data.");
+  //     }
+      
+  //     } else {
+  //       Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
+  //     }
+
+  //   } catch (error) {
+  //     console.error("QR Scan Error:", error);
+  //     Alert.alert("Scan Failed", "Failed to read QR code. Make sure it's valid.");
+  //   }
+
+  //   setTimeout(() => setScanned(false), 1500);
+  // };
+
   const handleBarCodeScanned = async ({ data }) => {
     if (scanned) return;
     setScanned(true);
 
     try {
-      // Decrypt the QR code data
+      // Decrypt QR code
       const bytes = CryptoJS.AES.decrypt(data, SECRET_KEY);
       const decryptedData = bytes.toString(CryptoJS.enc.Utf8);
-      console.log("Decrypted QR data raw:", decryptedData);
       if (!decryptedData) throw new Error("Invalid QR Code");
 
       let parsedData;
       try {
         parsedData = JSON.parse(decryptedData);
-
       } catch {
         parsedData = decryptedData;
       }
 
       const todayDate = getTodayDate();
-
       console.log("Parsed QR data:", parsedData);
 
+      // 🎯 ITEM QR
       if (parsedData.itemName) {
-        // It's an item QR code
         const { itemName } = parsedData;
 
-        const inventoryQuery = query(collection(db, "inventory"), where("itemName", "==", itemName));
+        const inventoryQuery = query(
+          collection(db, "inventory"),
+          where("itemName", "==", itemName)
+        );
         const querySnapshot = await getDocs(inventoryQuery);
 
         let foundItem = null;
-        querySnapshot.forEach(docSnap => {
+        querySnapshot.forEach((docSnap) => {
           const itemData = docSnap.data();
-
           if (itemData.itemName === itemName) {
             foundItem = itemData;
           }
         });
 
         if (foundItem) {
-          const borrowQuery = query(collection(db, "borrowcatalog"));
-          const borrowSnapshot = await getDocs(borrowQuery);
+          const borrowSnapshot = await getDocs(collection(db, "borrowcatalog"));
 
           let borrowedCount = 0;
-          borrowSnapshot.forEach(doc => {
-            const borrowData = doc.data();
-            if ((borrowData.status || "").trim() === "Borrowed" && (borrowData.dateRequired || "").trim() === todayDate) {
-              borrowData.requestList?.forEach(requestItem => {
+          let deployedCount = 0;
+          let deployedInfo = [];
 
+          borrowSnapshot.forEach((doc) => {
+            const borrowData = doc.data();
+            const status = (borrowData.status || "").trim();
+            const dateRequired = (borrowData.dateRequired || "").trim();
+
+            if (status === "Borrowed" && dateRequired === todayDate) {
+              borrowData.requestList?.forEach((requestItem) => {
                 if ((requestItem.itemName || "").trim() === itemName) {
                   borrowedCount += requestItem.quantity || 0;
                 }
               });
             }
-          });
 
-          let deployedCount = 0;
-          let deployedInfo = [];
-
-          borrowSnapshot.forEach(doc => {
-            const borrowData = doc.data();
-            if (
-              (borrowData.status || "").trim() === "Deployed" &&
-              (borrowData.dateRequired || "").trim() === todayDate
-            ) {
-              borrowData.requestList?.forEach(requestItem => {
+            if (status === "Deployed" && dateRequired === todayDate) {
+              borrowData.requestList?.forEach((requestItem) => {
                 if ((requestItem.itemName || "").trim() === itemName) {
                   deployedCount += requestItem.quantity || 0;
-
                   deployedInfo.push({
                     requestor: borrowData.userName || "Unknown",
                     room: borrowData.room || borrowData.roomNumber || "N/A",
@@ -334,122 +535,95 @@ const CameraShowItems = ({ onClose }) => {
           });
 
           showItemDetails(foundItem, borrowedCount, deployedCount, deployedInfo);
-
         } else {
-          Alert.alert("Item Not Found", `Could not find "${itemName}" in the inventory.`);
+          Alert.alert("Item Not Found", `Could not find "${itemName}" in inventory.`);
         }
 
+      // 🧪 LAB ROOM QR
+      } else if (parsedData.labRoomId && !parsedData.shelves) {
+        const labRoomRef = doc(db, "labRoom", parsedData.labRoomId);
+        const labRoomDoc = await getDoc(labRoomRef);
 
+        if (!labRoomDoc.exists()) {
+          Alert.alert("Error", "Lab room not found.");
+          return;
+        }
 
-      } else if (parsedData.labRoomId) {
-        const labRoomId = parsedData.labRoomId;
+        const itemsSnap = await getDocs(collection(labRoomRef, "items"));
+        const items = [];
+
+        itemsSnap.forEach((doc) => {
+          const data = doc.data();
+          if (data.status !== "archived") {
+            items.push(data);
+          }
+        });
+
+        if (items.length === 0) {
+          Alert.alert("Inventory", "No valid items found in this lab room.");
+          return;
+        }
+
+        await addBorrowedAndDeployedCountToItems(items);
+        showLabRoomDetails(labRoomDoc.data().roomNumber || parsedData.labRoomId, items);
+
+      // 🪜 SHELF QR (labRoom + shelf only)
+      } else if (parsedData.labRoomId && parsedData.shelves && !parsedData.row) {
+        const { labRoomId, shelves: shelfId } = parsedData;
 
         try {
-          const labRoomRef = doc(db, "labRoom", labRoomId);
-          const labRoomDoc = await getDoc(labRoomRef);
-
-          if (!labRoomDoc.exists()) {
-            Alert.alert("Error", "Lab room not found.");
-            return;
-          }
-
-          const itemsSnap = await getDocs(collection(labRoomRef, "items"));
-          const itemsDetailArray = [];
-
-          itemsSnap.forEach((docItem) => {
-            const data = docItem.data();
-            if (data.status !== "archived") {
-              itemsDetailArray.push(data);
-            }
-          });
-
-          if (itemsDetailArray.length === 0) {
-            Alert.alert("Inventory", "No valid items found in lab room.");
-            return;
-          }
-
-          await addBorrowedAndDeployedCountToItems(itemsDetailArray);
-
-          // Show modal with roomId and items
-          showLabRoomDetails(labRoomDoc.data().roomNumber || labRoomId, itemsDetailArray);
-
-        } catch (error) {
-          console.error("Error fetching lab room data:", error);
-          Alert.alert("Error", "Failed to fetch lab room or items.");
-        }
-
-      } else if (parsedData.shelves && !parsedData.row) {
-      const shelfId = parsedData.shelves;           // e.g., "A"
-      try {
-        const labRoomsSnap = await getDocs(collection(db, "labRoom"));
-        const rowsSummary = [];
-
-        for (const roomDoc of labRoomsSnap.docs) {
           const rowsSnap = await getDocs(
-            collection(db, `labRoom/${roomDoc.id}/shelves/${shelfId}/rows`)
-          );
-          rowsSnap.forEach((rowDoc) => {
-            rowsSummary.push({
-              room: roomDoc.data().roomNumber,
-              rowId: rowDoc.id,
-            });
-          });
-        }
-
-        if (!rowsSummary.length) {
-          Alert.alert("Shelf Scan", `Shelf ${shelfId} not found in any room.`);
-        } else {
-          let msg = `Shelf ${shelfId} found in:\n`;
-          rowsSummary.forEach((r) => (msg += `• Room ${r.room} — Row ${r.rowId}\n`));
-          Alert.alert("Shelf Scan", msg);
-        }
-      } catch (e) {
-        console.error("Shelf QR error:", e);
-        Alert.alert("Shelf Scan", "Error reading shelf data.");
-      }
-    }
-
-    /* ---------- ROW QR (NEW) ----------------- */
-    else if (parsedData.row && parsedData.itemId) {
-      const rowId = parsedData.row;                 // e.g., "2"
-      try {
-        const labRoomsSnap = await getDocs(collection(db, "labRoom"));
-        let found = false;
-
-        for (const roomDoc of labRoomsSnap.docs) {
-          const shelvesSnap = await getDocs(
-            collection(db, `labRoom/${roomDoc.id}/shelves`)
+            collection(db, `labRoom/${labRoomId}/shelves/${shelfId}/rows`)
           );
 
-          for (const shelfDoc of shelvesSnap.docs) {
-            const rowRef = doc(
-              db,
-              `labRoom/${roomDoc.id}/shelves/${shelfDoc.id}/rows/${rowId}`
-            );
-            const rowDoc = await getDoc(rowRef);
-            if (rowDoc.exists()) {
-              found = true;
-              const itemsSnap = await getDocs(collection(rowRef, "items"));
-              let msg = `Room ${roomDoc.data().roomNumber}\nShelf ${shelfDoc.id} / Row ${rowId}\n\nItems:\n`;
-              itemsSnap.forEach((d) => {
-                const it = d.data();
-                msg += `• ${it.itemName} (Qty: ${it.quantity})\n`;
-              });
-              Alert.alert("Row Scan", msg);
-              break;
-            }
+          if (rowsSnap.empty) {
+            Alert.alert("Shelf Scan", `No rows found in Shelf ${shelfId}.`);
+            return;
           }
-          if (found) break;
+
+          let msg = `📦 Shelf ${shelfId} in Lab ${labRoomId.slice(0, 5)}…\n\nRows:\n`;
+          rowsSnap.forEach((rowDoc) => {
+            msg += `• Row ${rowDoc.id}\n`;
+          });
+
+          Alert.alert("Shelf Scan", msg);
+        } catch (e) {
+          console.error("Shelf QR error:", e);
+          Alert.alert("Shelf Scan", "Error loading rows.");
         }
 
-        if (!found) {
-          Alert.alert("Row Scan", `Row ${rowId} not found in any shelf.`);
+      // 🧱 ROW QR (labRoom + shelf + row)
+      } else if (parsedData.labRoomId && parsedData.shelves && parsedData.row) {
+        const { labRoomId, shelves: shelfId, row } = parsedData;
+
+        try {
+          const rowRef = doc(db, `labRoom/${labRoomId}/shelves/${shelfId}/rows/${row}`);
+          const rowDoc = await getDoc(rowRef);
+
+          if (!rowDoc.exists()) {
+            Alert.alert("Row Scan", `Row ${row} not found under Shelf ${shelfId}.`);
+            return;
+          }
+
+          const itemsSnap = await getDocs(collection(rowRef, "items"));
+
+          if (itemsSnap.empty) {
+            Alert.alert("Row Scan", `No items found in Row ${row}.`);
+            return;
+          }
+
+          let msg = `🧱 Lab ${labRoomId.slice(0, 5)}…\nShelf ${shelfId} / Row ${row}\n\nItems:\n`;
+          itemsSnap.forEach((d) => {
+            const it = d.data();
+            msg += `• ${it.itemName} (Qty: ${it.quantity})\n`;
+          });
+
+          Alert.alert("Row Scan", msg);
+        } catch (e) {
+          console.error("Row QR error:", e);
+          Alert.alert("Row Scan", "Error reading row data.");
         }
-      } catch (e) {
-        console.error("Row QR error:", e);
-        Alert.alert("Row Scan", "Error reading row data.");
-      }
-      
+
       } else {
         Alert.alert("Invalid QR Code", "QR does not contain recognized data.");
       }
@@ -723,18 +897,18 @@ const sideWidth = (width - frameWidth) / 2;
         />
 
         <ShelfDetailsModal
-          visible={shelfModal.visible}
-          shelfId={shelfModal.shelfId}
-          rows={shelfModal.rows}
-          onClose={() => setShelfModal({ ...shelfModal, visible: false })}
-        />
+        visible={shelfModal.visible}
+        shelfId={shelfModal.shelfId}
+        rows={shelfModal.rows}
+        onClose={() => setShelfModal({ ...shelfModal, visible: false })}
+      />
 
-        <RowDetailsModal
-          visible={rowModal.visible}
-          rowId={rowModal.rowId}
-          items={rowModal.items}
-          onClose={() => setRowModal({ ...rowModal, visible: false })}
-        />
+      <RowDetailsModal
+        visible={rowModal.visible}
+        rowId={rowModal.rowId}
+        items={rowModal.items}
+        onClose={() => setRowModal({ ...rowModal, visible: false })}
+      />
 
 
       </CameraView>
