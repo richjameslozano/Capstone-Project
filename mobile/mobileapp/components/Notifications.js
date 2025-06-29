@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, FlatList, SafeAreaView } from 'react-native';
 import { collection, query, orderBy, onSnapshot } from 'firebase/firestore';
 import { db } from '../backend/firebase/FirebaseConfig';
-import styles from './notificationStyles';
+import styles from './styles/NotificationsStyle';
 
 const NotificationItem = ({ title, message, timestamp }) => (
   <View style={styles.notificationCard}>
