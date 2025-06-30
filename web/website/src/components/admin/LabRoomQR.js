@@ -1068,6 +1068,7 @@ const LabRoomQR = () => {
           title={qrModal.title}
           destroyOnClose
           centered
+          zIndex={1031}
         >
           <div style={{ textAlign: "center", marginTop: 16 }}>
             <QRCodeSVG value={qrModal.value} size={200} />
