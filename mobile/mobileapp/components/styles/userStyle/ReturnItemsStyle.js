@@ -205,6 +205,30 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 24,
   },
+
+/* ----------  T A B L E   (modal)  ---------- */
+
+  headerCell: {           // generic header text
+    flex: 1,
+    fontWeight: '700',
+    textAlign: 'center',
+    color: '#222',
+    paddingHorizontal: 6,
+  },
+
+  cell: {                 // generic body text
+    flex: 1,
+    fontSize: 13,
+    textAlign: 'center',
+    color: '#444',
+    paddingHorizontal: 6,
+  },
+
+  /* –– reusable widths so header and rows always match –– */
+  colName: { flex: 3 },       // wider for long names
+  colQty: { flex: 1 },
+  colCondition: { flex: 2 },
+
 });
 
 export default styles;
