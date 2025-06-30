@@ -3,12 +3,13 @@ import { StyleSheet } from 'react-native';
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F9FAFB',
-    paddingHorizontal: 20,
+    backgroundColor: '#F3F4F6', // subtle off-white gray
+    paddingHorizontal: 16,
+    paddingTop: 10,
   },
 
   header: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: '700',
     marginVertical: 20,
     textAlign: 'center',
@@ -17,32 +18,34 @@ export default StyleSheet.create({
 
   notificationCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 15,
-    marginBottom: 15,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
     shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowOffset: { width: 0, height: 1 },
-    shadowRadius: 5,
-    elevation: 2,
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
   },
 
   title: {
     fontSize: 16,
     fontWeight: '600',
-    marginBottom: 5,
-    color: '#1F2937',
+    color: '#111827',
+    marginBottom: 6,
   },
 
   message: {
     fontSize: 14,
-    color: '#4B5563',
-    marginBottom: 5,
+    color: '#374151',
+    marginBottom: 8,
+    lineHeight: 20,
   },
-  
+
   timestamp: {
     fontSize: 12,
-    color: '#9CA3AF',
+    color: '#6B7280',
     textAlign: 'right',
+    marginTop: 4,
   },
 });
