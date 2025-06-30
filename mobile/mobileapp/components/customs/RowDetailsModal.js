@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  
   modal: {
     width: "90%",
     maxHeight: "80%",
@@ -56,22 +57,27 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
   },
+
   title: {
     fontSize: 18,
     fontWeight: "bold",
     marginBottom: 10,
   },
+
   item: {
     marginBottom: 10,
   },
+
   text: {
     fontSize: 16,
     fontWeight: "600",
   },
+
   subText: {
     fontSize: 14,
     color: "#666",
   },
+
   closeBtn: {
     marginTop: 20,
     backgroundColor: "#007bff",
@@ -79,6 +85,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
+
   closeText: {
     color: "white",
     fontWeight: "bold",

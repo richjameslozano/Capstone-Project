@@ -33,6 +33,12 @@ const CameraShowItems = ({ onClose }) => {
   const [labModalVisible, setLabModalVisible] = useState(false);
   const [shelfModal, setShelfModal] = useState({ visible: false, shelfId: "", rows: [] });
   const [rowModal,   setRowModal]   = useState({ visible: false, rowId: "",  items: [] });
+  const [shelfModalVisible, setShelfModalVisible] = useState(false);
+  const [shelfRows, setShelfRows] = useState([]);
+  const [currentShelfId, setCurrentShelfId] = useState("");
+  const [rowModalVisible, setRowModalVisible] = useState(false);
+  const [currentRowId, setCurrentRowId] = useState("");
+  const [rowItems, setRowItems] = useState([]);
 
   useEffect(() => {
   if (permission?.status !== 'granted') {
@@ -104,6 +110,18 @@ const CameraShowItems = ({ onClose }) => {
       setLabRoomId(roomId);
       setLabRoomItems(items);
       setLabModalVisible(true);
+    };
+
+    const showShelfDetails = (shelfId, rows) => {
+      setCurrentShelfId(shelfId);
+      setShelfRows(rows);
+      setShelfModalVisible(true);
+    };
+
+    const showRowDetails = (rowId, items) => {
+      setCurrentRowId(rowId);
+      setRowItems(items);
+      setRowModalVisible(true);
     };
 
     const logRequestOrReturn = async (userId, userName, action) => {
@@ -572,6 +590,7 @@ const CameraShowItems = ({ onClose }) => {
         const { labRoomId, shelves: shelfId } = parsedData;
 
         try {
+          // 1. grab all rows under this shelf
           const rowsSnap = await getDocs(
             collection(db, `labRoom/${labRoomId}/shelves/${shelfId}/rows`)
           );
@@ -581,12 +600,36 @@ const CameraShowItems = ({ onClose }) => {
             return;
           }
 
-          let msg = `📦 Shelf ${shelfId} in Lab ${labRoomId.slice(0, 5)}…\n\nRows:\n`;
-          rowsSnap.forEach((rowDoc) => {
-            msg += `• Row ${rowDoc.id}\n`;
-          });
+          // let msg = `📦 Shelf ${shelfId} in Lab ${labRoomId.slice(0, 5)}…\n\nRows:\n`;
+          // rowsSnap.forEach((rowDoc) => {
+          //   msg += `• Row ${rowDoc.id}\n`;
+          // });
 
-          Alert.alert("Shelf Scan", msg);
+            // 2. for each row, pull its items
+            const rowsWithItems = [];
+            for (const rowDoc of rowsSnap.docs) {
+              const itemsSnap = await getDocs(collection(rowDoc.ref, "items"));
+              const items = [];
+
+              itemsSnap.forEach((d) => {
+                const data = d.data();
+                items.push({
+                  itemName: data.itemName,
+                  quantity: data.quantity,
+                });
+              });
+
+              rowsWithItems.push({
+                rowId: rowDoc.id,
+                items,
+              });
+            }
+
+            // 3. open the modal
+            showShelfDetails(shelfId, rowsWithItems); 
+
+          // Alert.alert("Shelf Scan", msg);
+
         } catch (e) {
           console.error("Shelf QR error:", e);
           Alert.alert("Shelf Scan", "Error loading rows.");
@@ -606,19 +649,35 @@ const CameraShowItems = ({ onClose }) => {
           }
 
           const itemsSnap = await getDocs(collection(rowRef, "items"));
+          const items = [];
 
-          if (itemsSnap.empty) {
-            Alert.alert("Row Scan", `No items found in Row ${row}.`);
-            return;
-          }
-
-          let msg = `🧱 Lab ${labRoomId.slice(0, 5)}…\nShelf ${shelfId} / Row ${row}\n\nItems:\n`;
           itemsSnap.forEach((d) => {
-            const it = d.data();
-            msg += `• ${it.itemName} (Qty: ${it.quantity})\n`;
+            const data = d.data();
+            items.push({
+              itemId: data.itemId,
+              itemName: data.itemName,
+              quantity: data.quantity,
+              condition: data.condition,
+              status: data.status,
+            });
           });
 
-          Alert.alert("Row Scan", msg);
+        // Open the modal instead of using Alert
+        showRowDetails(row, items);
+
+          // if (itemsSnap.empty) {
+          //   Alert.alert("Row Scan", `No items found in Row ${row}.`);
+          //   return;
+          // }
+
+          // let msg = `🧱 Lab ${labRoomId.slice(0, 5)}…\nShelf ${shelfId} / Row ${row}\n\nItems:\n`;
+          // itemsSnap.forEach((d) => {
+          //   const it = d.data();
+          //   msg += `• ${it.itemName} (Qty: ${it.quantity})\n`;
+          // });
+
+          // Alert.alert("Row Scan", msg);
+          
         } catch (e) {
           console.error("Row QR error:", e);
           Alert.alert("Row Scan", "Error reading row data.");
@@ -896,20 +955,19 @@ const sideWidth = (width - frameWidth) / 2;
           onClose={() => setLabModalVisible(false)}
         />
 
-        <ShelfDetailsModal
-        visible={shelfModal.visible}
-        shelfId={shelfModal.shelfId}
-        rows={shelfModal.rows}
-        onClose={() => setShelfModal({ ...shelfModal, visible: false })}
+      <ShelfDetailsModal
+        visible={shelfModalVisible}
+        shelfId={currentShelfId}
+        rows={shelfRows}
+        onClose={() => setShelfModalVisible(false)}
       />
 
       <RowDetailsModal
-        visible={rowModal.visible}
-        rowId={rowModal.rowId}
-        items={rowModal.items}
-        onClose={() => setRowModal({ ...rowModal, visible: false })}
+        visible={rowModalVisible}
+        rowId={currentRowId}
+        items={rowItems}
+        onClose={() => setRowModalVisible(false)}
       />
-
 
       </CameraView>
     </View>

@@ -1,20 +1,36 @@
 import React from "react";
-import { Modal, View, Text, FlatList, TouchableOpacity, StyleSheet } from "react-native";
+import {
+  Modal,
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+} from "react-native";
 
 const ShelfDetailsModal = ({ visible, shelfId, rows, onClose }) => {
   return (
     <Modal visible={visible} animationType="slide" transparent>
       <View style={styles.overlay}>
         <View style={styles.modal}>
-          <Text style={styles.title}>Shelf: {shelfId}</Text>
+          <Text style={styles.title}>Shelf {`“${shelfId}”`}</Text>
 
           <FlatList
             data={rows}
-            keyExtractor={(item, index) => item.rowId || index.toString()}
+            keyExtractor={(item, idx) => item.rowId || idx.toString()}
             renderItem={({ item }) => (
-              <View style={styles.item}>
-                <Text style={styles.text}>• Row {item.rowId}</Text>
-                <Text style={styles.subText}>Room: {item.room || "N/A"}</Text>
+              <View style={styles.rowBlock}>
+                <Text style={styles.rowTitle}>• Row {item.rowId}</Text>
+
+                {item.items.length === 0 ? (
+                  <Text style={styles.noItemTxt}>No items in this row.</Text>
+                ) : (
+                  item.items.map((it, i) => (
+                    <Text key={i} style={styles.itemTxt}>
+                      – {it.itemName} (Qty: {it.quantity})
+                    </Text>
+                  ))
+                )}
               </View>
             )}
           />
@@ -37,6 +53,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
   },
+  
   modal: {
     width: "90%",
     maxHeight: "80%",
@@ -44,22 +61,34 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 20,
   },
+
   title: {
     fontSize: 18,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: 12,
   },
-  item: {
-    marginBottom: 10,
+
+  rowBlock: {
+    marginBottom: 14,
   },
-  text: {
+
+  rowTitle: {
     fontSize: 16,
     fontWeight: "600",
   },
-  subText: {
+
+  itemTxt: {
     fontSize: 14,
-    color: "#666",
+    color: "#444",
+    marginLeft: 14,
   },
+
+  noItemTxt: {
+    fontSize: 14,
+    color: "#888",
+    marginLeft: 14,
+  },
+
   closeBtn: {
     marginTop: 20,
     backgroundColor: "#007bff",
@@ -67,6 +96,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
   },
+
   closeText: {
     color: "white",
     fontWeight: "bold",
