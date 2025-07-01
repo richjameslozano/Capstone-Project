@@ -329,15 +329,21 @@ const formatCondition = (cond) => {
               </Text> */}
              </View>
 
-             <View style={styles.cardRow}>
+              <View style={styles.cardRow}>
               <Text style={styles.cardLabel}>Stock Room:</Text>
               <Text style={styles.cardValueNum}>{item.labRoom}</Text>
-              
               </View>   
+              
               {isOpen === item.id  && (
               
              <View style={{flex: 1, marginTop: 10}}>
-                 <Text style={{color: handleColor(item), fontWeight: 'bold'}}>Other Details</Text>
+                <Text style={{color: handleColor(item), fontWeight: 'bold'}}>Other Details</Text>
+                
+              <View style={styles.cardRow}>
+              <Text style={styles.cardLabel}>Shelves, Row:</Text>
+              <Text style={styles.cardValueNum}>{item.shelves} {item.row}</Text>
+              </View>   
+
                 <View style={{justifyContent: 'space-between'}}>
                 <View style={styles.row}>
                 <Text style={styles.cardLabel}>Item Description</Text>
