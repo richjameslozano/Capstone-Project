@@ -19,6 +19,7 @@ const LabRoomQR = () => {
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [activeTab, setActiveTab] = useState("1"); 
   const qrRefs = useRef({});
+  const qrModalRef = useRef(null);
 
   const [qrModal, setQrModal] = useState({
     visible: false,
@@ -498,6 +499,37 @@ const LabRoomQR = () => {
     img.src = url;
   };
 
+  const downloadQRCodeFromModal = () => {
+    const svg = qrModalRef.current?.querySelector("svg");
+    if (!svg) return;
+
+    const svgData = new XMLSerializer().serializeToString(svg);
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+
+    const img = new Image();
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    img.onload = () => {
+      canvas.width = img.width;
+      canvas.height = img.height;
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+
+      const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+
+      const downloadLink = document.createElement("a");
+      downloadLink.href = pngUrl;
+      downloadLink.download = `${qrModal.title || "qr"}-QR.png`;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      document.body.removeChild(downloadLink);
+    };
+
+    img.src = url;
+  };
+
   const filteredRooms = labRooms.filter((room) => {
     const roomMatch =
       room.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -607,10 +639,15 @@ const LabRoomQR = () => {
         key: "shelfLabel",
       },
       {
-        title: "Shelf QR",
+        title: "Shelf QR",
         dataIndex: "shelfQR",
         key: "shelfQR",
-        render: (qr) => <QRCodeSVG value={qr || "No QR"} size={96} />,
+        render: (qr, record, index) => (
+          <div ref={(el) => (qrRefs.current[record.key] = el)}>
+            <QRCodeSVG value={qr || "No QR"} size={96} />
+            <Button onClick={() => downloadQRCode(record.key)}>Download</Button>
+          </div>
+        ),
       },
       {
         /* list of row numbers under this shelf */
@@ -1071,7 +1108,23 @@ const LabRoomQR = () => {
           zIndex={1031}
         >
           <div style={{ textAlign: "center", marginTop: 16 }}>
-            <QRCodeSVG value={qrModal.value} size={200} />
+            <div ref={qrModalRef}>
+              <QRCodeSVG value={qrModal.value} size={200} />
+            </div>
+            <button
+              onClick={downloadQRCodeFromModal}
+              style={{
+                marginTop: "1rem",
+                padding: "6px 12px",
+                background: "#1677ff",
+                color: "white",
+                border: "none",
+                borderRadius: "4px",
+                cursor: "pointer",
+              }}
+            >
+              Download QR
+            </button>
           </div>
         </Modal>
     </div>
