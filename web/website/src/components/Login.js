@@ -461,6 +461,57 @@ const Login = () => {
     }
   };
 
+  // const handleSignUpChange = (e) => {
+  //   const { name, value } = e.target;
+
+  //   if (name === "jobTitle") {
+  //     let filteredDepts = [];
+
+  //     if (value === "Faculty") {
+  //       filteredDepts = departmentsAll.map((dept) => dept.name);
+
+  //     } else if (value === "Program Chair") {
+  //       filteredDepts = departmentsAll
+  //         .map((dept) => dept.name)
+  //         .filter((name) => name !== "SHS");
+
+  //     } else {
+  //       filteredDepts = departmentOptionsByJobTitle[value] || [];
+  //     }
+
+  //     const autoDept = value === "Laboratory Custodian" ? "SAH" : "";
+
+  //     setSignUpData({
+  //       ...signUpData,
+  //       jobTitle: value,
+  //       department: autoDept, 
+  //     });
+
+  //     setCurrentDepartments(filteredDepts);
+
+  //   } else {
+  //     // Set the field value
+  //     setSignUpData({
+  //       ...signUpData,
+  //       [name]: value
+  //     });
+
+  //     // If the changed field is email, validate the domain
+  //     if (name === "email") {
+  //       const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+  //       const parts = value.split("@");
+  //       const emailDomain = parts.length > 1 ? parts[1] : "";
+
+  //       if (!validDomains.includes(emailDomain)) {
+  //         setError("Only @nu-moa.edu.ph and @students.nu-moa.edu.ph emails are allowed.");
+
+  //       } else {
+  //         setError(""); // Clear error if valid
+  //       }
+  //     }
+  //   }
+  // };
+
   const handleSignUpChange = (e) => {
     const { name, value } = e.target;
 
@@ -469,34 +520,30 @@ const Login = () => {
 
       if (value === "Faculty") {
         filteredDepts = departmentsAll.map((dept) => dept.name);
-
       } else if (value === "Program Chair") {
         filteredDepts = departmentsAll
           .map((dept) => dept.name)
           .filter((name) => name !== "SHS");
-
       } else {
         filteredDepts = departmentOptionsByJobTitle[value] || [];
       }
 
       const autoDept = value === "Laboratory Custodian" ? "SAH" : "";
 
-      setSignUpData({
-        ...signUpData,
+      setSignUpData((prev) => ({
+        ...prev,
         jobTitle: value,
-        department: autoDept, 
-      });
+        department: autoDept, // Automatically set department to "SAH" for Lab Custodian
+      }));
 
       setCurrentDepartments(filteredDepts);
 
     } else {
-      // Set the field value
-      setSignUpData({
-        ...signUpData,
-        [name]: value
-      });
+      setSignUpData((prev) => ({
+        ...prev,
+        [name]: value,
+      }));
 
-      // If the changed field is email, validate the domain
       if (name === "email") {
         const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
         const parts = value.split("@");
@@ -504,7 +551,6 @@ const Login = () => {
 
         if (!validDomains.includes(emailDomain)) {
           setError("Only @nu-moa.edu.ph and @students.nu-moa.edu.ph emails are allowed.");
-
         } else {
           setError(""); // Clear error if valid
         }
@@ -1565,7 +1611,7 @@ const Login = () => {
                 <div className="dropdown-container">
                   <div className="form-group">
                     <label>Department</label>
-                    <select
+                    {/* <select
                       name="department"
                       value={signUpData.department}
                       onChange={handleSignUpChange}
@@ -1578,9 +1624,28 @@ const Login = () => {
                           <option key={dept} value={dept}>{dept}
                       </option>
                       ))}
+                    </select> */}
+
+                    <select
+                      name="department"
+                      value={signUpData.department}
+                      onChange={handleSignUpChange}
+                      required={signUpData.jobTitle !== "Laboratory Custodian"}
+                      disabled={signUpData.jobTitle === "Laboratory Custodian"}
+                    >
+                      <option value="">Select Department</option>
+                      {signUpData.jobTitle === "Laboratory Custodian" ? (
+                        <option value="SAH">SAH</option>
+                      ) : (
+                        currentDepartments.map((dept) => (
+                          <option key={dept} value={dept}>
+                            {dept}
+                          </option>
+                        ))
+                      )}
                     </select>
                   </div>
-                  </div>
+                </div>
                   
                   {/* <div className="form-group password-group">
                     <label>Password</label>
