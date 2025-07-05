@@ -2967,7 +2967,62 @@ try {
             timestamp: serverTimestamp(),
           });
         }
+      }
 
+      const consumableItems = enrichedItems.filter(item => item.itemType === "Consumable");
+
+      if (consumableItems.length > 0) {
+        const formattedItems = consumableItems.map(item => ({
+          category: item.category || "N/A",
+          condition: item.condition || "N/A",
+          department: item.department || "N/A",
+          itemName: item.itemName || "N/A",
+          itemDetails: item.itemDetails || "N/A",
+          itemId: item.itemIdFromInventory,
+          quantity: item.quantity || "1",
+          selectedItemId: item.selectedItemId || "N/A",
+          status: item.status || "Available",
+          program: item.program || "N/A",
+          course: item.course || "N/A",
+          courseDescription: item.courseDescription || "N/A",
+          reason: item.reason || "No reason provided",
+          labRoom: item.labRoom || "N/A",
+          timeFrom: item.timeFrom || "N/A",
+          timeTo: item.timeTo || "N/A",
+          usageType: item.usageType || "N/A",
+          scannedCount: 0,
+        }));
+
+        const consumableCatalogEntry = {
+          accountId: selectedRequest.accountId || "N/A",
+          userName: selectedRequest.userName || "N/A",
+          room: selectedRequest.room || "N/A",
+          course: selectedRequest.course || "N/A",
+          courseDescription: selectedRequest.courseDescription || "N/A",
+          dateRequired: selectedRequest.dateRequired || "N/A",
+          timeFrom: selectedRequest.timeFrom || "N/A",
+          timeTo: selectedRequest.timeTo || "N/A",
+          timestamp: selectedRequest.timestamp || "N/A",
+          rawTimestamp: new Date(),
+          requestList: formattedItems,
+          status: "For Release", // For Consumables
+          approvedBy: userName,
+          reason: selectedRequest.reason || "No reason provided",
+          program: selectedRequest.program,
+        };
+
+        await addDoc(collection(db, "borrowcatalog"), consumableCatalogEntry);
+
+        // ✅ Notify the user who submitted the request
+              if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
+                await addDoc(collection(db, `accounts/${selectedRequest.accountId}/userNotifications`), {
+                  action: `Approved request for ${selectedRequest.userName}`,
+                  requestId: selectedRequest.id,
+                  userName: selectedRequest.userName,
+                  read: false,
+                  timestamp: serverTimestamp(),
+                });
+              }
       }
 
         await deleteDoc(doc(db, "userrequests", selectedRequest.id));
