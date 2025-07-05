@@ -225,9 +225,17 @@ const BorrowCatalog = () => {
           case "Deployed":
             color = "red";
             break;
-          
+
           case "For Release":
             color = "purple";
+            break;
+
+          case "Released":
+            color = "#0e7490"; // teal
+            break;
+
+          case "For Expired":
+            color = "#d97706"; // amber
             break;
 
           default:
@@ -347,6 +355,14 @@ const BorrowCatalog = () => {
 
               <Button type={statusFilter === "For Release" ? "primary" : "default"} onClick={() => handleStatusFilter("For Release")}>
                 For Release
+              </Button>
+
+              <Button type={statusFilter === "Released" ? "primary" : "default"} onClick={() => handleStatusFilter("Released")}>
+                Released
+              </Button>
+
+              <Button type={statusFilter === "Expired" ? "primary" : "default"} onClick={() => handleStatusFilter("Expired")}>
+                Expired
               </Button>
             </Col>
           </Row>
