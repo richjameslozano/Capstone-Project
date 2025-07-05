@@ -646,6 +646,20 @@ function getConditionSummary(conditionsArray) {
     }
   };  
 
+  const handleRelease = async () => {
+    try {
+      const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+      await updateDoc(docRef, { status: "Released" });
+
+      alert("Request successfully released!");
+      setIsApprovedModalVisible(false);
+      setSelectedApprovedRequest(null);
+    } catch (err) {
+      console.error("Error releasing request:", err);
+      alert("Release failed.");
+    }
+  };
+
   return (
     <Modal
       title={
@@ -668,6 +682,10 @@ function getConditionSummary(conditionsArray) {
           <Button type="primary" onClick={handleApprove}>
             Approve
           </Button>
+        ) : selectedApprovedRequest?.status === "For Release" ? (
+          <Button type="primary" onClick={handleRelease}>
+            Release
+          </Button>
         ) : null
       }
     >
@@ -684,6 +702,7 @@ function getConditionSummary(conditionsArray) {
               <Text strong>Required Date:</Text> {selectedApprovedRequest.dateRequired || "N/A"}<br />
               <Text strong>Time Needed:</Text> {selectedApprovedRequest.timeFrom || "N/A"} - {selectedApprovedRequest.timeTo || "N/A"}
             </Col>
+
             <Col span={12}>
               <Text strong>Reason of Request:</Text>
               <p style={{ fontSize: "12px", marginTop: 5 }}>{selectedApprovedRequest.reason || "N/A"}</p>

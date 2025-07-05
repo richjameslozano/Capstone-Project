@@ -1,7 +1,3 @@
-
-
-
-// VERSION 2
 import React, { useState, useEffect } from "react";
 import { Layout, Row, Col, Table, Input, Button, Typography } from "antd";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
