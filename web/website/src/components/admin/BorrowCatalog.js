@@ -229,9 +229,13 @@ const BorrowCatalog = () => {
           case "Deployed":
             color = "red";
             break;
+          
+          case "For Release":
+            color = "purple";
+            break;
 
           default:
-            color = "purple";
+            color = "black";
         }
 
         return (
@@ -343,6 +347,10 @@ const BorrowCatalog = () => {
 
               <Button type={statusFilter === "Deployed" ? "primary" : "default"} onClick={() => handleStatusFilter("Deployed")}>
                 Deployed
+              </Button>
+
+              <Button type={statusFilter === "For Release" ? "primary" : "default"} onClick={() => handleStatusFilter("For Release")}>
+                For Release
               </Button>
             </Col>
           </Row>
