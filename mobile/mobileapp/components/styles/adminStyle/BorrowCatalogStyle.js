@@ -108,6 +108,11 @@ position: 'absolute',
     color: '#fff',
   },
 
+  status: {
+    fontSize: 14,
+    marginTop: 5,
+  },
+
 });
 
 export default styles;

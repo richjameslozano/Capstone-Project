@@ -135,6 +135,35 @@ const BorrowCatalogScreen = () => {
     return name.replace(/\b\w/g, char => char.toUpperCase());
   };
 
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Borrowed":
+        return "blue";
+
+      case "Returned":
+        return "orange";
+
+      case "Return Approved":
+        return "green";
+
+      case "Deployed":
+        return "red";
+
+      case "For Release":
+        return "purple";
+
+      case "Released":
+        return "#0e7490"; // teal
+
+      case "Expired":
+      case "For Expired":
+        return "black"; // amber
+
+      default:
+        return "black";
+    }
+  };
+
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => handleViewDetails(item)} style={styles.card}>
       <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
@@ -152,10 +181,7 @@ const BorrowCatalogScreen = () => {
       <Text
         style={[
           styles.status,
-          item.status === "Approved" ? styles.approved :
-          item.status === "Returned" ? styles.returned :
-          item.status === "Deployed" ? styles.deployed :
-          styles.pending
+          { color: getStatusColor(item.status), fontWeight: 'bold' }
         ]}
       >
         {item.status}
@@ -191,7 +217,7 @@ const BorrowCatalogScreen = () => {
       />
   <View  style={styles.statusFilterContainer}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {['All', 'Borrowed', 'Returned', 'Approved', 'Deployed'].map((status) => (
+        {['All', 'Borrowed', 'Returned', 'Returned Approved', 'Deployed', 'For Release', 'Released', 'Expired'].map((status) => (
           <TouchableOpacity
             key={status}
             style={[
