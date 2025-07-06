@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Row, Col, Table, Input, Button, Typography } from "antd";
+import { Layout, Row, Col, Table, Input, Button, Typography, Select } from "antd";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import Sidebar from "../Sidebar";
@@ -10,6 +10,7 @@ import ApprovedRequestModal from "../customs/ApprovedRequestModal";
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Search } = Input;
+const { Option } = Select;
 
 const BorrowCatalog = () => {
   const [catalog, setCatalog] = useState([]);
@@ -17,6 +18,16 @@ const BorrowCatalog = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [statusFilter, setStatusFilter] = useState("All");
+  const statusOptions = [
+    'All',
+    'Borrowed',
+    'Returned',
+    'Return Approved',
+    'Deployed',
+    'For Release',
+    'Released',
+    'Expired',
+  ];
 
     // useEffect(() => {
   //   const fetchCatalogData = async () => {
@@ -162,10 +173,9 @@ const BorrowCatalog = () => {
       setSearchQuery(sanitizedValue);
     };
 
-
-
-  const handleStatusFilter = (status) => {
-    setStatusFilter(status);
+  const handleStatusFilter = (value) => {
+    const finalValue = value ?? "All";
+    setStatusFilter(finalValue);
   };
 
   const filteredCatalog = catalog.filter((item) => {
@@ -265,8 +275,6 @@ const BorrowCatalog = () => {
   ];
 
   const handleViewDetails = (record) => {
-  
-
     setSelectedRequest(record);
     setIsModalVisible(true);
   };
@@ -331,39 +339,22 @@ const BorrowCatalog = () => {
                 />
 
             </Col>
-            
+
             <Col>
-              <Button type={statusFilter === "All" ? "primary" : "default"} onClick={() => handleStatusFilter("All")}>
-                All
-              </Button>
-
-              <Button type={statusFilter === "Borrowed" ? "primary" : "default"} onClick={() => handleStatusFilter("Borrowed")}>
-                Borrowed
-              </Button>
-
-              <Button type={statusFilter === "Returned" ? "primary" : "default"} onClick={() => handleStatusFilter("Returned")}>
-                Returned
-              </Button>
-
-              <Button type={statusFilter === "Return Approved" ? "primary" : "default"} onClick={() => handleStatusFilter("Return Approved")}>
-                Return Approved
-              </Button>
-
-              <Button type={statusFilter === "Deployed" ? "primary" : "default"} onClick={() => handleStatusFilter("Deployed")}>
-                Deployed
-              </Button>
-
-              <Button type={statusFilter === "For Release" ? "primary" : "default"} onClick={() => handleStatusFilter("For Release")}>
-                For Release
-              </Button>
-
-              <Button type={statusFilter === "Released" ? "primary" : "default"} onClick={() => handleStatusFilter("Released")}>
-                Released
-              </Button>
-
-              <Button type={statusFilter === "Expired" ? "primary" : "default"} onClick={() => handleStatusFilter("Expired")}>
-                Expired
-              </Button>
+              <Select
+                value={statusFilter}
+                onChange={handleStatusFilter}
+                onClear={() => handleStatusFilter("All")}
+                allowClear
+                style={{ width: 200 }}
+                placeholder="Select Status"
+              >
+                {statusOptions.map((status) => (
+                  <Option key={status} value={status}>
+                    {status}
+                  </Option>
+                ))}
+              </Select>
             </Col>
           </Row>
 
