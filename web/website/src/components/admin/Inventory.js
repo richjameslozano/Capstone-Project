@@ -1109,27 +1109,57 @@ const printPdf = () => {
     }
   };
 
+  // const editItem = (record, clearFields = true) => {
+  //   editForm.resetFields();
+  //   setEditingItem(record);
+  //   setSelectedCategory(record.category);
+
+  //   const hasExpiry = record.category === "Chemical" || record.category === "Reagent";
+  //   setHasExpiryDate(hasExpiry); // This controls if the Expiry field is shown
+
+  //   editForm.setFieldsValue({
+  //     quantity: clearFields ? null : record.quantity,
+  //     expiryDate: hasExpiry
+  //       ? (clearFields ? null : (record.expiryDate ? dayjs(record.expiryDate) : null))
+  //       : null,
+  //     condition: {
+  //       Good: record.condition?.Good ?? 0,
+  //       Defect: record.condition?.Defect ?? 0,
+  //       Damage: record.condition?.Damage ?? 0,
+  //       Lost: record.condition?.Lost ?? 0,
+  //     },
+  //   });
+
+  //   setIsEditModalVisible(true);
+  // };
+
   const editItem = (record, clearFields = true) => {
     editForm.resetFields();
     setEditingItem(record);
     setSelectedCategory(record.category);
 
     const hasExpiry = record.category === "Chemical" || record.category === "Reagent";
-    setHasExpiryDate(hasExpiry); // This controls if the Expiry field is shown
+    const isTrackCondition = record.category !== "Chemical" && record.category !== "Reagent";
 
-    editForm.setFieldsValue({
+    setHasExpiryDate(hasExpiry); // controls whether expiry field is shown
+
+    const fieldsToSet = {
       quantity: clearFields ? null : record.quantity,
       expiryDate: hasExpiry
         ? (clearFields ? null : (record.expiryDate ? dayjs(record.expiryDate) : null))
         : null,
-      condition: {
+    };
+
+    if (isTrackCondition) {
+      fieldsToSet.condition = {
         Good: record.condition?.Good ?? 0,
         Defect: record.condition?.Defect ?? 0,
         Damage: record.condition?.Damage ?? 0,
         Lost: record.condition?.Lost ?? 0,
-      },
-    });
+      };
+    }
 
+    editForm.setFieldsValue(fieldsToSet);
     setIsEditModalVisible(true);
   };
 
