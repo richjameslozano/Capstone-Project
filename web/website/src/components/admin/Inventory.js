@@ -598,10 +598,31 @@ const sanitizeSearchInput = (input) => {
   return input.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
 };
 
+// const filteredData = dataSource.filter((item) => {
+//   // Sanitize the search input to prevent any issues (e.g., XSS, SQL injection)
+//   const sanitizedSearchText = sanitizeSearchInput(searchText);
+  
+//   // Search logic
+//   const matchesSearch = sanitizedSearchText
+//     ? Object.values(item).some((val) =>
+//         String(val).toLowerCase().includes(sanitizedSearchText.toLowerCase())
+//       )
+//     : true;
+
+//   // Filter items based on selected category, item type, and expiration status
+//   return (
+//     (!filterCategory || item.category === filterCategory) &&
+//     (!filterItemType || item.type === filterItemType) &&
+//     (!filterDepartment || item.department === filterDepartment) &&
+//     matchesSearch &&
+//     !isExpired(item.expiryDate) // Exclude expired items
+//   );
+// });
+
 const filteredData = dataSource.filter((item) => {
   // Sanitize the search input to prevent any issues (e.g., XSS, SQL injection)
   const sanitizedSearchText = sanitizeSearchInput(searchText);
-  
+    
   // Search logic
   const matchesSearch = sanitizedSearchText
     ? Object.values(item).some((val) =>
@@ -609,13 +630,12 @@ const filteredData = dataSource.filter((item) => {
       )
     : true;
 
-  // Filter items based on selected category, item type, and expiration status
+  // Filter items based on selected category, item type, and department only
   return (
     (!filterCategory || item.category === filterCategory) &&
     (!filterItemType || item.type === filterItemType) &&
     (!filterDepartment || item.department === filterDepartment) &&
-    matchesSearch &&
-    !isExpired(item.expiryDate) // Exclude expired items
+    matchesSearch
   );
 });
 
