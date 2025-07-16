@@ -314,6 +314,19 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                   });
 
                   await addDoc(collection(db, `accounts/${requestorId}/historylog`), {
+                    action: "Deployed",
+                    userName: data.userName || "Unknown", // ✅ pulled from the request data
+                    timestamp: serverTimestamp(),
+                    requestList: data.requestList || [],
+                    program: data.program || "N/A",
+                    room: data.room || "N/A",
+                    dateRequired: data.dateRequired || "N/A",
+                    timeFrom: data.timeFrom || "N/A",
+                    timeTo: data.timeTo || "N/A",
+                    approvedBy: user.name || "Unknown", // ✅ the currently logged-in approver
+                  });
+
+                  await addDoc(collection(db, `accounts/${requestorId}/historylog`), {
                     ...userData,
                     action: "Return Approved",
                     approvedBy: user.name || "Unknown",
