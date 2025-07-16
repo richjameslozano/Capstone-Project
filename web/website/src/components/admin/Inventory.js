@@ -13,7 +13,7 @@ import {
   Modal,
   InputNumber,
   Radio,
-  FloatButton,
+  FloatButton,Spin
 } from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
 import moment from "moment";
@@ -1055,6 +1055,7 @@ const printPdf = () => {
 
   // BACKEND WITH CRITICAL LEVEL
   const handleAdd = async (values) => {
+    setLoading(true); // Start loading
     try {
       // Validate local inputs
       if (!itemName || !values.department || !itemDetails) {
@@ -1106,7 +1107,9 @@ const printPdf = () => {
     } catch (error) {
       console.error("Error calling API:", error);
       alert("An unexpected error occurred while adding the item.");
-    }
+    }finally {
+    setLoading(false); // Always stop loading
+  }
   };
 
   // const editItem = (record, clearFields = true) => {
@@ -1647,10 +1650,12 @@ useEffect(() => {
       zIndex={1024}
       
     >
+      
       <div className="add-header">
         <EditOutlined style={{margin: 0, color: 'white', fontSize: 20, height: '100%'}}/>
         <h3 style={{margin:0,color: '#fff'}}>Add Item to Inventory</h3>
       </div>
+      <Spin spinning={loading} tip="Loading inventory data...">
       <Form
         layout="vertical"
         form={form}
@@ -1960,6 +1965,7 @@ useEffect(() => {
           </Button>
         </Form.Item>
       </Form>
+      </Spin>
     </Modal>
 
           <Modal
