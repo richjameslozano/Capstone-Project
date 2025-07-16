@@ -507,6 +507,7 @@ const ProcessedTab = () => {
       if (type === 'APPROVED') return item.action === 'Request Approved';
       if (type === 'REJECTED') return item.action === 'Request Rejected';
       if (type === 'CANCELLED') return item.action === 'Cancelled a request';
+      if (type === 'DEPLOYED') return item.action === 'Deployed';
       return true;
     });
   };
@@ -544,6 +545,7 @@ const ProcessedTab = () => {
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
         <TabPane tab={`Approved (${getTabData('APPROVED').length})`} key="APPROVED" />
+        <TabPane tab={`Deployed (${getTabData('DEPLOYED').length})`} key="DEPLOYED" />
         <TabPane tab={`Rejected (${getTabData('REJECTED').length})`} key="REJECTED" />
         <TabPane tab={`Cancelled (${getTabData('CANCELLED').length})`} key="CANCELLED" />
       </Tabs>
@@ -579,12 +581,15 @@ const ProcessedTab = () => {
                 ? 'Cancelled a request'
                 : selectedLog.action || 'Modified a request'}
             </Descriptions.Item>
+
             <Descriptions.Item label="By">
               {selectedLog.userName || 'Unknown User'}
             </Descriptions.Item>
+
             <Descriptions.Item label="Program">
               {selectedLog.program || 'N/A'}
             </Descriptions.Item>
+
             <Descriptions.Item label="Items Requested">
               {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
                 <ul style={{ paddingLeft: 20 }}>
