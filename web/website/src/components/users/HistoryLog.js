@@ -334,18 +334,37 @@ const sanitizeInput = (input) =>
     return () => unsubscribe();
   }, []);
 
-  const filteredData = activityData
-  .filter((item) => {
+  // const filteredData = activityData
+  // .filter((item) => {
+  //   // Filter by action type
+  //   if (actionFilter !== "ALL" && item.action !== actionFilter) {
+  //     return false;
+  //   }
+  //   // Filter by search
+
+  //   return (
+  //     item.date.includes(searchQuery) ||
+  //     item.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //     item.by.toLowerCase().includes(searchQuery.toLowerCase())
+  //   );
+  // });
+
+  const filteredData = activityData.filter((item) => {
     // Filter by action type
     if (actionFilter !== "ALL" && item.action !== actionFilter) {
       return false;
     }
-    // Filter by search
 
+    const search = searchQuery?.toLowerCase?.() || "";
+    const date = item.date || "";
+    const action = item.action?.toLowerCase?.() || "";
+    const by = item.by?.toLowerCase?.() || "";
+
+    // Filter by search
     return (
-      item.date.includes(searchQuery) ||
-      item.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.by.toLowerCase().includes(searchQuery.toLowerCase())
+      date.includes(search) ||
+      action.includes(search) ||
+      by.includes(search)
     );
   });
 
