@@ -23,6 +23,7 @@ import StickyBox from 'react-sticky-box';
 const { Option } = Select;
 const { Content } = Layout;
 const { Title } = Typography;
+const { TabPane } = Tabs;
 
 const columns2 = [
   {
@@ -497,12 +498,25 @@ const sanitizeInput = (input) =>
       </Modal>
     </Content>
   );
-const renderProcessedTab = () => (
+
+const ProcessedTab = () => {
+  const [activeTab, setActiveTab] = useState('APPROVED');
+
+  const getTabData = (type) => {
+    return filteredData.filter((item) => {
+      if (type === 'APPROVED') return item.action === 'Request Approved';
+      if (type === 'REJECTED') return item.action === 'Request Rejected';
+      if (type === 'CANCELLED') return item.action === 'Cancelled a request';
+      return true;
+    });
+  };
+
+  const tabData = getTabData(activeTab);
+
+  return (
     <Content className="activity-content">
-      <div className="activity-header">
-      </div>
       <div className="activity-controls">
-         <Select
+        <Select
           value={actionFilter}
           onChange={(value) => setActionFilter(value)}
           className="activity-filter"
@@ -520,17 +534,23 @@ const renderProcessedTab = () => (
           prefix={<SearchOutlined />}
           className="activity-search"
           allowClear
-           onInput={(e) => {
+          onInput={(e) => {
             const sanitized = sanitizeInput(e.target.value);
             e.target.value = sanitized;
             setSearchQuery(sanitized);
           }}
         />
-       
       </div>
+
+      <Tabs activeKey={activeTab} onChange={setActiveTab}>
+        <TabPane tab={`Approved (${getTabData('APPROVED').length})`} key="APPROVED" />
+        <TabPane tab={`Rejected (${getTabData('REJECTED').length})`} key="REJECTED" />
+        <TabPane tab={`Cancelled (${getTabData('CANCELLED').length})`} key="CANCELLED" />
+      </Tabs>
+
       <Table
         columns={columns2}
-        dataSource={filteredData}
+        dataSource={tabData}
         pagination={{ pageSize: 10 }}
         bordered
         className="activity-table"
@@ -544,93 +564,81 @@ const renderProcessedTab = () => (
           ),
         }}
       />
+
       <Modal
-            title="Activity Details"
-            visible={modalVisible}
-            zIndex={1015}
-            onCancel={() => setModalVisible(false)}
-            footer={null}
-          >
-            {selectedLog && (
-              <Descriptions column={1} bordered size="small">
-                <Descriptions.Item label="Action">
-                  {selectedLog.status === "CANCELLED"
-                    ? "Cancelled a request"
-                    : selectedLog.action || "Modified a request"}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="By">
-                  {selectedLog.userName || "Unknown User"}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Program">
-                  {selectedLog.program || "N/A"}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Items Requested">
-                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                    <ul style={{ paddingLeft: 20 }}>
-                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                        <li key={index} style={{ marginBottom: 10 }}>
-                          <strong>{item.itemName}</strong>
-                          <ul style={{ marginLeft: 20 }}>
-                            <li>Quantity: {item.quantity}</li>
-                            {(item.category === "Chemical" || item.category === "Reagent") && item.unit && (
-                              <li>Unit: {item.unit}</li>
-                            )}
-                            {/* {item.category && <li>Category: {item.category}</li>} */}
-                            {item.category && <li>Category: {item.category}</li>}
-                            {item.category === "Glasswares" && item.volume && (
-                              <li>Volume: {item.volume}</li>
-                            )}
-
-                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                            {item.itemType && <li>Item Type: {item.itemType}</li>}
-                            {item.department && <li>Department: {item.department}</li>}
-
-                            {selectedLog.action === "Request Rejected" && (item.reason || item.rejectionReason) && (
-                              <>
-                                {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
-                                {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
-                              </>
-                            )}
-                          </ul>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    "None"
-                  )}
-                </Descriptions.Item>
-
-                {selectedLog.action !== "Request Rejected" && (
-                  <Descriptions.Item label="Reason">
-                    {selectedLog.reason || "N/A"}
-                  </Descriptions.Item>
-                )}
-
-                <Descriptions.Item label="Room">
-                  {selectedLog.room || "N/A"}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Time">
-                  {selectedLog.timeFrom && selectedLog.timeTo
-                    ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-                    : "N/A"}
-                </Descriptions.Item>
-
-                <Descriptions.Item label="Date Required">
-                  {selectedLog.dateRequired || "N/A"}
-                </Descriptions.Item>
-              </Descriptions>
+        title="Activity Details"
+        visible={modalVisible}
+        zIndex={1015}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        {selectedLog && (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="Action">
+              {selectedLog.status === 'CANCELLED'
+                ? 'Cancelled a request'
+                : selectedLog.action || 'Modified a request'}
+            </Descriptions.Item>
+            <Descriptions.Item label="By">
+              {selectedLog.userName || 'Unknown User'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Program">
+              {selectedLog.program || 'N/A'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Items Requested">
+              {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+                <ul style={{ paddingLeft: 20 }}>
+                  {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+                    <li key={index} style={{ marginBottom: 10 }}>
+                      <strong>{item.itemName}</strong>
+                      <ul style={{ marginLeft: 20 }}>
+                        <li>Quantity: {item.quantity}</li>
+                        {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
+                          <li>Unit: {item.unit}</li>
+                        )}
+                        {item.category && <li>Category: {item.category}</li>}
+                        {item.category === 'Glasswares' && item.volume && (
+                          <li>Volume: {item.volume}</li>
+                        )}
+                        {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                        {item.usageType && <li>Usage Type: {item.usageType}</li>}
+                        {item.itemType && <li>Item Type: {item.itemType}</li>}
+                        {item.department && <li>Department: {item.department}</li>}
+                        {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
+                          <>
+                            {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
+                            {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+                          </>
+                        )}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              ) : 'None'}
+            </Descriptions.Item>
+            {selectedLog.action !== 'Request Rejected' && (
+              <Descriptions.Item label="Reason">
+                {selectedLog.reason || 'N/A'}
+              </Descriptions.Item>
             )}
-            
-          </Modal>
-          
+            <Descriptions.Item label="Room">
+              {selectedLog.room || 'N/A'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Time">
+              {selectedLog.timeFrom && selectedLog.timeTo
+                ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+                : 'N/A'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Date Required">
+              {selectedLog.dateRequired || 'N/A'}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
     </Content>
-    
   );
+};
+
   return (
     <Layout style={{ minHeight: "100vh"}}>
 <Tabs
@@ -656,7 +664,7 @@ const renderProcessedTab = () => (
           Step 2: Processed
         </>
       ),
-      children: renderProcessedTab(),
+      children: <ProcessedTab />,
     },
   ]}
 />

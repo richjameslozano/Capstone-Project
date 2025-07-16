@@ -411,8 +411,106 @@ function getConditionSummary(conditionsArray) {
     });
   };
 
+  // const handleDeploy = async () => {
+  //   const userId = localStorage.getItem("userId");
+  //   const userName = localStorage.getItem("userName");
+
+  //   let requestorAccountId = selectedApprovedRequest.accountId;
+
+  //   try {
+  //     // Fallback: if accountId is missing, fetch it using userId
+  //     if (!requestorAccountId && selectedApprovedRequest.accountId) {
+      
+
+  //       const accountsQuery = query(
+  //         collection(db, "accounts"),
+  //         where("accountId", "==", selectedApprovedRequest.accountId)
+  //       );
+
+  //       const accountsSnapshot = await getDocs(accountsQuery);
+  //       if (!accountsSnapshot.empty) {
+  //         requestorAccountId = accountsSnapshot.docs[0].accountId;
+   
+
+  //       } else {
+  //         throw new Error("No account found for userId");
+  //       }
+  //     }
+
+  //     if (!requestorAccountId) {
+      
+  //       alert("Cannot update user request log. accountId is missing.");
+  //       return;
+  //     }
+
+  //     // 1. Update status in borrowcatalog
+  //     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+  //     await updateDoc(docRef, {
+  //       status: "Deployed",
+  //     });
+
+  //     const mainItemName = selectedApprovedRequest.requestList?.[0]?.itemName || "Item";
+  //     const deployMessage = `Deployed "${mainItemName}" to ${selectedApprovedRequest.userName} in ${selectedApprovedRequest.room}`;
+
+  //     // 2. Log the activity
+  //     await logRequestOrReturn(userId, userName, deployMessage, {
+  //       requestId: selectedApprovedRequest.id,
+  //       status: "Deployed",
+  //       itemName: mainItemName,
+  //       userDeployedTo: selectedApprovedRequest.userName,
+  //     });
+
+  //     // 3. Update userrequestlog
+  //     const userRequestQuery = query(
+  //     collection(db, `accounts/${requestorAccountId}/userrequestlog`),
+  //     // where("dateRequired", "==", selectedApprovedRequest.dateRequired)
+  //     );
+
+  //     const userRequestSnapshot = await getDocs(userRequestQuery);
+     
+
+  //     for (const docSnap of userRequestSnapshot.docs) {
+  //       const docData = docSnap.data();
+  //       let hasMatchingItem = false;
+
+  //       docData.requestList?.forEach(async (item) => {
+  //         const selectedItem = selectedApprovedRequest.requestList?.[0]; 
+  //         const requestorLogData = selectedApprovedRequest;
+
+  //         const matches =
+  //           item.itemName === selectedItem?.itemName &&
+  //           item.itemDetails === selectedItem?.itemDetails &&
+  //           item.selectedItemId === selectedItem?.selectedItemId &&
+  //           item.labRoom === selectedItem?.labRoom &&
+  //           item.quantity === selectedItem?.quantity &&
+  //           docData.program === requestorLogData.program &&
+  //           docData.timeFrom === requestorLogData.timeFrom &&
+  //           docData.timeTo === requestorLogData.timeTo;
+
+
+
+  //         if (matches) {
+  //           hasMatchingItem = true;
+
+  //           await updateDoc(doc(db, `accounts/${requestorAccountId}/userrequestlog/${docSnap.id}`), {
+  //             status: 'Deployed'
+  //           });
+
+           
+  //         } 
+  //       });
+  //     }
+      
+  //     alert("Request successfully deployed!");
+  //     setIsApprovedModalVisible(false);
+
+  //   } catch (error) {
+  //     alert("Deployment failed. Check console for details.");
+  //   }
+  // };
+
   const handleDeploy = async () => {
-  
+    console.log("🚀 Selected Record:", selectedApprovedRequest);
 
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName");
@@ -422,7 +520,7 @@ function getConditionSummary(conditionsArray) {
     try {
       // Fallback: if accountId is missing, fetch it using userId
       if (!requestorAccountId && selectedApprovedRequest.accountId) {
-      
+        console.warn("⚠️ accountId missing. Trying to fetch via userId...");
 
         const accountsQuery = query(
           collection(db, "accounts"),
@@ -432,15 +530,14 @@ function getConditionSummary(conditionsArray) {
         const accountsSnapshot = await getDocs(accountsQuery);
         if (!accountsSnapshot.empty) {
           requestorAccountId = accountsSnapshot.docs[0].accountId;
-   
-
+          console.log("✅ accountId fetched:", requestorAccountId);
         } else {
           throw new Error("No account found for userId");
         }
       }
 
       if (!requestorAccountId) {
-      
+        console.error("❌ Cannot update userrequestlog: accountId is missing");
         alert("Cannot update user request log. accountId is missing.");
         return;
       }
@@ -462,21 +559,34 @@ function getConditionSummary(conditionsArray) {
         userDeployedTo: selectedApprovedRequest.userName,
       });
 
-      // 3. Update userrequestlog
+      // ✅ 3. Add to historylog subcollection of the user
+      await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
+        action: "Deployed",
+        userName: userName,
+        timestamp: serverTimestamp(),
+        requestList: selectedApprovedRequest.requestList || [],
+        program: selectedApprovedRequest.program,
+        room: selectedApprovedRequest.room,
+        dateRequired: selectedApprovedRequest.dateRequired,
+        timeFrom: selectedApprovedRequest.timeFrom,
+        timeTo: selectedApprovedRequest.timeTo,
+      });
+
+      // 4. Update userrequestlog
       const userRequestQuery = query(
-      collection(db, `accounts/${requestorAccountId}/userrequestlog`),
-      // where("dateRequired", "==", selectedApprovedRequest.dateRequired)
+        collection(db, `accounts/${requestorAccountId}/userrequestlog`)
+        // where("dateRequired", "==", selectedApprovedRequest.dateRequired)
       );
 
       const userRequestSnapshot = await getDocs(userRequestQuery);
-     
+      console.log("📄 userrequestlog found:", userRequestSnapshot.docs.length);
 
       for (const docSnap of userRequestSnapshot.docs) {
         const docData = docSnap.data();
         let hasMatchingItem = false;
 
         docData.requestList?.forEach(async (item) => {
-          const selectedItem = selectedApprovedRequest.requestList?.[0]; 
+          const selectedItem = selectedApprovedRequest.requestList?.[0];
           const requestorLogData = selectedApprovedRequest;
 
           const matches =
@@ -489,28 +599,39 @@ function getConditionSummary(conditionsArray) {
             docData.timeFrom === requestorLogData.timeFrom &&
             docData.timeTo === requestorLogData.timeTo;
 
-
+          console.log("🔍 Comparing item:");
+          console.log("  itemName:", item.itemName, "==", selectedItem?.itemName);
+          console.log("  itemDetails:", item.itemDetails, "==", selectedItem?.itemDetails);
+          console.log("  selectedItemId:", item.selectedItemId, "==", selectedItem?.selectedItemId);
+          console.log("  labRoom:", item.labRoom, "==", selectedItem?.labRoom);
+          console.log("  quantity:", item.quantity, "==", selectedItem?.quantity);
+          console.log("  program:", docData.program, "==", requestorLogData.program);
+          console.log("  timeFrom:", docData.timeFrom, "==", requestorLogData.timeFrom);
+          console.log("  timeTo:", docData.timeTo, "==", requestorLogData.timeTo);
+          console.log("  ➤ Matches:", matches);
 
           if (matches) {
             hasMatchingItem = true;
 
-            await updateDoc(doc(db, `accounts/${requestorAccountId}/userrequestlog/${docSnap.id}`), {
-              status: 'Deployed'
-            });
+            await updateDoc(
+              doc(db, `accounts/${requestorAccountId}/userrequestlog/${docSnap.id}`),
+              {
+                status: "Deployed",
+              }
+            );
 
-           
-          } 
+            console.log("✅ userrequestlog updated to 'Deployed'");
+          }
         });
       }
-      
+
       alert("Request successfully deployed!");
       setIsApprovedModalVisible(false);
-
     } catch (error) {
+      console.error("❌ Error during deployment:", error.message || error);
       alert("Deployment failed. Check console for details.");
     }
   };
-
 
   const handleApprove = async () => {
     try {
