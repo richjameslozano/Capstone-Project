@@ -972,10 +972,10 @@ export default function InventoryScreen({ navigation }) {
         </ScrollView>
 
         <View style={{left: 7, flexDirection: 'row', gap: 5, position: 'absolute', bottom: 5, right: 7, flex: 1}}>
-          <TouchableOpacity style={styles.addDraft}>
+          {/* <TouchableOpacity style={styles.addDraft}>
             <Icon name='file-document-edit-outline' size={15} color='#395a7f'/>
             <Text style={{color: '#395a7f', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Add to Drafts</Text>
-            </TouchableOpacity>
+          </TouchableOpacity> */}
           <TouchableOpacity style={styles.proceedBtn} onPress={() => handleNext()}>
             <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Next</Text>
             <Icon2 name='chevron-forward' color='#fff' size={15}/>

@@ -424,11 +424,11 @@ const boldLabel = {
           <Text>Select All</Text>
           </View>
 
-          <TouchableOpacity onPress={handleSaveDraft}  style={{width: '50%', backgroundColor: '#a3cae9', justifyContent:'center', alignItems: 'center'}}>
+          {/* <TouchableOpacity onPress={handleSaveDraft}  style={{width: '50%', backgroundColor: '#a3cae9', justifyContent:'center', alignItems: 'center'}}>
             <Text style={styles.requestButtonText}>
               Add to Drafts
             </Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
         
 
