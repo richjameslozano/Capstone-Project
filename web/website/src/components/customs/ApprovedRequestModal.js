@@ -562,7 +562,7 @@ function getConditionSummary(conditionsArray) {
       // ✅ 3. Add to historylog subcollection of the user
       await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
         action: "Deployed",
-        userName: userName,
+        userName: selectedApprovedRequest.userName,
         timestamp: serverTimestamp(),
         requestList: selectedApprovedRequest.requestList || [],
         program: selectedApprovedRequest.program,
@@ -570,6 +570,7 @@ function getConditionSummary(conditionsArray) {
         dateRequired: selectedApprovedRequest.dateRequired,
         timeFrom: selectedApprovedRequest.timeFrom,
         timeTo: selectedApprovedRequest.timeTo,
+        approvedBy: userName || "N/A",
       });
 
       // 4. Update userrequestlog
