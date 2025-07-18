@@ -51,6 +51,7 @@ import CapexList from './admin/CapexList';
 import LabRoomQR from './admin/LabRoomQR';
 import PrivacyPolicy from './PrivacyPolicy';
 import ApprovalRequest from './admin/ApprovalRequest';
+import RestockRequest from './admin/RestockRequest';
 import './styles/LayoutMain.css'
 import { Spin } from 'antd';
 
@@ -216,14 +217,19 @@ const shouldShowSpinner = useMemo(() => {
         setPageTitle("Capex Request List");
         break;
 
-    case "/main/lab-room":
+      case "/main/lab-room":
         setSelectedKey("19");
         setPageTitle("Lab Room Details");
         break;
 
-    case "/main/approval-requeest":
+      case "/main/approval-requeest":
         setSelectedKey("20");
         setPageTitle("Approval Request");
+        break;
+      
+      case "/main/restock-requests":
+        setSelectedKey("21");
+        setPageTitle("Restock Request");
         break;
 
       default:
@@ -301,180 +307,181 @@ const shouldShowSpinner = useMemo(() => {
 
 
   const adminMenuItems = [
-    {
-      key: 'faculty-panel',
-      icon: <UserOutlined />,
-      label: 'Faculty Panel',
-      children: [
-        {
-          key: "/main/requisition",
-          icon: <FileDoneOutlined />,
-          label: "Requisition",
-        },
-                {
-          key: "/main/orders",
-          icon: <ShoppingCartOutlined />,
-          label: "Orders",
-        },
-        {
-          key: "/main/return-items",
-          icon: <RollbackOutlined />,
-          label: "Return Items",
-        },
-
-      ],
-    },
-    {
-      key: 'admin-panel',
-      icon: <UserSwitchOutlined />,
-      label: 'Admin Panel',
-      children: [
-        {
-          key: "/main/dashboard",
-          icon: <DashboardOutlined />,
-          label: "Dashboard",
-        },
-        {
-          key: "/main/inventory",
-          icon: <UnorderedListOutlined />,
-          label: "Inventory",
-        },
-        {
-          key: "/main/pending-request",
-          icon: <FileTextOutlined />,
-          label: "Pending Requests",
-        },
-        // {
-        //   key: "/main/borrow-catalog",
-        //   icon: <ShoppingOutlined />,
-        //   label: "Borrow Catalog",
-        // },
-        {
-          key: "/main/approval-request",
-          icon: <ShoppingOutlined />,
-          label: "Approval Request",
-        },
-        {
-          key: "/main/request-log",
-          icon: <DatabaseOutlined />,
-          label: "Request Log",
-        },
-        {
-          key: "/main/capex-request-list",
-          icon: <DollarCircleOutlined />,
-          label: "Capex Request List",
-        },
-        {
-          key: "/main/lab-room",
-          icon: <HomeOutlined />,
-          label: "Stock Room Details",
-        },
-      ],
-    },
-    {
-      key: "/main/admin-activity-log",
-      icon: <HistoryOutlined />,
-      label: "Activity Log",
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Sign Out",
-      danger: true,
-    },
-  ];
-
-  const superUserMenuItems = [
-    {
-      key: "/main/dashboard",
-      icon: <DashboardOutlined />,
-      label: "Dashboard",
-    },
-    {
-      key: "/main/inventory",
-      icon: <UnorderedListOutlined />,
-      label: "Inventory",
-    },
-    {
-      key: "/main/pending-request",
-      icon: <FileTextOutlined />,
-      label: "Pending Requests",
-    },
-    {
-      key: "/main/borrow-catalog",
-      icon: <AppstoreOutlined />,
-      label: "Borrow Catalog",
-    },
-    {
-      key: "/main/admin-activity-log",
-      icon: <HistoryOutlined />,
-      label: "Activity Log",
-    },
-    {
-      key: "/main/request-log",
-      icon: <HistoryOutlined />,
-      label: "Request Log",
-    },
   {
-      key: "/main/lab-room",
-      icon: <HistoryOutlined />,
-      label: "Stock Room Details",
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Sign Out",
-      danger: true,
-    },
-  ];
+    key: 'faculty-panel',
+    icon: <UserOutlined />,
+    label: 'Faculty Panel',
+    children: [
+      {
+        key: "/main/requisition",
+        icon: <FileDoneOutlined />,
+        label: "Requisition",
+      },
+      {
+        key: "/main/orders",
+        icon: <ShoppingCartOutlined />,
+        label: "Orders",
+      },
+      {
+        key: "/main/return-items",
+        icon: <RollbackOutlined />,
+        label: "Return Items",
+      },
+    ],
+  },
+  {
+    key: 'admin-panel',
+    icon: <UserSwitchOutlined />,
+    label: 'Admin Panel',
+    children: [
+      {
+        key: "/main/dashboard",
+        icon: <DashboardOutlined />,
+        label: "Dashboard",
+      },
+      {
+        key: "/main/inventory",
+        icon: <UnorderedListOutlined />,
+        label: "Inventory",
+      },
+      {
+        key: "/main/pending-request",
+        icon: <FileTextOutlined />,
+        label: "Pending Requests",
+      },
+      {
+        key: "/main/approval-request",
+        icon: <ShoppingOutlined />,
+        label: "Approval Request",
+      },
+      {
+        key: "/main/request-log",
+        icon: <DatabaseOutlined />,
+        label: "Request Log",
+      },
+      {
+        key: "/main/capex-request-list",
+        icon: <DollarCircleOutlined />,
+        label: "Capex Request List",
+      },
+      {
+        key: "/main/lab-room",
+        icon: <HomeOutlined />,
+        label: "Stock Room Details",
+      },
+      
+    ],
+  },
+  {
+    key: "/main/admin-activity-log",
+    icon: <HistoryOutlined />,
+    label: "Activity Log",
+  },
+  {
+    key: "logout",
+    icon: <LogoutOutlined />,
+    label: "Sign Out",
+    danger: true,
+  },
+];
 
-  const userMenuItems = [
-    {
-      key: "/main/requisition",
-      icon: <FileDoneOutlined />,
-      label: "Requisition",
-    },
-    {
-      key: "/main/search-items",
-      icon: <SearchOutlined/>,
-      label: "Search Items",
-    },
-    {
-      key: "/main/orders",
-      icon: <ShoppingCartOutlined />,
-      label: "Orders",      
-    },
-    {
-      key: "/main/return-items",
-      icon: <RollbackOutlined />,
-      label: "Return Items",
-    },
-        {
-      key: "/main/capex-request",
-      icon: <DollarCircleOutlined />,
-      label: "Capex Request",
-    },
-        {
-      key: "/main/activity-log",
-      icon: <ClockCircleOutlined />,
-      label: "Activity Log",
-    },
-    {
-      key: "logout",
-      icon: <LogoutOutlined />,
-      label: "Sign Out",
-      danger: true,
-    },
-  ];
+const superUserMenuItems = [
+  {
+    key: "/main/dashboard",
+    icon: <DashboardOutlined />,
+    label: "Dashboard",
+  },
+  {
+    key: "/main/inventory",
+    icon: <UnorderedListOutlined />,
+    label: "Inventory",
+  },
+  {
+    key: "/main/pending-request",
+    icon: <FileTextOutlined />,
+    label: "Pending Requests",
+  },
+  {
+    key: "/main/borrow-catalog",
+    icon: <AppstoreOutlined />,
+    label: "Borrow Catalog",
+  },
+  {
+    key: "/main/admin-activity-log",
+    icon: <HistoryOutlined />,
+    label: "Activity Log",
+  },
+  {
+    key: "/main/request-log",
+    icon: <HistoryOutlined />,
+    label: "Request Log",
+  },
+  {
+    key: "/main/lab-room",
+    icon: <HistoryOutlined />,
+    label: "Stock Room Details",
+  },
+  // Add Restock Requests only for admin
+      {
+        key: "/main/restock-requests",
+        icon: <ShoppingCartOutlined />, // You can choose another appropriate icon
+        label: "Restock Requests",
+      },
+  {
+    key: "logout",
+    icon: <LogoutOutlined />,
+    label: "Sign Out",
+    danger: true,
+  },
+];
 
-  const menuItems =
-    role === "super-admin"
-      ? superAdminMenuItems
-      : role === "admin"
-      ? adminMenuItems
-      : role === "super-user"
-      ? superUserMenuItems
-      : userMenuItems;
+const userMenuItems = [
+  {
+    key: "/main/requisition",
+    icon: <FileDoneOutlined />,
+    label: "Requisition",
+  },
+  {
+    key: "/main/search-items",
+    icon: <SearchOutlined />,
+    label: "Search Items",
+  },
+  {
+    key: "/main/orders",
+    icon: <ShoppingCartOutlined />,
+    label: "Orders",
+  },
+  {
+    key: "/main/return-items",
+    icon: <RollbackOutlined />,
+    label: "Return Items",
+  },
+  {
+    key: "/main/capex-request",
+    icon: <DollarCircleOutlined />,
+    label: "Capex Request",
+  },
+  {
+    key: "/main/activity-log",
+    icon: <ClockCircleOutlined />,
+    label: "Activity Log",
+  },
+  {
+    key: "logout",
+    icon: <LogoutOutlined />,
+    label: "Sign Out",
+    danger: true,
+  },
+];
+
+const menuItems =
+  role === "super-admin"
+    ? superAdminMenuItems
+    : role === "admin"
+    ? adminMenuItems // Restock Requests is visible only for admin
+    : role === "super-user"
+    ? superUserMenuItems
+    : userMenuItems;
 
 const SIDEBAR_WIDTH = 250;
 const COLLAPSED_WIDTH = isMobile ? 0 : 80;
@@ -594,7 +601,9 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               <Route path="/request-log" element={<RequestLog />} />
               <Route path="/admin-activity-log" element={<AdminActivityLog />} />
               <Route path="/lab-room" element={<LabRoomQR/>} />
+              <Route path="/main/restock-requests" element={<RestockRequest />} />
             </Route>
+
 
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/capex-request-list" element={<CapexList/>} />

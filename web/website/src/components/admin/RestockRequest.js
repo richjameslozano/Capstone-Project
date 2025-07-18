@@ -1,0 +1,171 @@
+import React, { useState, useEffect, Text} from "react";
+import { Layout, Row, Col, Typography, Table, Modal, Button, Select, Spin } from "antd";
+import { db } from "../../backend/firebase/FirebaseConfig";
+import { collection, onSnapshot } from "firebase/firestore";
+import jsPDF from "jspdf";
+import 'jspdf-autotable';
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
+
+const { Content } = Layout;
+const { Title } = Typography;
+const { Option } = Select;
+
+const RestockRequest = () => {
+  const [restockRequests, setRestockRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filterStatus, setFilterStatus] = useState(null);
+  const [filterDepartment, setFilterDepartment] = useState(null);
+
+  // Fetch restock requests from Firestore
+  useEffect(() => {
+    const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
+      const requests = snapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      console.log("Fetched restock requests:", requests);  // Check the fetched data
+      setRestockRequests(requests);
+      setLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // Filter data based on department and status
+  const filteredData = restockRequests.filter((item) => {
+    const matchesStatus = filterStatus ? item.status === filterStatus : true;
+    const matchesDepartment = filterDepartment ? item.department === filterDepartment : true;
+    return matchesStatus && matchesDepartment;
+  });
+
+  // Export to Excel
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(filteredData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Restock Requests");
+
+    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+    saveAs(data, "Restock_Requests.xlsx");
+  };
+
+  // Generate PDF
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const headers = ["Item Name", "Quantity Needed", "Department", "Status", "Date Created"];
+    const data = filteredData.map((item) => [
+      item.item_name,
+      item.quantity_needed,
+      item.department,
+      item.status,
+      item.created_at.toDate().toLocaleDateString(),
+    ]);
+
+    doc.autoTable({
+      head: [headers],
+      body: data,
+      startY: 40,
+      theme: "grid",
+    });
+    doc.save("Restock_Requests.pdf");
+  };
+
+  // Columns for the table
+  const columns = [
+    {
+      title: "Item Name",
+      dataIndex: "item_name",
+      key: "item_name",
+    },
+    {
+      title: "Quantity Needed",
+      dataIndex: "quantity_needed",
+      key: "quantity_needed",
+    },
+    {
+      title: "Department",
+      dataIndex: "department",
+      key: "department",
+    },
+    {
+      title: "Status",
+      dataIndex: "status",
+      key: "status",
+    },
+    {
+      title: "Date Created",
+      dataIndex: "created_at",
+      key: "created_at",
+      render: (text) => text.toDate().toLocaleDateString(),
+    },
+  ];
+
+  return (
+    <Layout style={{ minHeight: "100vh" }}>
+      <Content style={{ margin: "20px" }}>
+        <Row justify="space-between" align="middle">
+          <Col span={12}>
+            <Title level={2}>Restock Requests</Title>
+            <Text type="secondary">Manage all requests for item restocks here.</Text>
+          </Col>
+          <Col span={12} style={{ textAlign: "right" }}>
+            <Button
+              type="primary"
+              style={{ marginRight: 10 }}
+              onClick={generatePDF}
+            >
+              Export as PDF
+            </Button>
+            <Button type="primary" onClick={exportToExcel}>
+              Export to Excel
+            </Button>
+          </Col>
+        </Row>
+
+        <Row style={{ marginTop: 20 }}>
+          <Col span={6}>
+            <Select
+              style={{ width: "100%" }}
+              placeholder="Filter by Status"
+              onChange={(value) => setFilterStatus(value)}
+            >
+              <Option value={null}>All</Option>
+              <Option value="pending">Pending</Option>
+              <Option value="approved">Approved</Option>
+              <Option value="denied">Denied</Option>
+            </Select>
+          </Col>
+
+          <Col span={6} offset={2}>
+            <Select
+              style={{ width: "100%" }}
+              placeholder="Filter by Department"
+              onChange={(value) => setFilterDepartment(value)}
+            >
+              <Option value={null}>All</Option>
+              {/* Add departments dynamically if needed */}
+              <Option value="SAH">SAH</Option>
+              <Option value="Engineering">Engineering</Option>
+            </Select>
+          </Col>
+        </Row>
+
+        <Spin spinning={loading} tip="Loading...">
+          {filteredData.length > 0 ? (
+            <Table
+              columns={columns}
+              dataSource={filteredData}
+              rowKey="id"
+              style={{ marginTop: 20 }}
+              pagination={{ pageSize: 10 }}
+            />
+          ) : (
+            <Text>No restock requests found.</Text>  // Display message if no data is found
+          )}
+        </Spin>
+      </Content>
+    </Layout>
+  );
+};
+
+export default RestockRequest;

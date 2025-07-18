@@ -330,6 +330,87 @@ const Inventory = () => {
     return () => unsubscribe();
   }, []);
 
+  //RESTOCKING
+  useEffect(() => {
+  const inventoryRef = collection(db, "inventory");
+
+  const unsubscribe = onSnapshot(
+    inventoryRef,
+    async (snapshot) => {
+      setLoading(true); // Start loading
+      try {
+        const batch = writeBatch(db); // Use batch for efficient writes
+
+        const items = await Promise.all(
+          snapshot.docs.map(async (docSnap, index) => {
+            const data = docSnap.data();
+            const docId = docSnap.id;
+            const quantity = Number(data.quantity) || 0;
+            const criticalLevel = Number(data.criticalLevel) || 0;
+            const category = (data.category || "").toLowerCase();
+
+            // Check if item needs restocking
+            if (quantity <= criticalLevel) {
+              await createRestockRequest(data);
+            }
+
+            return {
+              docId,
+              id: index + 1,
+              itemId: data.itemId,
+              item: data.itemName,
+              quantity,
+              criticalLevel,
+              status: data.status,
+              ...data,
+            };
+          })
+        );
+
+        // Commit all updates
+        await batch.commit();
+
+        items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+        setDataSource(items);
+        setCount(items.length);
+
+      } catch (error) {
+        console.error("Error processing inventory snapshot: ", error);
+      } finally {
+        setLoading(false); // Stop loading
+      }
+    },
+    (error) => {
+      console.error("Error fetching inventory: ", error);
+      setLoading(false);
+    }
+  );
+
+  return () => unsubscribe();
+}, []);
+
+const createRestockRequest = async (item) => {
+  try {
+    await addDoc(collection(db, "restock_requests"), {
+      item_name: item.itemName,
+      quantity_needed: item.criticalLevel, // You can use `criticalLevel` as the quantity needed
+      department: item.department,
+      status: 'pending',
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
+    });
+
+    // Optionally, show a notification to the user
+    setNotificationMessage(`${item.itemName} needs restocking. A request has been generated.`);
+    setIsNotificationVisible(true);
+  } catch (error) {
+    console.error("Error creating restock request: ", error);
+    setNotificationMessage("Failed to create restock request.");
+    setIsNotificationVisible(true);
+  }
+};
+
+
   // useEffect(() => {
   //   const fetchInventory = async () => {
   //     try {

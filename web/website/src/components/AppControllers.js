@@ -23,6 +23,7 @@ import RequestLog from './admin/RequestLog';
 import AdminActivityLog from './admin/AdminActivityLog';
 import { TimeoutProvider } from './TimeoutProvider';
 import PrivacyPolicy from './PrivacyPolicy';
+import RestockRequest from './admin/RestockRequest';
 
 
 const AppWrapper = () => {
