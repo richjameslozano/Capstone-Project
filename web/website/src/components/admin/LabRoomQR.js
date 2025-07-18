@@ -18,6 +18,8 @@ const LabRoomQR = () => {
   const [itemSearchTerms, setItemSearchTerms] = useState({});
   const [selectedRoom, setSelectedRoom] = useState(null);
   const [activeTab, setActiveTab] = useState("1"); 
+  const [editingRooms, setEditingRooms] = useState({});
+const [tempRoomNumbers, setTempRoomNumbers] = useState({});
   const qrRefs = useRef({});
   const qrModalRef = useRef(null);
 
@@ -896,45 +898,113 @@ const LabRoomQR = () => {
       {filteredRooms
         .filter(room => room.items && room.items.length > 0)
         .map(room => {
-          const isExpanded = expandedRooms[room.id];
+    const isExpanded = expandedRooms[room.id];
+    const isEditing = editingRooms[room.id];
 
           const filteredItems = room.items.filter(item =>
             item.itemName.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase()) ||
             item.itemDetails.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase()) ||
             item.category.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase())
           );
+return (
+      <div key={room.id} className="labroom-table-wrapper">
+        <div
+          className="labroom-title-wrapper"
+          onClick={() => setExpandedRooms(prev => ({
+            ...prev,
+            [room.id]: !prev[room.id],
+          }))}
+          style={{ display: "flex", alignItems: "center", cursor: "pointer" }}
+        >
+          <h3 className="labroom-title" style={{ margin: 0, display: "flex", alignItems: "center" }}>
+  Room:
 
-          return (
-            <div key={room.id} className="labroom-table-wrapper">
-              <div className="labroom-title-wrapper" onClick={() => toggleRoomExpansion(room.id)}>
-                <h3 className="labroom-title">
-                  Room:
-                  <input
-                    type="number"
-                    value={room.roomNumber}
-                    onChange={(e) => {
-                      const newRoomNumber = e.target.value;
-                      setLabRooms(prev =>
-                        prev.map(r => r.id === room.id ? { ...r, roomNumber: newRoomNumber } : r)
-                      );
-                    }}
-                    style={{ marginLeft: "10px", width: "120px" }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
+  {isEditing ? (
+    <input
+      type="number"
+      value={tempRoomNumbers[room.id] ?? room.roomNumber}
+      onChange={(e) => {
+        const value = e.target.value;
+        setTempRoomNumbers(prev => ({
+          ...prev,
+          [room.id]: value,
+        }));
+      }}
+      onClick={(e) => e.stopPropagation()}
+      style={{
+        marginLeft: "10px",
+        width: "100px",
+        padding: "4px 8px",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        fontSize: "16px",
+      }}
+    />
+  ) : (
+    <span
+      style={{
+        marginLeft: "10px",
+        fontWeight: "500",
+        fontSize: "16px",
+        color: "#333",
+      }}
+    >
+      {room.roomNumber}
+    </span>
+  )}
 
-                  <Button
-                    type="primary"
-                    onClick={(e) => {
-                      e.stopPropagation(); 
-                      setConfirmRoomId(room.id);
-                      setIsConfirmModalVisible(true);
-                    }}
-                    style={{ marginLeft: "10px" }}
-                  >
-                    Save
-                  </Button>
-                  
-                </h3>
+  {isExpanded && isEditing && (
+    <>
+      <Button
+        type="primary"
+        onClick={(e) => {
+          e.stopPropagation();
+          setLabRooms(prev =>
+            prev.map(r =>
+              r.id === room.id
+                ? { ...r, roomNumber: tempRoomNumbers[room.id] }
+                : r
+            )
+          );
+          setEditingRooms(prev => ({ ...prev, [room.id]: false }));
+        }}
+        style={{ marginLeft: "10px" }}
+      >
+        Save
+      </Button>
+
+      <Button
+        onClick={(e) => {
+          e.stopPropagation();
+          setEditingRooms(prev => ({ ...prev, [room.id]: false }));
+          setTempRoomNumbers(prev => ({
+            ...prev,
+            [room.id]: room.roomNumber,
+          }));
+        }}
+        style={{ marginLeft: "6px" }}
+      >
+        Cancel
+      </Button>
+    </>
+  )}
+
+  {isExpanded && !isEditing && (
+    <Button
+      onClick={(e) => {
+        e.stopPropagation();
+        setEditingRooms(prev => ({ ...prev, [room.id]: true }));
+        setTempRoomNumbers(prev => ({
+          ...prev,
+          [room.id]: room.roomNumber,
+        }));
+      }}
+      style={{ marginLeft: "10px" }}
+    >
+      Edit
+    </Button>
+  )}
+</h3>
                 <span className="dropdown-arrow">{isExpanded ? "▲" : "▼"}</span>
               </div>
 
