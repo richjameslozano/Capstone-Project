@@ -18,14 +18,13 @@ const RestockRequest = () => {
   const [filterDepartment, setFilterDepartment] = useState(null);
   const [departmentsAll, setDepartmentsAll] = useState([]);
 
-  // Fetch restock requests from Firestore
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
       const requests = snapshot.docs.map((doc) => ({
         ...doc.data(),
         id: doc.id,
       }));
-      console.log("Fetched restock requests:", requests);  // Check the fetched data
+      console.log("Fetched restock requests:", requests); 
       setRestockRequests(requests);
       setLoading(false);
     });
@@ -35,7 +34,6 @@ const RestockRequest = () => {
   useEffect(() => {
     const departmentsCollection = collection(db, "departments");
 
-    // Only get departments where college == "SAH"
     const q = query(departmentsCollection, where("college", "==", "SAH"));
 
     const unsubscribe = onSnapshot(
@@ -54,14 +52,12 @@ const RestockRequest = () => {
     return () => unsubscribe();
   }, []);
 
-  // Filter data based on department and status
   const filteredData = restockRequests.filter((item) => {
     const matchesStatus = filterStatus ? item.status === filterStatus : true;
     const matchesDepartment = filterDepartment ? item.department === filterDepartment : true;
     return matchesStatus && matchesDepartment;
   });
 
-  // Export to Excel
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(filteredData);
     const workbook = XLSX.utils.book_new();
@@ -72,7 +68,6 @@ const RestockRequest = () => {
     saveAs(data, "Restock_Requests.xlsx");
   };
 
-  // Generate PDF
   const generatePDF = () => {
     const doc = new jsPDF();
     const headers = ["Item Name", "Quantity Needed", "Department", "Status", "Date Created"];
@@ -93,7 +88,6 @@ const RestockRequest = () => {
     doc.save("Restock_Requests.pdf");
   };
 
-  // Columns for the table
   const columns = [
     {
       title: "Item Name",
@@ -186,7 +180,7 @@ const RestockRequest = () => {
               pagination={{ pageSize: 10 }}
             />
           ) : (
-            <Text>No restock requests found.</Text>  // Display message if no data is found
+            <Text>No restock requests found.</Text>  
           )}
         </Spin>
       </Content>
