@@ -421,12 +421,11 @@ const superUserMenuItems = [
     icon: <HistoryOutlined />,
     label: "Stock Room Details",
   },
-  // Add Restock Requests only for admin
-      {
-        key: "/main/restock-requests",
-        icon: <ShoppingCartOutlined />, // You can choose another appropriate icon
-        label: "Restock Requests",
-      },
+  {
+    key: "/main/restock-requests",
+    icon: <ShoppingCartOutlined />,
+    label: "Restock Requests",
+  },
   {
     key: "logout",
     icon: <LogoutOutlined />,
@@ -570,7 +569,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
             borderRadius: borderRadiusLG,
           }}
         >
-<Spin spinning={shouldShowSpinner && loading} tip="Loading..." size="large">
+          <Spin spinning={shouldShowSpinner && loading} tip="Loading..." size="large">
           <Routes>
             
             <Route path="/privacy-policy" element={<PrivacyPolicy />} />
@@ -601,7 +600,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
               <Route path="/request-log" element={<RequestLog />} />
               <Route path="/admin-activity-log" element={<AdminActivityLog />} />
               <Route path="/lab-room" element={<LabRoomQR/>} />
-              <Route path="/main/restock-requests" element={<RestockRequest />} />
+              <Route path="/restock-requests" element={<RestockRequest />} />
             </Route>
 
 
