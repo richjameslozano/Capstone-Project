@@ -1,14 +1,14 @@
-import React, { useState, useEffect, Text} from "react";
+import React, { useState, useEffect} from "react";
 import { Layout, Row, Col, Typography, Table, Modal, Button, Select, Spin } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, query, where } from "firebase/firestore";
 import jsPDF from "jspdf";
 import 'jspdf-autotable';
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 
 const { Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
 const RestockRequest = () => {
@@ -16,6 +16,7 @@ const RestockRequest = () => {
   const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState(null);
   const [filterDepartment, setFilterDepartment] = useState(null);
+  const [departmentsAll, setDepartmentsAll] = useState([]);
 
   // Fetch restock requests from Firestore
   useEffect(() => {
@@ -28,6 +29,28 @@ const RestockRequest = () => {
       setRestockRequests(requests);
       setLoading(false);
     });
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+
+    // Only get departments where college == "SAH"
+    const q = query(departmentsCollection, where("college", "==", "SAH"));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error("Error fetching SAH departments:", error);
+      }
+    );
+
     return () => unsubscribe();
   }, []);
 
@@ -141,11 +164,14 @@ const RestockRequest = () => {
               style={{ width: "100%" }}
               placeholder="Filter by Department"
               onChange={(value) => setFilterDepartment(value)}
+              allowClear
             >
               <Option value={null}>All</Option>
-              {/* Add departments dynamically if needed */}
-              <Option value="SAH">SAH</Option>
-              <Option value="Engineering">Engineering</Option>
+              {departmentsAll.map((dept) => (
+                <Option key={dept.id} value={dept.name}>
+                  {dept.name}
+                </Option>
+              ))}
             </Select>
           </Col>
         </Row>

@@ -369,7 +369,11 @@ const shouldShowSpinner = useMemo(() => {
         icon: <HomeOutlined />,
         label: "Stock Room Details",
       },
-      
+      {
+        key: "/main/restock-requests",
+        icon: <ShoppingCartOutlined />,
+        label: "Restock Requests",
+      },
     ],
   },
   {
@@ -420,11 +424,6 @@ const superUserMenuItems = [
     key: "/main/lab-room",
     icon: <HistoryOutlined />,
     label: "Stock Room Details",
-  },
-  {
-    key: "/main/restock-requests",
-    icon: <ShoppingCartOutlined />,
-    label: "Restock Requests",
   },
   {
     key: "logout",
