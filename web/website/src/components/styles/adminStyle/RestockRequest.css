@@ -1,0 +1,33 @@
+.restock-layout {
+  min-height: 100vh;
+  background-color: #f5f7fa;
+}
+
+.restock-content {
+  margin: 20px;
+}
+
+.restock-header {
+  margin-bottom: 20px;
+}
+
+.export-buttons {
+  text-align: right;
+}
+
+.export-buttons .ant-btn {
+  margin-left: 10px;
+}
+
+.filter-row {
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.filter-select {
+  width: 100%;
+}
+
+.restock-table {
+  margin-top: 20px;
+}

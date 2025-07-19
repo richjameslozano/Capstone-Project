@@ -1,11 +1,22 @@
-import React, { useState, useEffect} from "react";
-import { Layout, Row, Col, Typography, Table, Modal, Button, Select, Spin } from "antd";
+import React, { useState, useEffect } from "react";
+import {
+  Layout,
+  Row,
+  Col,
+  Typography,
+  Table,
+  Modal,
+  Button,
+  Select,
+  Spin,
+} from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot, query, where } from "firebase/firestore";
 import jsPDF from "jspdf";
-import 'jspdf-autotable';
+import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
+import "../styles/adminStyle/RestockRequest.css";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -24,7 +35,7 @@ const RestockRequest = () => {
         ...doc.data(),
         id: doc.id,
       }));
-      console.log("Fetched restock requests:", requests); 
+      console.log("Fetched restock requests:", requests);
       setRestockRequests(requests);
       setLoading(false);
     });
@@ -33,7 +44,6 @@ const RestockRequest = () => {
 
   useEffect(() => {
     const departmentsCollection = collection(db, "departments");
-
     const q = query(departmentsCollection, where("college", "==", "SAH"));
 
     const unsubscribe = onSnapshot(
@@ -118,19 +128,15 @@ const RestockRequest = () => {
   ];
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Content style={{ margin: "20px" }}>
-        <Row justify="space-between" align="middle">
+    <Layout className="restock-layout">
+      <Content className="restock-content">
+        <Row justify="space-between" align="middle" className="restock-header">
           <Col span={12}>
             <Title level={2}>Restock Requests</Title>
             <Text type="secondary">Manage all requests for item restocks here.</Text>
           </Col>
-          <Col span={12} style={{ textAlign: "right" }}>
-            <Button
-              type="primary"
-              style={{ marginRight: 10 }}
-              onClick={generatePDF}
-            >
+          <Col span={12} className="export-buttons">
+            <Button type="primary" onClick={generatePDF}>
               Export as PDF
             </Button>
             <Button type="primary" onClick={exportToExcel}>
@@ -139,10 +145,10 @@ const RestockRequest = () => {
           </Col>
         </Row>
 
-        <Row style={{ marginTop: 20 }}>
+        <Row className="filter-row">
           <Col span={6}>
             <Select
-              style={{ width: "100%" }}
+              className="filter-select"
               placeholder="Filter by Status"
               onChange={(value) => setFilterStatus(value)}
             >
@@ -155,7 +161,7 @@ const RestockRequest = () => {
 
           <Col span={6} offset={2}>
             <Select
-              style={{ width: "100%" }}
+              className="filter-select"
               placeholder="Filter by Department"
               onChange={(value) => setFilterDepartment(value)}
               allowClear
@@ -176,11 +182,11 @@ const RestockRequest = () => {
               columns={columns}
               dataSource={filteredData}
               rowKey="id"
-              style={{ marginTop: 20 }}
+              className="restock-table"
               pagination={{ pageSize: 10 }}
             />
           ) : (
-            <Text>No restock requests found.</Text>  
+            <Text>No restock requests found.</Text>
           )}
         </Spin>
       </Content>
