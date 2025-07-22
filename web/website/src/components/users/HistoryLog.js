@@ -239,11 +239,11 @@ const sanitizeInput = (input) =>
   };
 
   const columns = [
-    {
-      title: "Request ID",
-      dataIndex: "id",
-      key: "id",
-    },
+    // {
+    //   title: "Request ID",
+    //   dataIndex: "id",
+    //   key: "id",
+    // },
     {
       title: "Requisition Date",
       dataIndex: "dateRequested",
@@ -425,7 +425,7 @@ const sanitizeInput = (input) =>
             <div className="activity-header">
       </div>
  
-          <Input
+        {/* <Input
           placeholder="Search requests..."
           prefix={<SearchOutlined />}
           className="pending-search"
@@ -436,9 +436,7 @@ const sanitizeInput = (input) =>
             e.target.value = sanitized;
             setSearchQuery(sanitized);
           }}
-        />
-
-
+        /> */}
       
         {loading ? (
           <Spin size="large" />
@@ -504,6 +502,7 @@ const sanitizeInput = (input) =>
           </>
         )}
       </Modal>
+
       <Modal
         title="Confirm Cancellation"
         open={isCancelVisible}
@@ -536,7 +535,7 @@ const ProcessedTab = () => {
   return (
     <Content className="activity-content">
       <div className="activity-controls">
-        <Select
+        {/* <Select
           value={actionFilter}
           onChange={(value) => setActionFilter(value)}
           className="activity-filter"
@@ -549,6 +548,7 @@ const ProcessedTab = () => {
           <Option value="Cancelled a request">Request Cancelled</Option>
           <Option value="Deployed">Deployed</Option>
         </Select>
+
         <Input
           placeholder="Search"
           prefix={<SearchOutlined />}
@@ -559,7 +559,7 @@ const ProcessedTab = () => {
             e.target.value = sanitized;
             setSearchQuery(sanitized);
           }}
-        />
+        /> */}
       </div>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
