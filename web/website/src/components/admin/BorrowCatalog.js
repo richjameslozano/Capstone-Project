@@ -26,7 +26,7 @@ const BorrowCatalog = () => {
     'Deployed',
     'For Release',
     'Released',
-    'Expired',
+    'Unclaimed',
   ];
 
     // useEffect(() => {
