@@ -155,7 +155,7 @@ const BorrowCatalogScreen = () => {
       case "Released":
         return "#0e7490"; // teal
 
-      case "Expired":
+      case "Unclaimed":
       case "For Expired":
         return "black"; // amber
 
@@ -217,7 +217,7 @@ const BorrowCatalogScreen = () => {
       />
   <View  style={styles.statusFilterContainer}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        {['All', 'Borrowed', 'Returned', 'Returned Approved', 'Deployed', 'For Release', 'Released', 'Expired'].map((status) => (
+        {['All', 'Borrowed', 'Returned', 'Returned Approved', 'Deployed', 'For Release', 'Released', 'Unclaimed'].map((status) => (
           <TouchableOpacity
             key={status}
             style={[
