@@ -3601,6 +3601,130 @@ try {
     },
   ];  
 
+  const columnsRejection1 = [
+    {
+      title: "Item Name",
+      dataIndex: "itemName",
+      key: "itemName",
+    },
+    {
+      title: "Item Description",
+      dataIndex: "itemDetails",
+      key: "itemDetails",
+    },
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   key: "quantity",
+    // },
+    // {
+    //   title: "Quantity",
+    //   dataIndex: "quantity",
+    //   key: "quantity",
+    //   render: (text, record, index) => {
+    //     const value = editableItems[index]?.quantity ?? "";
+    //     const maxQuantity = editableItems[index]?.maxQuantity ?? Infinity;
+
+    //     return (
+    //       <Tooltip title={`Max allowed: ${maxQuantity}`}>
+    //         <Input
+    //           type="number"
+    //           min={1}
+    //           max={maxQuantity}
+    //           value={value}
+    //           onChange={(e) => {
+    //             const inputValue = e.target.value;
+
+    //             if (inputValue === "") {
+    //               const updatedItems = [...editableItems];
+    //               updatedItems[index] = {
+    //                 ...updatedItems[index],
+    //                 quantity: "",
+    //               };
+    //               setEditableItems(updatedItems);
+    //               return;
+    //             }
+
+    //             const parsed = parseInt(inputValue, 10);
+    //             if (!isNaN(parsed) && parsed <= maxQuantity) {
+    //               const updatedItems = [...editableItems];
+    //               updatedItems[index] = {
+    //                 ...updatedItems[index],
+    //                 quantity: parsed,
+    //               };
+    //               setEditableItems(updatedItems);
+    //             }
+    //           }}
+    //           onBlur={() => {
+    //             const updatedItems = [...editableItems];
+    //             let value = updatedItems[index]?.quantity;
+
+    //             if (value === "" || isNaN(value) || value < 1) {
+    //               value = 1;
+    //             }
+
+    //             updatedItems[index] = {
+    //               ...updatedItems[index],
+    //               quantity: value,
+    //             };
+    //             setEditableItems(updatedItems);
+    //           }}
+    //         />
+    //       </Tooltip>
+    //     );
+    //   }
+    // },
+    {
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      // render: (text, record) => (
+      //   <Input
+      //     type="number"
+      //     min={1}
+      //     value={editableItems?.[record.selectedItemId]?.quantity ?? text}
+      //     onChange={(e) => {
+      //       const value = e.target.value;
+      //       const updatedValue = value === "" ? "" : Math.max(1, parseInt(value));
+
+      //       setEditableItems((prev) => ({
+      //         ...prev,
+      //         [record.selectedItemId]: {
+      //           ...record,
+      //           quantity: updatedValue,
+      //         },
+      //       }));
+      //     }}
+      //   />
+      // )
+    },
+    {
+      title: "Reason for Rejection",
+      key: "reason",
+      render: (_, record, index) => {
+        const itemKey = `${record.selectedItemId}-${index}`;
+        return (
+          <Select
+            style={{ width: 200 }}
+            placeholder="Select reason"
+            value={rejectionReasons[itemKey]}
+            onChange={(value) => {
+              setRejectionReasons((prev) => ({
+                ...prev,
+                [itemKey]: value,
+              }));
+            }}
+          >
+            <Option value="Out of stock">Out of stock</Option>
+            <Option value="Not allowed">Not allowed</Option>
+            <Option value="Duplicate request">Duplicate request</Option>
+            <Option value="Invalid usage">Invalid usage</Option>
+          </Select>
+        );
+      },
+    },
+  ];  
+
   const columns = [
     {
       title: "Check",
@@ -4100,7 +4224,7 @@ useEffect(() => {
           >
             <Table
               dataSource={pendingApprovalData?.uncheckedItems || []}
-              columns={columnsRejection}
+              columns={columnsRejection1}
               rowKey={(record, index) => `${record.selectedItemId}-${index}`}
               pagination={false}
             />
@@ -4162,7 +4286,7 @@ useEffect(() => {
             <h3 style={{ marginTop: 24 }}>❌ Rejected Items</h3>
             <Table
               dataSource={pendingApprovalData?.uncheckedItems || []}
-              columns={columnsRejection} 
+              columns={columnsRejection1} 
               rowKey={(record, index) => `${record.selectedItemId}-${index}`}
               pagination={false}
             />
