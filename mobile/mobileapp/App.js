@@ -172,10 +172,6 @@ const CustomDrawerContent = ({ navigation }) => {
   );
 };
 
-
-
-
-
 const CustomAdminDrawerContent = ({ navigation }) => {
   const { user, logout } = useAuth();  
   const [profileImage, setProfileImage] = useState(null);

@@ -14,6 +14,7 @@ import TermsModal from './customs/TermsModal';
 import {Animated} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import { registerForPushNotificationsAsync } from '../utils/RegisterPushToken';
 
 export default function LoginScreen({navigation}) {
   const [showPassword, setShowPassword] = useState(false);
@@ -310,12 +311,27 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               case "admin1":
               case "admin2":
               case "admin":
+                try {
+                  await registerForPushNotificationsAsync(userDoc.id);
+                  console.log("Push token registered.");
+
+                } catch (e) {
+                  console.log("Push token registration failed:", e);
+                }
+
                 navigation.replace("Admin");
-                console.log("Login Succesfull!")
+                console.log("Login Successful!");
                 break;
-  
 
               case "super-user":
+                try {
+                  await registerForPushNotificationsAsync(userDoc.id);
+                  console.log("Push token registered.");
+                  
+                } catch (e) {
+                  console.log("Push token registration failed:", e);
+                }
+
                 navigation.replace("Super-User");
                 console.log("Login Succesfull!")
                 break;
