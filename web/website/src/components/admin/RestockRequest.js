@@ -99,33 +99,35 @@ const RestockRequest = () => {
   };
 
   const columns = [
-    {
-      title: "Item Name",
-      dataIndex: "item_name",
-      key: "item_name",
+  {
+    title: "Item Name",
+    dataIndex: "item_name",
+    key: "item_name",
+  },
+  {
+    title: "Quantity Needed",
+    dataIndex: "quantity_needed",
+    key: "quantity_needed",
+  },
+  {
+    title: "Department",
+    dataIndex: "department",
+    key: "department",
+  },
+  {
+    title: "Status",
+    dataIndex: "status",
+    key: "status",
+  },
+  {
+    title: "Date Created",
+    dataIndex: "created_at",
+    key: "created_at",
+    render: (text) => {
+      return text ? text.toDate().toLocaleDateString() : "N/A";
     },
-    {
-      title: "Quantity Needed",
-      dataIndex: "quantity_needed",
-      key: "quantity_needed",
-    },
-    {
-      title: "Department",
-      dataIndex: "department",
-      key: "department",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-    },
-    {
-      title: "Date Created",
-      dataIndex: "created_at",
-      key: "created_at",
-      render: (text) => text.toDate().toLocaleDateString(),
-    },
-  ];
+  },
+];
 
   return (
     <Layout className="restock-layout">
