@@ -1004,7 +1004,7 @@ const Requisition = () => {
   //   }
   // };  
 
-    const finalizeRequest = async () => {
+  const finalizeRequest = async () => {
     let isValid = true;
     let idsToRemove = [];
   
@@ -1248,6 +1248,49 @@ const Requisition = () => {
   
           setNotificationMessage("Requisition sent successfully!");
           setIsNotificationVisible(true);
+
+         // 1. Get all push tokens (e.g., only for admins)
+          const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+          const tokensToNotify = [];
+
+          pushTokenSnapshot.forEach((doc) => {
+            const data = doc.data();
+            // if (data?.expoPushToken) {
+            //   tokensToNotify.push(data.expoPushToken);
+            // }
+
+            if (
+              data?.expoPushToken &&
+              (data.role === "admin" || data.role === "admin1" || data.role === "admin2")
+            ) {
+              tokensToNotify.push(data.expoPushToken);
+            }
+
+          });
+
+          console.log("Tokens to notify:", tokensToNotify);
+
+          // 2. Send push notifications via Expo
+          for (const token of tokensToNotify) {
+            const response = await fetch("https://exp.host/--/api/v2/push/send", {
+              method: "POST",
+              headers: {
+                Accept: "application/json",
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                to: token,
+                sound: "default",
+                title: "New Request",
+                body: `New requisition submitted by ${userName}`,
+                data: { type: "new-request" },
+              }),
+            });
+
+            const result = await response.json();
+            console.log("Expo Push Response:", result);
+          }
+
           setIsFinalizeVisible(false);
   
           clearTableData();
