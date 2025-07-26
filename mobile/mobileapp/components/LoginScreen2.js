@@ -648,7 +648,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 
                 <Text style={styles.label}>Email:<Text style={{color:'red'}}>*</Text></Text>
               <Animated.View style={[styles.animatedInputContainer, { borderColor: emailBorderColor, width: '100%' }]}>
-                <Input
+                {/* <Input
                   placeholder="Enter Email Address (NU account)"
                   value={signUpEmail}
                   onChangeText={(text) => {
@@ -670,7 +670,33 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 onBlur={() => handleBlur('email')}
                   inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
                 inputStyle={styles.inputText}
+                /> */}
+
+                <Input
+                  placeholder="Enter Email Address (NU account)"
+                  value={signUpEmail}
+                  onChangeText={(text) => {
+                    const cleanedText = text.replace(/\s/g, "");
+                    setSignUpEmail(cleanedText);
+
+                    const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
+                    const parts = cleanedText.split("@");
+                    const domain = parts.length > 1 ? parts[1] : "";
+
+                    if (!validDomains.includes(domain)) {
+                      setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
+                    } else {
+                      setEmailError("");
+                    }
+                  }}
+                  keyboardType="email-address"
+                  autoCapitalize="none"
+                  onFocus={() => handleFocus('email')}
+                  onBlur={() => handleBlur('email')}
+                  inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]}
+                  inputStyle={styles.inputText}
                 />
+
                 {/* {signUpEmail.length > 0 && !signUpEmail.includes('@') ? (
                 <HelperText type="error" style={{ marginTop: '-25', marginBottom: '10'}}>Enter a valid email address.</HelperText>
                     ) : null} */}
@@ -843,13 +869,24 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
             <View style={{width: '100%', paddingHorizontal: 10}}>
             <Animated.View style={[styles.animatedInputContainer, { borderColor: emailBorderColor, width: '100%' }]}>
-              <Input
+              {/* <Input
                 placeholder="Email"
                 value={email}
                 onChangeText={setEmail}
                 onFocus={() => handleFocus('email')}
                 onBlur={() => handleBlur('email')}
-                inputContainerStyle={styles.inputContainer} // removes underline
+                inputContainerStyle={styles.inputContainer} 
+                inputStyle={styles.inputText}
+                leftIcon={{ type: 'material', name: 'email', color: '#9CA3AF' }}
+              /> */}
+
+              <Input
+                placeholder="Email"
+                value={email}
+                onChangeText={(text) => setEmail(text.replace(/\s/g, ""))}
+                onFocus={() => handleFocus('email')}
+                onBlur={() => handleBlur('email')}
+                inputContainerStyle={styles.inputContainer}
                 inputStyle={styles.inputText}
                 leftIcon={{ type: 'material', name: 'email', color: '#9CA3AF' }}
               />
@@ -857,10 +894,30 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             </Animated.View>
 
             <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%'}]}>
-              <Input
+              {/* <Input
                 placeholder="Password"
                 value={password}
                 onChangeText={setPassword}
+                onFocus={() => handleFocus('password')}
+                onBlur={() => handleBlur('password')}
+                secureTextEntry={!showPassword}
+                inputContainerStyle={styles.inputContainer}
+                inputStyle={styles.inputText}
+                leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
+                rightIcon={
+                  <Icon
+                    type="material"
+                    name={showPassword ? 'visibility' : 'visibility-off'}
+                    color="#9CA3AF"
+                    onPress={() => setShowPassword(!showPassword)}
+                  />
+                }
+              /> */}
+
+              <Input
+                placeholder="Password"
+                value={password}
+                onChangeText={(text) => setPassword(text.replace(/\s/g, ""))}
                 onFocus={() => handleFocus('password')}
                 onBlur={() => handleBlur('password')}
                 secureTextEntry={!showPassword}

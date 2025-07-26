@@ -54,10 +54,20 @@ export default function ForgotPasswordModal({ visible, onClose }) {
           <Text style={styles.modalTitle}>Forgot Password</Text>
           <Text style={styles.modalText}>Enter your email to receive a reset link.</Text>
 
-          <TextInput
+          {/* <TextInput
             label="Email"
             value={forgotPasswordEmail}
             onChangeText={setForgotPasswordEmail}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            mode="outlined"
+            style={styles.input}
+          /> */}
+
+          <TextInput
+            label="Email"
+            value={forgotPasswordEmail}
+            onChangeText={(text) => setForgotPasswordEmail(text.replace(/\s/g, ""))}
             keyboardType="email-address"
             autoCapitalize="none"
             mode="outlined"
