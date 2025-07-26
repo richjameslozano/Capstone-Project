@@ -290,23 +290,7 @@ const Inventory = () => {
     return () => unsubscribe();
   }, []);
 
-  // useEffect(() => {
-  //   const departmentsCollection = collection(db, "departments");
-  //   const unsubscribe = onSnapshot(
-  //     departmentsCollection,
-  //     (querySnapshot) => {
-  //       const deptList = querySnapshot.docs
-  //         .map((doc) => ({ id: doc.id, ...doc.data() }))
-  //         .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-  //       setDepartmentsAll(deptList);
-  //     },
-  //     (error) => {
-  //       console.error("Error fetching departments in real-time: ", error);
-  //     }
-  //   );
 
-  //   return () => unsubscribe();
-  // }, []);
 
   useEffect(() => {
     const departmentsCollection = collection(db, "departments");
@@ -389,26 +373,7 @@ const Inventory = () => {
   return () => unsubscribe();
 }, []);
 
-const createRestockRequest = async (item) => {
-  try {
-    await addDoc(collection(db, "restock_requests"), {
-      item_name: item.itemName,
-      quantity_needed: item.criticalLevel, // You can use `criticalLevel` as the quantity needed
-      department: item.department,
-      status: 'pending',
-      created_at: serverTimestamp(),
-      updated_at: serverTimestamp(),
-    });
 
-    // Optionally, show a notification to the user
-    setNotificationMessage(`${item.itemName} needs restocking. A request has been generated.`);
-    setIsNotificationVisible(true);
-  } catch (error) {
-    console.error("Error creating restock request: ", error);
-    setNotificationMessage("Failed to create restock request.");
-    setIsNotificationVisible(true);
-  }
-};
 
 
   // useEffect(() => {
@@ -571,6 +536,104 @@ const openFullEditModal = (record) => {
 //   }
 // };
 
+//AUTO RESTOCK
+
+useEffect(() => {
+    const inventoryRef = collection(db, "inventory");
+
+    const unsubscribe = onSnapshot(
+      inventoryRef,
+      async (snapshot) => {
+        setLoading(true); // Start loading
+        try {
+          const batch = writeBatch(db); // Use batch for efficient writes
+
+          const items = await Promise.all(
+            snapshot.docs.map(async (docSnap, index) => {
+              const data = docSnap.data();
+              const docId = docSnap.id;
+
+              const quantity = Number(data.quantity) || 0;
+              const criticalLevel = Number(data.criticalLevel) || 0;
+
+              let status = data.status || ""; // base status
+              let newStatus = status;
+
+              // Check if item needs restocking (critical level or out of stock)
+              if (quantity <= criticalLevel) {
+                await createRestockRequest(data);
+              }
+
+              return {
+                docId,
+                id: index + 1,
+                itemId: data.itemId,
+                item: data.itemName,
+                quantity,
+                criticalLevel,
+                status: data.status,
+                ...data,
+              };
+            })
+          );
+
+          // Commit all updates
+          await batch.commit();
+
+          // Update state
+          items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+          setDataSource(items);
+        } catch (error) {
+          console.error("Error processing inventory snapshot: ", error);
+        } finally {
+          setLoading(false); // Stop loading
+        }
+      },
+      (error) => {
+        console.error("Error fetching inventory: ", error);
+        setLoading(false);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
+// Function to automatically create restock requests
+   const createRestockRequest = async (item) => {
+  try {
+    // Check if the item is already in the restock requests list
+    const restockCollection = collection(db, "restock_requests");
+    const q = query(restockCollection, where("item_name", "==", item.itemName), where("status", "==", "pending"));
+
+    const querySnapshot = await getDocs(q);
+
+    if (!querySnapshot.empty) {
+      // If the item already exists in the pending state, prevent adding
+      console.log(`${item.itemName} is already in the restock request list.`);
+      return;
+    }
+
+    // If the item doesn't exist, create a new restock request
+    await addDoc(collection(db, "restock_requests"), {
+      item_name: item.itemName,
+      quantity_needed: item.criticalLevel, // You can use `criticalLevel` as the quantity needed
+      department: item.department,
+      status: 'pending',
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
+    });
+
+    // Optionally, show a notification to the user
+    setNotificationMessage(`${item.itemName} needs restocking. A request has been generated.`);
+    setIsNotificationVisible(true);
+  } catch (error) {
+    console.error("Error creating restock request: ", error);
+    setNotificationMessage("Failed to create restock request.");
+    setIsNotificationVisible(true);
+  }
+};
+
+
+  
 // BACKEND
 const handleFullUpdate = async (values) => {
   try {
