@@ -47,26 +47,28 @@
 import * as Notifications from 'expo-notifications';
 import { getFirestore, doc, setDoc } from 'firebase/firestore';
 import Constants from 'expo-constants';
-import { getAuth } from 'firebase/auth'; // make sure to import this
+import { getAuth } from 'firebase/auth';
 
-export const registerForPushNotificationsAsync = async (userDocId) => {
+export const registerForPushNotificationsAsync = async (userDocId, role) => {
   try {
     console.log("[PushToken] Starting registration...");
 
-    if (!Constants.isDevice) {
-      console.log("[PushToken] Not a real device.");
-      return;
-    }
+    // if (!Constants.isDevice) {
+    //   console.log("[PushToken] Not a real device.");
+    //   return;
+    // }
 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
 
-    if (existingStatus !== 'granted') {
+    if (existingStatus !== "granted") {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
 
-    if (finalStatus !== 'granted') {
+    console.log("[PushToken] Final permission status:", finalStatus);
+
+    if (finalStatus !== "granted") {
       console.log("[PushToken] Permission not granted");
       return;
     }
@@ -75,20 +77,22 @@ export const registerForPushNotificationsAsync = async (userDocId) => {
     console.log("[PushToken] Retrieved token:", token);
 
     const db = getFirestore();
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
+    const currentUser = getAuth().currentUser;
 
-    if (currentUser?.uid && token) {
-      await setDoc(doc(db, 'pushTokens', currentUser.uid), {
+    if (currentUser && token) {
+      await setDoc(doc(db, "pushTokens", currentUser.uid), {
         expoPushToken: token,
-        userDocId: userDocId, // 👈 Store the Firestore account doc ID
+        userDocId,
+        role: role || "user", // <--- Save role
       });
       console.log("[PushToken] Saved to Firestore under UID:", currentUser.uid);
+
     } else {
-      console.log("[PushToken] Missing UID or token");
+      console.log("[PushToken] Missing user or token");
     }
 
     return token;
+
   } catch (error) {
     console.log("[PushToken] Error:", error.message);
   }

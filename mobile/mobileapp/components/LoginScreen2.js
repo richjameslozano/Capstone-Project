@@ -306,13 +306,25 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               userName: userData.name || "User",
               timestamp: serverTimestamp(),
             });
+
+            try {
+              const token = await registerForPushNotificationsAsync(userDoc.id);
+              if (token) {
+                console.log("✅ Push token registered and saved.");
+              } else {
+                console.log("⚠️ Push token registration failed or permission denied.");
+              }
+            } catch (err) {
+              console.error("🔥 Push token registration crashed:", err.message);
+            }
+
     
             switch (role) {
               case "admin1":
               case "admin2":
               case "admin":
                 try {
-                  await registerForPushNotificationsAsync(userDoc.id);
+                  await registerForPushNotificationsAsync(userDoc.id, userData.role);
                   console.log("Push token registered.");
 
                 } catch (e) {
@@ -325,7 +337,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
               case "super-user":
                 try {
-                  await registerForPushNotificationsAsync(userDoc.id);
+                  await registerForPushNotificationsAsync(userDoc.id, userData.role);
                   console.log("Push token registered.");
                   
                 } catch (e) {
