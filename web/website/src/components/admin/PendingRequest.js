@@ -5,6 +5,7 @@ import AppHeader from "../Header";
 import "../styles/adminStyle/PendingRequest.css";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { collection, getDocs, getDoc, doc, addDoc, query, where, deleteDoc,Timestamp, serverTimestamp, onSnapshot, updateDoc, orderBy } from "firebase/firestore";
+import { getFunctions, httpsCallable } from "firebase/functions"
 import { getAuth } from "firebase/auth";
 import RequisitionRequestModal from "../customs/RequisitionRequestModal";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
@@ -736,6 +737,39 @@ try {
             read: false,
             timestamp: serverTimestamp(),
           });
+        }
+
+        // ✅ Send push to the user who submitted the request
+        try {
+          const functions = getFunctions();
+          const sendPush = httpsCallable(functions, "sendPushNotification");
+
+          const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+          const tokensToNotify = [];
+
+          pushTokenSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (
+              data?.expoPushToken &&
+              data.userId === selectedRequest.userId // 👈 This should match the request sender
+            ) {
+              tokensToNotify.push(data.expoPushToken);
+            }
+          });
+
+          for (const token of tokensToNotify) {
+            const payload = {
+              token,
+              title: "Request Update",
+              body: `Your requisition has been rejected.`, // or `rejected` if applicable
+            };
+
+            const response = await sendPush(payload);
+            console.log("✅ Push sent to user:", response.data);
+          }
+
+        } catch (err) {
+          console.error("❌ Push error (admin to user):", err.message || err);
         }
       }
   
@@ -1687,6 +1721,39 @@ try {
             read: false,
             timestamp: serverTimestamp(),
           });
+        }
+    
+        // ✅ Send push to the user who submitted the request
+        try {
+          const functions = getFunctions();
+          const sendPush = httpsCallable(functions, "sendPushNotification");
+
+          const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+          const tokensToNotify = [];
+
+          pushTokenSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (
+              data?.expoPushToken &&
+              data.userId === selectedRequest.userId // 👈 This should match the request sender
+            ) {
+              tokensToNotify.push(data.expoPushToken);
+            }
+          });
+
+          for (const token of tokensToNotify) {
+            const payload = {
+              token,
+              title: "Request Update",
+              body: `Your requisition has been rejected.`, // or `rejected` if applicable
+            };
+
+            const response = await sendPush(payload);
+            console.log("✅ Push sent to user:", response.data);
+          }
+
+        } catch (err) {
+          console.error("❌ Push error (admin to user):", err.message || err);
         }
       }
   
@@ -2967,6 +3034,39 @@ try {
             timestamp: serverTimestamp(),
           });
         }
+
+        // ✅ Send push to the user who submitted the request
+        try {
+          const functions = getFunctions();
+          const sendPush = httpsCallable(functions, "sendPushNotification");
+
+          const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+          const tokensToNotify = [];
+
+          pushTokenSnapshot.forEach((doc) => {
+            const data = doc.data();
+            if (
+              data?.expoPushToken &&
+              data.userId === selectedRequest.userId // 👈 This should match the request sender
+            ) {
+              tokensToNotify.push(data.expoPushToken);
+            }
+          });
+
+          for (const token of tokensToNotify) {
+            const payload = {
+              token,
+              title: "Request Update",
+              body: `Your requisition has been approved.`, // or `rejected` if applicable
+            };
+
+            const response = await sendPush(payload);
+            console.log("✅ Push sent to user:", response.data);
+          }
+
+        } catch (err) {
+          console.error("❌ Push error (admin to user):", err.message || err);
+        }
       }
 
       const consumableItems = enrichedItems.filter(item => item.itemType === "Consumable");
@@ -3022,6 +3122,39 @@ try {
                   read: false,
                   timestamp: serverTimestamp(),
                 });
+              }
+
+              // ✅ Send push to the user who submitted the request
+              try {
+                const functions = getFunctions();
+                const sendPush = httpsCallable(functions, "sendPushNotification");
+
+                const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+                const tokensToNotify = [];
+
+                pushTokenSnapshot.forEach((doc) => {
+                  const data = doc.data();
+                  if (
+                    data?.expoPushToken &&
+                    data.userId === selectedRequest.userId // 👈 This should match the request sender
+                  ) {
+                    tokensToNotify.push(data.expoPushToken);
+                  }
+                });
+
+                for (const token of tokensToNotify) {
+                  const payload = {
+                    token,
+                    title: "Request Update",
+                    body: `Your requisition has been approved.`, // or `rejected` if applicable
+                  };
+
+                  const response = await sendPush(payload);
+                  console.log("✅ Push sent to user:", response.data);
+                }
+
+              } catch (err) {
+                console.error("❌ Push error (admin to user):", err.message || err);
               }
       }
 
