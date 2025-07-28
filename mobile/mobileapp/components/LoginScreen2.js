@@ -311,9 +311,11 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               const token = await registerForPushNotificationsAsync(userDoc.id);
               if (token) {
                 console.log("✅ Push token registered and saved.");
+
               } else {
                 console.log("⚠️ Push token registration failed or permission denied.");
               }
+              
             } catch (err) {
               console.error("🔥 Push token registration crashed:", err.message);
             }
