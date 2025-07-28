@@ -14,6 +14,7 @@ import {
 } from 'react-native';
 import { collection, getDocs, deleteDoc, doc, onSnapshot, Timestamp, setDoc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useAuth } from '../contexts/AuthContext';
 import { useRequestMetadata } from '../contexts/RequestMetadataContext';
 import styles from '../styles/userStyle/RequestListStyle';
@@ -254,6 +255,48 @@ const RequestListScreen = ({}) => {
   
       // Log the "Requested Items" action
       await logRequestOrReturn(user.id, userName, "Requested Items", requestData.filteredMergedData);
+
+      // 🔔 Log to allNotifications
+      await addDoc(collection(db, "allNotifications"), {
+        action: `New requisition submitted by ${userName}`,
+        userId: user.id,
+        userName: userName,
+        read: false,
+        timestamp: serverTimestamp(),
+      });
+
+      // 🔔 Notify admins via push
+      const functions = getFunctions();
+      const sendPush = httpsCallable(functions, "sendPushNotification");
+
+      const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+      const tokensToNotify = [];
+
+      pushTokenSnapshot.forEach((doc) => {
+        const data = doc.data();
+        if (
+          data?.expoPushToken &&
+          ["admin", "admin1", "admin2"].includes(data.role?.toLowerCase())
+        ) {
+          tokensToNotify.push(data.expoPushToken);
+        }
+      });
+
+      for (const token of tokensToNotify) {
+        const payload = {
+          token,
+          title: "New Request",
+          body: `New requisition submitted by ${userName}`,
+        };
+
+        try {
+          const response = await sendPush(payload);
+          console.log("✅ Push sent to:", token, "Response:", response.data);
+          
+        } catch (pushErr) {
+          console.error("❌ Failed to send push to:", token, "Error:", pushErr.message);
+        }
+      }
 
       console.log('Request submitted successfully');
       return true; 
