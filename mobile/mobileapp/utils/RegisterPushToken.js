@@ -83,7 +83,7 @@ export const registerForPushNotificationsAsync = async (userDocId, role) => {
       await setDoc(doc(db, "pushTokens", currentUser.uid), {
         expoPushToken: token,
         userDocId,
-        role: role || "user", // <--- Save role
+        role: role || "User", // <--- Save role
       });
       console.log("[PushToken] Saved to Firestore under UID:", currentUser.uid);
 

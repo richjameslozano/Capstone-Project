@@ -307,44 +307,57 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               timestamp: serverTimestamp(),
             });
 
+            // try {
+            //   const token = await registerForPushNotificationsAsync(userDoc.id);
+            //   if (token) {
+            //     console.log("✅ Push token registered and saved.");
+
+            //   } else {
+            //     console.log("⚠️ Push token registration failed or permission denied.");
+            //   }
+
+            // } catch (err) {
+            //   console.error("🔥 Push token registration crashed:", err.message);
+            // }
+
+            // ✅ Register for push notifications ONCE
             try {
-              const token = await registerForPushNotificationsAsync(userDoc.id);
+              const token = await registerForPushNotificationsAsync(userDoc.id, role); // ⬅️ Pass role here
               if (token) {
                 console.log("✅ Push token registered and saved.");
 
               } else {
                 console.log("⚠️ Push token registration failed or permission denied.");
               }
-              
+
             } catch (err) {
               console.error("🔥 Push token registration crashed:", err.message);
             }
-
     
             switch (role) {
               case "admin1":
               case "admin2":
               case "admin":
-                try {
-                  await registerForPushNotificationsAsync(userDoc.id, userData.role);
-                  console.log("Push token registered.");
+                // try {
+                //   await registerForPushNotificationsAsync(userDoc.id, userData.role);
+                //   console.log("Push token registered.");
 
-                } catch (e) {
-                  console.log("Push token registration failed:", e);
-                }
+                // } catch (e) {
+                //   console.log("Push token registration failed:", e);
+                // }
 
                 navigation.replace("Admin");
                 console.log("Login Successful!");
                 break;
 
               case "super-user":
-                try {
-                  await registerForPushNotificationsAsync(userDoc.id, userData.role);
-                  console.log("Push token registered.");
+                // try {
+                //   await registerForPushNotificationsAsync(userDoc.id, userData.role);
+                //   console.log("Push token registered.");
                   
-                } catch (e) {
-                  console.log("Push token registration failed:", e);
-                }
+                // } catch (e) {
+                //   console.log("Push token registration failed:", e);
+                // }
 
                 navigation.replace("Super-User");
                 console.log("Login Succesfull!")
