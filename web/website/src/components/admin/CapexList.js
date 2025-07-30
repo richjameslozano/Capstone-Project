@@ -16,7 +16,7 @@ const CapexList = () => {
   // State Management
   const [requests, setRequests] = useState([]);
   const [filteredRequests, setFilteredRequests] = useState([]);
-  const [subjectFilter, setSubjectFilter] = useState("");
+  const [subjectFilter, setSubjectFilter] = useState(null);
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
@@ -75,11 +75,11 @@ const CapexList = () => {
     });
   };
 
-  // Handle subject filtering
   const handleFilter = (value) => {
     setSubjectFilter(value);
     if (!value) {
       setFilteredRequests(requests);
+      
     } else {
       const filtered = requests.filter(request =>
         request.items.some(item => item.subject === value)
@@ -305,7 +305,7 @@ const CapexList = () => {
                 <Button className='export-excel-button'onClick={exportToExcel}>
                   Export to Excel
                 </Button>
-                <Button className='save-pdf-button'type="primary" onClick={saveAsPdf} style={{ marginRight: 8 }}>
+                <Button className='save-pdf-button'type="primary" onClick={saveAsPdf} style={{ marginRight: 8, marginLeft: 8 }}>
                   Save as PDF
                 </Button>
                 

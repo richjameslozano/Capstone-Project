@@ -180,17 +180,17 @@
 }
 
 .save-pdf-button {
-  background-color: #af2626 !important; /* Red */
+  background-color: #af2626 !important; 
   border-color: #af2626 !important;
 }
 
 .save-pdf-button:hover {
-  background-color: #e53935 !important; /* Lighter red on hover */
+  background-color: #e53935 !important; 
   border-color: #e53935 !important;
 }
 
 .print-pdf-button {
-  background-color: #d4d4d4 !important; /* Gray, consistent with "Print PDF" */
+  background-color: #d4d4d4 !important; 
   border-color: #8b8989 !important;
   color: black;
 }
