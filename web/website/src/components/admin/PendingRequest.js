@@ -4011,22 +4011,52 @@ const toggleGroup = (label) => {
 
 
 
-const getFilteredRequests = () => {
+// const getFilteredRequests = () => {
   
 
-  if (selectedFilter.trim().toLowerCase() === 'all') return requests;
+//   if (selectedFilter.trim().toLowerCase() === 'all') return requests;
 
+
+//   return requests.filter((item) => {
+//     const usage = item.usageType?.trim().toLowerCase();
+//     if (!usage) return false;
+
+//     const normalized = usage.replace(/\s+/g, ' ');
+//     const knownTypes = ['laboratory experiment', 'research', 'community extension'];
+//     const selected = selectedFilter.trim().toLowerCase();
+
+//     if (knownTypes.includes(normalized)) {
+//       return normalized === selected;
+//     } else {
+//       return selected === 'others';
+//     }
+//   });
+// };
+
+const getFilteredRequests = () => {
+  const sanitizedSearch = searchTerm.trim().toLowerCase();
+  const selected = selectedFilter.trim().toLowerCase();
 
   return requests.filter((item) => {
-    const usage = item.usageType?.trim().toLowerCase();
-    if (!usage) return false;
+    // 🔍 Search filter
+    const matchesSearch =
+      item.userName?.toLowerCase().includes(sanitizedSearch) ||
+      item.room?.toLowerCase().includes(sanitizedSearch) ||
+      item.course?.toLowerCase().includes(sanitizedSearch) ||
+      item.courseDescription?.toLowerCase().includes(sanitizedSearch);
 
+    if (!matchesSearch) return false;
+
+    // 🧪 Usage type filter
+    if (selected === 'all') return true;
+
+    const usage = item.usageType?.trim().toLowerCase() || '';
     const normalized = usage.replace(/\s+/g, ' ');
     const knownTypes = ['laboratory experiment', 'research', 'community extension'];
-    const selected = selectedFilter.trim().toLowerCase();
 
     if (knownTypes.includes(normalized)) {
       return normalized === selected;
+
     } else {
       return selected === 'others';
     }
@@ -4036,7 +4066,7 @@ const getFilteredRequests = () => {
 // const filteredRequests = getFilteredRequests();
 // Filter requests based on search term
 
-const categorizedRequests = groupByDueDateCategory(filteredRequests);
+const categorizedRequests = groupByDueDateCategory(getFilteredRequests());
 
 useEffect(() => {
   // Timeout ensures layout finishes rendering before measuring scrollHeight
