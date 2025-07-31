@@ -302,7 +302,6 @@ const formatCondition = (cond) => {
                 <Icon name='beaker-outline' size={16} color={'gray'}/>
                 <Text style={{fontWeight: 300, fontSize: 11}} >- Glasswares</Text>
                 </View>
-      
               </View>
             </View>
 
