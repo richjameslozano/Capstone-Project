@@ -76,8 +76,7 @@ const Inventory = () => {
   const [filterDepartment, setFilterDepartment] = useState(null);
   const [loading, setLoading] = useState(true); // default: true
   const db = getFirestore();
-
- const [isRestockRequestModalVisible, setIsRestockRequestModalVisible] = useState(false);
+  const [isRestockRequestModalVisible, setIsRestockRequestModalVisible] = useState(false);
   const [restockForm] = Form.useForm();
   const [itemToRestock, setItemToRestock] = useState(null);
 
@@ -439,9 +438,10 @@ const openFullEditModal = (record) => {
 };
 
 const handleRestockRequest = (item) => {
-  setItemToRestock(item);  // Set the item to restock
-  setIsRestockRequestModalVisible(true);  // Open the modal
+  setItemToRestock(item); // <-- also ensure item is not null/undefined
+  setIsRestockRequestModalVisible(true);
 };
+
 // Function to handle form submission
 const handleRestockSubmit = async (values) => {
   try {
@@ -471,52 +471,7 @@ const handleRestockSubmit = async (values) => {
     setIsNotificationVisible(true);
   }
 };
-// Restock Request Modal
-<Modal
-  title="Request Item Restock"
-  isVisible={isRestockRequestModalVisible}
-  onCancel={() => setIsRestockRequestModalVisible(false)} // Hide modal on cancel
-  footer={null} // Hide default footer
-  zIndex={1025}
->
-  <Form
-    form={restockForm}
-    onFinish={handleRestockSubmit} // Handle form submission
-    layout="vertical"
-  >
-    {/* Input for quantity needed */}
-    <Form.Item
-      name="quantityNeeded"
-      label="Quantity Needed"
-      rules={[
-        { required: true, message: "Please enter the quantity to be restocked" },
-        { type: "number", min: 1, message: "Quantity must be greater than 0" },
-      ]}
-    >
-      <InputNumber
-        style={{ width: "100%" }}
-        min={1}
-        placeholder="Enter quantity to restock"
-      />
-    </Form.Item>
 
-    {/* Input for restock reason */}
-    <Form.Item
-      name="reason"
-      label="Reason for Restock"
-      rules={[{ required: true, message: "Please provide a reason for the request" }]}
-    >
-      <Input.TextArea rows={4} placeholder="Enter reason for restocking" />
-    </Form.Item>
-
-    {/* Submit button inside the modal */}
-    <Form.Item style={{ textAlign: "right" }}>
-      <Button type="primary" htmlType="submit">
-        Submit Restock Request
-      </Button>
-    </Form.Item>
-  </Form>
-</Modal>
 // FRONTEND
 // const handleFullUpdate = async (values) => {
 //   try {
@@ -2871,6 +2826,52 @@ useEffect(() => {
                   </Col>
                 </Row>
               )}
+            </Form>
+          </Modal>
+
+          <Modal
+            title="Request Item Restock"
+            open={isRestockRequestModalVisible} 
+            onCancel={() => setIsRestockRequestModalVisible(false)} 
+            footer={null} // Hide default footer
+            zIndex={1030}
+          >
+            <Form
+              form={restockForm}
+              onFinish={handleRestockSubmit} // Handle form submission
+              layout="vertical"
+            >
+              {/* Input for quantity needed */}
+              <Form.Item
+                name="quantityNeeded"
+                label="Quantity Needed"
+                rules={[
+                  { required: true, message: "Please enter the quantity to be restocked" },
+                  { type: "number", min: 1, message: "Quantity must be greater than 0" },
+                ]}
+              >
+                <InputNumber
+                  style={{ width: "100%" }}
+                  min={1}
+                  placeholder="Enter quantity to restock"
+                />
+              </Form.Item>
+
+              {/* Input for restock reason */}
+              <Form.Item
+                name="reason"
+                label="Reason for Restock"
+                rules={[{ required: true, message: "Please provide a reason for the request" }]}
+              >
+                <Input.TextArea rows={4} placeholder="Enter reason for restocking" />
+              </Form.Item>
+
+              {/* Submit button inside the modal */}
+              <Form.Item style={{ textAlign: "right" }}>
+                <Button type="primary" htmlType="submit">
+                  Submit Restock Request
+                </Button>
+              </Form.Item>
             </Form>
           </Modal>
 
