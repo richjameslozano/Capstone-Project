@@ -1331,7 +1331,7 @@ const Login = () => {
 
   // BACKEND
   const handleSignUp = async () => {
-    const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
+    const { name, email, employeeId, password, confirmPassword, jobTitle, department, termsChecked } = signUpData;
 
     
     const formattedName = capitalizeWords(name);
