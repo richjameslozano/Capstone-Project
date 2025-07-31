@@ -140,6 +140,7 @@ import {
   onSnapshot,
   updateDoc,
   doc,
+  getDocs,
 } from "firebase/firestore";
 import "./styles/Header.css";
 
@@ -159,6 +160,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
   const [notifications, setNotifications] = useState([]);
   const [loadingNotifications, setLoadingNotifications] = useState(false);
   const [visibleCount, setVisibleCount] = useState(5); 
+  const [profileImage, setProfileImage] = useState(null);
 
   useEffect(() => {
     const storedName = localStorage.getItem("userName");
@@ -171,6 +173,25 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     const handleResize = () => setIsMobile(window.innerWidth <= 408);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const fetchProfileImage = async () => {
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) return;
+
+      const q = query(collection(db, "accounts"), where("email", "==", userEmail));
+      const snapshot = await getDocs(q);
+
+      if (!snapshot.empty) {
+        const userData = snapshot.docs[0].data();
+        if (userData.profileImage) {
+          setProfileImage(userData.profileImage);
+        }
+      }
+    };
+
+    fetchProfileImage();
   }, []);
 
   useEffect(() => {
@@ -307,15 +328,16 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
                   </div>
                 </div>
               )}
-              <Avatar>
-                {userName
-                  ? userName
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")
-                      .toUpperCase()
-                  : <UserOutlined />}
-              </Avatar>
+                <Avatar src={profileImage}>
+                  {!profileImage &&
+                    (userName
+                      ? userName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .toUpperCase()
+                      : <UserOutlined />)}
+                </Avatar>
             </div>
           </>
         )}
