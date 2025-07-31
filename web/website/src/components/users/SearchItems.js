@@ -136,7 +136,6 @@ const sanitizeInput = (input) => {
   return input.trim().replace(/<[^>]+>/g, "").replace(/[^\w\s]/gi, "");
 };
 
-
 const SearchItems = () => {
   const [inventoryData, setInventoryData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
@@ -191,7 +190,11 @@ const SearchItems = () => {
     }
 
     if (sanitizedStatusFilter) {
-      data = data.filter((item) => item.status === sanitizedStatusFilter);
+      data = data.filter(
+        (item) =>
+          item.status &&
+          item.status.toLowerCase().trim() === sanitizedStatusFilter.toLowerCase().trim()
+      );
     }
 
     if (sanitizedCategoryFilter) {
