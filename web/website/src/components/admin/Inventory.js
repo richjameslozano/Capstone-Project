@@ -445,17 +445,34 @@ const handleRestockRequest = (item) => {
 // Function to handle form submission
 const handleRestockSubmit = async (values) => {
   try {
+    // Check if the restock request already exists in the collection
+    const restockRequestQuery = query(
+      collection(db, "restock_requests"),
+      where("itemId", "==", itemToRestock.itemId), // Check by itemId
+      where("status", "==", "pending") // Ensure the request is pending
+    );
+
+    const querySnapshot = await getDocs(restockRequestQuery);
+
+    if (!querySnapshot.empty) {
+      // If there are any pending requests for this item
+      setNotificationMessage(`${itemToRestock.itemName} is already in the restock request list.`);
+      setIsNotificationVisible(true);
+      return; // Prevent proceeding
+    }
+
+    // If no existing request found, proceed to submit the new request
     const restockRequest = {
-      itemId: itemToRestock.itemId,
+      department: itemToRestock.department,
       itemName: itemToRestock.itemName,
-      quantityNeeded: values.quantityNeeded,
+      quantity_needed: values.quantityNeeded,
       reason: values.reason,
-      status: "pending",
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
+      status: "pending", // Set status as pending initially
+      created_at: serverTimestamp(),
+      updated_at: serverTimestamp(),
     };
 
-    // Add the request to your "restock_requests" collection
+    // Add the request to the "restock_requests" collection
     await addDoc(collection(db, "restock_requests"), restockRequest);
 
     // Optionally, show a success message or notification
@@ -464,7 +481,6 @@ const handleRestockSubmit = async (values) => {
 
     // Close the modal after submission
     setIsRestockRequestModalVisible(false);
-
   } catch (error) {
     console.error("Error submitting restock request:", error);
     setNotificationMessage("Failed to submit restock request. Please try again.");
