@@ -1331,7 +1331,7 @@ const Login = () => {
 
   // BACKEND
   const handleSignUp = async () => {
-    const { name, email, employeeId, password, confirmPassword, jobTitle, department, termsChecked } = signUpData;
+    const { name, email, employeeId, password, confirmPassword, jobTitle, department } = signUpData;
 
     
     const formattedName = capitalizeWords(name);
@@ -1380,6 +1380,9 @@ const Login = () => {
         jobTitle: "",
         department: "",
       });
+
+      setTermsChecked(false);
+
     } catch (err) {
       setError("Failed to register. Please try again later.");
       console.error("Sign-up error:", err);
