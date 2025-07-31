@@ -408,7 +408,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
     const sendEmail = async (email, name) => {
       try {
-        const response = await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {
+        const response = await fetch('https://webnuls.onrender.com/send-email', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -416,24 +416,23 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           body: JSON.stringify({
             to: email.trim().toLowerCase(),
             subject: 'Account Registration - Pending Approval',
-            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA ITSO Team`,
-            html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the ITSO.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
+            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA NULS Team`,
+            html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the NULS.</p><p>Regards,<br>NU MOA NULS Team</p>`,
           }),
         });
-    
+
         const result = await response.json();
-    
         if (result.success) {
           console.log('✅ Email sent successfully!');
-
+          
         } else {
-          console.log('❌ Email failed:', result.error);
+          console.error('❌ Email failed:', result.error);
         }
-
-      } catch (error) {
-        console.error('❌ Error sending email:', error);
+        
+      } catch (err) {
+        console.error('❌ Error sending email:', err.message);
       }
-    };   
+    };
 
     const handleSignup = async () => {
         setLoading(true);
