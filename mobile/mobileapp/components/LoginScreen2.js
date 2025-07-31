@@ -590,7 +590,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
       {!isLoginSignup && (
         <View style={styles.inner}>
           <View style={styles.header}>
-            <Image source={require('./images/login_pic.png')} style={{height: '45%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
+            <Image source={require('./images/logo1.png')} style={{height: '45%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
             <Text style={styles.headerTitle}>Hello!</Text>
             <Text style={styles.subHeader}>Welcome to NU MOA Laboratory System</Text>
 
