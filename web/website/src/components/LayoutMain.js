@@ -426,6 +426,11 @@ const superUserMenuItems = [
     label: "Stock Room Details",
   },
   {
+    key: "/main/restock-requests",
+    icon: <HistoryOutlined />,
+    label: "Restock Requests",
+  },
+  {
     key: "logout",
     icon: <LogoutOutlined />,
     label: "Sign Out",
