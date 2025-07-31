@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import {Layout,Card,Row,Col,Upload,Avatar,Button,Typography,message,} from "antd";
-import {UserOutlined,UploadOutlined} from "@ant-design/icons";
+import {UserOutlined,UploadOutlined,IdcardOutlined, ApartmentOutlined, SolutionOutlined, MailOutlined } from "@ant-design/icons";
 import {collection,query,where,getDocs,updateDoc} from "firebase/firestore";
 import { db, storage } from "../backend/firebase/FirebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
@@ -102,15 +102,16 @@ const Profile = () => {
   return (
     <Layout>
       <Layout className="site-layout">
-        <Content className="profile-content">
-          <Row justify="center" align="middle" style={{ width: "100%" }}>
-            <Col xs={24} sm={18} md={12} lg={8}>
-              <Card
-                title="User Profile"
+        <Content className="profile-content" style={{margin: 0}}>
+              <div
                 bordered={false}
-                style={{ width: "100%", maxWidth: "600px" }}
+                style={{ minWidth: '70%' ,width: "auto", backgroundColor: 'white', padding: 30, borderRadius: 10, boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)', gap: 10 }}
               >
-                <div style={{ textAlign: "center", marginBottom: 20 }}>
+                <h1 style={{fontWeight: 700, color: '#2187ab', fontSize: 25}}><UserOutlined style={{marginRight: 20}}/>User Profile</h1>
+                <div className="container-two">
+
+                
+                <div style={{ textAlign: "center", justifyContent: 'center', alignItems: 'center', padding: 50, paddingBottom: 0}}>
                   <Upload
                     name="profileImage"
                     listType="picture"
@@ -124,9 +125,9 @@ const Profile = () => {
                     beforeUpload={() => false} 
                   >
                     {imageUrl ? (
-                      <Avatar src={imageUrl} size={100} />
+                      <Avatar src={imageUrl} size={250} />
                     ) : (
-                      <Avatar size={100}>
+                      <Avatar size={250}>
                         {formData?.name
                           ? formData.name
                               .split(" ")
@@ -138,14 +139,25 @@ const Profile = () => {
                     )}
                   </Upload>
 
-                  <div style={{ marginTop: 10 }}>
-                    <Button
-                      icon={<UploadOutlined />}
+                  <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+                    <p style={{ marginTop: 10, fontSize: 25, fontWeight: 600, marginBottom: 0
+                     }}>
+                    {formData?.name ? capitalizeName(formData.name) : "No Name Available"}
+                    </p>
+                    <text
                       className="upload-btn"
                       onClick={() => fileInputRef.current.click()}
+                      style={{backgroundColor: 'transparent', color: '#2187ab', fontSize: 16}}
                     >
-                      Change Profile Picture
-                    </Button>
+                      Change Photo
+                    </text>
+
+                    <Button
+                    className="edit-btn"
+                     style={{backgroundColor: '#2187ab', color: '#fff', fontSize: 16}}
+                    >
+                      Edit Profile
+                      </Button>
 
                     <input
                       ref={fileInputRef}
@@ -162,42 +174,67 @@ const Profile = () => {
                     />
                   </div>
 
-                  <Title level={5} style={{ marginTop: 10 }}>
-                    {formData?.name ? capitalizeName(formData.name) : "No Name Available"}
-                  </Title>
-
-                  <Text type="secondary">
+                  {/* <Text type="secondary">
                     {formData?.email || "No Email Available"}
-                  </Text>
+                  </Text> */}
+
+                
                 </div>
-              </Card>
 
-              {formData && (
-                <Card
-                  title="Profile Summary"
-                  style={{ marginTop: 20 }}
-                  bordered={false}
+
+
+       
+                  {formData && (
+                <div
+                  className="title-container"
                 >
-                  <p>
-                    <strong>Name:</strong>{" "}
+                  <div className="info">
+                    <UserOutlined className="profile-icon"/>
+                    <p className="text-display">
                     {formData?.name ? capitalizeName(formData.name) : "No Name Available"}
-                  </p>
+                    <strong className="title">Name</strong>
+                    </p>
+                  </div>
 
-                  <p>
-                    <strong>Department:</strong> {formData.department || "N/A"}
-                  </p>
+                  <div className="info">
+                    <MailOutlined className="profile-icon"/>
+                    <p className="text-display">
+                      {formData.email || "N/A"}
+                      <strong className="title">Email</strong>
+                    </p>
+                  </div>
 
-                  <p>
-                    <strong>Job Title:</strong> {formData.jobTitle || "N/A"}
-                  </p>
+                  <div className="info">
+                    <ApartmentOutlined className="profile-icon"/>
+                    <p className="text-display">
+                    {formData.department || "N/A"}
+                    <strong className="title">Department</strong> 
+                    </p>
+                  </div>
+
+                  <div className="info">
+                    <SolutionOutlined className="profile-icon"/>
+                    <p className="text-display">
+                    {formData.jobTitle || "N/A"}
+                    <strong className="title">Job Title</strong>
+                    </p>
+                  </div>
                   
-                  <p>
-                    <strong>Email:</strong> {formData.email || "N/A"}
-                  </p>
-                </Card>
+                  <div className="info">
+                    <IdcardOutlined className="profile-icon"/>
+                    <p className="text-display">
+                    {formData.jobTitle || "N/A"}
+                    <strong className="title">Employee ID</strong>
+                    </p>
+                  </div>
+                  
+                </div>
               )}
-            </Col>
-          </Row>
+ 
+
+
+                </div>
+              </div>
         </Content>
       </Layout>
     </Layout>
