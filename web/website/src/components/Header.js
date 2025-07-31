@@ -151,7 +151,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
   const location = useLocation();
   
   const userId = localStorage.getItem("userId");
-  const role = localStorage.getItem("userPosition") || location.state?.role || "user";
+  const role = localStorage.getItem("userPosition") || location.state?.role || "user"; // 🟢 FIXED
 
   const [userName, setUserName] = useState("User");
   const [jobTitle, setJobTitle] = useState("");
@@ -225,21 +225,48 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     return () => unsubscribe();
   }, [userId, role]);
 
-  const unreadCount = notifications.filter(n => !n.read).length;
+  // const unreadCount = notifications.filter(n => !n.read).length;
+  const unreadCount = notifications.filter(
+    (n) => !(n.readBy?.[userId])
+  ).length;
+
+  // const handleNotificationClick = async (notif) => {
+  //   if (!userId || !notif.id) return;
+
+  //   try {
+  //     let notifDocRef;
+  //     if (role === "user") {
+  //       notifDocRef = doc(db, "accounts", userId, "userNotifications", notif.id);
+
+  //     } else {
+  //       notifDocRef = doc(db, "allNotifications", notif.id);
+  //     }
+  //     await updateDoc(notifDocRef, { read: true });
+
+  //   } catch (error) {
+  //     console.error("Failed to update notification:", error);
+  //   }
+
+  //   if (notif.link) {
+  //     navigate(notif.link);
+
+  //   } else {
+  //     message.info(notif.action || "Notification clicked");
+  //   }
+  // };
 
   const handleNotificationClick = async (notif) => {
     if (!userId || !notif.id) return;
 
     try {
-      let notifDocRef;
-      if (role === "user") {
-        notifDocRef = doc(db, "accounts", userId, "userNotifications", notif.id);
-        
-      } else {
-        notifDocRef = doc(db, "allNotifications", notif.id);
-      }
+      let notifDocRef = doc(db, "allNotifications", notif.id);
 
-      await updateDoc(notifDocRef, { read: true });
+      // Only update if userId not yet in readBy
+      if (!notif.readBy || !notif.readBy[userId]) {
+        await updateDoc(notifDocRef, {
+          [`readBy.${userId}`]: true,
+        });
+      }
 
     } catch (error) {
       console.error("Failed to update notification:", error);
@@ -258,21 +285,21 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
       {loadingNotifications ? (
         <Spin size="small" />
       ) : (
-        <List
-          size="small"
-          dataSource={notifications.slice(0, visibleCount)}
-          renderItem={(item) => (
-            <List.Item
-              style={{ cursor: "pointer" }}
-              onClick={() => handleNotificationClick(item)}
-            >
-              <div>
-                {!item.read && <span style={{ color: "red", marginRight: 4 }}>•</span>}
-                {item.action}
-              </div>
-            </List.Item>
-          )}
-        />
+      <List
+        size="small"
+        dataSource={notifications.slice(0, visibleCount)}
+        renderItem={(item) => (
+          <List.Item
+            style={{ cursor: "pointer" }}
+            onClick={() => handleNotificationClick(item)}
+          >
+            <div>
+              {!item.readBy?.[userId] && <span style={{ color: "red", marginRight: 4 }}>•</span>}
+              {item.action}
+            </div>
+          </List.Item>
+        )}
+      />
       )}
 
       {notifications.length > visibleCount && (
@@ -282,6 +309,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
           </Button>
         </div>
       )}
+
     </div>
   );
 
@@ -328,16 +356,16 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
                   </div>
                 </div>
               )}
-                <Avatar src={profileImage}>
-                  {!profileImage &&
-                    (userName
-                      ? userName
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .toUpperCase()
-                      : <UserOutlined />)}
-                </Avatar>
+             <Avatar src={profileImage}>
+                {!profileImage &&
+                  (userName
+                    ? userName
+                        .split(" ")
+                        .map((n) => n[0])
+                        .join("")
+                        .toUpperCase()
+                    : <UserOutlined />)}
+              </Avatar>
             </div>
           </>
         )}
