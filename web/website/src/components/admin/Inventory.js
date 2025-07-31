@@ -77,6 +77,10 @@ const Inventory = () => {
   const [loading, setLoading] = useState(true); // default: true
   const db = getFirestore();
 
+ const [isRestockRequestModalVisible, setIsRestockRequestModalVisible] = useState(false);
+  const [restockForm] = Form.useForm();
+  const [itemToRestock, setItemToRestock] = useState(null);
+
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
   const [fullEditForm] = Form.useForm();
 
@@ -434,7 +438,85 @@ const openFullEditModal = (record) => {
   setIsFullEditModalVisible(true);
 };
 
+const handleRestockRequest = (item) => {
+  setItemToRestock(item);  // Set the item to restock
+  setIsRestockRequestModalVisible(true);  // Open the modal
+};
+// Function to handle form submission
+const handleRestockSubmit = async (values) => {
+  try {
+    const restockRequest = {
+      itemId: itemToRestock.itemId,
+      itemName: itemToRestock.itemName,
+      quantityNeeded: values.quantityNeeded,
+      reason: values.reason,
+      status: "pending",
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    };
 
+    // Add the request to your "restock_requests" collection
+    await addDoc(collection(db, "restock_requests"), restockRequest);
+
+    // Optionally, show a success message or notification
+    setNotificationMessage("Restock request submitted successfully!");
+    setIsNotificationVisible(true);
+
+    // Close the modal after submission
+    setIsRestockRequestModalVisible(false);
+
+  } catch (error) {
+    console.error("Error submitting restock request:", error);
+    setNotificationMessage("Failed to submit restock request. Please try again.");
+    setIsNotificationVisible(true);
+  }
+};
+// Restock Request Modal
+<Modal
+  title="Request Item Restock"
+  isVisible={isRestockRequestModalVisible}
+  onCancel={() => setIsRestockRequestModalVisible(false)} // Hide modal on cancel
+  footer={null} // Hide default footer
+  zIndex={1025}
+>
+  <Form
+    form={restockForm}
+    onFinish={handleRestockSubmit} // Handle form submission
+    layout="vertical"
+  >
+    {/* Input for quantity needed */}
+    <Form.Item
+      name="quantityNeeded"
+      label="Quantity Needed"
+      rules={[
+        { required: true, message: "Please enter the quantity to be restocked" },
+        { type: "number", min: 1, message: "Quantity must be greater than 0" },
+      ]}
+    >
+      <InputNumber
+        style={{ width: "100%" }}
+        min={1}
+        placeholder="Enter quantity to restock"
+      />
+    </Form.Item>
+
+    {/* Input for restock reason */}
+    <Form.Item
+      name="reason"
+      label="Reason for Restock"
+      rules={[{ required: true, message: "Please provide a reason for the request" }]}
+    >
+      <Input.TextArea rows={4} placeholder="Enter reason for restocking" />
+    </Form.Item>
+
+    {/* Submit button inside the modal */}
+    <Form.Item style={{ textAlign: "right" }}>
+      <Button type="primary" htmlType="submit">
+        Submit Restock Request
+      </Button>
+    </Form.Item>
+  </Form>
+</Modal>
 // FRONTEND
 // const handleFullUpdate = async (values) => {
 //   try {
@@ -2358,7 +2440,7 @@ useEffect(() => {
                 <div style={{marginTop: headerHeight || 70, borderRadius: 10, flexDirection: 'row', display: 'flex', width: '70%', gap: 50, marginLeft: 20  }}>
 
                 <div className="table-wrapper">
-                  <table class="horizontal-table">
+                  <table className="horizontal-table">
                       <tbody>
                         <tr>
                           <th>Item ID</th>
@@ -2414,7 +2496,7 @@ useEffect(() => {
                     </div>
 
                     <div className="table-wrapper">
-                    <table class="horizontal-table">
+                    <table className="horizontal-table">
                       <tbody>
                         <tr>
                           <th>Status</th>
@@ -2487,9 +2569,19 @@ useEffect(() => {
                   >
                     Update Stock
                   </Button>
+
                     <Button type="primary" onClick={() => openFullEditModal(selectedRow)}>
                       Edit Item
                     </Button>
+                    
+                    <Button
+                    type="primary"
+                    icon={<PlusOutlined />}
+                    onClick={() => handleRestockRequest(selectedRow)} // Opens restock request modal
+                  >
+                    Request Restock
+                  </Button>
+
 
                     </div>
                   </div>
@@ -2499,7 +2591,7 @@ useEffect(() => {
                   <div>
                     <h2>Stock Log</h2>
 
-                    {/* <table class="delivery-table">
+                    {/* <table className="delivery-table">
                     <thead>
                       <tr>
                         <th>Date</th>
