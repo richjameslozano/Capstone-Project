@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, LayoutAnimation, Platform, UIManager } from 'react-native';
+import { View, Text, TextInput, ScrollView, TouchableOpacity, Modal, LayoutAnimation, Platform, UIManager, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { getDocs, collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig'; 
@@ -19,6 +19,7 @@ export default function SearchItemsScreen({ }) {
   const [filterCategory, setFilterCategory] = useState('All');
   const [isOpen, setIsOpen] = useState(null)
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [isLoading, setIsLoading] = useState(true);
 
   const navigation = useNavigation()
 
@@ -92,60 +93,128 @@ export default function SearchItemsScreen({ }) {
   // }, []);
 
   // VERSION NI RICH WITH DATE EXPIRY CONDITION
+  // useEffect(() => {
+
+  //   const inventoryCollection = collection(db, "inventory");
+
+  //   // Subscribe to inventory collection changes
+  //   const unsubscribe = onSnapshot(
+  //     inventoryCollection,
+  //     async (snapshot) => {
+  //       const now = new Date();
+  //       const validItems = [];
+
+  //       // We need to await all stockLog queries, so use Promise.all
+  //       await Promise.all(
+  //         snapshot.docs.map(async (doc) => {
+  //           const data = doc.data();
+  //           const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+  //           const stockSnapshot = await getDocs(stockLogRef);
+
+  //           let hasValidStock = false;
+
+  //           for (const logDoc of stockSnapshot.docs) {
+  //             const logData = logDoc.data();
+  //             const expiryRaw = logData.expiryDate;
+
+  //             if (!expiryRaw) {
+  //               hasValidStock = true;
+  //               break;
+  //             }
+
+  //             const expiryDate = typeof expiryRaw === "string"
+  //               ? new Date(expiryRaw)
+  //               : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+  //             if (isNaN(expiryDate.getTime())) continue;
+
+  //             if (expiryDate >= now) {
+  //               hasValidStock = true;
+  //               break;
+  //             }
+  //           }
+
+  //           if (hasValidStock) {
+  //             validItems.push({
+  //               id: doc.id,
+  //               ...data,
+  //             });
+  //           }
+  //         })
+  //       );
+
+  //       validItems.sort((a, b) => (a.itemName || "").localeCompare(b.itemName || ""));
+  //       setInventoryItems(validItems);
+  //     },
+  //     (error) => {
+  //       console.error("Error fetching inventory: ", error);
+  //     }
+  //   );
+
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect(() => {
+    setIsLoading(true);
     const inventoryCollection = collection(db, "inventory");
 
-    // Subscribe to inventory collection changes
     const unsubscribe = onSnapshot(
       inventoryCollection,
       async (snapshot) => {
         const now = new Date();
         const validItems = [];
 
-        // We need to await all stockLog queries, so use Promise.all
-        await Promise.all(
-          snapshot.docs.map(async (doc) => {
-            const data = doc.data();
-            const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
-            const stockSnapshot = await getDocs(stockLogRef);
+        try {
+          // We need to await all stockLog queries
+          await Promise.all(
+            snapshot.docs.map(async (doc) => {
+              const data = doc.data();
+              const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
+              const stockSnapshot = await getDocs(stockLogRef);
 
-            let hasValidStock = false;
+              let hasValidStock = false;
 
-            for (const logDoc of stockSnapshot.docs) {
-              const logData = logDoc.data();
-              const expiryRaw = logData.expiryDate;
+              for (const logDoc of stockSnapshot.docs) {
+                const logData = logDoc.data();
+                const expiryRaw = logData.expiryDate;
 
-              if (!expiryRaw) {
-                hasValidStock = true;
-                break;
+                if (!expiryRaw) {
+                  hasValidStock = true;
+                  break;
+                }
+
+                const expiryDate = typeof expiryRaw === "string"
+                  ? new Date(expiryRaw)
+                  : expiryRaw?.toDate?.() || new Date(expiryRaw);
+
+                if (!isNaN(expiryDate.getTime()) && expiryDate >= now) {
+                  hasValidStock = true;
+                  break;
+                }
               }
 
-              const expiryDate = typeof expiryRaw === "string"
-                ? new Date(expiryRaw)
-                : expiryRaw?.toDate?.() || new Date(expiryRaw);
-
-              if (isNaN(expiryDate.getTime())) continue;
-
-              if (expiryDate >= now) {
-                hasValidStock = true;
-                break;
+              if (hasValidStock) {
+                validItems.push({
+                  id: doc.id,
+                  ...data,
+                });
               }
-            }
+            })
+          );
 
-            if (hasValidStock) {
-              validItems.push({
-                id: doc.id,
-                ...data,
-              });
-            }
-          })
-        );
+          validItems.sort((a, b) => (a.itemName || "").localeCompare(b.itemName || ""));
+          setInventoryItems(validItems);
 
-        validItems.sort((a, b) => (a.itemName || "").localeCompare(b.itemName || ""));
-        setInventoryItems(validItems);
+        } catch (error) {
+          console.error("Error processing inventory snapshot:", error);
+          
+        } finally {
+          setIsLoading(false); // ✅ Done loading
+        }
       },
       (error) => {
         console.error("Error fetching inventory: ", error);
+        setIsLoading(false); // Ensure loading stops on error too
       }
     );
 
@@ -280,6 +349,17 @@ const formatCondition = (cond) => {
 
       <View style={[styles.container2]}>
 
+      {isLoading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading Inventory...</Text>
+        </View>
+      ) : filteredItems.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Icon name="package-variant" size={60} color="#ccc" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#666' }}>No inventory items found.</Text>
+        </View>
+      ) : (
       <ScrollView style={{paddingHorizontal: 8, paddingVertical: 10}}>
         {filteredItems.map((item) => (
           <View key={item.id} style={styles.card}>
@@ -367,6 +447,7 @@ const formatCondition = (cond) => {
           </View>
         ))}
       </ScrollView>
+      )}
       </View>
 
 
