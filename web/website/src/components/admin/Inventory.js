@@ -376,9 +376,6 @@ const Inventory = () => {
   return () => unsubscribe();
 }, []);
 
-
-
-
   // useEffect(() => {
   //   const fetchInventory = async () => {
   //     try {
@@ -481,6 +478,7 @@ const handleRestockSubmit = async (values) => {
 
     // Close the modal after submission
     setIsRestockRequestModalVisible(false);
+    
   } catch (error) {
     console.error("Error submitting restock request:", error);
     setNotificationMessage("Failed to submit restock request. Please try again.");
