@@ -463,7 +463,7 @@ const handleRestockSubmit = async (values) => {
     // If no existing request found, proceed to submit the new request
     const restockRequest = {
       department: itemToRestock.department,
-      itemName: itemToRestock.itemName,
+      item_name: itemToRestock.itemName,
       quantity_needed: values.quantityNeeded,
       reason: values.reason,
       status: "pending", // Set status as pending initially

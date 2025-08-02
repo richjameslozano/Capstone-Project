@@ -252,6 +252,9 @@ const RestockRequest = () => {
               <p><strong>Department:</strong> {selectedRequest.department}</p>
               <p><strong>Status:</strong> {selectedRequest.status}</p>
               <p><strong>Date:</strong> {selectedRequest.created_at?.toDate().toLocaleDateString()}</p>
+              {selectedRequest.reason && (
+                <p><strong>Reason:</strong> {selectedRequest.reason}</p>
+              )}
             </div>
           ) : (
             <p>Loading request details...</p>
