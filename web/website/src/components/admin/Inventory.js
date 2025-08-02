@@ -2541,41 +2541,57 @@ useEffect(() => {
                       <p>No QR Code Available</p>
                     )}
 
-                    <div style={{ marginTop: 24, textAlign: 'center', gap: 10, width: '100%', display: 'flex', justifyContent: 'center'}}>
-                    <Button
-                      type="primary"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDelete(selectedRow)}
+                    <div
+                      style={{
+                        marginTop: 24,
+                        textAlign: 'center',
+                        gap: 10,
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column', // Stack vertically
+                        alignItems: 'center',
+                      }}
                     >
-                      Archive
-                    </Button>
+                      {/* Top Row: Archive + Update Stock */}
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <Button
+                          type="primary"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => handleDelete(selectedRow)}
+                        >
+                          Archive
+                        </Button>
 
-                   <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedRow(selectedRow);
-                      editItem(selectedRow, true); // clears quantity & expiry
-                    }}
-                  >
-                    Update Stock
-                  </Button>
+                        <Button
+                          type="link"
+                          icon={<EditOutlined />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedRow(selectedRow);
+                            editItem(selectedRow, true);
+                          }}
+                        >
+                          Update Stock
+                        </Button>
+                      </div>
 
-                    <Button type="primary" onClick={() => openFullEditModal(selectedRow)}>
-                      Edit Item
-                    </Button>
-                    
-                    <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => handleRestockRequest(selectedRow)} // Opens restock request modal
-                  >
-                    Request Restock
-                  </Button>
+                      {/* Bottom Row: Edit Item + Request Restock */}
+                      <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                        <Button type="primary" onClick={() => openFullEditModal(selectedRow)}>
+                          Edit Item
+                        </Button>
 
-
+                        {userRole !== 'admin' && userRole !== 'dean' && (
+                          <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={() => handleRestockRequest(selectedRow)}
+                          >
+                            Request Restock
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                   </div>
