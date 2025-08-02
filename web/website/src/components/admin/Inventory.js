@@ -79,9 +79,11 @@ const Inventory = () => {
   const [isRestockRequestModalVisible, setIsRestockRequestModalVisible] = useState(false);
   const [restockForm] = Form.useForm();
   const [itemToRestock, setItemToRestock] = useState(null);
-
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
   const [fullEditForm] = Form.useForm();
+  const userRole = localStorage.getItem("userPosition")?.toLowerCase();
+  const userName = localStorage.getItem("userName");
+  const userId = localStorage.getItem("userId");
 
   const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                   
@@ -471,6 +473,28 @@ const handleRestockSubmit = async (values) => {
 
     // Add the request to the "restock_requests" collection
     await addDoc(collection(db, "restock_requests"), restockRequest);
+
+    if (userRole === "super-user" || userRole === "laboratory custodian") {
+      await addDoc(collection(db, "allNotifications"), {
+        action: `Restock request submitted by ${userName}`,
+        userId: userId,
+        userName: userName,
+        read: false,
+        visibleTo: "admin", // restricts this notif to admin view
+        type: "restock-request",
+        timestamp: serverTimestamp()
+      });
+    }
+
+    // Add to user's activity log
+    await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+      action: `Requested restock for ${itemToRestock.itemName} (Qty: ${values.quantityNeeded})`,
+      userName: userName || "User",
+      timestamp: serverTimestamp(),
+    });
+
+
+    restockForm.resetFields();
 
     // Optionally, show a success message or notification
     setNotificationMessage("Restock request submitted successfully!");
@@ -2855,19 +2879,31 @@ useEffect(() => {
               onFinish={handleRestockSubmit} // Handle form submission
               layout="vertical"
             >
-              {/* Input for quantity needed */}
               <Form.Item
                 name="quantityNeeded"
                 label="Quantity Needed"
                 rules={[
                   { required: true, message: "Please enter the quantity to be restocked" },
-                  { type: "number", min: 1, message: "Quantity must be greater than 0" },
+                  {
+                    validator: (_, value) =>
+                      Number.isInteger(value) && value > 0
+                        ? Promise.resolve()
+                        : Promise.reject("Quantity must be a whole number greater than 0"),
+                  },
                 ]}
               >
                 <InputNumber
                   style={{ width: "100%" }}
                   min={1}
                   placeholder="Enter quantity to restock"
+                  step={1}
+                  controls={true}
+                  parser={(value) => value.replace(/\D/g, '')}
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault(); 
+                    }
+                  }}
                 />
               </Form.Item>
 
