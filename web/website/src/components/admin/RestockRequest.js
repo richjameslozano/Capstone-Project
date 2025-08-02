@@ -11,7 +11,7 @@ import {
   Spin,
 } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
-import { collection, onSnapshot, query, where, doc, updateDoc } from "firebase/firestore";
+import { collection, onSnapshot, query, where, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -39,9 +39,18 @@ const RestockRequest = () => {
         id: doc.id,
       }));
       console.log("Fetched restock requests:", requests);
-      setRestockRequests(requests);
+      // setRestockRequests(requests);
+
+      const sorted = [...requests].sort((a, b) => {
+        const dateA = a.created_at?.toDate?.() || new Date(0);
+        const dateB = b.created_at?.toDate?.() || new Date(0);
+        return dateB - dateA;
+      });
+      setRestockRequests(sorted);
+
       setLoading(false);
     });
+
     return () => unsubscribe();
   }, []);
 
@@ -112,6 +121,30 @@ const RestockRequest = () => {
     try {
       const requestRef = doc(db, "restock_requests", selectedRequest.id);
       await updateDoc(requestRef, { status: newStatus });
+
+      // Notify the requester
+      if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
+        await addDoc(
+          collection(db, `accounts/${selectedRequest.accountId}/userNotifications`),
+          {
+            action: `${newStatus === "approved" ? "Approved" : "Rejected"} your restock request for "${selectedRequest.item_name}"`,
+            requestId: selectedRequest.id,
+            userName: selectedRequest.userName || "User",
+            read: false,
+            timestamp: serverTimestamp(),
+          }
+        );
+      }
+
+      const currentUserId = localStorage.getItem("userId");
+      const currentUserName = localStorage.getItem("userName") || "admin";
+      if (currentUserId) {
+        await addDoc(collection(db, `accounts/${currentUserId}/activitylog`), {
+          action: `${newStatus === "approved" ? "Approved" : "Denied"} restock request for "${selectedRequest.item_name}" from ${selectedRequest.department}`,
+          userName: currentUserName,
+          timestamp: serverTimestamp(),
+        });
+      }
 
       setIsModalVisible(false);
       setSelectedRequest(null);

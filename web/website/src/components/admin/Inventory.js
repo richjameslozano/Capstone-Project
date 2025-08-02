@@ -466,9 +466,11 @@ const handleRestockSubmit = async (values) => {
       item_name: itemToRestock.itemName,
       quantity_needed: values.quantityNeeded,
       reason: values.reason,
-      status: "pending", // Set status as pending initially
+      status: "pending",
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
+      accountId: userId,      
+      userName: userName || "User" 
     };
 
     // Add the request to the "restock_requests" collection
