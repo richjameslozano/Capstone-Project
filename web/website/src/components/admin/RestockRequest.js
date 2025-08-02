@@ -31,6 +31,7 @@ const RestockRequest = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [comment, setComment] = useState("");
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
@@ -120,7 +121,12 @@ const RestockRequest = () => {
 
     try {
       const requestRef = doc(db, "restock_requests", selectedRequest.id);
-      await updateDoc(requestRef, { status: newStatus });
+      // await updateDoc(requestRef, { status: newStatus });
+      await updateDoc(requestRef, {
+        status: newStatus,
+        admin_comment: comment, // add the comment field
+        updated_at: serverTimestamp()
+      });
 
       // Notify the requester
       if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
@@ -146,9 +152,10 @@ const RestockRequest = () => {
         });
       }
 
+      setComment("");
       setIsModalVisible(false);
       setSelectedRequest(null);
-      
+
     } catch (error) {
       console.error("Error updating status:", error);
     }
@@ -249,7 +256,7 @@ const RestockRequest = () => {
               pagination={{ pageSize: 10 }}
               onRow={(record) => ({
                 onClick: () => {
-                  if (userRole === "admin" && record.status === "pending") {
+                  if (["admin", "super-user"].includes(userRole)) {
                     setSelectedRequest(record);
                     setIsModalVisible(true);
                   }
@@ -266,17 +273,21 @@ const RestockRequest = () => {
           open={isModalVisible}
           onCancel={() => {
             setIsModalVisible(false);
+            setComment("");
             setSelectedRequest(null);
           }}
           zIndex={1030}
-          footer={[
-            <Button key="deny" danger onClick={() => handleUpdateStatus("denied")}>
-              Deny
-            </Button>,
-            <Button key="approve" type="primary" onClick={() => handleUpdateStatus("approved")}>
-              Approve
-            </Button>,
-          ]}
+          footer={
+            userRole === "admin" && selectedRequest?.status === "pending" ? [
+              <Button key="deny" danger onClick={() => handleUpdateStatus("denied")}>
+                Deny
+              </Button>,
+
+              <Button key="approve" type="primary" onClick={() => handleUpdateStatus("approved")}>
+                Approve
+              </Button>,
+            ] : null
+          }
         >
           {selectedRequest ? (
             <div>
@@ -288,6 +299,20 @@ const RestockRequest = () => {
               {selectedRequest.reason && (
                 <p><strong>Reason:</strong> {selectedRequest.reason}</p>
               )}
+
+              {["approved", "denied"].includes(selectedRequest.status) ? (
+                selectedRequest.admin_comment ? (
+                  <p><strong>Admin Comment:</strong> {selectedRequest.admin_comment}</p>
+                ) : null
+              ) : userRole !== "super-user" ? (
+                <textarea
+                  placeholder="Add a comment (optional)"
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  style={{ width: "100%", marginTop: "1rem", padding: "8px" }}
+                  rows={4}
+                />
+              ) : null}
             </div>
           ) : (
             <p>Loading request details...</p>
