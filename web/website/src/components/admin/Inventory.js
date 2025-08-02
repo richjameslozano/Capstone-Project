@@ -708,94 +708,192 @@ useEffect(() => {
     setIsNotificationVisible(true);
   }
 };
-
-
   
 // BACKEND
-const handleFullUpdate = async (values) => {
-  try {
-    if (!editingItem || !editingItem.docId) {
-      console.error("❌ No item selected or docId missing.");
-      setNotificationMessage("Item selection error.");
-      setIsNotificationVisible(true);
-      return;
-    }
+// const handleFullUpdate = async (values) => {
+//   try {
+//     if (!editingItem || !editingItem.docId) {
+//       console.error("❌ No item selected or docId missing.");
+//       setNotificationMessage("Item selection error.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
 
-    // Basic sanitization
-    const sanitizedItemName = values.itemName?.trim();
-    const sanitizedItemDetails = values.itemDetails?.trim();
-    const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel || 1), 1);
+//     // Basic sanitization
+//     const sanitizedItemName = values.itemName?.trim();
+//     const sanitizedItemDetails = values.itemDetails?.trim();
+//     const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel || 1), 1);
 
-    if (!sanitizedItemName || !sanitizedItemDetails) {
-      setNotificationMessage("Item name and details are required.");
-      setIsNotificationVisible(true);
-      return;
-    }
+//     if (!sanitizedItemName || !sanitizedItemDetails) {
+//       setNotificationMessage("Item name and details are required.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
 
-    // Construct payload
-    const payload = {
-      itemName: sanitizedItemName,
-      itemDetails: sanitizedItemDetails,
-      category: values.category,
-      department: values.department,
-      criticalLevel: sanitizedCriticalLevel,
-      labRoom: values.labRoom,
-      shelves: values.shelves,
-      row: values.row, 
-      unit: values.unit,
-      status: values.status,
-      condition: {
-        Good: Number(values.condition?.Good || 0),
-        Defect: Number(values.condition?.Defect || 0),
-        Damage: Number(values.condition?.Damage || 0),
-        Lost: Number(values.condition?.Lost || 0),
-      },
-    };
+//     // Construct payload
+//     const payload = {
+//       itemName: sanitizedItemName,
+//       itemDetails: sanitizedItemDetails,
+//       category: values.category,
+//       department: values.department,
+//       criticalLevel: sanitizedCriticalLevel,
+//       labRoom: values.labRoom,
+//       shelves: values.shelves,
+//       row: values.row, 
+//       unit: values.unit,
+//       status: values.status,
+//       condition: {
+//         Good: Number(values.condition?.Good || 0),
+//         Defect: Number(values.condition?.Defect || 0),
+//         Damage: Number(values.condition?.Damage || 0),
+//         Lost: Number(values.condition?.Lost || 0),
+//       },
+//     };
 
-    const userId = localStorage.getItem("userId");
-    const userName = localStorage.getItem("userName") || "User";
+//     const userId = localStorage.getItem("userId");
+//     const userName = localStorage.getItem("userName") || "User";
 
-    const response = await axios.post("https://webnuls.onrender.com/update-inventory-full", {
-      values: payload,
-      editingItem,
-      userId,
-      userName,
-    });
+//     const response = await axios.post("https://webnuls.onrender.com/update-inventory-full", {
+//       values: payload,
+//       editingItem,
+//       userId,
+//       userName,
+//     });
 
-    if (response.status === 200) {
-      setNotificationMessage("Item updated successfully!");
-      setIsNotificationVisible(true);
+//     if (response.status === 200) {
+//       setNotificationMessage("Item updated successfully!");
+//       setIsNotificationVisible(true);
 
-      // Update local state
-      const updatedItem = {
-        ...editingItem,
-        ...payload,
-        quantity: payload.condition.Good, // assumes quantity = Good
+//       // Update local state
+//       const updatedItem = {
+//         ...editingItem,
+//         ...payload,
+//         quantity: payload.condition.Good, // assumes quantity = Good
+//       };
+
+//       setDataSource((prev) =>
+//         prev.map((item) =>
+//           item.docId === editingItem.docId ? updatedItem : item
+//         )
+//       );
+
+//       // Reset UI
+//       setIsFullEditModalVisible(false);
+//       setIsRowModalVisible(false);
+//       setEditingItem(null);
+//       fullEditForm.resetFields();
+      
+//     } else {
+//       setNotificationMessage("Failed to update item.");
+//       setIsNotificationVisible(true);
+//     }
+
+//   } catch (error) {
+//     console.error("Error in handleFullUpdate:", error);
+//     setNotificationMessage("Error updating item. Check console.");
+//     setIsNotificationVisible(true);
+//   }
+// };
+
+  const handleFullUpdate = async (values) => {
+    try {
+      if (!editingItem || !editingItem.docId) {
+        console.error("❌ No item selected or docId missing.");
+        setNotificationMessage("Item selection error.");
+        setIsNotificationVisible(true);
+        return;
+      }
+
+      // Basic sanitization
+      const sanitizedItemName = values.itemName?.trim();
+      const sanitizedItemDetails = values.itemDetails?.trim();
+      const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel || 1), 1);
+
+      if (!sanitizedItemName || !sanitizedItemDetails) {
+        setNotificationMessage("Item name and details are required.");
+        setIsNotificationVisible(true);
+        return;
+      }
+
+      // Sanitize and calculate condition values
+      const Good = Number(values.condition?.Good || 0);
+      const Defect = Number(values.condition?.Defect || 0);
+      const Damage = Number(values.condition?.Damage || 0);
+      const Lost = Number(values.condition?.Lost || 0);
+
+      const conditionTotal = Good + Defect + Damage + Lost;
+      const originalQuantity = editingItem.quantity || 0;
+
+      if (conditionTotal !== originalQuantity) {
+        setNotificationMessage(`❌ Total of Good, Defect, Damage, and Lost (${conditionTotal}) must equal original quantity (${originalQuantity}).`);
+        setIsNotificationVisible(true);
+        return;
+      }
+
+      // Construct payload
+      const payload = {
+        itemName: sanitizedItemName,
+        itemDetails: sanitizedItemDetails,
+        category: values.category,
+        department: values.department,
+        criticalLevel: sanitizedCriticalLevel,
+        labRoom: values.labRoom,
+        shelves: values.shelves,
+        row: values.row, 
+        unit: values.unit,
+        status: values.status,
+        condition: {
+          Good,
+          Defect,
+          Damage,
+          Lost,
+        },
       };
 
-      setDataSource((prev) =>
-        prev.map((item) =>
-          item.docId === editingItem.docId ? updatedItem : item
-        )
-      );
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName") || "User";
 
-      // Reset UI
-      setIsFullEditModalVisible(false);
-      setIsRowModalVisible(false);
-      setEditingItem(null);
-      fullEditForm.resetFields();
-      
-    } else {
-      setNotificationMessage("Failed to update item.");
+      const response = await axios.post("https://webnuls.onrender.com/update-inventory-full", {
+        values: payload,
+        editingItem,
+        userId,
+        userName,
+      });
+
+      if (response.status === 200) {
+        setNotificationMessage("✅ Item updated successfully!");
+        setIsNotificationVisible(true);
+
+        // Update local state
+        const updatedItem = {
+          ...editingItem,
+          ...payload,
+          quantity: payload.condition.Good, // assumes quantity = Good
+        };
+
+        setDataSource((prev) =>
+          prev.map((item) =>
+            item.docId === editingItem.docId ? updatedItem : item
+          )
+        );
+
+        // Reset UI
+        setIsFullEditModalVisible(false);
+        setIsRowModalVisible(false);
+        setEditingItem(null);
+        fullEditForm.resetFields();
+        
+      } else {
+        setNotificationMessage("❌ Failed to update item.");
+        setIsNotificationVisible(true);
+      }
+
+    } catch (error) {
+      console.error("Error in handleFullUpdate:", error);
+      setNotificationMessage("❌ Error updating item. Check console.");
       setIsNotificationVisible(true);
     }
-
-  } catch (error) {
-    console.error("Error in handleFullUpdate:", error);
-    setNotificationMessage("Error updating item. Check console.");
-    setIsNotificationVisible(true);
-  }
-};
+  };
 
   useEffect(() => {
     if (isEditModalVisible) {
@@ -2198,45 +2296,86 @@ useEffect(() => {
             zIndex={1030}
           >
             <Form form={fullEditForm} layout="vertical" onFinish={handleFullUpdate}
+            // onValuesChange={(changedValues, allValues) => {
+            //     if ('condition' in changedValues) {
+            //       const condition = allValues.condition || {};
+            //       const originalGood = editingItem.condition?.Good ?? 0;
+
+            //       const defect = Number(condition.Defect) || 0;
+            //       const damage = Number(condition.Damage) || 0;
+            //       const lost = Number(condition.Lost) || 0;
+
+            //       const newGood = originalGood - defect - damage - lost;
+
+            //       if (newGood < 0) {
+            //         fullEditForm.setFields([
+            //           {
+            //             name: ['condition', 'Defect'],
+            //             errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
+            //           },
+            //           {
+            //             name: ['condition', 'Damage'],
+            //             errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
+            //           },
+            //           {
+            //             name: ['condition', 'Lost'],
+            //             errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
+            //           },
+            //         ]);
+            //       } else {
+            //         fullEditForm.setFields([
+            //           { name: ['condition', 'Defect'], errors: [] },
+            //           { name: ['condition', 'Damage'], errors: [] },
+            //           { name: ['condition', 'Lost'], errors: [] },
+            //         ]);
+            //         const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
+            //         if (currentGood !== newGood) {
+            //           fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
+            //         }
+            //       }
+            //     }
+            //   }}
+              
             onValuesChange={(changedValues, allValues) => {
-                if ('condition' in changedValues) {
-                  const condition = allValues.condition || {};
-                  const originalGood = editingItem.condition?.Good ?? 0;
+              if ('condition' in changedValues) {
+                const condition = allValues.condition || {};
+                const totalCondition =
+                  Number(condition.Good || 0) +
+                  Number(condition.Defect || 0) +
+                  Number(condition.Damage || 0) +
+                  Number(condition.Lost || 0);
 
-                  const defect = Number(condition.Defect) || 0;
-                  const damage = Number(condition.Damage) || 0;
-                  const lost = Number(condition.Lost) || 0;
+                const originalQuantity = editingItem.quantity || 0;
 
-                  const newGood = originalGood - defect - damage - lost;
-
-                  if (newGood < 0) {
-                    fullEditForm.setFields([
-                      {
-                        name: ['condition', 'Defect'],
-                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
-                      },
-                      {
-                        name: ['condition', 'Damage'],
-                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
-                      },
-                      {
-                        name: ['condition', 'Lost'],
-                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
-                      },
-                    ]);
-                  } else {
-                    fullEditForm.setFields([
-                      { name: ['condition', 'Defect'], errors: [] },
-                      { name: ['condition', 'Damage'], errors: [] },
-                      { name: ['condition', 'Lost'], errors: [] },
-                    ]);
-                    const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
-                    if (currentGood !== newGood) {
-                      fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
-                    }
-                  }
+                if (totalCondition !== originalQuantity) {
+                  fullEditForm.setFields([
+                    {
+                      name: ['condition', 'Good'],
+                      errors: ['Total of all conditions must equal original quantity: ' + originalQuantity],
+                    },
+                    {
+                      name: ['condition', 'Defect'],
+                      errors: [''],
+                    },
+                    {
+                      name: ['condition', 'Damage'],
+                      errors: [''],
+                    },
+                    {
+                      name: ['condition', 'Lost'],
+                      errors: [''],
+                    },
+                  ]);
+                } else {
+                  fullEditForm.setFields([
+                    { name: ['condition', 'Good'], errors: [] },
+                    { name: ['condition', 'Defect'], errors: [] },
+                    { name: ['condition', 'Damage'], errors: [] },
+                    { name: ['condition', 'Lost'], errors: [] },
+                  ]);
                 }
-              }}
+              }
+            }}
               >
             <Row gutter={16}>
               <Col span={12}>
@@ -2376,11 +2515,14 @@ useEffect(() => {
             )}
             </Row>
              {(selectedCategory === "Glasswares" || selectedCategory === "Equipment"|| selectedCategory ==="Materials") && (
-                   <Row gutter={16}>
+      <Row gutter={16}>
                     <Form.Item
                       label="Good"
                       name={['condition', 'Good']}
-                      rules={[{ required: true, message: "Please enter Good quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Good quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
                       <InputNumber min={0} style={{ width: '100%' }} />
                     </Form.Item>
@@ -2388,27 +2530,60 @@ useEffect(() => {
                     <Form.Item
                       label="Defect"
                       name={['condition', 'Defect']}
-                      rules={[{ required: true, message: "Please enter Defect quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Defect quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                      <InputNumber
+                        min={0}
+                        style={{ width: '100%' }}
+                        onKeyPress={(e) => {
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
                     </Form.Item>
 
                     <Form.Item
                       label="Damage"
                       name={['condition', 'Damage']}
-                      rules={[{ required: true, message: "Please enter Damage quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Damage quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                      <InputNumber
+                        min={0}
+                        style={{ width: '100%' }}
+                        onKeyPress={(e) => {
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
                     </Form.Item>
 
                     <Form.Item
                       label="Lost"
                       name={['condition', 'Lost']}
-                      rules={[{ required: true, message: "Please enter Lost quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Lost quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                      <InputNumber
+                        min={0}
+                        style={{ width: '100%' }}
+                        onKeyPress={(e) => {
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
                     </Form.Item>
-                  </Row>
+                  </Row>                
                 )}
             </Form>
           </Modal>
@@ -2744,7 +2919,7 @@ useEffect(() => {
                         }
 
                         if (parseInt(value) !== totalCondition) {
-                          return Promise.reject("Quantity must equal sum of Good, Defect, Damage and Lost");
+                          // return Promise.reject("Quantity must equal sum of Good, Defect, Damage and Lost");
                         }
 
                         return Promise.resolve();
