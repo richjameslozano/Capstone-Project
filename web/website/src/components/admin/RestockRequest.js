@@ -11,7 +11,7 @@ import {
   Spin,
 } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
-import { collection, onSnapshot, query, where } from "firebase/firestore";
+import { collection, onSnapshot, query, where, doc, updateDoc } from "firebase/firestore";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -28,6 +28,9 @@ const RestockRequest = () => {
   const [filterStatus, setFilterStatus] = useState(null);
   const [filterDepartment, setFilterDepartment] = useState(null);
   const [departmentsAll, setDepartmentsAll] = useState([]);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState(null);
+  const [userRole, setUserRole] = useState(null);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
@@ -60,6 +63,11 @@ const RestockRequest = () => {
     );
 
     return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    const storedRole = localStorage.getItem("userPosition");
+    setUserRole(storedRole);
   }, []);
 
   const filteredData = restockRequests.filter((item) => {
@@ -96,6 +104,21 @@ const RestockRequest = () => {
       theme: "grid",
     });
     doc.save("Restock_Requests.pdf");
+  };
+
+  const handleUpdateStatus = async (newStatus) => {
+    if (!selectedRequest) return;
+
+    try {
+      const requestRef = doc(db, "restock_requests", selectedRequest.id);
+      await updateDoc(requestRef, { status: newStatus });
+
+      setIsModalVisible(false);
+      setSelectedRequest(null);
+      
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
   };
 
   const columns = [
@@ -137,10 +160,12 @@ const RestockRequest = () => {
             <Title level={2}>Restock Requests</Title>
             <Text type="secondary">Manage all requests for item restocks here.</Text>
           </Col>
+
           <Col span={12} className="export-buttons">
             <Button type="primary" onClick={generatePDF}>
               Export as PDF
             </Button>
+
             <Button type="primary" onClick={exportToExcel}>
               Export to Excel
             </Button>
@@ -186,11 +211,50 @@ const RestockRequest = () => {
               rowKey="id"
               className="restock-table"
               pagination={{ pageSize: 10 }}
+              onRow={(record) => ({
+                onClick: () => {
+                  if (userRole === "admin" && record.status === "pending") {
+                    setSelectedRequest(record);
+                    setIsModalVisible(true);
+                  }
+                },
+              })}
             />
           ) : (
             <Text>No restock requests found.</Text>
           )}
         </Spin>
+
+        <Modal
+          title="Approve Restock Request"
+          open={isModalVisible}
+          onCancel={() => {
+            setIsModalVisible(false);
+            setSelectedRequest(null);
+          }}
+          zIndex={1030}
+          footer={[
+            <Button key="deny" danger onClick={() => handleUpdateStatus("denied")}>
+              Deny
+            </Button>,
+            <Button key="approve" type="primary" onClick={() => handleUpdateStatus("approved")}>
+              Approve
+            </Button>,
+          ]}
+        >
+          {selectedRequest ? (
+            <div>
+              <p><strong>Item:</strong> {selectedRequest.item_name}</p>
+              <p><strong>Quantity:</strong> {selectedRequest.quantity_needed}</p>
+              <p><strong>Department:</strong> {selectedRequest.department}</p>
+              <p><strong>Status:</strong> {selectedRequest.status}</p>
+              <p><strong>Date:</strong> {selectedRequest.created_at?.toDate().toLocaleDateString()}</p>
+            </div>
+          ) : (
+            <p>Loading request details...</p>
+          )}
+        </Modal>
+
       </Content>
     </Layout>
   );
