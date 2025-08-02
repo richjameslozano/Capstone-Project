@@ -325,8 +325,9 @@ const CapexList = () => {
             <Table
               dataSource={filteredRequests}
               rowKey="id"
-              pagination={{ pageSize: 5 }}
+              pagination={{ pageSize: 10 }}
               columns={columns}
+              className="capex-list-table"
             />
           </Col>
         </Row>
@@ -404,6 +405,7 @@ const CapexList = () => {
               ]}
               pagination={false}
               size="small"
+              className="capex-list-table"
               style={{ marginTop: 20 }}
             />
           </div>
