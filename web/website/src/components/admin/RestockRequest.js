@@ -172,28 +172,31 @@ const RestockRequest = () => {
           </Col>
         </Row>
 
-        <Row className="filter-row">
+        <Row className="filter-row" gutter={16}>
           <Col span={6}>
             <Select
               className="filter-select"
               placeholder="Filter by Status"
+              value={filterStatus || ""}
               onChange={(value) => setFilterStatus(value)}
+              allowClear
             >
-              <Option value={null}>All</Option>
+              <Option value="">All</Option>
               <Option value="pending">Pending</Option>
               <Option value="approved">Approved</Option>
               <Option value="denied">Denied</Option>
             </Select>
           </Col>
 
-          <Col span={6} offset={2}>
+          <Col span={6}>
             <Select
               className="filter-select"
               placeholder="Filter by Department"
+              value={filterDepartment || ""}
               onChange={(value) => setFilterDepartment(value)}
               allowClear
             >
-              <Option value={null}>All</Option>
+              <Option value="">All</Option>
               {departmentsAll.map((dept) => (
                 <Option key={dept.id} value={dept.name}>
                   {dept.name}
