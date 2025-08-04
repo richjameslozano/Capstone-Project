@@ -127,20 +127,40 @@ const navigation = useNavigation()
 
   return (
     <View style={styles.container}>
-      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+      {/* <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                                 <Icon name="keyboard-backspace" size={28} color="black" />
                               </TouchableOpacity>
 
-              <View>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>CAPEX Request</Text>
-                <Text style={{ fontWeight: 300, fontSize: 13}}>Capital Expenditure Proposal</Text>
-              </View>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 18, color: '#395a7f' }}>
+              Activity Log
+            </Text>
+            <Text style={{ fontWeight: 300, fontSize: 13}}>Activity Log</Text>
+          </View>
+
 
                 <TouchableOpacity style={{padding: 2}}>
                   <Icon name="information-outline" size={24} color="#000" />
                 </TouchableOpacity>
-              </View>
+        </View> */}
+
+        <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon name="keyboard-backspace" size={28} color="black" />
+          </TouchableOpacity>
+
+          <View style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingTop: 30 }}>
+            <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 18, color: '#395a7f' }}>
+              Activity Log
+            </Text>
+          </View>
+
+          {/* Optional future right button */}
+          {/* <TouchableOpacity style={{padding: 2}}>
+            <Icon name="information-outline" size={24} color="#000" />
+          </TouchableOpacity> */}
+        </View>
 
         <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
 
