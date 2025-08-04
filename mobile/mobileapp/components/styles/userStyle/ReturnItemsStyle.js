@@ -150,14 +150,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark overlay for focus
     paddingHorizontal: 20,
-    paddingTop: 200,
+    paddingTop: 100,
   },
 
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 14,
     padding: 24,
-    maxHeight: '85%',
+    maxHeight: '95%',
     width: '100%',
     elevation: 12,
     shadowColor: '#000',
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 6,
     padding: 8,
-    fontSize: 14,
+    fontSize: 10,
     backgroundColor: '#fefefe',
     marginTop: 4,
   },
@@ -214,6 +214,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#222',
     paddingHorizontal: 6,
+    fontSize: 11,
   },
 
   cell: {                 // generic body text
@@ -222,6 +223,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#444',
     paddingHorizontal: 6,
+    fontSize: 12,
   },
 
   /* –– reusable widths so header and rows always match –– */

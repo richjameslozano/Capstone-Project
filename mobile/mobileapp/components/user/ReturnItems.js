@@ -364,6 +364,7 @@ const ReturnItems = () => {
                 <KeyboardAvoidingView
                   behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                   style={{ flex: 1, width: '90%', maxWidth: 600 }}
+                  keyboardVerticalOffset={Platform.OS === 'android' ? 20 : 0}
                 >
                   <ScrollView
                     contentContainerStyle={styles.modalContent}
@@ -377,7 +378,7 @@ const ReturnItems = () => {
 
                     <Text style={styles.boldText}>Requested Items:</Text>
 
-                    <View style={styles.tableContainer2}>
+                    {/* <View style={styles.tableContainer2}>
                       <View style={styles.tableHeader}>
                         <Text style={styles.headerCell}>Item Name</Text>
                         <Text style={styles.headerCell}>Quantity</Text>
@@ -438,6 +439,70 @@ const ReturnItems = () => {
                           </View>
                         ));
                       })}
+                    </View> */}
+                    <View style={styles.tableContainer2}>
+                      <View style={styles.tableHeader}>
+                        <Text style={styles.headerCell}>Item Name</Text>
+                        <Text style={styles.headerCell}>Quantity</Text>
+                        <Text style={styles.headerCell}>Returned Qty</Text>
+                        <Text style={styles.headerCell}>Condition</Text>
+                      </View>
+
+                      <ScrollView style={{ maxHeight: 300 }} nestedScrollEnabled>
+                        {selectedRequest?.raw?.requestList?.map((item, index) => {
+                          const quantityArray = Array.from({ length: item.quantity }, (_, i) => i + 1);
+                          return quantityArray.map((q, i) => (
+                            <View key={`${index}-${i}`} style={styles.tableRow}>
+                              <Text style={styles.cell}>{item.itemName}</Text>
+                              <Text style={styles.cell}>1</Text>
+
+                              <View style={{ flex: 1, paddingHorizontal: 6 }}>
+                                <TextInput
+                                  placeholder="Returned Qty"
+                                  keyboardType="number-pad"
+                                  style={styles.input}
+                                  value={returnQuantities[`${item.itemIdFromInventory}-${i}`] || ''}
+                                  onChangeText={(text) => {
+                                    const input = parseInt(text, 10);
+                                    const max = 1;
+                                    if (!isNaN(input) && input <= max) {
+                                      setReturnQuantities((prev) => ({
+                                        ...prev,
+                                        [`${item.itemIdFromInventory}-${i}`]: input.toString(),
+                                      }));
+                                    } else if (input > max) {
+                                      alert(`Returned quantity cannot exceed borrowed quantity (${max}).`);
+                                    } else {
+                                      setReturnQuantities((prev) => ({
+                                        ...prev,
+                                        [`${item.itemIdFromInventory}-${i}`]: '',
+                                      }));
+                                    }
+                                  }}
+                                />
+                              </View>
+
+                              <View style={{ flex: 1, paddingHorizontal: 6 }}>
+                                <Picker
+                                  selectedValue={itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
+                                  style={styles.picker}
+                                  onValueChange={(value) => {
+                                    setItemConditions((prev) => ({
+                                      ...prev,
+                                      [`${item.itemIdFromInventory}-${i}`]: value,
+                                    }));
+                                  }}
+                                >
+                                  <Picker.Item label="Good" value="Good" />
+                                  <Picker.Item label="Defect" value="Defect" />
+                                  <Picker.Item label="Damage" value="Damage" />
+                                  <Picker.Item label="Lost" value="Lost" />
+                                </Picker>
+                              </View>
+                            </View>
+                          ));
+                        })}
+                      </ScrollView>
                     </View>
 
                     <View style={styles.modalButtons}>
