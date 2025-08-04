@@ -146,14 +146,26 @@ export default function ProfileScreen({ navigation }) {
   return (
     <View style={[styles.container, {paddingTop: headerHeight+5}]}>
 
+      {/* <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
+        
+        <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 16}}>My Account</Text>
+        
+        <TouchableOpacity style={{padding: 2}}>
+          <Icon name="dots-vertical" size={24} color="#000" />
+        </TouchableOpacity>
+      </View> */}
+
       <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <Icon name="keyboard-backspace" size={28} color="black" />
         </TouchableOpacity>
-        <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 16}}>My Account</Text>
-        <TouchableOpacity style={{padding: 2}}>
-          <Icon name="dots-vertical" size={24} color="#000" />
-        </TouchableOpacity>
+
+        <View style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingTop: 30 }}>
+          <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'black' }}>My Account</Text>
+        </View>
       </View>
   
       <View style={{ backgroundColor: 'white', borderRadius: 8, paddingTop: 8, paddingBottom: 20, paddingHorizontal: 10, alignItems: 'center' }}>
