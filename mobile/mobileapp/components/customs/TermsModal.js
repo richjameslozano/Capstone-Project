@@ -76,7 +76,7 @@ const TermsModal = ({ visible, onClose }) => {
           <Text style={styles.modalText}>• These Terms may be updated anytime. Continued use implies acceptance of the revised Terms.</Text>
 
           <Text style={styles.sectionTitle}>11. Contact</Text>
-          <Text style={styles.modalText}>If you have questions, please contact us at [support@email.com].</Text>
+          <Text style={styles.modalText}>If you have questions, please contact us at [nulsnumoa@gmail.com].</Text>
 
           <Button mode="contained" onPress={onClose} style={styles.closeButton}>
             Close
