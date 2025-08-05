@@ -317,11 +317,12 @@
 // export default ApprovedRequestModal;
 
 // VERSION 2
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Row, Col, Typography, Table, Button } from "antd";
 import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs  } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { getAuth } from "firebase/auth";
+import NotificationModal from "./NotificationModal";
 const { Text, Title } = Typography;
 
 const ApprovedRequestModal = ({
@@ -334,6 +335,8 @@ const ApprovedRequestModal = ({
   
   // fallback to empty array if undefined
 const requestList = selectedApprovedRequest?.requestList || [];
+const [notificationMessage, setNotificationMessage] = useState("");
+const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
 
   const conditionCounts = requestList.reduce((acc, item) => {
     const condition = item.condition;
@@ -388,6 +391,10 @@ if (selectedApprovedRequest?.status === "Returned") {
   });
 }
 
+const showNotification = (msg) => {
+  setNotificationMessage(msg);
+  setIsNotificationModalVisible(true);
+};
 
 function getConditionSummary(conditionsArray) {
   if (!Array.isArray(conditionsArray)) return "N/A";
@@ -626,8 +633,10 @@ function getConditionSummary(conditionsArray) {
         });
       }
 
-      alert("Request successfully deployed!");
+      // alert("Request successfully deployed!");
+      showNotification("Request successfully deployed!");
       setIsApprovedModalVisible(false);
+
     } catch (error) {
       console.error("❌ Error during deployment:", error.message || error);
       alert("Deployment failed. Check console for details.");
@@ -776,6 +785,7 @@ function getConditionSummary(conditionsArray) {
       alert("Request successfully released!");
       setIsApprovedModalVisible(false);
       setSelectedApprovedRequest(null);
+      
     } catch (err) {
       console.error("Error releasing request:", err);
       alert("Release failed.");
@@ -783,6 +793,7 @@ function getConditionSummary(conditionsArray) {
   };
 
   return (
+  <>
     <Modal
       title={
         <div style={{ background: "#389e0d", padding: "12px", color: "#fff" }}>
@@ -856,6 +867,13 @@ function getConditionSummary(conditionsArray) {
         </div>
       )}
     </Modal>
+
+    <NotificationModal
+      isVisible={isNotificationModalVisible}
+      onClose={() => setIsNotificationModalVisible(false)}
+      message={notificationMessage}
+    />
+  </>
   );
 };
 
