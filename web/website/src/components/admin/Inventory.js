@@ -153,147 +153,147 @@ const Inventory = () => {
   //   return () => unsubscribe(); // Clean up the listener on unmount
   // }, []);
 
-  useEffect(() => {
-    const inventoryRef = collection(db, "inventory");
+ useEffect(() => {
+  const inventoryRef = collection(db, "inventory");
 
-    const unsubscribe = onSnapshot(
-      inventoryRef,
-      async (snapshot) => {
-        setLoading(true); // Start loading
-        try {
-          const batch = writeBatch(db); // use batch to reduce writes
+  const unsubscribe = onSnapshot(inventoryRef, async (snapshot) => {
+    setLoading(true); // Start loading
 
-          const items = await Promise.all(
-            snapshot.docs.map(async (docSnap, index) => {
-              const data = docSnap.data();
-              const docId = docSnap.id;
+    try {
+      const batch = writeBatch(db); // Use batch to reduce writes
 
-              const entryDate = data.entryDate || "N/A";
-              const expiryDate = data.expiryDate || "N/A";
+      const items = await Promise.all(
+        snapshot.docs.map(async (docSnap, index) => {
+          const data = docSnap.data();
+          const docId = docSnap.id;
 
-              const quantity = Number(data.quantity) || 0;
-              const category = (data.category || "").toLowerCase();
+          const entryDate = data.entryDate || "N/A";
+          const expiryDate = data.expiryDate || "N/A";
+          const quantity = Number(data.quantity) || 0;
+          const category = (data.category || "").toLowerCase();
+          const initialCriticalLevel = data.criticalLevel || "normal"; // Get encoder-provided critical level
 
-              let status = data.status || ""; // base status
-              let newStatus = status;
-              
-              try {
-                        if (data.itemId) {
-                          const usageQuery = query(
-                            collection(db, "itemUsage"),
-                            where("itemId", "==", data.itemId),
-                            orderBy("timestamp", "desc"),
-                            limit(30)
-                          );
+          let status = data.status || "";
+          let newStatus = status;
+          let criticalLevel = initialCriticalLevel;
 
-                          const usageSnapshot = await getDocs(usageQuery);
+          // Skip the critical level calculation for "equipment" category items
+          if (data.itemId && category !== "equipment") {
+            try {
+              const usageQuery = query(
+                collection(db, "itemUsage"),
+                where("itemId", "==", data.itemId),
+                orderBy("timestamp", "desc")
+              );
 
-                          const totalUsed = usageSnapshot.docs.reduce((sum, doc) => {
-                            const usageData = doc.data();
-                            const used = Number(usageData.usedQuantity) || 0;
-                            return sum + used;
-                          }, 0);
+              const usageSnapshot = await getDocs(usageQuery);
 
-                          const uniqueDays = new Set(
-                            usageSnapshot.docs
-                              .map(doc => {
-                                const ts = doc.data().timestamp;
-                                return ts instanceof Timestamp ? ts.toDate().toDateString() : null;
-                              })
-                              .filter(Boolean)
-                          );
+              const totalUsed = usageSnapshot.docs.reduce((sum, doc) => {
+                const usageData = doc.data();
+                const used = Number(usageData.usedQuantity) || 0;
+                return sum + used;
+              }, 0);
 
-                          const numDays = Math.max(uniqueDays.size, 1);
-                          const avgDailyUsage = totalUsed / numDays;
+              const uniqueDays = new Set(
+                usageSnapshot.docs
+                  .map(doc => {
+                    const ts = doc.data().timestamp;
+                    return ts instanceof Timestamp ? ts.toDate().toDateString() : null;
+                  })
+                  .filter(Boolean)
+              );
 
-                          const isCritical = quantity <= avgDailyUsage * 30;
-                          console.log("Critical check:", {
-                            item: data.itemName,
-                            avgDailyUsage,
-                            quantity,
-                            isCritical
-                          });
+              const numDays = Math.max(uniqueDays.size, 1); // Prevent division by zero
+              const avgDailyUsage = totalUsed / numDays;
 
+              // Calculate critical level only for non-equipment items
+              criticalLevel = quantity <= avgDailyUsage * 30 ? "critical" : "normal";
 
-                          batch.update(doc(db, "inventory", docId), {
-                            averageDailyUsage: avgDailyUsage,
-                             ...(avgDailyUsage > 0 ? { averageDailyUsage: avgDailyUsage } : {}),
-                            
-                          });
-                        }
-                      } catch (err) {
-                        console.error("Error calculating critical status for item:", data.itemName, err);
-                      }
-
-              // Update logic
-              if (quantity === 0) {
-                if (["chemical", "reagent", "materials"].includes(category)) {
-                  newStatus = "out of stock";
-                  
-                } else if (["equipment", "glasswares"].includes(category)) {
-                  newStatus = "in use";
-                }
-              }
-
-              // If status changed in logic, update inventory
-              if (newStatus !== status) {
-                const itemRef = doc(db, "inventory", docId);
-                batch.update(itemRef, { status: newStatus });
-              }
-
-              // 🔁 SYNC TO LABROOM ITEMS
-              const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
-
-              for (const roomDoc of labRoomsSnapshot.docs) {
-                const roomId = roomDoc.id;
-                const itemsRef = collection(db, `labRoom/${roomId}/items`);
-                const itemsSnap = await getDocs(itemsRef);
-
-                itemsSnap.forEach((itemDoc) => {
-                  const itemData = itemDoc.data();
-                  if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
-                    const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
-                    batch.update(labItemRef, { status: newStatus });
-                  }
-                });
-              }
-
-              return {
-                docId,
-                id: index + 1,
-                itemId: data.itemId,
+              console.log("Critical check:", {
                 item: data.itemName,
-                entryDate,
-                expiryDate,
-                qrCode: data.qrCode,
-                status: newStatus,
-                ...data,
-              };
-            })
-          );
+                avgDailyUsage,
+                quantity,
+                criticalLevel
+              });
 
-          // ✅ Commit all batched updates
-          await batch.commit();
+              // Update the inventory with the calculated average daily usage
+              batch.update(doc(db, "inventory", docId), {
+                averageDailyUsage: avgDailyUsage > 0 ? avgDailyUsage : 0,
+                criticalLevel
+              });
 
-          // Update state
-          items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
-          setDataSource(items);
-          setCount(items.length);
+            } catch (err) {
+              console.error("Error calculating critical status for item:", data.itemName, err);
+            }
+          }
 
-        } catch (error) {
-          console.error("Error processing inventory snapshot: ", error);
-        }finally {
-        setLoading(false); // Stop loading
-      }
-      },
-      (error) => {
-        console.error("Error fetching inventory with onSnapshot: ", error);
-        setLoading(false); // Stop loading even on error
-      }
-    );
+          // Update status logic for inventory items
+          if (quantity === 0) {
+            if (["chemical", "reagent", "materials"].includes(category)) {
+              newStatus = "out of stock";
+            } else if (["equipment", "glasswares"].includes(category)) {
+              newStatus = "in use";
+            }
+          }
 
-    return () => unsubscribe();
-  }, []);
+          // If status changed, update inventory
+          if (newStatus !== status) {
+            const itemRef = doc(db, "inventory", docId);
+            batch.update(itemRef, { status: newStatus });
+          }
+
+          // Sync status change to lab room items
+          const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
+          for (const roomDoc of labRoomsSnapshot.docs) {
+            const roomId = roomDoc.id;
+            const itemsRef = collection(db, `labRoom/${roomId}/items`);
+            const itemsSnap = await getDocs(itemsRef);
+
+            itemsSnap.forEach((itemDoc) => {
+              const itemData = itemDoc.data();
+              if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
+                const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
+                batch.update(labItemRef, { status: newStatus });
+              }
+            });
+          }
+
+          return {
+            docId,
+            id: index + 1,
+            itemId: data.itemId,
+            item: data.itemName,
+            entryDate,
+            expiryDate,
+            qrCode: data.qrCode,
+            status: newStatus,
+            criticalLevel,
+            ...data,
+          };
+        })
+      );
+
+      // Commit all batched updates
+      await batch.commit();
+
+      // Sort items and update state
+      items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+      setDataSource(items);
+      setCount(items.length);
+
+    } catch (error) {
+      console.error("Error processing inventory snapshot: ", error);
+    } finally {
+      setLoading(false); // Stop loading
+    }
+  }, (error) => {
+    console.error("Error fetching inventory with onSnapshot: ", error);
+    setLoading(false); // Stop loading even on error
+  });
+
+  return () => unsubscribe();
+}, []);
+
 
 
 
