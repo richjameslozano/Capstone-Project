@@ -636,8 +636,9 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             && (
               
               <View style={[styles.inner, {padding: 20}]}>
-                <View style={{alignItems: 'center', paddingTop: 30, paddingBottom: 25, borderBottomWidth: 2, marginBottom: 25, borderColor: '#395a7f'}}>
+                <View style={{alignItems: 'center', paddingTop: 30, paddingBottom: 20, borderBottomWidth: 2, marginBottom: 25, borderColor: '#e9ecee'}}>
                   <Text style={{textAlign: 'center', color: 'black', fontSize: 28, fontWeight: 700}}>Signing Up</Text>
+                  <Text style={{color: 'gray', marginTop: 5}}>Create your own account.</Text>
                 </View>
 
                 <Text style={styles.label}>Full Name:<Text style={{color:'red'}}>*</Text></Text>
