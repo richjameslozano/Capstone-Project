@@ -228,6 +228,184 @@
 
 
 // VERSION 3
+// import React, { useEffect, useState } from 'react';
+// import {
+//   View,
+//   Text,
+//   FlatList,
+//   SafeAreaView,
+//   ActivityIndicator,
+//   TouchableOpacity,
+// } from 'react-native';
+// import {
+//   collection,
+//   query,
+//   orderBy,
+//   onSnapshot,
+//   doc,
+//   updateDoc,
+// } from 'firebase/firestore';
+// import { db } from '../backend/firebase/FirebaseConfig';
+// import styles from './styles/NotificationsStyle';
+// import { useAuth } from './contexts/AuthContext';
+
+// const NotificationItem = ({ title, message, timestamp, onPress, unread }) => {
+//   const formattedTime = timestamp?.toDate?.().toLocaleString?.() || 'No timestamp';
+
+//   return (
+//     <TouchableOpacity onPress={onPress}>
+//       <View style={[styles.notificationCard, unread && { backgroundColor: '#ffecec' }]}>
+//         <Text style={[styles.title, unread && { fontWeight: 'bold' }]}>
+//           {unread ? '• ' : ''}{title}
+//         </Text>
+//         <Text style={styles.message}>{message}</Text>
+//         <Text style={styles.timestamp}>{formattedTime}</Text>
+//       </View>
+//     </TouchableOpacity>
+//   );
+// };
+
+// const Notifications = () => {
+//   const { user } = useAuth(); // Get user from auth context
+//   const userId = user?.id;
+//   const role = user?.role?.toLowerCase() || 'user';
+
+//   const [notifications, setNotifications] = useState([]);
+//   const [loading, setLoading] = useState(true);
+
+//   useEffect(() => {
+//     if (!userId || userId === 'system') {
+//       setLoading(false);
+//       return;
+//     }
+
+//     setLoading(true);
+
+//     let unsubAll = () => {};
+//     let unsubUser = () => {};
+
+//     const fetchNotifications = () => {
+//       const allQuery = query(collection(db, 'allNotifications'), orderBy('timestamp', 'desc'));
+//       const userQuery = query(
+//         collection(db, 'accounts', userId, 'userNotifications'),
+//         orderBy('timestamp', 'desc')
+//       );
+
+//       if (role === 'super-user') {
+//         unsubAll = onSnapshot(allQuery, (snapshot) => {
+//           const all = snapshot.docs
+//             .map((doc) => ({ id: doc.id, ...doc.data(), from: 'all' }))
+//             .filter((n) =>
+//               !(
+//                 n.type === 'restock-request' &&
+//                 typeof n.action === 'string' &&
+//                 n.action.startsWith('Restock request submitted by')
+//               )
+//             );
+
+//           setNotifications((prev) => {
+//             const userNotifs = prev.filter((n) => n.from === 'user');
+//             return [...all, ...userNotifs].sort(
+//               (a, b) => b.timestamp?.seconds - a.timestamp?.seconds
+//             );
+//           });
+
+//           setLoading(false);
+//         });
+
+//         unsubUser = onSnapshot(userQuery, (snapshot) => {
+//           const user = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), from: 'user' }));
+//           setNotifications((prev) => {
+//             const allNotifs = prev.filter((n) => n.from === 'all');
+//             return [...user, ...allNotifs].sort(
+//               (a, b) => b.timestamp?.seconds - a.timestamp?.seconds
+//             );
+//           });
+
+//           setLoading(false);
+//         });
+
+//       } else if (role === 'user') {
+//         unsubUser = onSnapshot(userQuery, (snapshot) => {
+//           const user = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+//           setNotifications(user);
+//           setLoading(false);
+//         });
+
+//       } else {
+//         unsubAll = onSnapshot(allQuery, (snapshot) => {
+//           const all = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+//           setNotifications(all);
+//           setLoading(false);
+//         });
+//       }
+//     };
+
+//     fetchNotifications();
+
+//     return () => {
+//       unsubAll();
+//       unsubUser();
+//     };
+//   }, [userId, role]);
+
+//   const handleMarkAsRead = async (notifId, from) => {
+//     if (!notifId || !userId) return;
+
+//     try {
+//       const notifDocRef =
+//         from === 'user'
+//           ? doc(db, 'accounts', userId, 'userNotifications', notifId)
+//           : doc(db, 'allNotifications', notifId);
+
+//       await updateDoc(notifDocRef, {
+//         [`readBy.${userId}`]: true,
+//       });
+
+//     } catch (err) {
+//       console.error('❌ Failed to mark notification as read:', err);
+//     }
+//   };
+
+//   return (
+//     <SafeAreaView style={styles.container}>
+//       <Text style={styles.header}>Notifications</Text>
+
+//       {loading ? (
+//         <ActivityIndicator size="large" color="#000" />
+//       ) : (
+//         <FlatList
+//           data={notifications}
+//           keyExtractor={(item) => item.id}
+//           renderItem={({ item }) => {
+//             const unread = !item.readBy?.[userId];
+//             return (
+//               <NotificationItem
+//                 title={item.title || 'New Submission'}
+//                 message={item.message || item.action || 'No Message'}
+//                 timestamp={item.timestamp}
+//                 unread={unread}
+//                 onPress={() => handleMarkAsRead(item.id, item.from)}
+//               />
+//             );
+//           }}
+//           ListEmptyComponent={
+//             <Text style={{ textAlign: 'center', marginTop: 20 }}>
+//               No notifications found.
+//             </Text>
+//           }
+//           contentContainerStyle={{ paddingBottom: 20 }}
+//         />
+//       )}
+//     </SafeAreaView>
+//   );
+// };
+
+// export default Notifications;
+
+
+//VERSION 4
+
 import React, { useEffect, useState } from 'react';
 import {
   View,
@@ -248,6 +426,9 @@ import {
 import { db } from '../backend/firebase/FirebaseConfig';
 import styles from './styles/NotificationsStyle';
 import { useAuth } from './contexts/AuthContext';
+import * as Notifications from 'expo-notifications'; // Expo notifications for both dev and prod
+import messaging from '@react-native-firebase/messaging'; // Firebase messaging for handling background notifications
+import { Platform } from 'react-native';
 
 const NotificationItem = ({ title, message, timestamp, onPress, unread }) => {
   const formattedTime = timestamp?.toDate?.().toLocaleString?.() || 'No timestamp';
@@ -265,7 +446,7 @@ const NotificationItem = ({ title, message, timestamp, onPress, unread }) => {
   );
 };
 
-const Notifications = () => {
+const NotificationsScreen = () => {
   const { user } = useAuth(); // Get user from auth context
   const userId = user?.id;
   const role = user?.role?.toLowerCase() || 'user';
@@ -273,7 +454,21 @@ const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Request notification permission and get FCM token
   useEffect(() => {
+    const requestPermission = async () => {
+      // Request permission for notifications
+      if (Platform.OS === 'ios') {
+        await Notifications.requestPermissionsAsync();
+      }
+
+      const token = await messaging().getToken();
+      console.log('FCM Token:', token); // Store this token to send notifications later
+      // You can save this token in Firestore or your backend server for later use
+    };
+
+    requestPermission();
+
     if (!userId || userId === 'system') {
       setLoading(false);
       return;
@@ -367,6 +562,17 @@ const Notifications = () => {
     }
   };
 
+  // Handle push notifications while the app is in the foreground
+  useEffect(() => {
+    const unsubscribe = messaging().onMessage(async remoteMessage => {
+      console.log('Foreground notification received:', remoteMessage);
+      // Show a local notification or update the UI here
+      alert('New Notification: ' + remoteMessage.notification.title);
+    });
+
+    return unsubscribe;
+  }, []);
+
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>Notifications</Text>
@@ -401,4 +607,4 @@ const Notifications = () => {
   );
 };
 
-export default Notifications;
+export default NotificationsScreen;
