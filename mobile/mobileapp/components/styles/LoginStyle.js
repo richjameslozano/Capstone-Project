@@ -204,7 +204,7 @@ inputText: {
   footerText: {
     marginTop: 20,
     textAlign: 'center',
-    color: '#6e9fc1',
+    color: '#134b5f',
     textDecorationLine: 'underline'
   },
   

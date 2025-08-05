@@ -15,6 +15,7 @@ import {Animated} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { registerForPushNotificationsAsync } from '../utils/RegisterPushToken';
+import { color } from 'react-native-elements/dist/helpers';
 
 export default function LoginScreen({navigation}) {
   const [showPassword, setShowPassword] = useState(false);
@@ -589,27 +590,26 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
       {!isLoginSignup && (
         <View style={styles.inner}>
           <View style={styles.header}>
-            <Image source={require('./images/logo1.png')} style={{height: '45%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
+            <Image source={require('./images/NULS_LOGO.png')} style={{height: '45%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
             <Text style={styles.headerTitle}>Hello!</Text>
             <Text style={styles.subHeader}>Welcome to NU MOA Laboratory System</Text>
 
              <View style={styles.buttonContainer}>
               <Text style={{color: 'gray', marginTop: -30}}>Sign in to continue</Text>
-          <TouchableOpacity style={{width: '100%',backgroundColor: '#395a7f', justifyContent: 'center', borderRadius: 30, padding: 10, paddingVertical: 13}}
+          <TouchableOpacity style={{width: '100%',backgroundColor: '#134b5f', justifyContent: 'center', borderRadius: 30, padding: 10, paddingVertical: 13}}
             onPress={()=> setIsLoginSignup(true)}
             >
             <Text style={{textAlign: 'center', color: 'white', fontSize: 18, fontWeight: 700}}>Login</Text>
           </TouchableOpacity>
 
 
-          <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#395a7f'}}
+          <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#134b5f'}}
           onPress={() => {setIsLoginSignup(true), setIsSignup(true)}}
           >
             <Text style={{textAlign: 'center', color: '#395a7f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
           </TouchableOpacity>
         </View>
 
-          <Text style={{position: 'absolute', bottom: 10, color: 'gray'}}>Powered by OnePixel</Text>
           </View>
            
         </View>
@@ -642,16 +642,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
                 <Text style={styles.label}>Full Name:<Text style={{color:'red'}}>*</Text></Text>
               <Animated.View style={[styles.animatedInputContainer, { borderColor: nameBorderColor, width: '100%' }]}>
-                {/* <Input
-                  placeholder="Enter Full Name"
-                  value={name}
-                  onChangeText={setName}
-                  mode="outlined"
-                  onFocus={() => handleFocus('name')}
-                onBlur={() => handleBlur('name')}
-                inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
-                inputStyle={styles.inputText}
-                /> */}
+
 
                 <Input
                   placeholder="Enter Full Name"
@@ -674,29 +665,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 
                 <Text style={styles.label}>Email:<Text style={{color:'red'}}>*</Text></Text>
               <Animated.View style={[styles.animatedInputContainer, { borderColor: emailBorderColor, width: '100%' }]}>
-                {/* <Input
-                  placeholder="Enter Email Address (NU account)"
-                  value={signUpEmail}
-                  onChangeText={(text) => {
-                    setSignUpEmail(text);
 
-                    const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
-                    const parts = text.split("@");
-                    const domain = parts.length > 1 ? parts[1] : "";
-
-                    if (!validDomains.includes(domain)) {
-                      setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
-                    } else {
-                      setEmailError('');
-                    }
-                  }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                   onFocus={() => handleFocus('email')}
-                onBlur={() => handleBlur('email')}
-                  inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
-                inputStyle={styles.inputText}
-                /> */}
 
                 <Input
                   placeholder="Enter Email Address (NU account)"
@@ -759,8 +728,8 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 </Animated.View>
 
                 {/* Job Title Menu */}
-              <Text style={styles.label}>Select Job Title/Department<Text style={{color:'red'}}>*</Text></Text>
-              <View style={styles.menucontainer}>
+              <Text style={styles.label}>Select Job Title<Text style={{color:'red'}}>*</Text></Text>
+              {/* <View style={styles.menucontainer}> */}
               <Menu
                 visible={jobMenuVisible}
                 onDismiss={() => setJobMenuVisible(false)}
@@ -771,14 +740,14 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   mode="outlined"
                   onPress={() => setJobMenuVisible(true)}
                     style={{
-                    borderWidth: 2,
-                    borderColor: '#395a7f',
+                    // borderWidth: 2,
+                    // borderColor: '#395a7f',
                     borderRadius: 8,
                     marginBottom: 10,
-                    height: 50,
+                    height: 45,
                     justifyContent: 'center',
-                    backgroundColor: '#6e9fc1',
-                    maxWidth: 140
+                    backgroundColor: '#1e7898',
+           
                   }}
                   labelStyle={{
                     fontSize: 14,
@@ -803,20 +772,21 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 ))}
               </Menu>
 
+<Text style={styles.label}>Select Department:<Text style={{color:'red'}}>*</Text></Text>
               <Menu
                 visible={deptMenuVisible}
                 onDismiss={() => setDeptMenuVisible(false)}
                 anchor={
                   <Button mode="outlined" onPress={() => setDeptMenuVisible(true)} 
                   style={{
-                    borderWidth: 2,
-                    borderColor: '#395a7f',
+                    // borderWidth: 2,
+                    // borderColor: '#395a7f',
                     borderRadius: 8,
                     marginBottom: 10,
-                    height: 50,
+                    height: 45,
                     justifyContent: 'center',
-                    backgroundColor: '#6e9fc1',
-                    maxWidth: 140
+                    backgroundColor: '#1e7898',
+                
                   }}
                   labelStyle={{
                     fontSize: 14,
@@ -840,12 +810,13 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   />
                 ))}
               </Menu>
-              </View>
+              {/* </View> */}
                 
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                   <Checkbox
                     status={agreedToTerms ? 'checked' : 'unchecked'}
                     onPress={() => setAgreedToTerms(!agreedToTerms)}
+                    color='#1e7898'
                   />
                   <TouchableOpacity onPress={() => setTermsModalVisible(true)}>
                     <Text style={{ color: '#007BFF', textDecorationLine: 'underline' }}>
@@ -869,7 +840,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     loading={loading}
                     disabled={isSignup && !agreedToTerms}
                     style={[
-                      styles.loginButton,
                       !agreedToTerms && { backgroundColor: '#ccc' }, // Grey out when disabled
                     ]}
                     labelStyle={styles.loginButtonText}
@@ -888,7 +858,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             {!isSignup && (
                 <View style={styles.inner}>
           <View style={styles.header}>
-            <Image source={require('./images/login_pic.png')} style={{height: '30%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
+            <Image source={require('./images/NULS_Favicon.png')} style={{height: '30%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
             <Text style={styles.headerTitle}>Login</Text>
             <Text style={styles.subHeader}>Welcome to NU MOA Laboratory System</Text>
             {/* <Text style={{alignSelf: 'flex-start', marginLeft: 10, color: 'gray', marginBottom: 5}}>Login to your account</Text> */}
@@ -920,25 +890,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             </Animated.View>
 
             <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%'}]}>
-              {/* <Input
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => handleFocus('password')}
-                onBlur={() => handleBlur('password')}
-                secureTextEntry={!showPassword}
-                inputContainerStyle={styles.inputContainer}
-                inputStyle={styles.inputText}
-                leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
-                rightIcon={
-                  <Icon
-                    type="material"
-                    name={showPassword ? 'visibility' : 'visibility-off'}
-                    color="#9CA3AF"
-                    onPress={() => setShowPassword(!showPassword)}
-                  />
-                }
-              /> */}
 
               <Input
                 placeholder="Password"

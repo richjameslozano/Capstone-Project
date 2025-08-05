@@ -33,7 +33,7 @@ export default function CustomButton({
 const styles = StyleSheet.create({
   button: {
     flexDirection: 'row',
-    backgroundColor: '#395a7f',
+    backgroundColor: '#134b5f',
     paddingHorizontal: 20,
     alignItems: 'center',
     justifyContent: 'center',
