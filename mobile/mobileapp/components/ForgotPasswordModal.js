@@ -71,6 +71,7 @@ export default function ForgotPasswordModal({ visible, onClose }) {
             keyboardType="email-address"
             autoCapitalize="none"
             mode="outlined"
+            activeOutlineColor='gray'
             style={styles.input}
           />
 
