@@ -236,6 +236,7 @@ import {
   SafeAreaView,
   ActivityIndicator,
   TouchableOpacity,
+  StatusBar,
 } from 'react-native';
 import {
   collection,
@@ -248,18 +249,37 @@ import {
 import { db } from '../backend/firebase/FirebaseConfig';
 import styles from './styles/NotificationsStyle';
 import { useAuth } from './contexts/AuthContext';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { useNavigation } from '@react-navigation/native';
+
+
 
 const NotificationItem = ({ title, message, timestamp, onPress, unread }) => {
   const formattedTime = timestamp?.toDate?.().toLocaleString?.() || 'No timestamp';
 
   return (
     <TouchableOpacity onPress={onPress}>
+        <StatusBar
+        translucent
+        backgroundColor={'transparent'}
+        barStyle={'light-content'}
+        />
       <View style={[styles.notificationCard, unread && { backgroundColor: '#ffecec' }]}>
-        <Text style={[styles.title, unread && { fontWeight: 'bold' }]}>
+        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+          <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
+          <Icon name='bell' size={18} color={'#51abcb'}/>
+          <Text style={[styles.title, unread && { fontWeight: 'bold' }]}>
           {unread ? '• ' : ''}{title}
         </Text>
+        </View>
+        
+          <Text style={styles.timestamp}>{formattedTime}</Text>
+        
+        
+        </View>
+        
         <Text style={styles.message}>{message}</Text>
-        <Text style={styles.timestamp}>{formattedTime}</Text>
+        
       </View>
     </TouchableOpacity>
   );
@@ -367,13 +387,42 @@ const Notifications = () => {
     }
   };
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.header}>Notifications</Text>
 
+
+
+  const [headerHeight, setHeaderHeight] = useState(0);
+
+    const handleHeaderLayout = (event) => {
+    const { height } = event.nativeEvent.layout;
+    setHeaderHeight(height);
+  };
+
+  const navigation = useNavigation()
+
+  return (
+    <View style={styles.container}>
+
+            <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
+              <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
+              }}>
+                    <TouchableOpacity onPress={()=>navigation.goBack()} style={styles.backButton}>
+                      <Icon name="keyboard-backspace" size={28} color="white" />
+                    </TouchableOpacity>
+                    <View style={{alignItems: 'center'}}>
+                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white'}}>Notifications</Text>
+                      <Text style={{color: 'white', fontWeight: 300, fontSize: 13}}>Recent Activities </Text>
+                      </View>
+                    <TouchableOpacity style={{padding: 2}}>
+                      <Icon name="dots-vertical" size={24} color="#165a72" />
+                    </TouchableOpacity>
+                </View>
+                  </View>
+
+      <View style={{padding: 5, borderRadius: 7, marginTop: headerHeight, backgroundColor: '#fff'}}>
       {loading ? (
         <ActivityIndicator size="large" color="#000" />
       ) : (
+        
         <FlatList
           data={notifications}
           keyExtractor={(item) => item.id}
@@ -394,10 +443,11 @@ const Notifications = () => {
               No notifications found.
             </Text>
           }
-          contentContainerStyle={{ paddingBottom: 20 }}
+          contentContainerStyle={{ paddingBottom: 20, gap: 5 }}
         />
       )}
-    </SafeAreaView>
+      </View>
+    </View>
   );
 };
 
