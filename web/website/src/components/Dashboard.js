@@ -128,15 +128,21 @@ const getCriticalStockItems = (inventoryItems) => {
   if (!inventoryItems || inventoryItems.length === 0) return [];
 
   return inventoryItems.filter(item => {
-    const criticalLevel = Number(item.criticalLevel) || 0; // fallback to 0 if invalid
+    const category = (item.category || "").toLowerCase();
+    const criticalLevel = item.criticalLevel || 0; // Encoder's critical level
     const quantity = Number(item.quantity) || 0;
 
+    // For "equipment" and "glassware", use the encoder-provided critical level
+    if (category === "equipment" || category === "glassware") {
+      return quantity <= criticalLevel; // Do not calculate dynamically
+    }
+
+    // For other categories, calculate dynamic critical level if needed
     return quantity <= criticalLevel;
   });
 };
 
-
-// critical stock 
+// critical stock
 useEffect(() => {
   const inventoryRef = collection(db, "inventory");
 
@@ -146,6 +152,7 @@ useEffect(() => {
       ...doc.data(),
     }));
 
+    // Get critical stock items
     const criticalItems = getCriticalStockItems(items);
     setCriticalStockList(criticalItems);
   });
@@ -578,48 +585,56 @@ useEffect(() => {
     <AIInventoryPieChart />
   </div>
 
-  <Row gutter={16}>
-    <Col flex="1">
-      <Card
-        title={<div style={{display: 'flex',alignItems: 'center', gap: 12, fontSize: 18}}>
-          <MdErrorOutline size={25} color="#e11d48"/>
-        Critical Stocks</div>
-        }
-        className="critical-card"
-        style={{ height: '100%', width: '100%' }}  // ensure full width
-      >
-        <List
-          dataSource={criticalStockList}
-          locale={{ emptyText: 'No critical stock' }}
-          style={{ maxHeight: 375, overflowY: 'auto' }}
-          renderItem={(item) => {
-            const quantity = Number(item.quantity) || 0;
-            const criticalLevel = Number(item.criticalLevel) || 0;
-            const isBelowCritical = quantity <= criticalLevel;
+ <Row gutter={16}>
+  <Col flex="1">
+  <Card
+    title={
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: 18 }}>
+        <MdErrorOutline size={25} color="#e11d48" />
+        Critical Stocks
+      </div>
+    }
+    className="critical-card"
+    style={{ height: '100%', width: '100%' }} // Ensure full width
+  >
+    <List
+      dataSource={criticalStockList}
+      locale={{ emptyText: 'No critical stock' }}
+      style={{ maxHeight: 375, overflowY: 'auto' }}
+      renderItem={(item) => {
+        const quantity = Number(item.quantity) || 0;
+        const category = (item.category || "").toLowerCase();
+        const criticalLevel = Number(item.criticalLevel) || 0; // Encoder's critical level
 
-            return (
-              <List.Item>
-                <List.Item.Meta
-                  title={<Text strong>{item.itemName} (ID: {item.itemId})</Text>}
-                  description={
-                    <>
-                      <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
-                        Remaining Stock: {Math.round(quantity)} / Critical Level: {Math.round(criticalLevel)}
-                      </Text>
-                      {isBelowCritical && (
-                        <Tag color="red" style={{ marginLeft: 8 }}>
-                          Low Stock
-                        </Tag>
-                      )}
-                    </>
-                  }
-                />
-              </List.Item>
-            );
-          }}
-        />
-      </Card>
-    </Col>
+        // For "equipment" and "glassware", don't calculate critical level, use the encoder's value
+        const isBelowCritical = (category === "equipment" || category === "glassware") 
+          ? quantity <= criticalLevel 
+          : quantity <= criticalLevel;
+
+        return (
+          <List.Item>
+            <List.Item.Meta
+              title={<Text strong>{item.itemName} (ID: {item.itemId})</Text>}
+              description={
+                <>
+                  <Text style={{ color: isBelowCritical ? 'red' : 'inherit' }}>
+                    Remaining Stock: {Math.round(quantity)} / Critical Level: {Math.round(criticalLevel)}
+                  </Text>
+                  {isBelowCritical && (
+                    <Tag color="red" style={{ marginLeft: 8 }}>
+                      Low Stock
+                    </Tag>
+                  )}
+                </>
+              }
+            />
+          </List.Item>
+        );
+      }}
+    />
+  </Card>
+</Col>
+
 
     <Col flex="1">
     <MonthlyRequestTrendLineChart />
