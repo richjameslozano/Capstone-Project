@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler, Alert } from 'react-native';
+import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler, Alert, Modal } from 'react-native';
 import { Input, Text, Icon } from 'react-native-elements';
 import { TextInput, Card, HelperText, Menu, Provider, Button, Checkbox  } from 'react-native-paper';
 import { useAuth } from '../components/contexts/AuthContext';
@@ -50,6 +50,8 @@ export default function LoginScreen({navigation}) {
   const employeeIDBorderAnim = useRef(new Animated.Value(0)).current;
   const passwordBorderAnim = useRef(new Animated.Value(0)).current;
   const confirmPasswordBorderAnim = useRef(new Animated.Value(0)).current;
+  const [jobTitleError, setJobTitleError] = useState('');
+  const [departmentError, setDepartmentError] = useState('');
 
   const [focusStates, setFocusStates] = useState({
   name: false,
@@ -76,27 +78,78 @@ useEffect(() => {
   return () => unsubscribe();
 }, []);
 
+// useEffect(() => {
+//   if (!jobTitle) {
+//     setDeptOptions([]);
+//     return;
+//   }
+
+//   if (jobTitle === "Faculty") {
+//     setDeptOptions(departmentsAll); 
+
+//   } else if (jobTitle === "Program Chair") {
+//     setDeptOptions(departmentsAll.filter((dept) => dept !== "SHS"));
+
+//   } else if (jobTitle === "Dean") {
+//     setDeptOptions(["SAH", "SAS", "SOO", "SOD"]); 
+    
+//   } else {
+//     setDeptOptions([]); // default
+//   }
+
+//   setDepartment(""); 
+// }, [jobTitle, departmentsAll]);
+
 useEffect(() => {
   if (!jobTitle) {
     setDeptOptions([]);
+    setDepartment("");
     return;
   }
 
   if (jobTitle === "Faculty") {
-    setDeptOptions(departmentsAll); 
-
+    setDeptOptions(departmentsAll);
+    setDepartment("");
+    
   } else if (jobTitle === "Program Chair") {
     setDeptOptions(departmentsAll.filter((dept) => dept !== "SHS"));
+    setDepartment("");
 
   } else if (jobTitle === "Dean") {
-    setDeptOptions(["SAH", "SAS", "SOO", "SOD"]); 
-    
+    setDeptOptions(["SAH", "SAS", "SOO", "SOD"]);
+    setDepartment("");
+
+  } else if (jobTitle === "Laboratory Custodian") {
+    setDeptOptions(["SAH"]);
+    setDepartment("SAH");
+
   } else {
-    setDeptOptions([]); // default
+    setDeptOptions([]);
+    setDepartment("");
+  }
+}, [jobTitle, departmentsAll]);
+
+const validateFields = () => {
+  let valid = true;
+
+  if (!jobTitle) {
+    setJobTitleError('Job Title is required.');
+    valid = false;
+
+  } else {
+    setJobTitleError('');
   }
 
-  setDepartment(""); 
-}, [jobTitle, departmentsAll]);
+  if (!department) {
+    setDepartmentError('Department is required.');
+    valid = false;
+
+  } else {
+    setDepartmentError('');
+  }
+
+  return valid;
+};
 
 const handleFocus = (field) => {
   setFocusStates((prev) => ({ ...prev, [field]: true }));
@@ -405,7 +458,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           body: JSON.stringify({
             to: email.trim().toLowerCase(),
             subject: 'Account Registration - Pending Approval',
-            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA NULS Team`,
+            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval.\n\nRegards,\nNU MOA NULS Team`,
             html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the NULS.</p><p>Regards,<br>NU MOA NULS Team</p>`,
           }),
         });
@@ -440,7 +493,20 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setLoading(false);
           return;
         }
-      
+
+        // Step 0: Validate required fields
+        if (!jobTitle) {
+          setError("Job Title is required.");
+          setLoading(false);
+          return;
+        }
+
+        if (!department) {
+          setError("Department is required.");
+          setLoading(false);
+          return;
+        }
+              
         // Step 2: Password match check
         // if (password !== confirmPassword) {
         //   setError("Passwords do not match.");
@@ -536,9 +602,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
           sendEmail(email, name);      
       
-          setModalMessage("Successfully Registered! Please check your email. Your account is pending ITSO approval.");
-          setIsModalVisible(true);
-      
           // Reset state variables
           setName("");
           setSignUpEmail("");
@@ -549,7 +612,10 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setDepartment("");
           setError("");
 
-          Alert.alert("Sign Up Succesfull!");
+          setModalMessage("Successfully Registered! Please check your junk email. Your account is pending approval.");
+          setIsModalVisible(true);
+
+          // Alert.alert("Sign Up Succesfull!");
       
         } catch (error) {
           console.error("Sign up error:", error.message);
@@ -669,6 +735,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
                     if (!validDomains.includes(domain)) {
                       setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
+                      
                     } else {
                       setEmailError("");
                     }
@@ -761,28 +828,56 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 ))}
               </Menu>
 
-<Text style={styles.label}>Select Department:<Text style={{color:'red'}}>*</Text></Text>
+            {/* {error !== "" && (
+              <Text style={{ color: "red", marginBottom: 10, textAlign: "center" }}>
+                {error}
+              </Text>
+            )} */}
+
+              <Text style={styles.label}>Select Department:<Text style={{color:'red'}}>*</Text></Text>
               <Menu
                 visible={deptMenuVisible}
                 onDismiss={() => setDeptMenuVisible(false)}
                 anchor={
-                  <Button mode="outlined" onPress={() => setDeptMenuVisible(true)} 
-                  style={{
-                    // borderWidth: 2,
-                    // borderColor: '#395a7f',
-                    borderRadius: 8,
-                    marginBottom: 10,
-                    height: 45,
-                    justifyContent: 'center',
-                    backgroundColor: '#1e7898',
+                  // <Button mode="outlined" onPress={() => setDeptMenuVisible(true)} 
+                  // style={{
+                  //   borderRadius: 8,
+                  //   marginBottom: 10,
+                  //   height: 45,
+                  //   justifyContent: 'center',
+                  //   backgroundColor: '#1e7898',
                 
-                  }}
-                  labelStyle={{
-                    fontSize: 14,
-                    color: '#fff', // Darker text
-                  }}>
+                  // }}
+                  // labelStyle={{
+                  //   fontSize: 14,
+                  //   color: '#fff',
+                  // }}>
+                  //   {department || 'Department'}
+                  // </Button>
+
+                  <Button
+                    mode="outlined"
+                    onPress={() => {
+                      if (jobTitle !== "Lab Tech") {
+                        setDeptMenuVisible(true);
+                      }
+                    }}
+                    disabled={jobTitle === "Lab Tech"}
+                    style={{
+                      borderRadius: 8,
+                      marginBottom: 10,
+                      height: 45,
+                      justifyContent: 'center',
+                      backgroundColor: jobTitle === "Lab Tech" ? '#ccc' : '#1e7898',
+                    }}
+                    labelStyle={{
+                      fontSize: 14,
+                      color: jobTitle === "Lab Tech" ? '#666' : '#fff',
+                    }}
+                  >
                     {department || 'Department'}
                   </Button>
+
                 }
               >
                 {/* {deptOptions.map(option => (
@@ -799,6 +894,15 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   />
                 ))}
               </Menu>
+
+              {error !== "" && (
+                <Text style={{ color: "red", marginBottom: 10, textAlign: "center" }}>
+                  {error}
+                </Text>
+              )}
+
+
+              
               {/* </View> */}
                 
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
@@ -941,6 +1045,21 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             visible={isForgotPasswordVisible}
             onClose={() => setForgotPasswordVisible(false)}
           />
+
+          <Modal
+            visible={isModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setIsModalVisible(false)}
+          >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+              <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '80%' }}>
+                <Text>{modalMessage}</Text>
+                <Button onPress={() => setIsModalVisible(false)}>OK</Button>
+              </View>
+            </View>
+          </Modal>
+
           
         </KeyboardAwareScrollView>
         </KeyboardAvoidingView>

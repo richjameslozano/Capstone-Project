@@ -303,21 +303,26 @@ const ReturnItems = () => {
     
   return (
     <View style={styles.container}>
-            <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                <Icon name="keyboard-backspace" size={28} color="black" />
-                              </TouchableOpacity>
-      
-              <View>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Return Items</Text>
-                <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Return Your Borrowed Items</Text>
-              </View>
-      
-                <TouchableOpacity style={{padding: 2}}>
-                  <Icon name="information-outline" size={24} color="#000" />
-                </TouchableOpacity>
-              </View>
-      
+      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+        {/* Back Button */}
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
+
+        {/* Title (Centered) */}
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+          <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 18, color: '#395a7f' }}>
+            Return Items
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            Return Your Borrowed Items
+          </Text>
+        </View>
+
+        {/* Spacer or Hidden Icon for alignment balance */}
+        <View style={{ width: 28 }} />
+      </View>
+
       <View style={[styles.filterContainer, {marginTop: headerHeight}]}>
         {["All", "Approved", "Deployed"].map((status) => (
           <TouchableOpacity
@@ -342,7 +347,11 @@ const ReturnItems = () => {
             {/* Data Rows */}
             {filteredData.map((item) => (
               <View key={item.id} style={styles.tableRow}>
-                <Text style={[{ flex: 2 }]}>{item.rawTimestamp}</Text>
+                {/* <Text style={[{ flex: 2 }]}>{item.rawTimestamp}</Text> */}
+                <Text style={[{ flex: 2 }]}>
+                  {item.rawTimestamp?.split(',')[0] || 'N/A'}
+                </Text>
+
                 <Text style={[{ flex: 2 }]}>{item.status}</Text>
                 <TouchableOpacity style={{ flex: 1 }} onPress={() => handleViewDetails(item)}>
                   <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
