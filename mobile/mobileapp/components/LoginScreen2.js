@@ -26,6 +26,7 @@ export default function LoginScreen({navigation}) {
   const [signUpPassword, setSignUpPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
@@ -159,11 +160,11 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
   const handleLogin = async () => {
     
       if (!email || !password) {
-        setError('Please enter both email and password');
+        setLoginError('Please enter both email and password');
         return;
       }
     
-      setError('');
+      setLoginError('');
       setLoading(true);
     
       try {
@@ -192,13 +193,13 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         }
     
         if (!userData) {
-          setError("User not found. Please contact admin.");
+          setLoginError("User not found. Please contact admin.");
           setLoading(false);
           return;
         }
     
         if (userData.disabled) {
-          setError("Your account has been disabled.");
+          setLoginError("Your account has been disabled.");
           await signOut(auth);
           setLoading(false);
           return;
@@ -206,7 +207,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
     
         // If password not set yet (new user)
         if (!isSuperAdmin && !userData.uid) {
-          setError("Password not set. Please login through website first.");
+          setLoginError("Password not set. Please login through website first.");
           setLoading(false);
           return;
         }
@@ -258,7 +259,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
             // }
             
-            setError(`Invalid password.`);
+            setLoginError(`Invalid password.`);
             setLoading(false);
             return;
           }
@@ -290,7 +291,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
             if (!refreshedUser || !refreshedUser.emailVerified) {
               await signOut(auth);
-              setError("Please verify your email before logging in.");
+              setLoginError("Please verify your email before logging in.");
               setLoading(false);
               return;
             }
@@ -308,20 +309,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               timestamp: serverTimestamp(),
             });
 
-            // try {
-            //   const token = await registerForPushNotificationsAsync(userDoc.id);
-            //   if (token) {
-            //     console.log("✅ Push token registered and saved.");
 
-            //   } else {
-            //     console.log("⚠️ Push token registration failed or permission denied.");
-            //   }
-
-            // } catch (err) {
-            //   console.error("🔥 Push token registration crashed:", err.message);
-            // }
-
-            // ✅ Register for push notifications ONCE
             try {
               const token = await registerForPushNotificationsAsync(userDoc.id, role); // ⬅️ Pass role here
               if (token) {
@@ -370,7 +358,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 break;
   
               default:
-                setError("Unknown role. Contact admin.");
+                setLoginError("Unknown role. Contact admin.");
             }
     
           } catch (authError) {
@@ -392,7 +380,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
             // }
     
-            setError(`Invalid password.`);
+            setLoginError(`Invalid password.`);
             setLoading(false);
             return;
           }
@@ -400,7 +388,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
     
       } catch (error) {
         console.error("Login error:", error);
-        setError("Unexpected error. Try again.");
+        setLoginError("Unexpected error. Try again.");
   
       } finally {
         setLoading(false);
@@ -703,7 +691,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     )}
               </Animated.View>
 
-
+                    {error ? <Text style={styles.error}>{error}</Text> : null}
                 <Text style={styles.label}>Employee ID:<Text style={{color:'red'}}>*</Text></Text>
 
                 <Animated.View style={[styles.animatedInputContainer, { borderColor: employeeIDBorderColor, width: '100%' }]}>
@@ -835,9 +823,9 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 </View>
 
                 <CustomButton
-                    title={isSignup ? "Sign Up" : "Login"}
-                    onPress={isSignup ? handleSignup : handleLogin}
-                    icon={isSignup ? "account-plus" : "login"}
+                    title={"Sign Up"}
+                    onPress={handleSignup}
+                    icon={"account-plus"}
                     loading={loading}
                     disabled={isSignup && !agreedToTerms}
                     style={[
@@ -913,7 +901,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               />
             </Animated.View>
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {loginError ? <Text style={styles.error}>{loginError}</Text> : null}
 
                 <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
                 <Text style={styles.forgotPassword}>Forgot Password?</Text>
