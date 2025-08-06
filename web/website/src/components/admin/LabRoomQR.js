@@ -1227,6 +1227,7 @@ const LabRoomQR = () => {
   const [activeTab, setActiveTab] = useState("1"); // Default to Stock Room tab (1)
   const qrRefs = useRef({});
   const qrModalRef = useRef(null);
+  const [editingRoomId, setEditingRoomId] = useState(null);
 
   const [qrModal, setQrModal] = useState({
     visible: false,
@@ -2526,39 +2527,54 @@ const LabRoomQR = () => {
             item.category.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase())
           );
 
-          return (
-            <div key={room.id} className="labroom-table-wrapper">
-              <div className="labroom-title-wrapper" onClick={() => toggleRoomExpansion(room.id)}>
-                <h3 className="labroom-title">
-                  Room:
-                  <input
-                    type="number"
-                    value={room.roomNumber}
-                    onChange={(e) => {
-                      const newRoomNumber = e.target.value;
-                      setLabRooms(prev =>
-                        prev.map(r => r.id === room.id ? { ...r, roomNumber: newRoomNumber } : r)
-                      );
-                    }}
-                    style={{ marginLeft: "10px", width: "120px" }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
+return (
+  <div key={room.id} className="labroom-table-wrapper">
+    <div className="labroom-title-wrapper" onClick={() => toggleRoomExpansion(room.id)}>
+      <h3 className="labroom-title" onClick={(e) => e.stopPropagation()}>
+        Room:
+        {editingRoomId === room.id ? (
+          <input
+            type="number"
+            value={room.roomNumber}
+            onChange={(e) => {
+              const newRoomNumber = e.target.value;
+              setLabRooms(prev =>
+                prev.map(r => r.id === room.id ? { ...r, roomNumber: newRoomNumber } : r)
+              );
+            }}
+            style={{ marginLeft: "10px", width: "120px" }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <span style={{ marginLeft: "10px" }}>{room.roomNumber}</span>
+        )}
 
-                  <Button
-                    type="primary"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent collapse toggle when clicking button
-                      setConfirmRoomId(room.id);
-                      setIsConfirmModalVisible(true);
-                    }}
-                    style={{ marginLeft: "10px" }}
-                  >
-                    Save
-                  </Button>
+        {/* Only show the button when the room is expanded */}
+        {isExpanded && (
+          <Button
+            type="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (editingRoomId === room.id) {
+                // Save logic
+                setConfirmRoomId(room.id);
+                setIsConfirmModalVisible(true);
+                setEditingRoomId(null);
+              } else {
+                // Enter edit mode
+                setEditingRoomId(room.id);
+              }
+            }}
+            style={{ marginLeft: "10px" }}
+          >
+            {editingRoomId === room.id ? "Save" : "Edit"}
+          </Button>
+        )}
+      </h3>
 
-                </h3>
-                <span className="dropdown-arrow">{isExpanded ? "▲" : "▼"}</span>
-              </div>
+      <span className="dropdown-arrow">{isExpanded ? "▲" : "▼"}</span>
+    </div>
+
 
               {isExpanded && (
                 <>
