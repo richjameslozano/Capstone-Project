@@ -1567,7 +1567,7 @@ const Login = () => {
                       placeholder="enter email (NU account)"
                       required
                     />
-                    {error && <p className="error-message">{error}</p>}
+                   
                   </div>
 
                   <div className="form-group">
@@ -1706,6 +1706,8 @@ const Login = () => {
                         Terms & Conditions
                       </span>
                     </label>
+
+                    {error && <p className="error-message">{error}</p>}
 
                     {/* {error && <p className="error-message">{error}</p>} */}
                   </div>
