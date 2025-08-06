@@ -606,7 +606,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#134b5f'}}
           onPress={() => {setIsLoginSignup(true), setIsSignup(true)}}
           >
-            <Text style={{textAlign: 'center', color: '#395a7f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
+            <Text style={{textAlign: 'center', color: '#134b5f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
           </TouchableOpacity>
         </View>
 
