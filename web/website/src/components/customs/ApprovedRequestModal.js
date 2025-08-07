@@ -643,24 +643,155 @@ function getConditionSummary(conditionsArray) {
     }
   };
 
+  // const handleApprove = async () => {
+  //   try {
+  //     const requisitionId = selectedApprovedRequest?.id;
+  //     if (!requisitionId) {
+      
+  //       return;
+  //     }
+  
+  //     // Get current authenticated user
+  //     const auth = getAuth();
+  //     const currentUser = auth.currentUser;
+  //     const userEmail = currentUser?.email;
+  
+  //     let approverName = "Unknown";
+  //     if (userEmail) {
+  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+  //       const userSnapshot = await getDocs(userQuery);
+        
+  //       if (!userSnapshot.empty) {
+  //         approverName = userSnapshot.docs[0].data().name || "Unknown";
+  //       }
+  //     }
+
+  //     for (const item of selectedApprovedRequest.requestList || []) {
+  //       const inventoryId = item.selectedItemId || item.selectedItem?.value;
+  //       const returnedQty = Number(item.quantity);
+  //       const labRoomId = item.labRoom;
+  //       const conditionReturned = Array.isArray(item.conditions) && item.conditions[0]
+  //       ? item.conditions[0]
+  //       : "Good"; // default fallback
+
+  //       if (inventoryId && !isNaN(returnedQty)) {
+  //         const inventoryDocRef = doc(db, "inventory", inventoryId);
+  //         const inventoryDocSnap = await getDoc(inventoryDocRef);
+
+  //       if (inventoryDocSnap.exists()) {
+  //         const inventoryData = inventoryDocSnap.data();
+  //         const currentQty = Number(inventoryData.quantity || 0);
+  //         const currentCond = inventoryData.condition || {};
+  //         const currentCondQty = Number(currentCond[conditionReturned] || 0);
+
+
+  //           // Update inventory
+  //           await updateDoc(inventoryDocRef, {
+  //             quantity: currentQty + returnedQty,
+  //             [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
+  //           });
+
+
+  //            const labRoomNumber = item.labRoom;
+  //          // 🔍 STEP 1: Find labRoom document by roomNumber
+  //           const labRoomQuery = query(
+  //             collection(db, "labRoom"),
+  //             where("roomNumber", "==", labRoomNumber)
+  //           );
+  //           const labRoomSnapshot = await getDocs(labRoomQuery);
+
+  //           if (labRoomSnapshot.empty) {
+             
+  //             continue;
+  //           }
+
+  //           const labRoomDoc = labRoomSnapshot.docs[0];
+  //           const labRoomId = labRoomDoc.id;
+
+  //           // 🔍 STEP 2: Find item in the labRoom/{labRoomId}/items by itemId field
+  //           const itemId = inventoryData.itemId;
+  //           const labItemsRef = collection(db, "labRoom", labRoomId, "items");
+  //           const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
+  //           const itemSnapshot = await getDocs(itemQuery);
+
+  //           if (itemSnapshot.empty) {
+             
+  //             continue;
+  //           }
+
+  //           const itemDoc = itemSnapshot.docs[0];
+  //           const labItemDocId = itemDoc.id;
+  //           const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
+
+  //           const labData = itemDoc.data();
+  //           const labQty = Number(labData.quantity || 0);
+  //           const labCond = labData.condition || {};
+  //           const labCondQty = Number(labCond[conditionReturned] || 0);
+
+  //           // ✅ Update labRoom item
+  //           await updateDoc(labItemRef, {
+  //             quantity: labQty + returnedQty,
+  //             [`condition.${conditionReturned}`]: labCondQty + returnedQty,
+  //           });
+
+           
+
+  //         } else {
+    
+  //         } 
+  //       }
+  //     }
+  
+  //     // ✅ Update borrowcatalog status
+  //     const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
+  //     await updateDoc(borrowDocRef, { status: "Return Approved" });
+
+  //    // Step 1: Find the matching requestlog document using a field (like accountId)
+  //     const requestLogQuery = query(
+  //       collection(db, "requestlog"),
+  //       where("accountId", "==", selectedApprovedRequest.accountId)
+  //     );
+
+  //     const requestLogSnapshot = await getDocs(requestLogQuery);
+
+  //     if (!requestLogSnapshot.empty) {
+  //       // Assuming only one match — update that document
+  //       const requestLogDoc = requestLogSnapshot.docs[0];
+  //       const requestLogDocRef = doc(db, "requestlog", requestLogDoc.id);
+
+  //       await updateDoc(requestLogDocRef, {
+  //         status: "Returned",
+  //         timestamp: serverTimestamp(),
+  //       });
+
+    
+        
+  //     } else {
+       
+  //     }
+
+  //     showNotification("Return Item successfully approved!");
+  //     setIsApprovedModalVisible(false);
+  //     setSelectedApprovedRequest(null);
+  
+  //   } catch (error) {
+     
+  //   }
+  // };  
+
   const handleApprove = async () => {
     try {
       const requisitionId = selectedApprovedRequest?.id;
-      if (!requisitionId) {
-      
-        return;
-      }
-  
-      // Get current authenticated user
+      if (!requisitionId) return;
+
       const auth = getAuth();
       const currentUser = auth.currentUser;
       const userEmail = currentUser?.email;
-  
+
       let approverName = "Unknown";
       if (userEmail) {
         const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
         const userSnapshot = await getDocs(userQuery);
-        
         if (!userSnapshot.empty) {
           approverName = userSnapshot.docs[0].data().name || "Unknown";
         }
@@ -668,94 +799,118 @@ function getConditionSummary(conditionsArray) {
 
       for (const item of selectedApprovedRequest.requestList || []) {
         const inventoryId = item.selectedItemId || item.selectedItem?.value;
-        const returnedQty = Number(item.quantity);
-        const labRoomId = item.labRoom;
-        const conditionReturned = Array.isArray(item.conditions) && item.conditions[0]
-        ? item.conditions[0]
-        : "Good"; // default fallback
+        const labRoomNumber = item.labRoom;
+        const totalReturnedQty = Number(item.quantity);
 
-        if (inventoryId && !isNaN(returnedQty)) {
+        console.log(
+          "🧾 Item:",
+          item.selectedItem?.label || item.selectedItemId,
+          "\nReturned Quantity:",
+          totalReturnedQty,
+          "\nConditions Provided:",
+          item.conditions
+        );
+
+        const conditionCounts = {};
+
+        if (Array.isArray(item.conditions) && item.conditions.length > 0) {
+          // Count each condition
+          item.conditions.forEach((cond) => {
+            if (cond) {
+              conditionCounts[cond] = (conditionCounts[cond] || 0) + 1;
+            }
+          });
+        } else if (totalReturnedQty > 0) {
+          console.warn("⚠️ No condition specified — defaulting to 'Good'");
+          conditionCounts["Good"] = totalReturnedQty;
+        }
+
+        console.log("📦 Final Condition Counts:", conditionCounts);
+
+        if (inventoryId && !isNaN(totalReturnedQty)) {
           const inventoryDocRef = doc(db, "inventory", inventoryId);
           const inventoryDocSnap = await getDoc(inventoryDocRef);
+          if (!inventoryDocSnap.exists()) continue;
 
-        if (inventoryDocSnap.exists()) {
           const inventoryData = inventoryDocSnap.data();
-          const currentQty = Number(inventoryData.quantity || 0);
-          const currentCond = inventoryData.condition || {};
-          const currentCondQty = Number(currentCond[conditionReturned] || 0);
+          const itemId = inventoryData.itemId;
 
+          // for (const [condType, qty] of Object.entries(conditionCounts)) {
+          //   const currentQty = Number(inventoryData.quantity || 0);
+          //   const currentCond = inventoryData.condition || {};
+          //   const currentCondQty = Number(currentCond[condType] || 0);
 
-            // Update inventory
-            await updateDoc(inventoryDocRef, {
-              quantity: currentQty + returnedQty,
-              [`condition.${conditionReturned}`]: currentCondQty + returnedQty,
-            });
+          //   await updateDoc(inventoryDocRef, {
+          //     quantity: currentQty + qty,
+          //     [`condition.${condType}`]: currentCondQty + qty,
+          //   });
+          // }
 
+          for (const [condType, qty] of Object.entries(conditionCounts)) {
+            const currentQty = Number(inventoryData.quantity || 0);
+            const currentCond = inventoryData.condition || {};
+            const currentCondQty = Number(currentCond[condType] || 0);
 
-             const labRoomNumber = item.labRoom;
-           // 🔍 STEP 1: Find labRoom document by roomNumber
-            const labRoomQuery = query(
-              collection(db, "labRoom"),
-              where("roomNumber", "==", labRoomNumber)
-            );
-            const labRoomSnapshot = await getDocs(labRoomQuery);
+            const updateData = {
+              [`condition.${condType}`]: currentCondQty + qty,
+            };
 
-            if (labRoomSnapshot.empty) {
-             
-              continue;
+            // ✅ Only update the total quantity if condition is "Good"
+            if (condType === "Good") {
+              updateData.quantity = currentQty + qty;
             }
 
-            const labRoomDoc = labRoomSnapshot.docs[0];
-            const labRoomId = labRoomDoc.id;
+            await updateDoc(inventoryDocRef, updateData);
+          }
 
-            // 🔍 STEP 2: Find item in the labRoom/{labRoomId}/items by itemId field
-            const itemId = inventoryData.itemId;
-            const labItemsRef = collection(db, "labRoom", labRoomId, "items");
-            const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
-            const itemSnapshot = await getDocs(itemQuery);
+          const labRoomQuery = query(
+            collection(db, "labRoom"),
+            where("roomNumber", "==", labRoomNumber)
+          );
+          const labRoomSnapshot = await getDocs(labRoomQuery);
+          if (labRoomSnapshot.empty) continue;
 
-            if (itemSnapshot.empty) {
-             
-              continue;
-            }
+          const labRoomDoc = labRoomSnapshot.docs[0];
+          const labRoomId = labRoomDoc.id;
 
-            const itemDoc = itemSnapshot.docs[0];
-            const labItemDocId = itemDoc.id;
-            const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
+          const labItemsRef = collection(db, "labRoom", labRoomId, "items");
+          const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
+          const itemSnapshot = await getDocs(itemQuery);
+          if (itemSnapshot.empty) continue;
 
-            const labData = itemDoc.data();
+          const itemDoc = itemSnapshot.docs[0];
+          const labItemDocId = itemDoc.id;
+          const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
+          const labData = itemDoc.data();
+
+          for (const [condType, qty] of Object.entries(conditionCounts)) {
             const labQty = Number(labData.quantity || 0);
             const labCond = labData.condition || {};
-            const labCondQty = Number(labCond[conditionReturned] || 0);
+            const labCondQty = Number(labCond[condType] || 0);
 
-            // ✅ Update labRoom item
-            await updateDoc(labItemRef, {
-              quantity: labQty + returnedQty,
-              [`condition.${conditionReturned}`]: labCondQty + returnedQty,
-            });
+            const labUpdateData = {
+              [`condition.${condType}`]: labCondQty + qty,
+            };
 
-           
+            if (condType === "Good") {
+              labUpdateData.quantity = labQty + qty;
+            }
 
-          } else {
-    
-          } 
+            await updateDoc(labItemRef, labUpdateData);
+          }
         }
       }
-  
-      // ✅ Update borrowcatalog status
+
       const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
       await updateDoc(borrowDocRef, { status: "Return Approved" });
 
-     // Step 1: Find the matching requestlog document using a field (like accountId)
       const requestLogQuery = query(
         collection(db, "requestlog"),
         where("accountId", "==", selectedApprovedRequest.accountId)
       );
 
       const requestLogSnapshot = await getDocs(requestLogQuery);
-
       if (!requestLogSnapshot.empty) {
-        // Assuming only one match — update that document
         const requestLogDoc = requestLogSnapshot.docs[0];
         const requestLogDocRef = doc(db, "requestlog", requestLogDoc.id);
 
@@ -763,21 +918,17 @@ function getConditionSummary(conditionsArray) {
           status: "Returned",
           timestamp: serverTimestamp(),
         });
-
-    
-        
-      } else {
-       
       }
 
       showNotification("Return Item successfully approved!");
       setIsApprovedModalVisible(false);
       setSelectedApprovedRequest(null);
-  
+
     } catch (error) {
-     
+      console.error("Approval error:", error);
     }
-  };  
+  };
+
 
   const handleRelease = async () => {
     try {

@@ -459,7 +459,7 @@
 
 // VERSION 2
 import React, { useState, useEffect } from "react";
-import { Layout, Table, Button, Modal, Typography, Row, Col, Select } from "antd";
+import { Layout, Table, Button, Modal, Typography, Row, Col, Select, InputNumber } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc, onSnapshot, query, where } from "firebase/firestore";
 import Sidebar from "../Sidebar";
@@ -479,6 +479,14 @@ const ReturnItems = () => {
   const [returnQuantities, setReturnQuantities] = useState({});
   const [itemConditions, setItemConditions] = useState({});
   const [itemUnitConditions, setItemUnitConditions] = useState({});
+  const [glasswareIssues, setGlasswareIssues] = useState({});
+  const [issueModalVisible, setIssueModalVisible] = useState(false);
+  const [currentIssueItem, setCurrentIssueItem] = useState(null);
+  const [issueQuantities, setIssueQuantities] = useState({
+    Defect: 0,
+    Damage: 0,
+    Lost: 0,
+  });
 
   // useEffect(() => {
   //   const fetchRequestLogs = async () => {
@@ -845,6 +853,27 @@ const ReturnItems = () => {
   //   }
   // };  
 
+  const buildItemUnitConditions = () => {
+    const newItemUnitConditions = {};
+
+    for (const item of selectedRequest.raw?.requestList || []) {
+      const itemId = item.itemIdFromInventory;
+      const issueKey = `${itemId}_issues`;
+      const issues = glasswareIssues[issueKey] || { Defect: 0, Damage: 0, Lost: 0 };
+
+      const totalIssues = Object.entries(issues).flatMap(([key, count]) =>
+        Array(count).fill(key)
+      );
+
+      const remainingQty = item.quantity - totalIssues.length;
+      const fullConditions = [...totalIssues, ...Array(remainingQty).fill("Good")];
+
+      newItemUnitConditions[itemId] = fullConditions;
+    }
+
+    return newItemUnitConditions;
+  };
+
   const handleReturn = async () => {
     try {
       const userId = localStorage.getItem("userId");
@@ -880,15 +909,14 @@ const ReturnItems = () => {
           return {
             ...item,
             itemId: item.itemIdFromInventory,
-            returnedQuantity: conditions.length,
+            // returnedQuantity: conditions.length,
+            returnedQuantity: conditions.filter(c => c !== "Lost").length,
             conditions,
             scannedCount: 0,
             dateReturned: currentDateString,
           };
         }),
       };
-
-
 
       // Update condition counts in the Borrow Catalog (inventory)
     for (const item of selectedRequest.raw?.requestList || []) {
@@ -1061,6 +1089,26 @@ const ReturnItems = () => {
       )
     : { glasswareData: [], equipmentData: [] };
 
+  useEffect(() => {
+    if (glasswareData.length > 0) {
+      const newQuantities = {};
+
+      glasswareData.forEach((item) => {
+        const key = `${item.itemId}_returnQty`;
+        newQuantities[key] = item.quantity;
+      });
+
+      // Only update if values actually changed to avoid re-renders
+      const isDifferent = Object.keys(newQuantities).some(
+        (key) => returnQuantities[key] !== newQuantities[key]
+      );
+
+      if (isDifferent) {
+        setReturnQuantities(newQuantities);
+      }
+    }
+  }, [glasswareData]);
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout>
@@ -1112,8 +1160,38 @@ const ReturnItems = () => {
               Back
             </Button>,
             
+            // selectedRequest?.status === "Deployed" && (
+            //   <Button key="return" type="primary" onClick={handleReturn}>
+            //     Return
+            //   </Button>
+            // ),
+
             selectedRequest?.status === "Deployed" && (
-              <Button key="return" type="primary" onClick={handleReturn}>
+              <Button
+                key="return"
+                type="primary"
+                onClick={() => {
+                  const newItemUnitConditions = {};
+
+                  for (const item of selectedRequest.raw?.requestList || []) {
+                    const itemId = item.itemIdFromInventory;
+                    const issueKey = `${itemId}_issues`;
+                    const issues = glasswareIssues[issueKey] || { Defect: 0, Damage: 0, Lost: 0 };
+
+                    const totalIssues = Object.entries(issues).flatMap(([key, count]) =>
+                      Array(count).fill(key)
+                    );
+
+                    const remainingQty = item.quantity - totalIssues.length;
+                    const fullConditions = [...totalIssues, ...Array(remainingQty).fill("Good")];
+
+                    newItemUnitConditions[itemId] = fullConditions;
+                  }
+
+                  setItemUnitConditions(newItemUnitConditions); // <-- This updates the required state
+                  handleReturn(); // <-- No changes needed inside handleReturn
+                }}
+              >
                 Return
               </Button>
             ),
@@ -1208,131 +1286,165 @@ const ReturnItems = () => {
                 style={{ marginTop: 10 }}
               />  */}
 
-<>
- {glasswareData.length > 0 && (
-  <>
-    <Typography.Title level={4}>Glasswares</Typography.Title>
-    <Table
-      dataSource={glasswareData}
-      columns={[
-        {
-          title: "Item ID",
-          dataIndex: "itemId",
-          key: "itemId",
-        },
-        {
-          title: "Item Description",
-          dataIndex: "itemDescription",
-          key: "itemDescription",
-        },
-        {
-          title: "Unit",
-          key: "unit",
-          render: (_, record) =>
-            record.isGrouped
-              ? `Qty: ${record.quantity}`
-              : `#${record.unitIndex || 1}`,
-        },
-        {
-          title: "Condition",
-          key: "condition",
-          render: (_, record) => {
-            const key = `${record.itemId}_grouped`;
+              <>
+              {glasswareData.length > 0 && (
+                <>
+                  <Typography.Title level={4}>Glasswares</Typography.Title>
+                  <Table
+                    dataSource={glasswareData}
+                    columns={[
+                      {
+                        title: "Item ID",
+                        dataIndex: "itemId",
+                        key: "itemId",
+                      },
+                      {
+                        title: "Item Description",
+                        dataIndex: "itemDescription",
+                        key: "itemDescription",
+                      },
+                      {
+                        title: "QUANTITY",
+                        key: "unit",
+                        render: (_, record) => `${record.quantity}`,
+                      },
+                      {
+                        title: "Return Qty",
+                        key: "returnQty",
+                        render: (_, record) => {
+                          const baseKey = `${record.itemId}_${selectedRequest.requisitionId}`;
+                          const returnKey = `${baseKey}_returnQty`;
+                          const issueKey = `${baseKey}_issues`;
 
-            return (
-              <Select
-                value={itemConditions[key] || "Good"}
-                onChange={(value) => {
-                  setItemConditions((prev) => ({
-                    ...prev,
-                    [key]: value,
-                  }));
+                          const issues = glasswareIssues[issueKey] || { Defect: 0, Damage: 0, Lost: 0 };
+                          const totalIssues = Object.values(issues).reduce((sum, val) => sum + (val || 0), 0);
+                          const issuedQty = record.quantity || 0;
+                          const maxReturnable = Math.max(0, issuedQty - totalIssues);
 
-                  setItemUnitConditions((prev) => ({
-                    ...prev,
-                    [record.itemId]: Array(record.quantity).fill(value),
-                  }));
-                }}
-                style={{ width: 120 }}
-              >
-                <Option value="Good">Good</Option>
-                <Option value="Defect">Defect</Option>
-                <Option value="Damage">Damage</Option>
-                <Option value="Lost">Lost</Option>
-              </Select>
-            );
-          },
-        },
-      ]}
-      pagination={false}
-    />
-  </>
-)}
+                          // 🔥 Pre-fill returnQty if not already set
+                          if (returnQuantities[returnKey] === undefined) {
+                            setReturnQuantities((prev) => ({
+                              ...prev,
+                              [returnKey]: issuedQty,
+                            }));
+                          }
 
-{equipmentData.length > 0 && (
-  <>
-    <Typography.Title level={4} style={{ marginTop: 24 }}>
-      Equipment
-    </Typography.Title>
-    <Table
-      dataSource={equipmentData}
-      columns={[
-        {
-          title: "Item ID",
-          dataIndex: "itemId",
-          key: "itemId",
-        },
-        {
-          title: "Item Description",
-          dataIndex: "itemDescription",
-          key: "itemDescription",
-        },
-        {
-          title: "Unit",
-          key: "unit",
-          render: (_, record) =>
-            `#${record.unitIndex || 1}`,
-        },
-        {
-          title: "Condition",
-          key: "condition",
-          render: (_, record) => {
-            const key = `${record.itemId}_${record.unitIndex}`;
+                          return (
+                            <InputNumber
+                              min={0}
+                              max={maxReturnable}
+                              value={returnQuantities[returnKey] ?? issuedQty}
+                              onChange={(value) => {
+                                setReturnQuantities((prev) => ({
+                                  ...prev,
+                                  [returnKey]: value,
+                                }));
+                              }}
+                            />
+                          );
+                        },
+                      },
+                      {
+                        title: "Issue?",
+                        key: "hasIssue",
+                        render: (_, record) => {
+                          const baseKey = `${record.itemId}_${selectedRequest.requisitionId}`;
+                          const checkboxKey = `${baseKey}_issue`;
 
-            return (
-              <Select
-                value={itemConditions[key] || "Good"}
-                onChange={(value) => {
-                  setItemConditions((prev) => ({
-                    ...prev,
-                    [key]: value,
-                  }));
+                          return (
+                            <input
+                              type="checkbox"
+                              checked={glasswareIssues[checkboxKey] || false}
+                              onChange={(e) => {
+                                const { checked } = e.target;
 
-                  setItemUnitConditions((prev) => ({
-                    ...prev,
-                    [record.itemId]: [
-                      ...(prev[record.itemId] || []),
-                    ].map((_, idx) =>
-                      idx + 1 === record.unitIndex ? value : _
-                    ),
-                  }));
-                }}
-                style={{ width: 120 }}
-              >
-                <Option value="Good">Good</Option>
-                <Option value="Defect">Defect</Option>
-                <Option value="Damage">Damage</Option>
-                <Option value="Lost">Lost</Option>
-              </Select>
-            );
-          },
-        },
-      ]}
-      pagination={false}
-    />
-  </>
-)}
-</>
+                                // Store the checkbox state
+                                setGlasswareIssues((prev) => ({
+                                  ...prev,
+                                  [checkboxKey]: checked,
+                                }));
+
+                                // If checked, show modal for this specific item
+                                if (checked) {
+                                  setCurrentIssueItem(record);
+                                  setIssueQuantities({ Defect: 0, Damage: 0, Lost: 0 });
+                                  setIssueModalVisible(true);
+                                }
+                              }}
+                            />
+                          );
+                        },
+                      }
+                    ]}
+                    pagination={false}
+                  />
+                </>
+              )}
+
+              {equipmentData.length > 0 && (
+                <>
+                  <Typography.Title level={4} style={{ marginTop: 24 }}>
+                    Equipment
+                  </Typography.Title>
+                  <Table
+                    dataSource={equipmentData}
+                    columns={[
+                      {
+                        title: "Item ID",
+                        dataIndex: "itemId",
+                        key: "itemId",
+                      },
+                      {
+                        title: "Item Description",
+                        dataIndex: "itemDescription",
+                        key: "itemDescription",
+                      },
+                      {
+                        title: "Unit",
+                        key: "unit",
+                        render: (_, record) =>
+                          `#${record.unitIndex || 1}`,
+                      },
+                      {
+                        title: "Condition",
+                        key: "condition",
+                        render: (_, record) => {
+                          const key = `${record.itemId}_${record.unitIndex}`;
+
+                          return (
+                            <Select
+                              value={itemConditions[key] || "Good"}
+                              onChange={(value) => {
+                                setItemConditions((prev) => ({
+                                  ...prev,
+                                  [key]: value,
+                                }));
+
+                                setItemUnitConditions((prev) => ({
+                                  ...prev,
+                                  [record.itemId]: [
+                                    ...(prev[record.itemId] || []),
+                                  ].map((_, idx) =>
+                                    idx + 1 === record.unitIndex ? value : _
+                                  ),
+                                }));
+                              }}
+                              style={{ width: 120 }}
+                            >
+                              <Option value="Good">Good</Option>
+                              <Option value="Defect">Defect</Option>
+                              <Option value="Damage">Damage</Option>
+                              <Option value="Lost">Lost</Option>
+                            </Select>
+                          );
+                        },
+                      },
+                    ]}
+                    pagination={false}
+                  />
+                </>
+              )}
+              </>
 
                 {/* <Table
                 dataSource={unitLevelData}
@@ -1405,6 +1517,79 @@ const ReturnItems = () => {
               </Row>
             </div>
           )}
+        </Modal>
+
+        <Modal
+          title={`Specify issues for: ${currentIssueItem?.itemDescription || ""}`}
+          visible={issueModalVisible}
+          zIndex={1030}
+          onCancel={() => setIssueModalVisible(false)}
+          onOk={() => {
+            if (!currentIssueItem || !selectedRequest) return;
+
+            const baseKey = `${currentIssueItem.itemId}_${selectedRequest.requisitionId}`;
+            const issueKey = `${baseKey}_issues`;
+            const returnKey = `${baseKey}_returnQty`;
+
+            // Total issues
+            const totalIssues = Object.values(issueQuantities).reduce(
+              (sum, val) => sum + (val || 0),
+              0
+            );
+
+            const issuedQty = currentIssueItem.quantity || 0;
+            const goodQty = Math.max(issuedQty - totalIssues, 0);
+
+            // Save issue quantities
+            setGlasswareIssues((prev) => ({
+              ...prev,
+              [issueKey]: { ...issueQuantities },
+            }));
+
+            // Update return quantity
+            setReturnQuantities((prev) => ({
+              ...prev,
+              [returnKey]: goodQty,
+            }));
+
+            // Create itemUnitConditions: "Good", "Defect", "Damage", "Lost"
+            const conditionArray = [];
+
+            for (let i = 0; i < goodQty; i++) conditionArray.push("Good");
+
+            Object.entries(issueQuantities).forEach(([type, count]) => {
+              for (let i = 0; i < (count || 0); i++) {
+                conditionArray.push(type);
+              }
+            });
+
+            setItemUnitConditions((prev) => ({
+              ...prev,
+              [currentIssueItem.itemId]: conditionArray,
+            }));
+
+            setIssueModalVisible(false);
+          }}
+        >
+          {["Defect", "Damage", "Lost"].map((type) => (
+            <Row key={type} style={{ marginBottom: 10 }} align="middle">
+              <Col span={8}>
+                <Text>{type}:</Text>
+              </Col>
+              <Col span={16}>
+                <InputNumber
+                  min={0}
+                  value={issueQuantities[type] || 0}
+                  onChange={(value) =>
+                    setIssueQuantities((prev) => ({
+                      ...prev,
+                      [type]: value,
+                    }))
+                  }
+                />
+              </Col>
+            </Row>
+          ))}
         </Modal>
       </Layout>
     </Layout>
