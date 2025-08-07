@@ -769,6 +769,8 @@ function getConditionSummary(conditionsArray) {
       } else {
        
       }
+
+      showNotification("Return Item successfully approved!");
       setIsApprovedModalVisible(false);
       setSelectedApprovedRequest(null);
   
@@ -782,7 +784,7 @@ function getConditionSummary(conditionsArray) {
       const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
       await updateDoc(docRef, { status: "Released" });
 
-      alert("Request successfully released!");
+      showNotification("Requested Item successfully released!");
       setIsApprovedModalVisible(false);
       setSelectedApprovedRequest(null);
       
