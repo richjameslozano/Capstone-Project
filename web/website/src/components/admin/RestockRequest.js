@@ -269,7 +269,13 @@ const RestockRequest = () => {
         </Spin>
 
         <Modal
-          title="Approve Restock Request"
+          title={
+            selectedRequest?.status === "denied"
+              ? "Denied Restock Request"
+              : selectedRequest?.status === "pending"
+              ? "Pending Restock Request"
+              : "Approve Restock Request"
+          }
           open={isModalVisible}
           onCancel={() => {
             setIsModalVisible(false);
