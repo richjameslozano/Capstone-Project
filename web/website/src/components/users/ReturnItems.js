@@ -1,3 +1,4 @@
+// VERSION 1
 // import React, { useState, useEffect } from "react";
 // import { Layout, Table, Button, Modal, Typography, Row, Col, Select } from "antd";
 // import { db } from "../../backend/firebase/FirebaseConfig";
@@ -456,6 +457,8 @@
 
 // export default ReturnItems;
 
+
+// VERSION 2
 import React, { useState, useEffect } from "react";
 import { Layout, Table, Button, Modal, Typography, Row, Col, Select } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -988,17 +991,76 @@ const ReturnItems = () => {
       ? historyData
       : historyData.filter((item) => item.status === filterStatus);
 
+  // const unitLevelData = selectedRequest?.raw?.requestList
+  //   ? selectedRequest.raw.requestList.flatMap((item) =>
+  //       Array.from({ length: item.quantity }, (_, idx) => ({
+  //         key: `${item.itemIdFromInventory}_${idx}`,
+  //         itemId: item.itemIdFromInventory,
+  //         itemDescription: item.itemName,
+  //         unitIndex: idx + 1,
+  //         // volume: item.volume || (typeof item.quantity === 'object' ? item.quantity.volume : undefined),
+  //       }))
+  //     )
+  // : [];
+
   const unitLevelData = selectedRequest?.raw?.requestList
-    ? selectedRequest.raw.requestList.flatMap((item) =>
-        Array.from({ length: item.quantity }, (_, idx) => ({
-          key: `${item.itemIdFromInventory}_${idx}`,
+    ? selectedRequest.raw.requestList.flatMap((item) => {
+        const isGrouped = item.category === "Glasswares";
+
+        // For Glasswares: 1 row (grouped)
+        if (isGrouped) {
+          return {
+            key: `${item.itemIdFromInventory}_grouped`,
+            itemId: item.itemIdFromInventory,
+            itemDescription: item.itemName,
+            quantity: item.quantity,
+            isGrouped: true,
+            condition: item.condition,
+          };
+        }
+
+        // For Equipment: split by unit
+        return Array.from({ length: item.quantity }, (_, idx) => ({
+          key: `${item.itemIdFromInventory}_${idx + 1}`,
           itemId: item.itemIdFromInventory,
           itemDescription: item.itemName,
           unitIndex: idx + 1,
-          // volume: item.volume || (typeof item.quantity === 'object' ? item.quantity.volume : undefined),
-        }))
-      )
+          isGrouped: false,
+        }));
+      })
     : [];
+
+  const { glasswareData, equipmentData } = selectedRequest?.raw?.requestList
+    ? selectedRequest.raw.requestList.reduce(
+        (acc, item) => {
+          const isGlassware = item.category === "Glasswares";
+
+          if (isGlassware) {
+            acc.glasswareData.push({
+              key: `${item.itemIdFromInventory}_grouped`,
+              itemId: item.itemIdFromInventory,
+              itemDescription: item.itemName,
+              quantity: item.quantity,
+              isGrouped: true,
+              condition: item.condition,
+            });
+          } else {
+            const equipmentUnits = Array.from({ length: item.quantity }, (_, idx) => ({
+              key: `${item.itemIdFromInventory}_${idx + 1}`,
+              itemId: item.itemIdFromInventory,
+              itemDescription: item.itemName,
+              unitIndex: idx + 1,
+              isGrouped: false,
+            }));
+
+            acc.equipmentData.push(...equipmentUnits);
+          }
+
+          return acc;
+        },
+        { glasswareData: [], equipmentData: [] }
+      )
+    : { glasswareData: [], equipmentData: [] };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -1087,7 +1149,7 @@ const ReturnItems = () => {
                 </Col>
               </Row>
 
-              <Table
+              {/* <Table
                 dataSource={unitLevelData}
                 columns={[
                   {
@@ -1145,7 +1207,133 @@ const ReturnItems = () => {
                 ]}
                 pagination={{ pageSize: 10 }}
                 style={{ marginTop: 10 }}
-              /> 
+              />  */}
+
+<>
+ {glasswareData.length > 0 && (
+  <>
+    <Typography.Title level={4}>Glasswares</Typography.Title>
+    <Table
+      dataSource={glasswareData}
+      columns={[
+        {
+          title: "Item ID",
+          dataIndex: "itemId",
+          key: "itemId",
+        },
+        {
+          title: "Item Description",
+          dataIndex: "itemDescription",
+          key: "itemDescription",
+        },
+        {
+          title: "Unit",
+          key: "unit",
+          render: (_, record) =>
+            record.isGrouped
+              ? `Qty: ${record.quantity}`
+              : `#${record.unitIndex || 1}`,
+        },
+        {
+          title: "Condition",
+          key: "condition",
+          render: (_, record) => {
+            const key = `${record.itemId}_grouped`;
+
+            return (
+              <Select
+                value={itemConditions[key] || "Good"}
+                onChange={(value) => {
+                  setItemConditions((prev) => ({
+                    ...prev,
+                    [key]: value,
+                  }));
+
+                  setItemUnitConditions((prev) => ({
+                    ...prev,
+                    [record.itemId]: Array(record.quantity).fill(value),
+                  }));
+                }}
+                style={{ width: 120 }}
+              >
+                <Option value="Good">Good</Option>
+                <Option value="Defect">Defect</Option>
+                <Option value="Damage">Damage</Option>
+                <Option value="Lost">Lost</Option>
+              </Select>
+            );
+          },
+        },
+      ]}
+      pagination={false}
+    />
+  </>
+)}
+
+{equipmentData.length > 0 && (
+  <>
+    <Typography.Title level={4} style={{ marginTop: 24 }}>
+      Equipment
+    </Typography.Title>
+    <Table
+      dataSource={equipmentData}
+      columns={[
+        {
+          title: "Item ID",
+          dataIndex: "itemId",
+          key: "itemId",
+        },
+        {
+          title: "Item Description",
+          dataIndex: "itemDescription",
+          key: "itemDescription",
+        },
+        {
+          title: "Unit",
+          key: "unit",
+          render: (_, record) =>
+            `#${record.unitIndex || 1}`,
+        },
+        {
+          title: "Condition",
+          key: "condition",
+          render: (_, record) => {
+            const key = `${record.itemId}_${record.unitIndex}`;
+
+            return (
+              <Select
+                value={itemConditions[key] || "Good"}
+                onChange={(value) => {
+                  setItemConditions((prev) => ({
+                    ...prev,
+                    [key]: value,
+                  }));
+
+                  setItemUnitConditions((prev) => ({
+                    ...prev,
+                    [record.itemId]: [
+                      ...(prev[record.itemId] || []),
+                    ].map((_, idx) =>
+                      idx + 1 === record.unitIndex ? value : _
+                    ),
+                  }));
+                }}
+                style={{ width: 120 }}
+              >
+                <Option value="Good">Good</Option>
+                <Option value="Defect">Defect</Option>
+                <Option value="Damage">Damage</Option>
+                <Option value="Lost">Lost</Option>
+              </Select>
+            );
+          },
+        },
+      ]}
+      pagination={false}
+    />
+  </>
+)}
+</>
 
                 {/* <Table
                 dataSource={unitLevelData}
