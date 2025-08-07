@@ -9,12 +9,13 @@ import {
   message,
   Popconfirm,
   Select,
+  InputNumber,
 } from "antd";
 import { PlusOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { collection, addDoc, doc, setDoc, serverTimestamp, onSnapshot, query, where, deleteDoc, getDocs } from "firebase/firestore"; 
+import { collection, addDoc, doc, setDoc, serverTimestamp, onSnapshot, query, where, deleteDoc, getDocs, writeBatch } from "firebase/firestore"; 
 import "../styles/usersStyle/CapexRequest.css";
 import { getAuth } from "firebase/auth";
 import NotificationModal from "../customs/NotificationModal"; 
@@ -141,11 +142,22 @@ const CapexRequest = () => {
     setViewModalVisible(true); 
   };  
 
+  // const calculateTotalPrice = (data) => {
+  //   const total = data.reduce(
+  //     (sum, item) => sum + (item.estimatedCost * item.qty || 0),
+  //     0
+  //   );
+  //   setTotalPrice(total);
+  // };
+
   const calculateTotalPrice = (data) => {
+    if (!Array.isArray(data)) return;
+
     const total = data.reduce(
-      (sum, item) => sum + (item.estimatedCost * item.qty || 0),
+      (sum, item) => sum + ((item.estimatedCost || 0) * (item.qty || 0)),
       0
     );
+
     setTotalPrice(total);
   };
   
@@ -232,70 +244,154 @@ const CapexRequest = () => {
 
 
   
+//   const handleSave = async (values) => {
+//   setIsModalVisible(false);
+
+//   // Sanitize input values before saving
+//   const sanitizedValues = {
+//     itemDescription: sanitizeInput(values.itemDescription),
+//     subject: sanitizeInput(values.subject),
+//     justification: sanitizeInput(values.justification),
+//     qty: values.qty, // qty should be a number, no need for sanitization unless necessary
+//     estimatedCost: values.estimatedCost, // Same for estimatedCost
+//   };
+
+//   // If editing an existing item
+//   if (editingRow !== null) {
+//     const updatedItem = {
+//       ...sanitizedValues,
+//       id: editingRow.id,
+//       totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost, // Ensure total price is updated
+//     };
+
+//     try {
+//       const userId = localStorage.getItem("userId");
+//       const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, editingRow.id);
+//       await setDoc(capexRequestRef, updatedItem);
+
+//       // Logging the action
+//       await logRequestOrReturn(userId, localStorage.getItem("userName"), "Updated a Capex Item", updatedItem);
+
+//       setNotificationMessage("Item updated successfully!");
+//       setNotificationVisible(true);
+
+//       calculateTotalPrice(); // Recalculate total price
+
+//     } catch (error) {
+//       setNotificationMessage("Failed to update Item.");
+//       setNotificationVisible(true);
+//     }
+//   } else {
+//     // If adding a new item
+//     const newItem = {
+//       ...sanitizedValues,
+//       totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost, // Ensure total price is calculated
+//     };
+
+//     try {
+//       const userId = localStorage.getItem("userId");
+//       const capexRequestRef = await addDoc(collection(db, `accounts/${userId}/temporaryCapexRequest`), newItem);
+//       const newItemWithId = {
+//         ...newItem,
+//         id: capexRequestRef.id,
+//         no: dataSource.length + 1, // Number the items in the list
+//       };
+
+//       setNotificationMessage("Item added successfully!");
+//       setNotificationVisible(true);
+
+//       // Update the state to reflect the new item
+//       setDataSource([...dataSource, newItemWithId]);
+//       calculateTotalPrice(); // Recalculate total price after adding new item
+
+//     } catch (error) {
+//       setNotificationMessage("Failed to add Item.");
+//       setNotificationVisible(true);
+//     }
+//   }
+// };
+
   const handleSave = async (values) => {
-  setIsModalVisible(false);
+    setIsModalVisible(false);
 
-  // Sanitize input values before saving
-  const sanitizedValues = {
-    itemDescription: sanitizeInput(values.itemDescription),
-    subject: sanitizeInput(values.subject),
-    justification: sanitizeInput(values.justification),
-    qty: values.qty, // qty should be a number, no need for sanitization unless necessary
-    estimatedCost: values.estimatedCost, // Same for estimatedCost
-  };
-
-  // If editing an existing item
-  if (editingRow !== null) {
-    const updatedItem = {
-      ...sanitizedValues,
-      id: editingRow.id,
-      totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost, // Ensure total price is updated
+    // Sanitize input values before saving
+    const sanitizedValues = {
+      itemDescription: sanitizeInput(values.itemDescription),
+      subject: sanitizeInput(values.subject),
+      justification: sanitizeInput(values.justification),
+      qty: values.qty, // Assume already validated as number >= 1
+      estimatedCost: values.estimatedCost,
     };
 
-    try {
-      const userId = localStorage.getItem("userId");
-      const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, editingRow.id);
-      await setDoc(capexRequestRef, updatedItem);
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
 
-      // Logging the action
-      await logRequestOrReturn(userId, localStorage.getItem("userName"), "Updated a Capex Item", updatedItem);
-
-      setNotificationMessage("Item updated successfully!");
+    if (!userId || !userName) {
+      setNotificationMessage("User not authenticated.");
       setNotificationVisible(true);
-
-      calculateTotalPrice(); // Recalculate total price
-    } catch (error) {
-      setNotificationMessage("Failed to update Item.");
-      setNotificationVisible(true);
+      return;
     }
-  } else {
-    // If adding a new item
-    const newItem = {
-      ...sanitizedValues,
-      totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost, // Ensure total price is calculated
-    };
 
-    try {
-      const userId = localStorage.getItem("userId");
-      const capexRequestRef = await addDoc(collection(db, `accounts/${userId}/temporaryCapexRequest`), newItem);
-      const newItemWithId = {
-        ...newItem,
-        id: capexRequestRef.id,
-        no: dataSource.length + 1, // Number the items in the list
+    if (editingRow !== null) {
+      // Updating an existing item
+      const updatedItem = {
+        ...sanitizedValues,
+        id: editingRow.id,
+        totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost,
       };
 
-      setNotificationMessage("Item added successfully!");
-      setNotificationVisible(true);
+      try {
+        const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, editingRow.id);
+        await setDoc(capexRequestRef, updatedItem);
 
-      // Update the state to reflect the new item
-      setDataSource([...dataSource, newItemWithId]);
-      calculateTotalPrice(); // Recalculate total price after adding new item
-    } catch (error) {
-      setNotificationMessage("Failed to add Item.");
-      setNotificationVisible(true);
+        await logRequestOrReturn(userId, userName, "Updated a Capex Item", updatedItem);
+
+        setNotificationMessage("Item updated successfully!");
+        setNotificationVisible(true);
+
+        calculateTotalPrice(); // Recalculate after update
+
+      } catch (error) {
+        console.error("Update Item Error:", error);
+        setNotificationMessage("Failed to update Item.");
+        setNotificationVisible(true);
+      }
+    } else {
+      // Adding a new item
+      const newItem = {
+        ...sanitizedValues,
+        totalPrice: sanitizedValues.qty * sanitizedValues.estimatedCost,
+      };
+
+      try {
+        const capexRequestRef = await addDoc(
+          collection(db, `accounts/${userId}/temporaryCapexRequest`),
+          newItem
+        );
+
+        const newItemWithId = {
+          ...newItem,
+          id: capexRequestRef.id,
+          no: (dataSource?.length || 0) + 1, // Safe fallback if dataSource is empty
+        };
+
+        setNotificationMessage("Item added successfully!");
+        setNotificationVisible(true);
+
+        // setDataSource([...dataSource, newItemWithId]);
+        // calculateTotalPrice(); 
+
+        const updatedData = [...(Array.isArray(dataSource) ? dataSource : []), newItemWithId];
+        setDataSource(updatedData);
+        calculateTotalPrice(updatedData); 
+
+      } catch (error) {
+        console.error("Add Item Error:", error);
+        setNotificationMessage("Failed to add Item.");
+        setNotificationVisible(true);
+      }
     }
-  }
-};
+  };
 
  const handleDelete = async (id) => {
   const sanitizedId = sanitizeInput(id); // Ensure sanitized ID
@@ -310,20 +406,18 @@ const CapexRequest = () => {
   const userId = localStorage.getItem("userId");
   const userName = localStorage.getItem("userName");
 
-  try {
-    const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, sanitizedId);
-    await deleteDoc(capexRequestRef);
+    try {
+      const capexRequestRef = doc(db, `accounts/${userId}/temporaryCapexRequest`, sanitizedId);
+      await deleteDoc(capexRequestRef);
 
-    await logRequestOrReturn(userId, userName, "Deleted a Capex Item", [
-      { deletedItemId: sanitizedId }
-    ]);
-  } catch (error) {
-    setNotificationMessage("Failed to delete Item");
-    setNotificationVisible(true);
-  }
-};
-
-
+      await logRequestOrReturn(userId, userName, "Deleted a Capex Item", [
+        { deletedItemId: sanitizedId }
+      ]);
+    } catch (error) {
+      setNotificationMessage("Failed to delete Item");
+      setNotificationVisible(true);
+    }
+  };
 
   const editRow = (record) => {
     setEditingRow(record);
@@ -385,10 +479,37 @@ const CapexRequest = () => {
     }
   };  
 
-  const handleRequestCancel = () => {
-    setDataSource([]);
-    setTotalPrice(0);
-    message.info("CAPEX Request cancelled.");
+  const handleRequestCancel = async () => {
+    const userId = localStorage.getItem("userId");
+    const userName = localStorage.getItem("userName");
+
+    try {
+      // 1. Delete all items in the Firestore subcollection for this user
+      const collectionRef = collection(db, `accounts/${userId}/temporaryCapexRequest`);
+      const snapshot = await getDocs(collectionRef);
+
+      const batch = writeBatch(db);
+      snapshot.forEach((docSnap) => {
+        batch.delete(doc(db, `accounts/${userId}/temporaryCapexRequest`, docSnap.id));
+      });
+      await batch.commit();
+
+      // 2. Clear local state
+      setDataSource([]);
+      setTotalPrice(0);
+
+      // 3. Notify user
+      setNotificationMessage("CAPEX Request cancelled successfully.");
+      setNotificationVisible(true);
+
+      // 4. Log the action
+      await logRequestOrReturn(userId, userName, "Cancelled CAPEX Request", []);
+      
+    } catch (error) {
+      console.error("Error cancelling CAPEX request:", error);
+      setNotificationMessage("Failed to cancel CAPEX Request.");
+      setNotificationVisible(true);
+    }
   };
   
   const columns = [
@@ -629,17 +750,73 @@ const CapexRequest = () => {
               <Form.Item
                 name="qty"
                 label="Quantity"
-                rules={[{ required: true, message: "Please enter quantity!" }]}
+                validateTrigger="onChange"
+                rules={[
+                  { required: true },
+                  {
+                    validator: (_, value) => {
+                      if (value === undefined || value === null || value === '') {
+                        return Promise.reject("Please enter quantity!");
+                      }
+                      if (typeof value !== 'number' || value < 1) {
+                        return Promise.reject("Quantity must be a positive number");
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Input type="number" placeholder="Enter quantity" />
+                <InputNumber
+                  min={1}
+                  placeholder="Enter quantity"
+                  style={{ width: '100%' }}
+                  parser={(value) => value.replace(/[^0-9]/g, '')}
+                  onKeyDown={(e) => {
+                    if (
+                      !/[0-9]/.test(e.key) &&
+                      !['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab'].includes(e.key)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
                 name="estimatedCost"
                 label="Estimated Cost (₱)"
-                rules={[{ required: true, message: "Please enter estimated cost!" }]}
+                validateTrigger="onChange"
+                rules={[
+                  { required: true },
+                  {
+                    validator: (_, value) => {
+                      if (value === undefined || value === null || value === '') {
+                        return Promise.reject("Please enter estimated cost!");
+                      }
+                      if (typeof value !== 'number' || value < 1) {
+                        return Promise.reject("Estimated cost must be at least ₱1");
+                      }
+                      return Promise.resolve();
+                    },
+                  },
+                ]}
               >
-                <Input type="number" placeholder="Enter estimated cost" />
+                <InputNumber
+                  min={1}
+                  placeholder="Enter estimated cost"
+                  style={{ width: '100%' }}
+                  controls={false}
+                  parser={(value) => value.replace(/[^0-9]/g, '')}
+                  formatter={(value) => value?.replace(/[^0-9]/g, '')}
+                  onKeyDown={(e) => {
+                    if (
+                      !/[0-9]/.test(e.key) &&
+                      !['Backspace', 'ArrowLeft', 'ArrowRight', 'Delete', 'Tab'].includes(e.key)
+                    ) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
               </Form.Item>
 
               <Form.Item
