@@ -1,4 +1,3 @@
-// VERSION 1
 // import React, { useState, useEffect } from "react";
 // import { Layout, Table, Button, Modal, Typography, Row, Col, Select } from "antd";
 // import { db } from "../../backend/firebase/FirebaseConfig";
@@ -465,8 +464,8 @@ import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc, onSnapshot, query, where } from "firebase/firestore";
 import Sidebar from "../Sidebar";
 import AppHeader from "../Header";
-import "../styles/adminStyle/RequestLog.css";
-
+import "../styles/usersStyle/ReturnItems.css";
+import { RollbackOutlined } from '@ant-design/icons';
 const { Content } = Layout;
 const { Text } = Typography;
 const { Option } = Select;
@@ -481,80 +480,7 @@ const ReturnItems = () => {
   const [itemConditions, setItemConditions] = useState({});
   const [itemUnitConditions, setItemUnitConditions] = useState({});
 
-  // useEffect(() => {
-  //   const fetchRequestLogs = async () => {
-  //     try {
-  //       const userId = localStorage.getItem("userId");
-  //       if (!userId) throw new Error("User ID not found");
 
-  //       const userRequestLogRef = collection(db, `accounts/${userId}/userrequestlog`);
-  //       const querySnapshot = await getDocs(userRequestLogRef);
-
-  //       const logs = querySnapshot.docs.map((doc) => {
-  //         const data = doc.data();
-  //         const rawTimestamp = data.rawTimestamp;
-  //         const timestamp = data.timestamp;
-
-  //         let parsedRawTimestamp = "N/A";
-  //         let parsedTimestamp = "N/A";
-
-  //         if (rawTimestamp && typeof rawTimestamp.toDate === "function") {
-  //           try {
-  //             parsedRawTimestamp = rawTimestamp.toDate().toLocaleString("en-PH", {
-  //               timeZone: "Asia/Manila",
-  //             });
-
-  //           } catch (e) {
-
-  //           }
-  //         }
-
-  //         if (timestamp && typeof timestamp.toDate === "function") {
-  //           try {
-  //             parsedTimestamp = timestamp.toDate().toLocaleString("en-PH", {
-  //               timeZone: "Asia/Manila",
-  //             });
-              
-  //           } catch (e) {
-
-  //           }
-  //         }
-
-  //         return {
-  //           id: doc.id,
-  //           date: data.dateRequired ?? "N/A",
-  //           status: data.status ?? "Pending",
-  //           requestor: data.userName ?? "Unknown",
-  //           requestedItems: data.requestList
-  //             ? data.requestList.map((item) => item.itemName).join(", ")
-  //             : "No items",
-  //           requisitionId: doc.id,
-  //           reason: data.reason ?? "No reason provided",
-  //           department: data.requestList?.[0]?.department ?? "N/A",
-  //           approvedBy: data.approvedBy ?? "N/A",
-  //           rawTimestamp: rawTimestamp ?? null,
-  //           processDate: parsedRawTimestamp, 
-  //           timestamp: parsedTimestamp,
-  //           raw: data,
-  //         };
-  //       });
-
-  //       // Sort by rawTimestamp (Process Date)
-  //       logs.sort((a, b) => {
-  //         const timeA = a.rawTimestamp?.toMillis?.() ?? 0;
-  //         const timeB = b.rawTimestamp?.toMillis?.() ?? 0;
-  //         return timeB - timeA;
-  //       });
-
-  //       setHistoryData(logs);
-        
-  //     } catch (error) {
-
-  //     }
-  //   };
-
-  //   fetchRequestLogs();
-  // }, []);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -606,7 +532,7 @@ const ReturnItems = () => {
               ? data.requestList.map((item) => item.itemName).join(", ")
               : "No items",
             requisitionId: doc.id,
-            reason: data.reason ?? "No reason provided",
+            reason: data.reason ?? "None",
             department: data.requestList?.[0]?.department ?? "N/A",
             approvedBy: data.approvedBy ?? "N/A",
             rawTimestamp: rawTimestamp ?? null,
@@ -707,144 +633,7 @@ const ReturnItems = () => {
     setInventoryData({});
   };
 
-  // const handleReturn = async () => {
-  //   try {
-  //     const userId = localStorage.getItem("userId");
-  //     if (!userId || !selectedRequest) {
 
-  //       return;
-  //     }
-  
-  //     const timestamp = serverTimestamp();
-  //     const currentDateString = new Date().toISOString();
-
-
-  
-  //     const fullReturnData = {
-  //       accountId: userId,
-  //       approvedBy: selectedRequest.raw?.approvedBy || "N/A",
-  //       courseCode: selectedRequest.raw?.courseCode || "N/A",
-  //       courseDescription: selectedRequest.raw?.courseDescription || "N/A",
-  //       dateRequired: selectedRequest.raw?.dateRequired || "N/A",
-  //       program: selectedRequest.raw?.program || "N/A",
-  //       reason: selectedRequest.raw?.reason || "No reason provided",
-  //       room: selectedRequest.raw?.room || "N/A",
-  //       timeFrom: selectedRequest.raw?.timeFrom || "N/A",
-  //       timeTo: selectedRequest.raw?.timeTo || "N/A",
-  //       timestamp: timestamp,
-  //       userName: selectedRequest.raw?.userName || "N/A",
-  //       requisitionId: selectedRequest.requisitionId,
-  //       status: "Returned",
-  //       requestList: (selectedRequest.raw?.requestList || []).map((item) => {
-  //         const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
-  //         // Ensure the conditions array matches the quantity, defaulting to "Good"
-  //         const conditions = Array.from({ length: item.quantity }, (_, idx) =>
-  //           returnedConditions[idx] || "Good"
-  //         );
-  //         return {
-  //           ...item,
-  //           returnedQuantity: conditions.length,
-  //           conditions,
-  //           scannedCount: 0,
-  //           dateReturned: currentDateString,
-  //         };
-  //       }),
-  //     };
-
-
-
-  //     // Update condition counts in the Borrow Catalog (inventory)
-  //   for (const item of selectedRequest.raw?.requestList || []) {
-  //     const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
-
-  //     if (returnedConditions.length === 0) continue;
-
-  //     const inventoryDocRef = doc(db, "inventory", item.itemIdFromInventory);
-  //     const inventoryDoc = await getDoc(inventoryDocRef);
-
-  //     if (!inventoryDoc.exists()) continue;
-
-  //     const inventoryData = inventoryDoc.data();
-  //     const existingConditionCount = inventoryData.conditionCount || {
-  //       Good: 0,
-  //       Damage: 0,
-  //       Defect: 0,
-  //     };
-
-  //     // Tally condition counts from the returned units
-  //     const newCounts = { ...existingConditionCount };
-  //     returnedConditions.forEach((condition) => {
-  //       if (newCounts[condition] !== undefined) {
-  //         newCounts[condition]++;
-  //       }
-  //     });
-
-  //     await updateDoc(inventoryDocRef, {
-  //       conditionCount: newCounts,
-  //     });
-  //   }
-
-      
-  //     // Save to returnedItems and userreturneditems
-  //     const returnedRef = doc(collection(db, "returnedItems"));
-  //     const userReturnedRef = doc(collection(db, `accounts/${userId}/userreturneditems`));
-  //     await setDoc(returnedRef, fullReturnData);
-  //     await setDoc(userReturnedRef, fullReturnData);
-  
-  //     const borrowQuery = query(
-  //       collection(db, "borrowcatalog"),
-  //       where("userName", "==", selectedRequest.raw?.userName),
-  //       where("dateRequired", "==", selectedRequest.raw?.dateRequired),
-  //       where("room", "==", selectedRequest.raw?.room),
-  //       where("timeFrom", "==", selectedRequest.raw?.timeFrom),
-  //       where("timeTo", "==", selectedRequest.raw?.timeTo)
-  //     );
-
-  //     const querySnapshot = await getDocs(borrowQuery);
-
-  //     if (!querySnapshot.empty) {
-  //       const docToUpdate = querySnapshot.docs[0];
-  //       const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
-        
-  //       await updateDoc(borrowDocRef, {
-  //         requestList: fullReturnData.requestList,
-  //         status: "Returned",
-  //       });
-
-  //     } else {
-
-  //     }
-
-  //     // 🗑️ Delete from userrequestlog
-  //     const userRequestLogRef = doc(
-  //       db,
-  //       `accounts/${userId}/userrequestlog/${selectedRequest.requisitionId}`
-  //     );
-  //     await deleteDoc(userRequestLogRef);
-
-  
-  //     // 📝 Add to history log
-  //     const historyRef = doc(collection(db, `accounts/${userId}/historylog`));
-  //     await setDoc(historyRef, {
-  //       ...fullReturnData,
-  //       action: "Returned",
-  //       date: currentDateString,
-  //     });
-
-  //     // 📝 Add to history log
-  //     const activityRef = doc(collection(db, `accounts/${userId}/activitylog`));
-  //     await setDoc(activityRef, {
-  //       ...fullReturnData,
-  //       action: "Returned",
-  //       date: currentDateString,
-  //     });
-
-  //     closeModal();
-  
-  //   } catch (error) {
-
-  //   }
-  // };  
 
   const handleReturn = async () => {
     try {
@@ -864,7 +653,7 @@ const ReturnItems = () => {
         courseDescription: selectedRequest.raw?.courseDescription || "N/A",
         dateRequired: selectedRequest.raw?.dateRequired || "N/A",
         program: selectedRequest.raw?.program || "N/A",
-        reason: selectedRequest.raw?.reason || "No reason provided",
+        reason: selectedRequest.raw?.reason || "none",
         room: selectedRequest.raw?.room || "N/A",
         timeFrom: selectedRequest.raw?.timeFrom || "N/A",
         timeTo: selectedRequest.raw?.timeTo || "N/A",
@@ -1104,10 +893,10 @@ const ReturnItems = () => {
         </Content>
 
         <Modal
-          title="📄 Requisition Slip"
           visible={modalVisible}
           onCancel={closeModal}
           zIndex={1012}
+          className="return-modal"
           footer={[
             <Button key="close" onClick={closeModal}>
               Back
@@ -1122,10 +911,16 @@ const ReturnItems = () => {
           width={800}
         >
           {selectedRequest && selectedRequest.raw && (
-            <div>
+         
+            <div style={{paddingTop: 50}}> 
+              <div className="return-header" >
+                <RollbackOutlined style={{color: 'white', fontSize: 20}}/> 
+                <h3 style={{color: 'white', margin: 0, }}>Return Items</h3>
+              </div>
               <Row gutter={[16, 16]}>
                 <Col span={12}>
-                  <Text strong>Name:</Text> {selectedRequest.raw?.userName}
+                  <Text style={{fontSize: 16}} strong>Name: </Text>
+                  <Text style={{fontSize: 16}}>{selectedRequest.raw?.userName}</Text>
                 </Col>
 
                 {/* <Col span={12} style={{ textAlign: "right" }}>
@@ -1135,21 +930,23 @@ const ReturnItems = () => {
 
               <Row gutter={[16, 8]} style={{ marginTop: 10 }}>
                 <Col span={12}>
-                  <Text strong>Request Date:</Text> {selectedRequest.timestamp}
+                  <Text style={{fontSize: 16}} strong>Request Date:</Text> 
+                <Text style={{fontSize: 16}}> {selectedRequest.timestamp}</Text>
                 </Col>
                 <Col span={12}>
-                  <Text strong>Required Date:</Text> {selectedRequest.raw?.dateRequired}
+                  <Text style={{fontSize: 16}} strong>Required Date:</Text>   
+                  <Text style={{fontSize: 16}}> {selectedRequest.raw?.dateRequired}</Text>
                 </Col>
               </Row>
 
               <Row gutter={[16, 8]} style={{ marginTop: 10 }}>
                 <Col span={24}>
-                  <Text strong>Requested Items:</Text>
-                  <Text style={{ color: "green" }}> ({selectedRequest.status})</Text>
+                  <Text style={{fontSize: 16}} strong>Requested Items: </Text>
+                  <Text style={{ color: "white", fontSize: 16, backgroundColor:'#28d37dff', borderRadius: 5, padding: 5, margin: 0, fontWeight: 'bold',}}>{selectedRequest.status}</Text>
                 </Col>
               </Row>
 
-              {/* <Table
+              <Table
                 dataSource={unitLevelData}
                 columns={[
                   {
@@ -1207,133 +1004,7 @@ const ReturnItems = () => {
                 ]}
                 pagination={{ pageSize: 10 }}
                 style={{ marginTop: 10 }}
-              />  */}
-
-<>
- {glasswareData.length > 0 && (
-  <>
-    <Typography.Title level={4}>Glasswares</Typography.Title>
-    <Table
-      dataSource={glasswareData}
-      columns={[
-        {
-          title: "Item ID",
-          dataIndex: "itemId",
-          key: "itemId",
-        },
-        {
-          title: "Item Description",
-          dataIndex: "itemDescription",
-          key: "itemDescription",
-        },
-        {
-          title: "Unit",
-          key: "unit",
-          render: (_, record) =>
-            record.isGrouped
-              ? `Qty: ${record.quantity}`
-              : `#${record.unitIndex || 1}`,
-        },
-        {
-          title: "Condition",
-          key: "condition",
-          render: (_, record) => {
-            const key = `${record.itemId}_grouped`;
-
-            return (
-              <Select
-                value={itemConditions[key] || "Good"}
-                onChange={(value) => {
-                  setItemConditions((prev) => ({
-                    ...prev,
-                    [key]: value,
-                  }));
-
-                  setItemUnitConditions((prev) => ({
-                    ...prev,
-                    [record.itemId]: Array(record.quantity).fill(value),
-                  }));
-                }}
-                style={{ width: 120 }}
-              >
-                <Option value="Good">Good</Option>
-                <Option value="Defect">Defect</Option>
-                <Option value="Damage">Damage</Option>
-                <Option value="Lost">Lost</Option>
-              </Select>
-            );
-          },
-        },
-      ]}
-      pagination={false}
-    />
-  </>
-)}
-
-{equipmentData.length > 0 && (
-  <>
-    <Typography.Title level={4} style={{ marginTop: 24 }}>
-      Equipment
-    </Typography.Title>
-    <Table
-      dataSource={equipmentData}
-      columns={[
-        {
-          title: "Item ID",
-          dataIndex: "itemId",
-          key: "itemId",
-        },
-        {
-          title: "Item Description",
-          dataIndex: "itemDescription",
-          key: "itemDescription",
-        },
-        {
-          title: "Unit",
-          key: "unit",
-          render: (_, record) =>
-            `#${record.unitIndex || 1}`,
-        },
-        {
-          title: "Condition",
-          key: "condition",
-          render: (_, record) => {
-            const key = `${record.itemId}_${record.unitIndex}`;
-
-            return (
-              <Select
-                value={itemConditions[key] || "Good"}
-                onChange={(value) => {
-                  setItemConditions((prev) => ({
-                    ...prev,
-                    [key]: value,
-                  }));
-
-                  setItemUnitConditions((prev) => ({
-                    ...prev,
-                    [record.itemId]: [
-                      ...(prev[record.itemId] || []),
-                    ].map((_, idx) =>
-                      idx + 1 === record.unitIndex ? value : _
-                    ),
-                  }));
-                }}
-                style={{ width: 120 }}
-              >
-                <Option value="Good">Good</Option>
-                <Option value="Defect">Defect</Option>
-                <Option value="Damage">Damage</Option>
-                <Option value="Lost">Lost</Option>
-              </Select>
-            );
-          },
-        },
-      ]}
-      pagination={false}
-    />
-  </>
-)}
-</>
+              /> 
 
                 {/* <Table
                 dataSource={unitLevelData}
@@ -1397,7 +1068,7 @@ const ReturnItems = () => {
 
               <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
                 <Col span={12}>
-                  <Text strong>Reason:</Text> {selectedRequest.reason}
+                  <Text strong>Note:</Text> {selectedRequest.reason}
                 </Col>
 
                 <Col span={12} style={{ textAlign: "right" }}>
