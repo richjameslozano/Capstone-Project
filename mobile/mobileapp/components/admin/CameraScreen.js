@@ -208,34 +208,158 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             } else if (currentStatus === "deployed") {
               alreadyDeployed = true;
 
-              } else if (currentStatus === "returned") {
+            // } else if (currentStatus === "returned") {
+            //   // ✅ Handle return approval
+            //   const requestorId = data.accountId;
+            //   const borrowDocRef = doc(db, "borrowcatalog", docSnap.id);
+
+            //   const inventoryId = borrowedItem.selectedItemId;
+            //   const returnQty = borrowedItem.returnedQuantity || 1; // ✅ SAFER
+
+            //   const conditionReturned = Array.isArray(borrowedItem.conditions) && borrowedItem.conditions[0]
+            //   ? borrowedItem.conditions[0]
+            //   : "Good"; // default condition
+
+            //   if (inventoryId && !isNaN(returnQty)) {
+            //     const inventoryRef = doc(db, "inventory", inventoryId);
+            //     const inventorySnap = await getDoc(inventoryRef);
+
+            //   if (inventorySnap.exists()) {
+            //         const inventoryData = inventorySnap.data();
+            //         const currentQty = inventoryData.quantity || 0;
+            //         const currentCond = inventoryData.condition || {};
+            //         const currentCondQty = Number(currentCond[conditionReturned] || 0);
+
+            //         // await updateDoc(inventoryRef, {
+            //         //   quantity: currentQty + returnQty,
+            //         //   [`condition.${conditionReturned}`]: currentCondQty + returnQty,
+            //         // });
+
+            //       const updateInventoryData = {
+            //         [`condition.${conditionReturned}`]: Number(currentCond[conditionReturned] || 0) + returnQty,
+            //       };
+
+            //       // ✅ Only increment total quantity if condition is "Good"
+            //       if (conditionReturned === "Good") {
+            //         updateInventoryData.quantity = currentQty + returnQty;
+            //       }
+
+            //       await updateDoc(inventoryRef, updateInventoryData);
+
+
+            //       const labRoomNumber = inventorySnap.data().labRoom; // assuming labRoom holds room number like "LR-101"
+            //       const itemId = inventorySnap.data().itemId;
+
+            //       if (!labRoomNumber || !itemId) {
+            //         console.warn(`⚠️ Missing labRoomNumber or itemId for inventoryId ${inventoryId}`);
+            //         return;
+            //       }
+
+            //       try {
+            //         // 🔍 STEP 1: Find labRoom document by roomNumber
+            //         const labRoomQuery = query(
+            //           collection(db, "labRoom"),
+            //           where("roomNumber", "==", labRoomNumber)
+            //         );
+            //         const labRoomSnapshot = await getDocs(labRoomQuery);
+
+            //         if (labRoomSnapshot.empty) {
+            //           console.warn(`⚠️ No labRoom found with roomNumber: ${labRoomNumber}`);
+            //           return;
+            //         }
+
+            //         const labRoomDoc = labRoomSnapshot.docs[0];
+            //         const labRoomId = labRoomDoc.id;
+
+            //         // 🔍 STEP 2: Find item in the labRoom/{labRoomId}/items by itemId field
+            //         const labItemsRef = collection(db, "labRoom", labRoomId, "items");
+            //         const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
+            //         const itemSnapshot = await getDocs(itemQuery);
+
+            //         if (itemSnapshot.empty) {
+            //           console.warn(`⚠️ LabRoom item not found for itemId ${itemId} in labRoom ${labRoomId}`);
+            //           return;
+            //         }
+
+            //         const itemDoc = itemSnapshot.docs[0];
+            //         const labItemDocId = itemDoc.id;
+            //         const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
+
+            //         const labData = itemDoc.data();
+            //         const currentLabQty = Number(labData.quantity || 0);
+            //         const currentLabCond = labData.condition || {};
+            //         const labCondQty = Number(currentLabCond[conditionReturned] || 0);
+
+            //         // ✅ Update the labRoom item quantity and condition
+            //         // await updateDoc(labItemRef, {
+            //         //   quantity: currentLabQty + returnQty,
+            //         //   [`condition.${conditionReturned}`]: labCondQty + returnQty,
+            //         // });
+
+            //         const updateLabRoomData = {
+            //           [`condition.${conditionReturned}`]: Number(currentLabCond[conditionReturned] || 0) + returnQty,
+            //         };
+
+            //         if (conditionReturned === "Good") {
+            //           updateLabRoomData.quantity = currentLabQty + returnQty;
+            //         }
+
+            //         await updateDoc(labItemRef, updateLabRoomData);
+
+            //         console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
+
+            //       } catch (error) {
+            //         console.error("🔥 Error updating labRoom item:", error);
+            //       }
+
+            } else if (currentStatus === "returned") {
               // ✅ Handle return approval
               const requestorId = data.accountId;
               const borrowDocRef = doc(db, "borrowcatalog", docSnap.id);
 
               const inventoryId = borrowedItem.selectedItemId;
               const returnQty = borrowedItem.returnedQuantity || 1; // ✅ SAFER
-              const conditionReturned = Array.isArray(borrowedItem.conditions) && borrowedItem.conditions[0]
-              ? borrowedItem.conditions[0]
-              : "Good"; // default condition
+
+              // ✅ Use itemUnitConditions if available, else conditions, else default to "Good"
+              const returnedConditions = Array.isArray(borrowedItem.itemUnitConditions) && borrowedItem.itemUnitConditions.length > 0
+                ? borrowedItem.itemUnitConditions
+                : (Array.isArray(borrowedItem.conditions) && borrowedItem.conditions.length > 0
+                    ? borrowedItem.conditions
+                    : Array(returnQty).fill("Good")); // default all units to "Good"
+
+              // 🔹 Store these conditions back to Firestore for record-keeping
+              await updateDoc(borrowDocRef, {
+                [`items.${borrowedItem.itemIndex}.itemUnitConditions`]: returnedConditions
+              });
 
               if (inventoryId && !isNaN(returnQty)) {
                 const inventoryRef = doc(db, "inventory", inventoryId);
                 const inventorySnap = await getDoc(inventoryRef);
 
-              if (inventorySnap.exists()) {
-                    const inventoryData = inventorySnap.data();
-                    const currentQty = inventoryData.quantity || 0;
-                    const currentCond = inventoryData.condition || {};
-                    const currentCondQty = Number(currentCond[conditionReturned] || 0);
+                if (inventorySnap.exists()) {
+                  const inventoryData = inventorySnap.data();
+                  const currentQty = inventoryData.quantity || 0;
+                  const currentCond = inventoryData.condition || {};
 
-                    await updateDoc(inventoryRef, {
-                      quantity: currentQty + returnQty,
-                      [`condition.${conditionReturned}`]: currentCondQty + returnQty,
-                    });
+                  // ✅ Build update object for inventory based on all unit conditions
+                  const updateInventoryData = {};
+                  let goodCountToAdd = 0;
 
+                  returnedConditions.forEach(cond => {
+                    const safeCond = cond || "Good";
+                    updateInventoryData[`condition.${safeCond}`] = Number(currentCond[safeCond] || 0) + 1;
+                    if (safeCond === "Good") {
+                      goodCountToAdd++;
+                    }
+                  });
 
-                  const labRoomNumber = inventorySnap.data().labRoom; // assuming labRoom holds room number like "LR-101"
+                  if (goodCountToAdd > 0) {
+                    updateInventoryData.quantity = currentQty + goodCountToAdd;
+                  }
+
+                  await updateDoc(inventoryRef, updateInventoryData);
+
+                  const labRoomNumber = inventorySnap.data().labRoom;
                   const itemId = inventorySnap.data().itemId;
 
                   if (!labRoomNumber || !itemId) {
@@ -276,13 +400,24 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     const labData = itemDoc.data();
                     const currentLabQty = Number(labData.quantity || 0);
                     const currentLabCond = labData.condition || {};
-                    const labCondQty = Number(currentLabCond[conditionReturned] || 0);
 
-                    // ✅ Update the labRoom item quantity and condition
-                    await updateDoc(labItemRef, {
-                      quantity: currentLabQty + returnQty,
-                      [`condition.${conditionReturned}`]: labCondQty + returnQty,
+                    // ✅ Build update object for labRoom item based on all unit conditions
+                    const updateLabRoomData = {};
+                    let goodCountLab = 0;
+
+                    returnedConditions.forEach(cond => {
+                      const safeCond = cond || "Good";
+                      updateLabRoomData[`condition.${safeCond}`] = Number(currentLabCond[safeCond] || 0) + 1;
+                      if (safeCond === "Good") {
+                        goodCountLab++;
+                      }
                     });
+
+                    if (goodCountLab > 0) {
+                      updateLabRoomData.quantity = currentLabQty + goodCountLab;
+                    }
+
+                    await updateDoc(labItemRef, updateLabRoomData);
 
                     console.log(`✅ Updated labRoom item ${itemId} in room ${labRoomNumber} (${labRoomId})`);
 
@@ -294,7 +429,18 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 console.warn(`❌ Inventory item not found for ID: ${inventoryId}`);
               }
             }
-              
+
+            // 🔹 Save all conditions for the returned item into Firestore
+              await updateDoc(borrowDocRef, {
+                requestList: data.requestList.map((item) =>
+                  item.itemName === itemName &&
+                  item.itemDetails === itemDetails &&
+                  item.selectedItemId === borrowedItem.selectedItemId
+                    ? { ...item, conditions: itemUnitConditions[item.itemId] || [] }
+                    : item
+                ),
+              });
+
               await updateDoc(borrowDocRef, { status: "Return Approved" });
 
               const userRequestQuery = query(
