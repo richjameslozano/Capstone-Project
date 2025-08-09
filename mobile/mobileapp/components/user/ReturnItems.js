@@ -524,67 +524,68 @@ const ReturnItems = () => {
                     {/* <Text style={styles.boldText}>Requested Items:</Text> */}
 
                     {/* Glasswares Table */}
-                    {selectedRequest?.raw?.requestList?.some(
-                      item => item.category?.toLowerCase() === 'glasswares'
-                    ) && (
-                      <>
-                        <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Glasswares</Text>
-                        <View style={styles.tableContainer2}>
-                          <View style={styles.tableHeader}>
-                            <Text style={styles.headerCell}>Item Name</Text>
-                            <Text style={styles.headerCell}>Quantity</Text>
-                            <Text style={styles.headerCell}>Returned Qty</Text>
-                            <Text style={styles.headerCell}>Issued</Text>
-                          </View>
+                  {selectedRequest?.raw?.requestList?.some(
+                    item => item.category?.toLowerCase() === 'glasswares'
+                  ) && (
+                    <>
+                      <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Glasswares</Text>
+                      <View style={styles.tableContainer2}>
+                        <View style={styles.tableHeader}>
+                          <Text style={styles.headerCell}>Item Name</Text>
+                          <Text style={styles.headerCell}>Quantity</Text>
+                          <Text style={styles.headerCell}>Returned Qty</Text>
+                          <Text style={styles.headerCell}>Issued</Text>
+                        </View>
 
-                          <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                            {selectedRequest.raw.requestList
-                              .filter(item => item.category?.toLowerCase() === 'glasswares')
-                              .map((item, index) => {
-                                const quantityArray = Array.from({ length: item.quantity }, (_, i) => i + 1);
-                                return quantityArray.map((q, i) => {
-                                  const returnKey = `${item.itemIdFromInventory}-${i}`;
+                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                          {selectedRequest.raw.requestList
+                            .filter(item => item.category?.toLowerCase() === 'glasswares')
+                            .map((item, index) => {
+                              const quantityArray = Array.from({ length: item.quantity }, (_, i) => i + 1);
+                              return quantityArray.map((q, i) => {
+                                const returnKey = `${item.itemIdFromInventory}-${i}`;
 
-                                  if (returnQuantities[returnKey] === undefined) {
-                                    setReturnQuantities(prev => ({
-                                      ...prev,
-                                      [returnKey]: "1",
-                                    }));
-                                  }
+                                if (returnQuantities[returnKey] === undefined) {
+                                  setReturnQuantities(prev => ({
+                                    ...prev,
+                                    [returnKey]: "1",
+                                  }));
+                                }
 
-                                  return (
-                                    <View key={`glassware-${index}-${i}`} style={styles.tableRow}>
-                                      <Text style={styles.cell}>{item.itemName}</Text>
-                                      <Text style={styles.cell}>1</Text>
+                                return (
+                                  <View key={`glassware-${index}-${i}`} style={styles.tableRow}>
+                                    <Text style={styles.cell}>{item.itemName}</Text>
+                                    <Text style={styles.cell}>1</Text>
 
-                                      <View style={{ flex: 1, paddingHorizontal: 6 }}>
-                                        <TextInput
-                                          placeholder="Returned Qty"
-                                          keyboardType="number-pad"
-                                          style={styles.input}
-                                          value={returnQuantities[returnKey] || "1"}
-                                          onChangeText={(text) => {
-                                            const input = parseInt(text, 10);
-                                            const max = 1;
-                                            if (!isNaN(input) && input <= max) {
-                                              setReturnQuantities(prev => ({
-                                                ...prev,
-                                                [returnKey]: input.toString(),
-                                              }));
-                                            } else if (input > max) {
-                                              alert(`Returned quantity cannot exceed borrowed quantity (${max}).`);
-                                            } else {
-                                              setReturnQuantities(prev => ({
-                                                ...prev,
-                                                [returnKey]: '',
-                                              }));
-                                            }
-                                          }}
-                                        />
-                                      </View>
+                                    <View style={{ flex: 1, paddingHorizontal: 6 }}>
+                                      <TextInput
+                                        placeholder="Returned Qty"
+                                        keyboardType="number-pad"
+                                        style={styles.input}
+                                        value={returnQuantities[returnKey] || "1"}
+                                        onChangeText={(text) => {
+                                          const input = parseInt(text, 10);
+                                          const max = 1;
+                                          if (!isNaN(input) && input <= max) {
+                                            setReturnQuantities(prev => ({
+                                              ...prev,
+                                              [returnKey]: input.toString(),
+                                            }));
+                                          } else if (input > max) {
+                                            alert(`Returned quantity cannot exceed borrowed quantity (${max}).`);
+                                          } else {
+                                            setReturnQuantities(prev => ({
+                                              ...prev,
+                                              [returnKey]: '',
+                                            }));
+                                          }
+                                        }}
+                                      />
+                                    </View>
 
-                                      {/* ✅ Checkbox with modal trigger */}
-                                      <View style={{ flex: 1, alignItems: 'center' }}>
+                                    {/* ✅ Checkbox with modal trigger */}
+                                    <View style={{ flex: 1, alignItems: 'center' }}>
+                                      {selectedRequest.status === "Deployed" && (
                                         <Checkbox
                                           status={issuedStatus[returnKey] ? 'checked' : 'unchecked'}
                                           onPress={() => {
@@ -592,12 +593,10 @@ const ReturnItems = () => {
                                               const newStatus = { ...prev, [returnKey]: !prev[returnKey] };
 
                                               if (newStatus[returnKey]) {
-                                                // Checkbox is now checked — open modal
                                                 setCurrentIssueItem(item);
                                                 setIssueQuantities({});
                                                 setIssueModalVisible(true);
                                               } else {
-                                                // Checkbox is now unchecked — close modal
                                                 setIssueModalVisible(false);
                                               }
 
@@ -606,18 +605,19 @@ const ReturnItems = () => {
                                           }}
                                           color="#1e7898"
                                         />
-                                      </View>
+                                      )}
                                     </View>
-                                  );
-                                });
-                              })}
+                                  </View>
+                                );
+                              });
+                            })}
                           </ScrollView>
                         </View>
                       </>
                     )}
 
                     {/* Equipment Table */}
-                    {selectedRequest?.raw?.requestList?.some(
+                   {selectedRequest?.raw?.requestList?.some(
                       item => item.category?.toLowerCase() === 'equipment'
                     ) && (
                       <>
@@ -649,6 +649,7 @@ const ReturnItems = () => {
                                             [`${item.itemIdFromInventory}-${i}`]: value,
                                           }));
                                         }}
+                                        enabled={selectedRequest.status !== "Approved"} // Disable if status is Approved
                                       >
                                         <Picker.Item label="Good" value="Good" />
                                         <Picker.Item label="Defect" value="Defect" />
