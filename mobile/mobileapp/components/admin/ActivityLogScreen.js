@@ -132,9 +132,9 @@ const handleHeaderLayout = (event) => {
             <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
               Activity Log
             </Text>
-            {/* <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
               Action History
-            </Text> */}
+            </Text>
           </View>
 
           {/* If you want an empty right side to balance the back button on left */}

@@ -103,20 +103,27 @@ const CapexRequestList = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                     <Icon name="keyboard-backspace" size={28} color="black" />
-                                   </TouchableOpacity>
+      <View 
+        style={[styles.inventoryStocksHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
 
-                    <View>
-                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Capex Requests</Text>
-                      <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>View Requests for Capital Expenditure</Text>
-                    </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            Capex Requests
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            View Requests for Capital Expenditure
+          </Text>
+        </View>
 
-                     <TouchableOpacity style={{padding: 2}}>
-                       <Icon name="information-outline" size={24} color="#000" />
-                     </TouchableOpacity>
-                   </View>
+        {/* Empty placeholder to balance the left back button */}
+        <View style={{ width: 28 }} />
+      </View>
+
       <Text style={styles.title}>List of Requests</Text>
 
       <FlatList
