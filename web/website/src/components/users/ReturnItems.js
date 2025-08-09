@@ -1348,6 +1348,10 @@ const ReturnItems = () => {
                         title: "Issue?",
                         key: "hasIssue",
                         render: (_, record) => {
+                          if (selectedRequest.status !== "Deployed") {
+                            return null; // hide checkbox if status is not "Deployed"
+                          }
+
                           const baseKey = `${record.itemId}_${selectedRequest.requisitionId}`;
                           const checkboxKey = `${baseKey}_issue`;
 
@@ -1358,13 +1362,11 @@ const ReturnItems = () => {
                               onChange={(e) => {
                                 const { checked } = e.target;
 
-                                // Store the checkbox state
                                 setGlasswareIssues((prev) => ({
                                   ...prev,
                                   [checkboxKey]: checked,
                                 }));
 
-                                // If checked, show modal for this specific item
                                 if (checked) {
                                   setCurrentIssueItem(record);
                                   setIssueQuantities({ Defect: 0, Damage: 0, Lost: 0 });
@@ -1447,23 +1449,23 @@ const ReturnItems = () => {
                           const key = `${record.itemId}_${record.unitIndex}`;
                           const currentValue = itemConditions[key] || "Good";
 
+                          // Disable if status is Approved
+                          const isDisabled = selectedRequest.status === "Approved";
+
                           return (
                             <Select
                               value={currentValue}
                               onChange={(value) => {
-                                // Store the individual condition selection
                                 setItemConditions((prev) => ({
                                   ...prev,
                                   [key]: value,
                                 }));
 
-                                // Ensure we update the correct unit's condition array
                                 setItemUnitConditions((prev) => {
                                   const totalUnits = equipmentData.filter(
                                     (item) => item.itemId === record.itemId
                                   ).length;
 
-                                  // Fill missing slots with "Good" initially
                                   const existing = prev[record.itemId] || Array(totalUnits).fill("Good");
 
                                   const updated = existing.map((cond, idx) =>
@@ -1477,6 +1479,7 @@ const ReturnItems = () => {
                                 });
                               }}
                               style={{ width: 120 }}
+                              disabled={isDisabled} // <-- here
                             >
                               <Option value="Good">Good</Option>
                               <Option value="Defect">Defect</Option>
