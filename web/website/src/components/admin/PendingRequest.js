@@ -4088,6 +4088,7 @@ useEffect(() => {
 
   const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
   
+  const filteredData = getFilteredRequests();
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -4123,7 +4124,11 @@ useEffect(() => {
             </div>
 
         
-
+   {filteredData.length === 0 ? (
+    <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+        <h3>No Request Found</h3>
+      </div>
+    ) : (
   <div>
     {Object.entries(categorizedRequests).map(([label, group]) => {
       if (group.length === 0) return null;
@@ -4349,6 +4354,7 @@ useEffect(() => {
             );
           })}
         </div>
+         )}
 
 
         <Modal
