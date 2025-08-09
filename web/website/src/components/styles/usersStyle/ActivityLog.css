@@ -242,7 +242,7 @@
 }
 
 /* Add arrow → between tabs */
-.two-step-tabs .ant-tabs-tab:nth-child(1)::after {
+/* .two-step-tabs .ant-tabs-tab:nth-child(1)::after {
   content: "➝";
   color: gray;
   font-weight: bold;
@@ -251,6 +251,28 @@
   right: -30px;
   top: 50%;
   transform: translateY(-50%);
+} */
+
+.two-step-tabs .ant-tabs-tab::after{
+  color: gray;
+  font-weight: bold;
+  font-size: 18px;
+  position: absolute;
+  right: -30px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.two-step-tabs .ant-tabs-tab:nth-child(1)::after{
+    content: "➝";
+}
+
+.two-step-tabs .ant-tabs-tab:nth-child(2)::after{
+    content: "➝";
+}
+
+.two-step-tabs .ant-tabs-tab:nth-child(3)::after{
+    content: "➝";
 }
 
 /* Remove default underline */

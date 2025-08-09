@@ -10,9 +10,10 @@ import {
   Button,
   Spin,
   Tabs,
-  theme
+  theme,
+  Steps
 } from "antd";
-import { CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
@@ -20,7 +21,7 @@ import { getAuth } from "firebase/auth";
 import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import StickyBox from 'react-sticky-box';
 
-const { Option } = Select;
+const { Option } = Select; 
 const { Content } = Layout;
 const { Title } = Typography;
 const { TabPane } = Tabs;
@@ -239,11 +240,7 @@ const sanitizeInput = (input) =>
   };
 
   const columns = [
-    // {
-    //   title: "Request ID",
-    //   dataIndex: "id",
-    //   key: "id",
-    // },
+
     {
       title: "Requisition Date",
       dataIndex: "dateRequested",
@@ -334,20 +331,6 @@ const sanitizeInput = (input) =>
     return () => unsubscribe();
   }, []);
 
-  // const filteredData = activityData
-  // .filter((item) => {
-  //   // Filter by action type
-  //   if (actionFilter !== "ALL" && item.action !== actionFilter) {
-  //     return false;
-  //   }
-  //   // Filter by search
-
-  //   return (
-  //     item.date.includes(searchQuery) ||
-  //     item.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //     item.by.toLowerCase().includes(searchQuery.toLowerCase())
-  //   );
-  // });
 
   const filteredData = activityData.filter((item) => {
     // Filter by action type
@@ -425,18 +408,6 @@ const sanitizeInput = (input) =>
             <div className="activity-header">
       </div>
  
-        {/* <Input
-          placeholder="Search requests..."
-          prefix={<SearchOutlined />}
-          className="pending-search"
-          allowClear
-          value={searchQuery}
-          onInput={(e) => {
-            const sanitized = sanitizeInput(e.target.value);
-            e.target.value = sanitized;
-            setSearchQuery(sanitized);
-          }}
-        /> */}
       
         {loading ? (
           <Spin size="large" />
@@ -517,6 +488,69 @@ const sanitizeInput = (input) =>
     </Content>
   );
 
+// Assuming you only need Approved requests
+const renderApprovedTab = () => {
+  const approvedData = filteredData.filter((item) => item.action === 'Request Approved');
+
+  return (
+    <Content className="approved-content">
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <Table
+          columns={columns2}
+          dataSource={approvedData}
+          pagination={{ pageSize: 10 }}
+          rowKey="id"
+          bordered
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record), // Make the row clickable
+          })}
+          locale={{
+            emptyText: (
+              <div className="empty-row">
+                <span>No activity found.</span>
+              </div>
+            ),
+          }}
+        />
+      )}
+    </Content>
+  );
+};
+
+const renderDeployedTab = () => {
+  const deployedData = filteredData.filter((item) => item.action === 'Deployed');
+
+  return (
+    <Content className="deployed-content">
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <Table
+          columns={columns2}
+          dataSource={deployedData}
+          pagination={{ pageSize: 10 }}
+          rowKey="id"
+          bordered
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record), // Make the row clickable
+          })}
+          locale={{
+            emptyText: (
+              <div className="empty-row">
+                <span>No activity found.</span>
+              </div>
+            ),
+          }}
+        />
+      )}
+    </Content>
+  );
+};
+
+
+
 const ProcessedTab = () => {
   const [activeTab, setActiveTab] = useState('APPROVED');
 
@@ -535,31 +569,7 @@ const ProcessedTab = () => {
   return (
     <Content className="activity-content">
       <div className="activity-controls">
-        {/* <Select
-          value={actionFilter}
-          onChange={(value) => setActionFilter(value)}
-          className="activity-filter"
-          allowClear
-          placeholder="Filter by Action"
-        >
-          <Option value="ALL">All</Option>
-          <Option value="Request Approved">Request Approved</Option>
-          <Option value="Request Rejected">Request Rejected</Option>
-          <Option value="Cancelled a request">Request Cancelled</Option>
-          <Option value="Deployed">Deployed</Option>
-        </Select>
 
-        <Input
-          placeholder="Search"
-          prefix={<SearchOutlined />}
-          className="activity-search"
-          allowClear
-          onInput={(e) => {
-            const sanitized = sanitizeInput(e.target.value);
-            e.target.value = sanitized;
-            setSearchQuery(sanitized);
-          }}
-        /> */}
       </div>
 
       <Tabs activeKey={activeTab} onChange={setActiveTab}>
@@ -678,22 +688,116 @@ const ProcessedTab = () => {
           Step 1: Pending
         </>
       ),
-      children: renderPendingTab(),
+      children: renderPendingTab(),  // This will render your Pending tab content
     },
     {
-      key: "processed",
+      key: "approved",
       label: (
         <>
           <CheckCircleOutlined style={{ marginRight: 8 }} />
-          Step 2: Processed
+          Step 2: Approved
         </>
       ),
-      children: <ProcessedTab />,
+      children: renderApprovedTab(),  // This will render the Approved data
+    },
+    {
+      key: 'deployed',
+      label: (        
+        <>
+        <CheckCircleOutlined style={{ marginRight: 8 }} />
+        Step 3: Deployed
+        </>
+      ),
+      children: renderDeployedTab(),
+    },
+     {
+      key: 'completed',
+      label: (
+        <>
+        <CheckCircleOutlined style={{ marginRight: 8 }} />
+        Step 4: Completed
+        </>
+      ),
+
     },
   ]}
 />
+      <Modal
+        title="Activity Details"
+        visible={modalVisible}
+        zIndex={1015}
+        onCancel={() => setModalVisible(false)}
+        footer={null}
+      >
+        {selectedLog && (
+          <Descriptions column={1} bordered size="small">
+            <Descriptions.Item label="Action">
+              {selectedLog.status === 'CANCELLED'
+                ? 'Cancelled a request'
+                : selectedLog.action || 'Modified a request'}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="By">
+              {selectedLog.userName || 'Unknown User'}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Program">
+              {selectedLog.program || 'N/A'}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Items Requested">
+              {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+                <ul style={{ paddingLeft: 20 }}>
+                  {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+                    <li key={index} style={{ marginBottom: 10 }}>
+                      <strong>{item.itemName}</strong>
+                      <ul style={{ marginLeft: 20 }}>
+                        <li>Quantity: {item.quantity}</li>
+                        {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
+                          <li>Unit: {item.unit}</li>
+                        )}
+                        {item.category && <li>Category: {item.category}</li>}
+                        {item.category === 'Glasswares' && item.volume && (
+                          <li>Volume: {item.volume}</li>
+                        )}
+                        {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                        {item.usageType && <li>Usage Type: {item.usageType}</li>}
+                        {item.itemType && <li>Item Type: {item.itemType}</li>}
+                        {item.department && <li>Department: {item.department}</li>}
+                        {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
+                          <>
+                            {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
+                            {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+                          </>
+                        )}
+                      </ul>
+                    </li>
+                  ))}
+                </ul>
+              ) : 'None'}
+            </Descriptions.Item>
+            {selectedLog.action !== 'Request Rejected' && (
+              <Descriptions.Item label="Reason">
+                {selectedLog.reason || 'N/A'}
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label="Room">
+              {selectedLog.room || 'N/A'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Time">
+              {selectedLog.timeFrom && selectedLog.timeTo
+                ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+                : 'N/A'}
+            </Descriptions.Item>
+            <Descriptions.Item label="Date Required">
+              {selectedLog.dateRequired || 'N/A'}
+            </Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
     </Layout>
   );
 };
 
 export default HistoryLog;
+
