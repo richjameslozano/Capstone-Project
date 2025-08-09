@@ -1405,29 +1405,76 @@ const ReturnItems = () => {
                         render: (_, record) =>
                           `#${record.unitIndex || 1}`,
                       },
+                      // {
+                      //   title: "Condition",
+                      //   key: "condition",
+                      //   render: (_, record) => {
+                      //     const key = `${record.itemId}_${record.unitIndex}`;
+
+                      //     return (
+                      //       <Select
+                      //         value={itemConditions[key] || "Good"}
+                      //         onChange={(value) => {
+                      //           setItemConditions((prev) => ({
+                      //             ...prev,
+                      //             [key]: value,
+                      //           }));
+
+                      //           setItemUnitConditions((prev) => ({
+                      //             ...prev,
+                      //             [record.itemId]: [
+                      //               ...(prev[record.itemId] || []),
+                      //             ].map((_, idx) =>
+                      //               idx + 1 === record.unitIndex ? value : _
+                      //             ),
+                      //           }));
+                      //         }}
+                      //         style={{ width: 120 }}
+                      //       >
+                      //         <Option value="Good">Good</Option>
+                      //         <Option value="Defect">Defect</Option>
+                      //         <Option value="Damage">Damage</Option>
+                      //         <Option value="Lost">Lost</Option>
+                      //       </Select>
+                      //     );
+                      //   },
+                      // },
+                      
                       {
                         title: "Condition",
                         key: "condition",
                         render: (_, record) => {
                           const key = `${record.itemId}_${record.unitIndex}`;
+                          const currentValue = itemConditions[key] || "Good";
 
                           return (
                             <Select
-                              value={itemConditions[key] || "Good"}
+                              value={currentValue}
                               onChange={(value) => {
+                                // Store the individual condition selection
                                 setItemConditions((prev) => ({
                                   ...prev,
                                   [key]: value,
                                 }));
 
-                                setItemUnitConditions((prev) => ({
-                                  ...prev,
-                                  [record.itemId]: [
-                                    ...(prev[record.itemId] || []),
-                                  ].map((_, idx) =>
-                                    idx + 1 === record.unitIndex ? value : _
-                                  ),
-                                }));
+                                // Ensure we update the correct unit's condition array
+                                setItemUnitConditions((prev) => {
+                                  const totalUnits = equipmentData.filter(
+                                    (item) => item.itemId === record.itemId
+                                  ).length;
+
+                                  // Fill missing slots with "Good" initially
+                                  const existing = prev[record.itemId] || Array(totalUnits).fill("Good");
+
+                                  const updated = existing.map((cond, idx) =>
+                                    idx + 1 === record.unitIndex ? value : cond
+                                  );
+
+                                  return {
+                                    ...prev,
+                                    [record.itemId]: updated,
+                                  };
+                                });
                               }}
                               style={{ width: 120 }}
                             >
