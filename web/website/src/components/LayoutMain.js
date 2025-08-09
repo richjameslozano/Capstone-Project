@@ -519,7 +519,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
 <div className="logo">
   {!collapsed || isMobile ? (
-    <div style={{ display: 'flex', alignItems: 'center', maxHeight: 40 }}>
+    <div style={{ display: 'flex', alignItems: 'center', maxHeight: 40, gap: 10 }}>
       <img
         src={nulsLogo}
         alt="NULS Logo"
@@ -530,8 +530,8 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
           verticalAlign: 'middle', // Aligns image with text
         }}
       />
-      <div>
-        <h3 className="logo-title" style={{ margin: 0}}>NU MOA</h3> {/* Remove default margin */}
+      <div style={{}}>
+        <h3 className="logo-title" style={{margin: 0, textAlign: 'left'}}>NU MOA</h3> {/* Remove default margin */}
         <p className="logo-subtitle" style={{ margin: 0 }}>Laboratory System</p> {/* Remove default margin */}
       </div>
     </div>
