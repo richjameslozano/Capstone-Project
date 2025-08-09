@@ -226,6 +226,44 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  issueModalContent: {
+    width: '90%',
+    maxWidth: 400,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+    elevation: 5,  // Android shadow
+    shadowColor: '#000',  // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+
+  modalTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 15,
+  },
+  
+  dialogButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    backgroundColor: '#1e7898',
+    borderRadius: 4,
+  },
+
+  dialogButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
   /* –– reusable widths so header and rows always match –– */
   colName: { flex: 3 },       // wider for long names
   colQty: { flex: 1 },
