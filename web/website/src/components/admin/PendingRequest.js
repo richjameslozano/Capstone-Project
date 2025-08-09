@@ -4124,10 +4124,11 @@ useEffect(() => {
             </div>
 
         
-   {filteredData.length === 0 ? (
+<Spin spinning={loading} tip="Loading requests...">
+  {!loading && filteredData.length === 0 ? (
     <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
-        <h3>No Request Found</h3>
-      </div>
+      <h3>No Request Found</h3>
+    </div>
     ) : (
   <div>
     {Object.entries(categorizedRequests).map(([label, group]) => {
@@ -4355,6 +4356,7 @@ useEffect(() => {
           })}
         </div>
          )}
+        </Spin>
 
 
         <Modal
