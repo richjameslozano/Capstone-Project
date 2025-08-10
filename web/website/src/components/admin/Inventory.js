@@ -878,7 +878,7 @@ useEffect(() => {
         category: values.category,
         department: values.department,
         criticalLevel: sanitizedCriticalLevel,
-        // labRoom: values.labRoom,
+        labRoom: values.labRoom || (editingItem ? editingItem.labRoom : null),
         shelves: values.shelves,
         row: values.row, 
         unit: values.unit,
@@ -2504,11 +2504,14 @@ useEffect(() => {
 
               </Col>
 
-              {/* <Col span={12}>
-                <Form.Item label="Lab/ Stock Room" name="labRoom">
+              <Col span={12}>
+                {/* <Form.Item label="Lab/ Stock Room" name="labRoom">
                   <Input />
+                </Form.Item> */}
+                <Form.Item name="labRoom" initialValue={editingItem?.labRoom || ''} hidden>
+                  <Input type="hidden" />
                 </Form.Item>
-              </Col> */}
+              </Col>
 
               <Col span={12}>
                 <Form.Item
