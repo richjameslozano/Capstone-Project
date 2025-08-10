@@ -40,6 +40,7 @@ const CapexRequestScreen = () => {
   const [justification, setJustification] = useState("");
   const [subject, setSubject] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
+  const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const { user } = useAuth();
 
   const userId = getAuth().currentUser?.id;
@@ -115,62 +116,147 @@ const CapexRequestScreen = () => {
     }
   };
 
+  // const handleSave = async () => {
+  //   const trimmedQty = qty.trim();
+  //   const trimmedCost = estimatedCost.trim();
+  //   const trimmedJustification = justification.trim();
+  //   const trimmedSubject = subject.trim();
+    
+  //   if (!itemDescription.trim() || !trimmedSubject || !trimmedQty || !trimmedCost || !trimmedJustification) {
+  //     Alert.alert("Validation Error", "All fields are required");
+  //     return;
+  //   }
+  
+  //   const parsedQty = Number(trimmedQty);
+  //   const parsedCost = Number(trimmedCost);
+  
+  //   if (isNaN(parsedQty) || isNaN(parsedCost)) {
+  //     Alert.alert("Validation Error", "Quantity and Estimated Cost must be valid numbers.");
+  //     return;
+  //   }
+  
+  //   if (parsedQty <= 0 || parsedCost <= 0) {
+  //     Alert.alert("Validation Error", "Quantity and Estimated Cost must be greater than 0.");
+  //     return;
+  //   }
+  
+  //   try {
+  //     const itemData = {
+  //       itemDescription: itemDescription.trim(),
+  //       qty: parsedQty.toString(),
+  //       estimatedCost: parsedCost.toString(),
+  //       totalPrice: parsedQty * parsedCost,
+  //       justification,
+  //       subject,
+  //     };
+  
+  //     // Duplicate check only when adding new
+  //     if (!editingItem) {
+  //       const existingItemsSnapshot = await getDocs(
+  //         collection(db, `accounts/${user.id}/temporaryCapexRequest`)
+  //       );
+  
+  //       const isDuplicate = existingItemsSnapshot.docs.some(
+  //         (doc) =>
+  //           doc.data().itemDescription.trim().toLowerCase() ===
+  //           itemDescription.trim().toLowerCase()
+  //       );
+  
+  //       if (isDuplicate) {
+  //         Alert.alert("Validation Error", "This item already exists in your CAPEX request.");
+  //         return;
+  //       }
+  //     }
+  
+  //     let savedItem = null;
+  
+  //     if (editingItem) {
+  //       const ref = doc(db, `accounts/${user.id}/temporaryCapexRequest`, editingItem.id);
+  //       await setDoc(ref, { ...itemData, id: editingItem.id });
+  //       savedItem = { ...itemData, id: editingItem.id };
+  //     } else {
+  //       const newDocRef = await addDoc(
+  //         collection(db, `accounts/${user.id}/temporaryCapexRequest`),
+  //         itemData
+  //       );
+  //       savedItem = { ...itemData, id: newDocRef.id };
+  //     }
+  
+  //     // Log the action
+  //     try {
+  //       await logRequestOrReturn(user.id, user.name, "Added a Capex Item", savedItem);
+  //     } catch (logError) {
+  //       console.error("Failed to log activity:", logError);
+  //     }
+  
+  //     resetForm();
+
+  //     Alert.alert("Success", editingItem ? "Item updated!" : "Item added!");
+  //   } catch (error) {
+  //     console.error("Firestore error:", error);
+  //     Alert.alert("Error", "Failed to save item");
+  //   }
+  // };  
+
   const handleSave = async () => {
     const trimmedQty = qty.trim();
     const trimmedCost = estimatedCost.trim();
-  
-    if (!itemDescription || !trimmedQty || !trimmedCost) {
+    const trimmedJustification = justification.trim();
+    const trimmedSubject = subject.trim();
+    
+    if (!itemDescription.trim() || !trimmedSubject || !trimmedQty || !trimmedCost || !trimmedJustification) {
       Alert.alert("Validation Error", "All fields are required");
       return;
     }
-  
+
     const parsedQty = Number(trimmedQty);
     const parsedCost = Number(trimmedCost);
-  
+
     if (isNaN(parsedQty) || isNaN(parsedCost)) {
       Alert.alert("Validation Error", "Quantity and Estimated Cost must be valid numbers.");
       return;
     }
-  
+
     if (parsedQty <= 0 || parsedCost <= 0) {
       Alert.alert("Validation Error", "Quantity and Estimated Cost must be greater than 0.");
       return;
     }
-  
+
     try {
       const itemData = {
         itemDescription: itemDescription.trim(),
         qty: parsedQty.toString(),
         estimatedCost: parsedCost.toString(),
         totalPrice: parsedQty * parsedCost,
-        justification,
-        subject,
+        justification: trimmedJustification,
+        subject: trimmedSubject,
       };
-  
-      // Duplicate check only when adding new
-      if (!editingItem) {
-        const existingItemsSnapshot = await getDocs(
-          collection(db, `accounts/${user.id}/temporaryCapexRequest`)
+
+      // ✅ Duplicate check (works for adding AND editing)
+      const existingItemsSnapshot = await getDocs(
+        collection(db, `accounts/${user.id}/temporaryCapexRequest`)
+      );
+
+      const isDuplicate = existingItemsSnapshot.docs.some((docSnap) => {
+        const data = docSnap.data();
+        return (
+          data.itemDescription.trim().toLowerCase() === itemDescription.trim().toLowerCase() &&
+          (!editingItem || editingItem.id !== docSnap.id) // allow same item if editing itself
         );
-  
-        const isDuplicate = existingItemsSnapshot.docs.some(
-          (doc) =>
-            doc.data().itemDescription.trim().toLowerCase() ===
-            itemDescription.trim().toLowerCase()
-        );
-  
-        if (isDuplicate) {
-          Alert.alert("Validation Error", "This item already exists in your CAPEX request.");
-          return;
-        }
+      });
+
+      if (isDuplicate) {
+        Alert.alert("Validation Error", "This item already exists in your CAPEX request.");
+        return;
       }
-  
+
       let savedItem = null;
-  
+
       if (editingItem) {
         const ref = doc(db, `accounts/${user.id}/temporaryCapexRequest`, editingItem.id);
         await setDoc(ref, { ...itemData, id: editingItem.id });
         savedItem = { ...itemData, id: editingItem.id };
+        
       } else {
         const newDocRef = await addDoc(
           collection(db, `accounts/${user.id}/temporaryCapexRequest`),
@@ -178,22 +264,24 @@ const CapexRequestScreen = () => {
         );
         savedItem = { ...itemData, id: newDocRef.id };
       }
-  
+
       // Log the action
       try {
         await logRequestOrReturn(user.id, user.name, "Added a Capex Item", savedItem);
+
       } catch (logError) {
         console.error("Failed to log activity:", logError);
       }
-  
+
       resetForm();
 
       Alert.alert("Success", editingItem ? "Item updated!" : "Item added!");
+
     } catch (error) {
       console.error("Firestore error:", error);
       Alert.alert("Error", "Failed to save item");
     }
-  };  
+  };
 
   const resetForm = () => {
     setItemDescription("");
@@ -255,179 +343,253 @@ const CapexRequestScreen = () => {
   };  
 
   const handleSubmitRequest = async () => {
-    if (dataSource.length === 0) {
-      Alert.alert("Error", "No items to submit");
-      return;
-    }
-  
+
     try {
       const requestRef = await addDoc(collection(db, "capexrequestlist"), {
-        userId: user.id, // Use user.id here
-        userName: user.name, // user.name or user.displayName
+        userId: user.id,
+        userName: user.name,
         totalPrice,
         createdAt: serverTimestamp(),
         items: dataSource,
       });
-  
+
       await addDoc(collection(db, `accounts/${user.id}/capexrequests`), {
         capexRequestId: requestRef.id,
-        userId: user.id, // Use user.id here
-        userName: user.name, // user.name or user.displayName
+        userId: user.id,
+        userName: user.name,
         totalPrice,
         createdAt: serverTimestamp(),
         items: dataSource,
       });
-  
+
       const snapshot = await getDocs(
         collection(db, `accounts/${user.id}/temporaryCapexRequest`)
       );
-  
+
       await Promise.all(
         snapshot.docs.map((docSnap) =>
           deleteDoc(doc(db, `accounts/${user.id}/temporaryCapexRequest`, docSnap.id))
         )
       );
-  
+
       await logRequestOrReturn(user.id, user.name, "Sent a Capex Request", dataSource);
       Alert.alert("Success", "CAPEX Request submitted!");
       setDataSource([]);
       setTotalPrice(0);
-  
+
     } catch (error) {
       console.error(error);
       Alert.alert("Error", "Submission failed");
     }
-  }  
+  };
 
   return (
     <View style={styles.container}>
-      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                <Icon name="keyboard-backspace" size={28} color="black" />
-                              </TouchableOpacity>
+      <View 
+        style={[styles.inventoryStocksHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
 
-              <View>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>CAPEX Request</Text>
-                <Text style={{ fontWeight: 300, fontSize: 13}}>Capital Expenditure Proposal</Text>
-              </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            CAPEX Request
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            Capital Expenditure Proposal
+          </Text>
+        </View>
 
-                <TouchableOpacity style={{padding: 2}}>
-                  <Icon name="information-outline" size={24} color="#000" />
-                </TouchableOpacity>
-              </View>
-
-<View style={{
-  backgroundColor: '#ffffff',
-  flex: 1,
-  borderRadius: 8,
-  marginTop: headerHeight,
-  padding: 16,
-}}>
-  <Text style={styles.title}>CAPEX Request</Text>
-
-  <ScrollView horizontal>
-    <View style={styles.tableContainer}>
-      {/* Header */}
-      <View style={[styles.tableRow, styles.tableHeader]}>
-        <Text style={[styles.tableCell, styles.headerCell, { width: 150 }]}>Item</Text>
-        <Text style={[styles.tableCell, styles.headerCell, { width: 80 }]}>Qty</Text>
-        <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Est. Cost</Text>
-        <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Total</Text>
-        <Text style={[styles.tableCell, styles.headerCell, { width: 140 }]}>Actions</Text>
+      {/* 
+        <TouchableOpacity style={{ padding: 2 }}>
+          <Icon name="information-outline" size={24} color="#000" />
+        </TouchableOpacity> */}
       </View>
 
-      {/* Rows */}
-      {dataSource.map((item) => (
-        <View key={item.id} style={styles.tableRow}>
-          <Text style={[styles.tableCell, { width: 150 }]}>{item.itemDescription}</Text>
-          <Text style={[styles.tableCell, { width: 80 }]}>{item.qty}</Text>
-          <Text style={[styles.tableCell, { width: 100 }]}>₱{item.estimatedCost}</Text>
-          <Text style={[styles.tableCell, { width: 100 }]}>₱{item.totalPrice}</Text>
-          <View style={[styles.tableCell, styles.actionsCell, { width: 140, flexDirection: 'row', gap: 8 }]}>
-            <TouchableOpacity onPress={() => handleEdit(item)} style={[styles.smallButton, styles.editButton]}>
-              <Text style={styles.buttonText}>Edit</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => handleDelete(item.id)} style={[styles.smallButton, styles.deleteButton]}>
-              <Text style={styles.buttonText}>Del</Text>
-            </TouchableOpacity>
+      <View style={{
+        backgroundColor: '#ffffff',
+        flex: 1,
+        borderRadius: 8,
+        marginTop: headerHeight,
+        padding: 16,
+      }}>
+  {/* <Text style={styles.title}>CAPEX Request</Text> */}
+
+        <ScrollView horizontal>
+          <View style={styles.tableContainer}>
+            {/* Header */}
+            <View style={[styles.tableRow, styles.tableHeader]}>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 150 }]}>Item</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 80 }]}>Qty</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Est. Cost</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Total</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 140 }]}>Actions</Text>
+            </View>
+
+            {/* Rows */}
+            {dataSource.map((item) => (
+              <View key={item.id} style={styles.tableRow}>
+                <Text style={[styles.tableCell, { width: 150 }]}>{item.itemDescription}</Text>
+                <Text style={[styles.tableCell, { width: 80 }]}>{item.qty}</Text>
+                <Text style={[styles.tableCell, { width: 100 }]}>₱{item.estimatedCost}</Text>
+                <Text style={[styles.tableCell, { width: 100 }]}>₱{item.totalPrice}</Text>
+                <View style={[styles.tableCell, styles.actionsCell, { width: 140, flexDirection: 'row', gap: 8 }]}>
+                  <TouchableOpacity onPress={() => handleEdit(item)} style={[styles.smallButton, styles.editButton]}>
+                    <Text style={styles.buttonText}>Edit</Text>
+                  </TouchableOpacity>
+
+                <TouchableOpacity 
+                    onPress={() => handleDelete(item.id)} 
+                    style={[styles.smallButton, styles.deleteButton]}
+                  >
+                    <Icon name="close-thick" size={20} color="#fff" />
+                  </TouchableOpacity>
+
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
+
+        <Text style={styles.total}>Total: ₱{totalPrice.toLocaleString()}</Text>
+
+        <TouchableOpacity style={styles.buttonPrimary} onPress={() => setModalVisible(true)}>
+          <Text style={styles.buttonText}>Add Item</Text>
+        </TouchableOpacity>
+
+        {/* <TouchableOpacity style={[styles.buttonPrimary, { marginTop: 10 }]} onPress={handleSubmitRequest}>
+          <Text style={styles.buttonText}>Submit Request</Text>
+        </TouchableOpacity> */}
+
+        <TouchableOpacity
+          style={[styles.buttonPrimary, { marginTop: 10 }]}
+          onPress={() => setConfirmModalVisible(true)}
+        >
+          <Text style={styles.buttonText}>Submit Request</Text>
+        </TouchableOpacity>
+      </View>
+
+
+      <Modal visible={modalVisible} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContainer}>
+            <Text style={styles.modalTitle}>
+              {editingItem ? 'Edit Item' : 'Add CAPEX Item'}
+            </Text>
+
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <TextInput
+                placeholder="Item Name"
+                placeholderTextColor="#888"
+                value={itemDescription}
+                onChangeText={setItemDescription}
+                style={styles.input}
+              />
+
+              <TextInput
+                placeholder="Subject"
+                placeholderTextColor="#888"
+                value={subject}
+                onChangeText={setSubject}
+                style={styles.input}
+              />
+
+              <TextInput
+                placeholder="Quantity"
+                placeholderTextColor="#888"
+                keyboardType="numeric"
+                value={qty}
+                onChangeText={setQty}
+                style={styles.input}
+              />
+
+              <TextInput
+                placeholder="Estimated Cost"
+                placeholderTextColor="#888"
+                keyboardType="numeric"
+                value={estimatedCost}
+                onChangeText={setEstimatedCost}
+                style={styles.input}
+              />
+
+              <TextInput
+                placeholder="Justification"
+                placeholderTextColor="#888"
+                value={justification}
+                onChangeText={setJustification}
+                style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
+                multiline
+              />
+            </ScrollView>
+
+            <View style={styles.buttonGroup}>
+              <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                <Text style={styles.buttonText}>Save</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity style={styles.cancelButton} onPress={resetForm}>
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-      ))}
-    </View>
-  </ScrollView>
+      </Modal>
 
-  <Text style={styles.total}>Total: ₱{totalPrice.toLocaleString()}</Text>
+      <Modal
+        visible={confirmModalVisible}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setConfirmModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Confirm Your Request</Text>
 
-  <TouchableOpacity style={styles.buttonPrimary} onPress={() => setModalVisible(true)}>
-    <Text style={styles.buttonText}>Add Item</Text>
-  </TouchableOpacity>
+            {/* Scoped table styling */}
+            <ScrollView style={{ maxHeight: 200 }}>
+              <View style={styles.confirmTable}>
+                {/* Table header */}
+                <View style={[styles.confirmRow, styles.confirmHeader]}>
+                  <Text style={[styles.confirmCell, styles.confirmHeaderText]}>Item</Text>
+                  <Text style={[styles.confirmCell, styles.confirmHeaderText]}>Qty</Text>
+                  <Text style={[styles.confirmCell, styles.confirmHeaderText]}>Price</Text>
+                </View>
 
-  <TouchableOpacity style={[styles.buttonPrimary, { marginTop: 10 }]} onPress={handleSubmitRequest}>
-    <Text style={styles.buttonText}>Submit Request</Text>
-  </TouchableOpacity>
-</View>
+                {/* Table rows */}
+                {dataSource.map((item, index) => (
+                  <View key={index} style={styles.confirmRow}>
+                    <Text style={styles.confirmCell}>{item.itemDescription}</Text>
+                    <Text style={styles.confirmCell}>{item.qty}</Text>
+                    <Text style={styles.confirmCell}>{item.totalPrice}</Text>
+                  </View>
+                ))}
+              </View>
+            </ScrollView>
 
+            <Text style={styles.totalText}>Total: ₱{totalPrice}</Text>
+            <View style={styles.modalButtonsRow}>
+              <TouchableOpacity
+                style={[styles.modalConfirmButton, styles.modalActionButton]}
+                onPress={() => {
+                  setConfirmModalVisible(false);
+                  handleSubmitRequest();
+                }}
+              >
+                <Text style={styles.modalButtonText}>Confirm</Text>
+              </TouchableOpacity>
 
-   <Modal visible={modalVisible} animationType="fade" transparent>
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalContainer}>
-      <Text style={styles.modalTitle}>
-        {editingItem ? 'Edit Item' : 'Add CAPEX Item'}
-      </Text>
-
-      <ScrollView showsVerticalScrollIndicator={false}>
-        <TextInput
-          placeholder="Item Name"
-          placeholderTextColor="#888"
-          value={itemDescription}
-          onChangeText={setItemDescription}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Subject"
-          placeholderTextColor="#888"
-          value={subject}
-          onChangeText={setSubject}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Quantity"
-          placeholderTextColor="#888"
-          keyboardType="numeric"
-          value={qty}
-          onChangeText={setQty}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Estimated Cost"
-          placeholderTextColor="#888"
-          keyboardType="numeric"
-          value={estimatedCost}
-          onChangeText={setEstimatedCost}
-          style={styles.input}
-        />
-        <TextInput
-          placeholder="Justification"
-          placeholderTextColor="#888"
-          value={justification}
-          onChangeText={setJustification}
-          style={[styles.input, { height: 80, textAlignVertical: 'top' }]}
-          multiline
-        />
-      </ScrollView>
-
-      <View style={styles.buttonGroup}>
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.buttonText}>Save</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.cancelButton} onPress={resetForm}>
-          <Text style={styles.buttonText}>Cancel</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-</Modal>
-
+              <TouchableOpacity
+                style={[styles.modalCancelButton, styles.modalActionButton]}
+                onPress={() => setConfirmModalVisible(false)}
+              >
+                <Text style={styles.modalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
