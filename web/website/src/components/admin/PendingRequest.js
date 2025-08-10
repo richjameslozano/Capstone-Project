@@ -798,6 +798,9 @@ try {
       setIsModalVisible(false);
       setSelectedRequest(null);
       setIsFinalizeModalVisible(false)
+
+      setNotificationMessage("Approval and rejection have been logged successfully.");
+      setIsNotificationVisible(true);
   
       notification.success({
         message: "Request Processed",
@@ -1782,6 +1785,9 @@ try {
       setIsModalVisible(false);
       setSelectedRequest(null);
       setIsFinalizeModalVisible(false)
+
+      setNotificationMessage("Approval and rejection have been logged successfully.");
+      setIsNotificationVisible(true);
   
       notification.success({
         message: "Request Processed",
@@ -3183,6 +3189,9 @@ try {
         setIsModalVisible(false);
         setSelectedRequest(null);
         setIsFinalizeModalVisible(false)
+
+        setNotificationMessage("Approval and rejection have been logged successfully.");
+        setIsNotificationVisible(true);
 
         notification.success({
           message: "Request Approved",
