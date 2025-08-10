@@ -1334,6 +1334,7 @@ const ReturnItems = () => {
                               min={0}
                               max={maxReturnable}
                               value={returnQuantities[returnKey] ?? issuedQty}
+                              disabled={selectedRequest.status === "Approved"} // ✅ disable when approved
                               onChange={(value) => {
                                 setReturnQuantities((prev) => ({
                                   ...prev,
