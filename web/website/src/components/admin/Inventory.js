@@ -816,21 +816,62 @@ useEffect(() => {
       }
 
       // Sanitize and calculate condition values
-      const Good = Number(values.condition?.Good || 0);
-      const Defect = Number(values.condition?.Defect || 0);
-      const Damage = Number(values.condition?.Damage || 0);
-      const Lost = Number(values.condition?.Lost || 0);
+      // const Good = Number(values.condition?.Good || 0);
+      // const Defect = Number(values.condition?.Defect || 0);
+      // const Damage = Number(values.condition?.Damage || 0);
+      // const Lost = Number(values.condition?.Lost || 0);
 
-      const conditionTotal = Good + Defect + Damage + Lost;
-      const originalQuantity = editingItem.quantity || 0;
+      // const conditionTotal = Good + Defect + Damage + Lost;
+      // const originalQuantity = editingItem.quantity || 0;
 
-      if (conditionTotal !== originalQuantity) {
-        setNotificationMessage(`❌ Total of Good, Defect, Damage, and Lost (${conditionTotal}) must equal original quantity (${originalQuantity}).`);
-        setIsNotificationVisible(true);
-        return;
-      }
+      // if (conditionTotal !== originalQuantity) {
+      //   setNotificationMessage(`❌ Total of Good, Defect, Damage, and Lost (${conditionTotal}) must equal original quantity (${originalQuantity}).`);
+      //   setIsNotificationVisible(true);
+      //   return;
+      // }
+
+      const isChemOrReagent = ["Chemical", "Reagent"].includes(values.category?.trim());
+
+            // Declare condition vars here so they exist for payload
+            let Good = 0, Defect = 0, Damage = 0, Lost = 0;
+
+            if (!isChemOrReagent) {
+              // Sanitize and calculate condition values
+              Good = Number(values.condition?.Good || 0);
+              Defect = Number(values.condition?.Defect || 0);
+              Damage = Number(values.condition?.Damage || 0);
+              Lost = Number(values.condition?.Lost || 0);
+
+              const conditionTotal = Good + Defect + Damage + Lost;
+              const originalQuantity = editingItem.quantity || 0;
+
+              if (conditionTotal !== originalQuantity) {
+                setNotificationMessage(`❌ Total of Good, Defect, Damage, and Lost (${conditionTotal}) must equal original quantity (${originalQuantity}).`);
+                setIsNotificationVisible(true);
+                return;
+              }
+            }
 
       // Construct payload
+      // const payload = {
+      //   itemName: sanitizedItemName,
+      //   itemDetails: sanitizedItemDetails,
+      //   category: values.category,
+      //   department: values.department,
+      //   criticalLevel: sanitizedCriticalLevel,
+      //   labRoom: values.labRoom,
+      //   shelves: values.shelves,
+      //   row: values.row, 
+      //   unit: values.unit,
+      //   status: values.status,
+      //   condition: {
+      //     Good,
+      //     Defect,
+      //     Damage,
+      //     Lost,
+      //   },
+      // };
+
       const payload = {
         itemName: sanitizedItemName,
         itemDetails: sanitizedItemDetails,
@@ -842,12 +883,9 @@ useEffect(() => {
         row: values.row, 
         unit: values.unit,
         status: values.status,
-        condition: {
-          Good,
-          Defect,
-          Damage,
-          Lost,
-        },
+        condition: isChemOrReagent
+          ? {} // ✅ Empty for Chemical/Reagent
+          : { Good, Defect, Damage, Lost },
       };
 
       const userId = localStorage.getItem("userId");
