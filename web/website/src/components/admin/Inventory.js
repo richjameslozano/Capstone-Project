@@ -878,7 +878,7 @@ useEffect(() => {
         category: values.category,
         department: values.department,
         criticalLevel: sanitizedCriticalLevel,
-        labRoom: values.labRoom,
+        // labRoom: values.labRoom,
         shelves: values.shelves,
         row: values.row, 
         unit: values.unit,
@@ -2504,11 +2504,11 @@ useEffect(() => {
 
               </Col>
 
-              <Col span={12}>
+              {/* <Col span={12}>
                 <Form.Item label="Lab/ Stock Room" name="labRoom">
                   <Input />
                 </Form.Item>
-              </Col>
+              </Col> */}
 
               <Col span={12}>
                 <Form.Item
