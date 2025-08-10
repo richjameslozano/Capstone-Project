@@ -506,29 +506,29 @@ const ReturnItems = () => {
         ))}
       </View>
 
-<View style={styles.returnTableContainer}>
-  <ScrollView style={{ maxHeight: 650, padding: 5 }}>
-    {/* Header */}
-    <View style={[styles.returnTableRow, styles.returnTableHeader]}>
-      <Text style={[styles.returnHeaderCell, styles.returnColDate]}>Date</Text>
-      <Text style={[styles.returnHeaderCell, styles.returnColStatus]}>Status</Text>
-      <Text style={[styles.returnHeaderCell, styles.returnColAction]}>Action</Text>
-    </View>
+      <View style={styles.returnTableContainer}>
+        <ScrollView style={{ maxHeight: 650, padding: 5 }}>
+          {/* Header */}
+          <View style={[styles.returnTableRow, styles.returnTableHeader]}>
+            <Text style={[styles.returnHeaderCell, styles.returnColDate]}>Date</Text>
+            <Text style={[styles.returnHeaderCell, styles.returnColStatus]}>Status</Text>
+            <Text style={[styles.returnHeaderCell, styles.returnColAction]}>Action</Text>
+          </View>
 
-    {/* Data Rows */}
-    {filteredData.map((item) => (
-      <View key={item.id} style={styles.returnTableRow}>
-        <Text style={[styles.returnCell, styles.returnColDate]}>
-          {item.rawTimestamp?.split(',')[0] || 'N/A'}
-        </Text>
-        <Text style={[styles.returnCell, styles.returnColStatus]}>{item.status}</Text>
-        <TouchableOpacity style={styles.returnColAction} onPress={() => handleViewDetails(item)}>
-          <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
-        </TouchableOpacity>
+          {/* Data Rows */}
+          {filteredData.map((item) => (
+            <View key={item.id} style={styles.returnTableRow}>
+              <Text style={[styles.returnCell, styles.returnColDate]}>
+                {item.rawTimestamp?.split(',')[0] || 'N/A'}
+              </Text>
+              <Text style={[styles.returnCell, styles.returnColStatus]}>{item.status}</Text>
+              <TouchableOpacity style={styles.returnColAction} onPress={() => handleViewDetails(item)}>
+                <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+        </ScrollView>
       </View>
-    ))}
-  </ScrollView>
-</View>
 
         <Modal
           visible={modalVisible}
@@ -688,66 +688,73 @@ const ReturnItems = () => {
                     {/* <Text style={styles.boldText}>Requested Items:</Text> */}
 
                     {/* Glasswares Table */}
-                  {selectedRequest?.raw?.requestList?.some(
-                    item => item.category?.toLowerCase() === 'glasswares'
-                  ) && (
-                    <>
-                      <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Glasswares</Text>
-                      <View style={styles.tableContainer2}>
-                        <View style={styles.tableHeader}>
-                          <Text style={styles.headerCell}>Item Name</Text>
-                          <Text style={styles.headerCell}>Quantity</Text>
-                          <Text style={styles.headerCell}>Returned Qty</Text>
-                          <Text style={styles.headerCell}>Issued</Text>
-                        </View>
+                    {selectedRequest?.raw?.requestList?.some(
+                      item => item.category?.toLowerCase() === 'glasswares'
+                    ) && (
+                      <>
+                        <Text style={{ fontWeight: 'bold', marginTop: 10 }}>Glasswares</Text>
+                        <View style={styles.tableContainer2}>
+                          <View style={styles.tableHeader}>
+                            <Text style={styles.headerCell}>Item Name</Text>
+                            <Text style={styles.headerCell}>Quantity</Text>
+                            <Text style={styles.headerCell}>Returned Qty</Text>
+                            <Text style={styles.headerCell}>Issued</Text>
+                          </View>
 
-                        <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
-                          {selectedRequest.raw.requestList
-                            .filter(item => item.category?.toLowerCase() === 'glasswares')
-                            .map((item, index) => {
-                              const quantityArray = Array.from({ length: item.quantity }, (_, i) => i + 1);
-                              return quantityArray.map((q, i) => {
-                                const returnKey = `${item.itemIdFromInventory}-${i}`;
+                          <ScrollView style={{ maxHeight: 150 }} nestedScrollEnabled>
+                            {selectedRequest.raw.requestList
+                              .filter(item => item.category?.toLowerCase() === 'glasswares')
+                              .map((item, index) => {
+                                const returnKey = `${item.itemIdFromInventory}`; // ✅ single key per item
 
+                                // Prefill return quantities like in React.js
                                 if (returnQuantities[returnKey] === undefined) {
                                   setReturnQuantities(prev => ({
                                     ...prev,
-                                    [returnKey]: "1",
+                                    [returnKey]: item.quantity, // default to full quantity
                                   }));
                                 }
 
                                 return (
-                                  <View key={`glassware-${index}-${i}`} style={styles.tableRow}>
+                                  <View key={`glassware-${index}`} style={styles.tableRow}>
                                     <Text style={styles.cell}>{item.itemName}</Text>
-                                    <Text style={styles.cell}>1</Text>
+                                    <Text style={styles.cell}>{item.quantity}</Text>
 
+                                    {/* Returned Qty Input */}
                                     <View style={{ flex: 1, paddingHorizontal: 6 }}>
-                                      <TextInput
-                                        placeholder="Returned Qty"
-                                        keyboardType="number-pad"
-                                        style={styles.input}
-                                        value={returnQuantities[returnKey] || "1"}
-                                        onChangeText={(text) => {
-                                          const input = parseInt(text, 10);
-                                          const max = 1;
-                                          if (!isNaN(input) && input <= max) {
-                                            setReturnQuantities(prev => ({
-                                              ...prev,
-                                              [returnKey]: input.toString(),
-                                            }));
-                                          } else if (input > max) {
-                                            alert(`Returned quantity cannot exceed borrowed quantity (${max}).`);
-                                          } else {
-                                            setReturnQuantities(prev => ({
-                                              ...prev,
-                                              [returnKey]: '',
-                                            }));
-                                          }
-                                        }}
-                                      />
+                                    <TextInput
+                                      placeholder="Returned Qty"
+                                      keyboardType="number-pad"
+                                      style={[
+                                        styles.input,
+                                        selectedRequest.status === "Approved" && { backgroundColor: "#e0e0e0", color: "#888" } // ✅ optional grey-out
+                                      ]}
+                                      value={String(returnQuantities[returnKey] ?? item.quantity)}
+                                      editable={selectedRequest.status !== "Approved"} // ✅ disable if approved
+                                      onChangeText={(text) => {
+                                        const input = parseInt(text, 10);
+                                        const max = item.quantity;
+
+                                        if (!isNaN(input) && input <= max) {
+                                          setReturnQuantities(prev => ({
+                                            ...prev,
+                                            [returnKey]: input,
+                                          }));
+
+                                        } else if (input > max) {
+                                          alert(`Returned quantity cannot exceed borrowed quantity (${max}).`);
+                                          
+                                        } else {
+                                          setReturnQuantities(prev => ({
+                                            ...prev,
+                                            [returnKey]: '',
+                                          }));
+                                        }
+                                      }}
+                                    />
                                     </View>
 
-                                    {/* ✅ Checkbox with modal trigger */}
+                                    {/* Issue Checkbox */}
                                     <View style={{ flex: 1, alignItems: 'center' }}>
                                       {selectedRequest.status === "Deployed" && (
                                         <Checkbox
@@ -758,7 +765,7 @@ const ReturnItems = () => {
 
                                               if (newStatus[returnKey]) {
                                                 setCurrentIssueItem(item);
-                                                setIssueQuantities({});
+                                                setIssueQuantities({ Defect: 0, Damage: 0, Lost: 0 });
                                                 setIssueModalVisible(true);
                                               } else {
                                                 setIssueModalVisible(false);
@@ -773,12 +780,12 @@ const ReturnItems = () => {
                                     </View>
                                   </View>
                                 );
-                              });
-                            })}
+                              })}
                           </ScrollView>
                         </View>
                       </>
                     )}
+
 
                     {/* Equipment Table */}
                    {selectedRequest?.raw?.requestList?.some(
