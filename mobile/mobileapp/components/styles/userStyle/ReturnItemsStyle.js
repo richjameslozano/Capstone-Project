@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#fff',
     paddingBottom: 10,
+    marginBottom: 10,
     flex: 1,
   },
 
@@ -263,6 +264,36 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
   },
+
+returnHeaderCell: {
+  fontWeight: 'bold',
+  textAlign: 'center',
+  padding: 8,
+  backgroundColor: '#f2f2f2',
+},
+
+returnCell: {
+  textAlign: 'center',
+  color: '#444',
+  paddingVertical: 8,
+  fontSize: 13,
+},
+
+returnColDate: { flex: 2 },
+returnColStatus: { flex: 2 },
+returnColAction: { flex: 1 },
+
+returnTableHeader: {
+  backgroundColor: '#e8e8e8',
+  borderTopLeftRadius: 5,
+  borderTopRightRadius: 5,
+},
+
+returnTableRow: {
+  flexDirection: 'row',
+  borderBottomWidth: 1,
+  borderColor: '#eee',
+},
 
   /* –– reusable widths so header and rows always match –– */
   colName: { flex: 3 },       // wider for long names

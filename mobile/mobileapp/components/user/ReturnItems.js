@@ -3,7 +3,7 @@ import { Picker } from '@react-native-picker/picker';
 import {
   View, Text, TouchableOpacity, Modal,
   Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, 
-  StatusBar} from 'react-native';
+  StatusBar, Dimensions } from 'react-native';
 import {
   collection, getDocs, doc, updateDoc, getDoc, deleteDoc,
   setDoc, addDoc, serverTimestamp, onSnapshot, query, where
@@ -31,6 +31,9 @@ const ReturnItems = () => {
   const [currentIssueItem, setCurrentIssueItem] = useState(null);
   const [issueQuantities, setIssueQuantities] = useState({});
   const [glasswareIssues, setGlasswareIssues] = useState({});
+
+  const screenHeight = Dimensions.get("window").height;
+  const modalMaxHeight = screenHeight * 0.8; 
 
   const navigation = useNavigation()
 
@@ -503,31 +506,29 @@ const ReturnItems = () => {
         ))}
       </View>
 
-        <View style={styles.tableContainer1}>
-          <ScrollView style={{ maxHeight: 500, padding: 5, }}>
-            {/* Header */}
-            <View style={[styles.tableRow, styles.tableHeader]}>
-              <Text style={[styles.cell, { flex: 2 }]}>Date</Text>
-              <Text style={[styles.cell, { flex: 2 }]}>Status</Text>
-              <Text style={[styles.cell, { flex: 1 }]}>Action</Text>
-            </View>
+<View style={styles.returnTableContainer}>
+  <ScrollView style={{ maxHeight: 650, padding: 5 }}>
+    {/* Header */}
+    <View style={[styles.returnTableRow, styles.returnTableHeader]}>
+      <Text style={[styles.returnHeaderCell, styles.returnColDate]}>Date</Text>
+      <Text style={[styles.returnHeaderCell, styles.returnColStatus]}>Status</Text>
+      <Text style={[styles.returnHeaderCell, styles.returnColAction]}>Action</Text>
+    </View>
 
-            {/* Data Rows */}
-            {filteredData.map((item) => (
-              <View key={item.id} style={styles.tableRow}>
-                {/* <Text style={[{ flex: 2 }]}>{item.rawTimestamp}</Text> */}
-                <Text style={[{ flex: 2 }]}>
-                  {item.rawTimestamp?.split(',')[0] || 'N/A'}
-                </Text>
-
-                <Text style={[{ flex: 2 }]}>{item.status}</Text>
-                <TouchableOpacity style={{ flex: 1 }} onPress={() => handleViewDetails(item)}>
-                  <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
-          </ScrollView>
-        </View>
+    {/* Data Rows */}
+    {filteredData.map((item) => (
+      <View key={item.id} style={styles.returnTableRow}>
+        <Text style={[styles.returnCell, styles.returnColDate]}>
+          {item.rawTimestamp?.split(',')[0] || 'N/A'}
+        </Text>
+        <Text style={[styles.returnCell, styles.returnColStatus]}>{item.status}</Text>
+        <TouchableOpacity style={styles.returnColAction} onPress={() => handleViewDetails(item)}>
+          <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
+        </TouchableOpacity>
+      </View>
+    ))}
+  </ScrollView>
+</View>
 
         <Modal
           visible={modalVisible}
@@ -540,11 +541,12 @@ const ReturnItems = () => {
               <TouchableWithoutFeedback>
                 <KeyboardAvoidingView
                   behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-                  style={{ flex: 1, width: '90%', maxWidth: 600 }}
+                  style={{ width: '90%', maxWidth: 600 }}
                   keyboardVerticalOffset={Platform.OS === 'android' ? 20 : 0}
                 >
+                  <View style={[styles.modalContent, { maxHeight: modalMaxHeight }]}>
                   <ScrollView
-                    contentContainerStyle={{ ...styles.modalContent, flexGrow: 1 }}
+                    contentContainerStyle={{ paddingBottom: 20 }}
                     keyboardShouldPersistTaps="handled"
                     showsVerticalScrollIndicator={false}
                   >
@@ -838,6 +840,7 @@ const ReturnItems = () => {
                       )}
                     </View>
                   </ScrollView>
+                  </View>
                 </KeyboardAvoidingView>
               </TouchableWithoutFeedback>
             </View>
