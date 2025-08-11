@@ -1561,6 +1561,75 @@ const Requisition = () => {
   };
 
   const columns = [
+    // {
+    //   title: "Item Name",
+    //   dataIndex: "selectedItemId",
+    //   key: "selectedItemId",
+    //   render: (value, record, index) => {
+    //     // Get all selected item IDs except the current row
+    //     const selectedIds = mergedData
+    //       .filter((_, i) => i !== index)
+    //       .map((row) => row.selectedItemId);
+  
+    //     return (
+    //       <Select
+    //         showSearch
+    //         placeholder="Select item"
+    //         style={{ width: 100 }}
+    //         dropdownStyle={{ width: 700 }}
+    //         optionFilterProp="label"
+    //         labelInValue
+    //         value={record.selectedItem || undefined}
+    //         onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
+    //         filterOption={(input, option) =>
+    //           option?.label?.toLowerCase().includes(input.toLowerCase())
+    //         }>
+    //         {/* Map through filtered items instead of the entire items list */}
+    //         {/* {filteredItems.map((item) => {
+    //           // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+    //           } | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+    //           const isDisabled = selectedIds.includes(item.id);
+  
+    //           return (
+    //             <Select.Option
+    //               key={item.id}
+    //               value={item.id}
+    //               label={item.itemName}
+    //               disabled={isDisabled}
+    //             >
+    //               {label}
+    //             </Select.Option>
+    //           );
+    //         })} */}
+
+    //         {filteredItems
+    //         .filter((item) => item.status !== "out of stock" && item.status !== "in use")
+    //         .map((item) => {
+    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+    //           } | ${item.status} | ${item.department}`;
+    //           const isDisabled = selectedIds.includes(item.id);
+
+    //           return (
+    //             <Select.Option
+    //               key={item.id}
+    //               value={item.id}
+    //               label={item.itemName}
+    //               disabled={isDisabled}
+    //             >
+    //               {label}
+    //             </Select.Option>
+    //           );
+    //         })}
+    //       </Select>
+    //     );
+    //   },
+    // },
     {
       title: "Item Name",
       dataIndex: "selectedItemId",
@@ -1570,7 +1639,7 @@ const Requisition = () => {
         const selectedIds = mergedData
           .filter((_, i) => i !== index)
           .map((row) => row.selectedItemId);
-  
+
         return (
           <Select
             showSearch
@@ -1580,52 +1649,37 @@ const Requisition = () => {
             optionFilterProp="label"
             labelInValue
             value={record.selectedItem || undefined}
-            onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
+            onChange={(selected) => handleItemSelect(selected, index)}
             filterOption={(input, option) =>
               option?.label?.toLowerCase().includes(input.toLowerCase())
-            }>
-            {/* Map through filtered items instead of the entire items list */}
-            {/* {filteredItems.map((item) => {
-              // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
-              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-              } | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              const isDisabled = selectedIds.includes(item.id);
-  
-              return (
-                <Select.Option
-                  key={item.id}
-                  value={item.id}
-                  label={item.itemName}
-                  disabled={isDisabled}
-                >
-                  {label}
-                </Select.Option>
-              );
-            })} */}
-
+            }
+          >
             {filteredItems
-            .filter((item) => item.status !== "out of stock" && item.status !== "in use")
-            .map((item) => {
-              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-              } | ${item.status} | ${item.department}`;
-              const isDisabled = selectedIds.includes(item.id);
+              .filter(
+                (item) => item.status !== "out of stock" && item.status !== "in use"
+              )
+              .sort((a, b) =>
+                a.itemName.localeCompare(b.itemName, undefined, { sensitivity: "base" })
+              )
+              .map((item) => {
+                const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+                  ["Chemical", "Reagent"].includes(item.category) && item.unit
+                    ? ` ${item.unit}`
+                    : ""
+                } | ${item.status} | ${item.department}`;
+                const isDisabled = selectedIds.includes(item.id);
 
-              return (
-                <Select.Option
-                  key={item.id}
-                  value={item.id}
-                  label={item.itemName}
-                  disabled={isDisabled}
-                >
-                  {label}
-                </Select.Option>
-              );
-            })}
+                return (
+                  <Select.Option
+                    key={item.id}
+                    value={item.id}
+                    label={item.itemName}
+                    disabled={isDisabled}
+                  >
+                    {label}
+                  </Select.Option>
+                );
+              })}
           </Select>
         );
       },
