@@ -168,7 +168,7 @@ const MonthlyRequestTrendLineChart = () => {
   };
 
   return (
-    <Card title="📊 Monthly Request Trend Overview">
+    <Card title="Monthly Request Trend Overview">
       <Space style={{ marginBottom: 16 }} wrap>
         <Select
           value={selectedYear}

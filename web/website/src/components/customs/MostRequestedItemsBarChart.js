@@ -136,9 +136,9 @@ const processData = (data, count) => {
 
   return (
     <Card style={{ padding: 16, height: '100%' }}>
-      <Title level={5}>Medical Supplies in Progress</Title>
+      <Title level={5}>High Demands</Title>
       <Paragraph type="secondary" style={{ marginBottom: 16 }}>
-        Materials needed in laboratory operations
+        Materials needed in laboratory classes
       </Paragraph>
 
       <div id="most-requested-bar-chart">
