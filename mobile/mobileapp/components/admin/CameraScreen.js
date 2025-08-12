@@ -321,11 +321,19 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               const returnQty = borrowedItem.returnedQuantity || 1; // ✅ SAFER
 
               // ✅ Use itemUnitConditions if available, else conditions, else default to "Good"
-              const returnedConditions = Array.isArray(borrowedItem.itemUnitConditions) && borrowedItem.itemUnitConditions.length > 0
+              // const returnedConditions = Array.isArray(borrowedItem.itemUnitConditions) && borrowedItem.itemUnitConditions.length > 0
+              //   ? borrowedItem.itemUnitConditions
+              //   : (Array.isArray(borrowedItem.conditions) && borrowedItem.conditions.length > 0
+              //       ? borrowedItem.conditions
+              //       : Array(returnQty).fill("Good")); // default all units to "Good"
+
+              // ✅ Safely get returned conditions
+              const returnedConditions = Array.isArray(borrowedItem?.itemUnitConditions) && borrowedItem.itemUnitConditions.length > 0
                 ? borrowedItem.itemUnitConditions
-                : (Array.isArray(borrowedItem.conditions) && borrowedItem.conditions.length > 0
+                : (Array.isArray(borrowedItem?.conditions) && borrowedItem.conditions.length > 0
                     ? borrowedItem.conditions
-                    : Array(returnQty).fill("Good")); // default all units to "Good"
+                    : Array(borrowedItem?.returnedQuantity || 1).fill("Good"));
+
 
               // 🔹 Store these conditions back to Firestore for record-keeping
               await updateDoc(borrowDocRef, {
@@ -436,7 +444,8 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                   item.itemName === itemName &&
                   item.itemDetails === itemDetails &&
                   item.selectedItemId === borrowedItem.selectedItemId
-                    ? { ...item, conditions: itemUnitConditions[item.itemId] || [] }
+                    // ? { ...item, conditions: itemUnitConditions[item.itemId] || [] }
+                    ? { ...item, conditions: returnedConditions }
                     : item
                 ),
               });

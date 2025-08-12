@@ -1205,6 +1205,7 @@
 // export default LabRoomQR;
 
 
+// VERSION 2
 import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { Layout, Row, Col, Table, Input, Button, Typography, Modal, Tabs, Select } from "antd";

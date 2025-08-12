@@ -798,6 +798,9 @@ try {
       setIsModalVisible(false);
       setSelectedRequest(null);
       setIsFinalizeModalVisible(false)
+
+      setNotificationMessage("Approval and rejection have been logged successfully.");
+      setIsNotificationVisible(true);
   
       notification.success({
         message: "Request Processed",
@@ -1782,6 +1785,9 @@ try {
       setIsModalVisible(false);
       setSelectedRequest(null);
       setIsFinalizeModalVisible(false)
+
+      setNotificationMessage("Approval and rejection have been logged successfully.");
+      setIsNotificationVisible(true);
   
       notification.success({
         message: "Request Processed",
@@ -3184,6 +3190,9 @@ try {
         setSelectedRequest(null);
         setIsFinalizeModalVisible(false)
 
+        setNotificationMessage("Approval and rejection have been logged successfully.");
+        setIsNotificationVisible(true);
+
         notification.success({
           message: "Request Approved",
           description: "Request has been approved and logged.",
@@ -4088,6 +4097,7 @@ useEffect(() => {
 
   const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
   
+  const filteredData = getFilteredRequests();
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -4123,7 +4133,12 @@ useEffect(() => {
             </div>
 
         
-
+<Spin spinning={loading} tip="Loading requests...">
+  {!loading && filteredData.length === 0 ? (
+    <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+      <h3>No Request Found</h3>
+    </div>
+    ) : (
   <div>
     {Object.entries(categorizedRequests).map(([label, group]) => {
       if (group.length === 0) return null;
@@ -4349,6 +4364,8 @@ useEffect(() => {
             );
           })}
         </div>
+         )}
+        </Spin>
 
 
         <Modal
