@@ -136,7 +136,7 @@ const processData = (data, count) => {
 
   return (
     <Card style={{ padding: 16, height: '100%' }}>
-      <Title level={5}>High Demands</Title>
+      <Title level={5}>High Demand Inventory Assets</Title>
       <Paragraph type="secondary" style={{ marginBottom: 16 }}>
         Materials needed in laboratory classes
       </Paragraph>

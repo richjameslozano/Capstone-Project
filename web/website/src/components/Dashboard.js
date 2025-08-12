@@ -719,7 +719,7 @@ useEffect(() => {
 
 </Tabs.TabPane>
 
-<Tabs.TabPane tab="Analytics" key="3">
+{/* <Tabs.TabPane tab="Analytics" key="3">
 
  
   <Row gutter={[24, 24]} justify="center">
@@ -732,7 +732,7 @@ useEffect(() => {
       </div>
     </Col>
   </Row>
-</Tabs.TabPane>x
+</Tabs.TabPane> */}
 
 
 
