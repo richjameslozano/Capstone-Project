@@ -232,20 +232,26 @@ const formatCondition = (cond) => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                     <Icon name="keyboard-backspace" size={28} color="black" />
-                                   </TouchableOpacity>
+      <View 
+        style={[styles.inventoryStocksHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
 
-                    <View>
-                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Inventory</Text>
-                      <Text style={{ fontWeight: 300, fontSize: 13}}>View Inventory Items</Text>
-                    </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            Inventory
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            View Inventory Items
+          </Text>
+        </View>
 
-                     <TouchableOpacity style={{padding: 2}}>
-                       <Icon name="information-outline" size={24} color="#000" />
-                     </TouchableOpacity>
-                   </View>
+        {/* Placeholder to balance back button width */}
+        <View style={{ width: 28 }} />
+      </View>
 
        <View style={[styles.searchFilter, {marginTop: headerHeight}]}>
               <View style={{height: 45, flexDirection: 'row', gap: 5, paddingHorizontal: 2}}>

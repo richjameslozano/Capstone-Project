@@ -192,18 +192,25 @@ const BorrowCatalogScreen = () => {
 
   return (
     <View style={styles.container}>
-    <View style={styles.pendingHeader} onLayout={handleHeaderLayout}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                            <Icon name="keyboard-backspace" size={28} color="black" />
-                                          </TouchableOpacity>
-      <View>
-        <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Borrow Catalog</Text>
-        <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Monitor Borrowed Items</Text>
-      </View>
-
-        <TouchableOpacity style={{padding: 2}}>
-          <Icon name="information-outline" size={24} color="#000" />
+      <View 
+        style={[styles.pendingHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
         </TouchableOpacity>
+
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            Borrow Catalog
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            Monitor Borrowed Items
+          </Text>
+        </View>
+
+        {/* Placeholder to balance back button width */}
+        <View style={{ width: 28 }} />
       </View>
 
       <View style={{flex: 1, marginTop: headerHeight, backgroundColor: '#e9ecee', borderRadius: 5, gap: 5}}>
