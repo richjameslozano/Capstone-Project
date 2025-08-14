@@ -20,6 +20,8 @@ import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
 import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import StickyBox from 'react-sticky-box';
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const { Option } = Select; 
 const { Content } = Layout;
@@ -673,6 +675,113 @@ const ProcessedTab = () => {
   );
 };
 
+  const handleGeneratePDF = () => {
+    if (!selectedLog) {
+      alert("No data to export.");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(18);
+    doc.text("Activity Details", 14, 20);
+
+    // Details list
+    doc.setFontSize(12);
+    const details = [
+      ["Action", selectedLog.action || "N/A"],
+      ["By", selectedLog.userName || "N/A"],
+      ["Program", selectedLog.program || "N/A"],
+      ["Room", selectedLog.room || "N/A"],
+      ["Time", selectedLog.timeFrom && selectedLog.timeTo ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}` : "N/A"],
+      ["Date Required", selectedLog.dateRequired || "N/A"],
+    ];
+    details.forEach(([label, value], idx) => {
+      doc.text(`${label}: ${value}`, 14, 30 + idx * 6);
+    });
+
+    // Items table
+    const items = selectedLog.requestList || selectedLog.filteredMergedData || [];
+    autoTable(doc, {
+      startY: 30 + details.length * 6 + 5,
+      head: [["Item Name", "Quantity", "Category", "Department"]],
+      body: items.map(item => [
+        item.itemName || "",
+        item.quantity || "",
+        item.category || "",
+        item.department || "",
+      ]),
+    });
+
+    doc.save("activity-details.pdf");
+  };
+
+  const handlePrint = () => {
+    if (!selectedLog) {
+      alert("No data to print.");
+      return;
+    }
+
+    const items = selectedLog.requestList || selectedLog.filteredMergedData || [];
+
+    // Build HTML from data
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Activity Details</title>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            h2 { margin-bottom: 10px; }
+            ul { list-style: none; padding: 0; }
+            ul li { margin-bottom: 5px; }
+            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+            table, th, td { border: 1px solid #000; }
+            th, td { padding: 8px; text-align: left; }
+          </style>
+        </head>
+        <body>
+          <h2>Activity Details</h2>
+          <ul>
+            <li><strong>Action:</strong> ${selectedLog.action || "N/A"}</li>
+            <li><strong>By:</strong> ${selectedLog.userName || "N/A"}</li>
+            <li><strong>Program:</strong> ${selectedLog.program || "N/A"}</li>
+            <li><strong>Room:</strong> ${selectedLog.room || "N/A"}</li>
+            <li><strong>Time:</strong> ${selectedLog.timeFrom && selectedLog.timeTo ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}` : "N/A"}</li>
+            <li><strong>Date Required:</strong> ${selectedLog.dateRequired || "N/A"}</li>
+          </ul>
+          <h3>Items Requested</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Category</th>
+                <th>Department</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(item => `
+                <tr>
+                  <td>${item.itemName || ""}</td>
+                  <td>${item.quantity || ""}</td>
+                  <td>${item.category || ""}</td>
+                  <td>${item.department || ""}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    // Open and print
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   return (
     <Layout style={{ minHeight: "100vh"}}>
 <Tabs
@@ -722,6 +831,7 @@ const ProcessedTab = () => {
     },
   ]}
 />
+     
       <Modal
         title="Activity Details"
         visible={modalVisible}
@@ -730,69 +840,105 @@ const ProcessedTab = () => {
         footer={null}
       >
         {selectedLog && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Action">
-              {selectedLog.status === 'CANCELLED'
-                ? 'Cancelled a request'
-                : selectedLog.action || 'Modified a request'}
-            </Descriptions.Item>
+          <>
+            <div id="activity-details-content">
+              <Descriptions column={1} bordered size="small">
+                <Descriptions.Item label="Action">
+                  {selectedLog.status === 'CANCELLED'
+                    ? 'Cancelled a request'
+                    : selectedLog.action || 'Modified a request'}
+                </Descriptions.Item>
 
-            <Descriptions.Item label="By">
-              {selectedLog.userName || 'Unknown User'}
-            </Descriptions.Item>
+                <Descriptions.Item label="By">
+                  {selectedLog.userName || 'Unknown User'}
+                </Descriptions.Item>
 
-            <Descriptions.Item label="Program">
-              {selectedLog.program || 'N/A'}
-            </Descriptions.Item>
+                <Descriptions.Item label="Program">
+                  {selectedLog.program || 'N/A'}
+                </Descriptions.Item>
 
-            <Descriptions.Item label="Items Requested">
-              {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                <ul style={{ paddingLeft: 20 }}>
-                  {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                    <li key={index} style={{ marginBottom: 10 }}>
-                      <strong>{item.itemName}</strong>
-                      <ul style={{ marginLeft: 20 }}>
-                        <li>Quantity: {item.quantity}</li>
-                        {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
-                          <li>Unit: {item.unit}</li>
-                        )}
-                        {item.category && <li>Category: {item.category}</li>}
-                        {item.category === 'Glasswares' && item.volume && (
-                          <li>Volume: {item.volume}</li>
-                        )}
-                        {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                        {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                        {item.itemType && <li>Item Type: {item.itemType}</li>}
-                        {item.department && <li>Department: {item.department}</li>}
-                        {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
-                          <>
-                            {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
-                            {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
-                          </>
-                        )}
-                      </ul>
-                    </li>
-                  ))}
-                </ul>
-              ) : 'None'}
-            </Descriptions.Item>
-            {selectedLog.action !== 'Request Rejected' && (
-              <Descriptions.Item label="Reason">
-                {selectedLog.reason || 'N/A'}
-              </Descriptions.Item>
+                <Descriptions.Item label="Items Requested">
+                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+                    <ul style={{ paddingLeft: 20 }}>
+                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+                        <li key={index} style={{ marginBottom: 10 }}>
+                          <strong>{item.itemName}</strong>
+                          <ul style={{ marginLeft: 20 }}>
+                            <li>Quantity: {item.quantity}</li>
+                            {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
+                              <li>Unit: {item.unit}</li>
+                            )}
+                            {item.category && <li>Category: {item.category}</li>}
+                            {item.category === 'Glasswares' && item.volume && (
+                              <li>Volume: {item.volume}</li>
+                            )}
+                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
+                            {item.itemType && <li>Item Type: {item.itemType}</li>}
+                            {item.department && <li>Department: {item.department}</li>}
+                            {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
+                              <>
+                                {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
+                                {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+                              </>
+                            )}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : 'None'}
+                </Descriptions.Item>
+                {selectedLog.action !== 'Request Rejected' && (
+                  <Descriptions.Item label="Reason">
+                    {selectedLog.reason || 'N/A'}
+                  </Descriptions.Item>
+                )}
+                <Descriptions.Item label="Room">
+                  {selectedLog.room || 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Time">
+                  {selectedLog.timeFrom && selectedLog.timeTo
+                    ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+                    : 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Date Required">
+                  {selectedLog.dateRequired || 'N/A'}
+                </Descriptions.Item>
+              </Descriptions>
+            </div>
+
+            {/* Show PDF and Print buttons if approved */}
+            {(selectedLog.status === 'APPROVED' || selectedLog.action === 'Request Approved') && (
+              <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                <button
+                  style={{
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 4,
+                    cursor: 'pointer'
+                  }}
+                  onClick={handleGeneratePDF}
+                >
+                  Download PDF
+                </button>
+                <button
+                  style={{
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 4,
+                    cursor: 'pointer'
+                  }}
+                  onClick={handlePrint}
+                >
+                  Print
+                </button>
+              </div>
             )}
-            <Descriptions.Item label="Room">
-              {selectedLog.room || 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Time">
-              {selectedLog.timeFrom && selectedLog.timeTo
-                ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-                : 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Date Required">
-              {selectedLog.dateRequired || 'N/A'}
-            </Descriptions.Item>
-          </Descriptions>
+          </>
         )}
       </Modal>
     </Layout>
