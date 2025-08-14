@@ -50,6 +50,33 @@ const columns2 = [
     className: "table-header",
     align: "center",
   },
+  {
+    title: "Date Required",
+    dataIndex: "dateRequired",
+    key: "dateRequired",
+    className: "table-header",
+    align: "center",
+    render: (value) => value || "N/A", 
+  },
+  {
+    title: "Items Requested",
+    dataIndex: "itemsRequested",
+    key: "itemsRequested",
+    className: "table-header",
+    align: "center",
+    render: (items) =>
+      Array.isArray(items) && items.length > 0 ? (
+        <ul style={{ listStyleType: "disc", paddingLeft: 20, textAlign: "left" }}>
+          {items.map((item, idx) => (
+            <li key={idx}>
+              {item.itemName} ({item.quantity})
+            </li>
+          ))}
+        </ul>
+      ) : (
+        "N/A"
+      ),
+  }
 ];
 
 const HistoryLog = () => {
@@ -274,28 +301,88 @@ const sanitizeInput = (input) =>
     },
   ];
 
+  // useEffect(() => {
+  //   const userId = localStorage.getItem("userId");
+  //   if (!userId) return;
+  
+  //   const activityRef = collection(db, `accounts/${userId}/historylog`);
+  
+  //   const unsubscribe = onSnapshot(
+  //     activityRef,
+  //     (querySnapshot) => {
+  //       const logs = querySnapshot.docs.map((doc, index) => {
+  //         const data = doc.data();
+  //         const logDate =
+  //           data.cancelledAt?.toDate?.() ||
+  //           data.timestamp?.toDate?.() ||
+  //           new Date();
+  
+  //         const isCancelled = data.status === "CANCELLED";
+  //         const action = isCancelled
+  //           ? "Cancelled a request"
+  //           : data.action || "Modified a request";
+            
+  //         const by = 
+  //           action === "Request Approved"
+  //             ? data.approvedBy
+  //             : action === "Request Rejected"
+  //             ? data.rejectedBy
+  //             : action === "Deployed"
+  //             ? data.approvedBy
+  //             : data.userName || "Unknown User";
+  
+  //         return {
+  //           key: doc.id || index.toString(),
+  //           date: logDate.toLocaleString("en-US", {
+  //             year: "numeric",
+  //             month: "short",
+  //             day: "numeric",
+  //             hour: "numeric",
+  //             minute: "2-digit",
+  //             hour12: true,
+  //           }),
+  //           rawDate: logDate,
+  //           action: action,
+  //           by: by,
+  //           fullData: data,
+  //         };
+  //       });
+  
+  //       const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
+  //       setActivityData(sortedLogs);
+  //     },
+  //     (error) => {
+     
+  //     }
+  //   );
+  
+  //   // Cleanup the listener when the component unmounts
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
-  
+
     const activityRef = collection(db, `accounts/${userId}/historylog`);
-  
+
     const unsubscribe = onSnapshot(
       activityRef,
       (querySnapshot) => {
         const logs = querySnapshot.docs.map((doc, index) => {
           const data = doc.data();
+
           const logDate =
             data.cancelledAt?.toDate?.() ||
             data.timestamp?.toDate?.() ||
             new Date();
-  
+
           const isCancelled = data.status === "CANCELLED";
           const action = isCancelled
             ? "Cancelled a request"
             : data.action || "Modified a request";
-            
-          const by = 
+
+          const by =
             action === "Request Approved"
               ? data.approvedBy
               : action === "Request Rejected"
@@ -303,7 +390,7 @@ const sanitizeInput = (input) =>
               : action === "Deployed"
               ? data.approvedBy
               : data.userName || "Unknown User";
-  
+
           return {
             key: doc.id || index.toString(),
             date: logDate.toLocaleString("en-US", {
@@ -315,24 +402,37 @@ const sanitizeInput = (input) =>
               hour12: true,
             }),
             rawDate: logDate,
-            action: action,
-            by: by,
+            action,
+            by,
+            dateRequired: data.dateRequired || "N/A", // ✅ Matches modal display
+            itemsRequested:
+              (data.filteredMergedData && data.filteredMergedData.length > 0
+                ? data.filteredMergedData
+                : data.requestList) || [], // ✅ Same fallback as modal
+            program: data.program || "N/A", // ✅ Matches modal
+            reason:
+              action !== "Request Rejected"
+                ? data.reason || "N/A"
+                : data.reason || data.rejectionReason || "N/A", // ✅ Covers both fields
+            room: data.room || "N/A", // ✅ Matches modal
+            time:
+              data.timeFrom && data.timeTo
+                ? `${data.timeFrom} - ${data.timeTo}`
+                : "N/A", // ✅ Matches modal
             fullData: data,
           };
         });
-  
+
         const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
         setActivityData(sortedLogs);
       },
       (error) => {
-     
+        console.error("Error fetching activity logs:", error);
       }
     );
-  
-    // Cleanup the listener when the component unmounts
+
     return () => unsubscribe();
   }, []);
-
 
   const filteredData = activityData.filter((item) => {
     // Filter by action type
