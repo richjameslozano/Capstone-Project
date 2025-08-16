@@ -6,17 +6,20 @@ import jsPDF from "jspdf";
 import 'jspdf-autotable';
 import html2canvas from "html2canvas";
 import "../styles/adminStyle/RequestLog.css";
-
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const { Content } = Layout;
 const { Text } = Typography;
+const { RangePicker } = DatePicker;
 
 const RequestLog = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [historyData, setHistoryData] = useState([]);
-  const modalRef = useRef(null); // Reference for modal content to print/save
+  const modalRef = useRef(null); 
+  const [selectedMonth, setSelectedMonth] = useState(null);
 
   const generateAllRequestsPdf = () => {
     if (!filteredData || filteredData.length === 0) {
@@ -415,16 +418,41 @@ const printPdf = () => {
     },
   ];
 
-  const filteredData =
+  // const filteredData =
+  //   filterStatus === "All"
+  //     ? historyData
+  //     : historyData.filter((item) => item.status === filterStatus);
+
+  const filteredByStatus =
     filterStatus === "All"
       ? historyData
       : historyData.filter((item) => item.status === filterStatus);
+
+  const filteredData = filteredByStatus.filter((item) => {
+    // If no month selected, show all
+    if (!selectedMonth) return true;
+
+    // item.rawTimestamp.toDate() -> JS Date
+    const itemDate = dayjs(item.rawTimestamp?.toDate?.());
+    return (
+      itemDate.month() === selectedMonth.month() &&
+      itemDate.year() === selectedMonth.year()
+    );
+  });
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout>
         <Content style={{ margin: "20px" }}>
           <div style={{ marginBottom: 16 }}>
+
+            <DatePicker
+              picker="month"
+              onChange={(date) => setSelectedMonth(date)}
+              style={{ marginRight: 8 }}
+              placeholder="Select Month"
+            />
+
             <Button
               type={filterStatus === "All" ? "primary" : "default"}
               onClick={() => setFilterStatus("All")}
