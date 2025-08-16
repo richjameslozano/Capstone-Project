@@ -306,7 +306,7 @@ export default function RequestScreen() {
       const handleStatus =(item)=>{
       if(item.status === 'PENDING') return 'orange';
       if(item.action === 'APPROVED') return '#134b5f';
-      if(item.action === 'DEPLOYED') return '#b8e2f4'; 
+      if(item.action === 'DEPLOYED') return '#2596be'; 
       if(item.action === 'Reagent') return '#b8e2f4';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
@@ -659,7 +659,7 @@ const renderDeployed = ({ item }) => {
     </TouchableOpacity>
     <TouchableOpacity style={[styles.timelineBtn, activePage === 2 && styles.activeBtn]}
     onPress={()=>handleButtonPress(2)}>
-      <Icon name="package-variant-closed" size={20} color="#165a72" />
+      <Icon name={activePage === 2 ? "send":"send-outline"} size={20} color="#165a72" />
       <Text style={styles.timeText}>Deployed</Text>
     </TouchableOpacity>
     <TouchableOpacity style={[styles.timelineBtn, activePage === 3 && styles.activeBtn]}
@@ -977,8 +977,8 @@ const renderDeployed = ({ item }) => {
       <View key="3" style={styles.page}>
                   <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
-                    <Icon name='thumb-up-outline' size={23} color='#6abce2'/>
-                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Approved Orders</Text>
+                    <Icon name='send-outline' size={23} color='#6abce2'/>
+                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Deployed Orders</Text>
                   </View>
 
         <FlatList
