@@ -13,7 +13,7 @@ import {
   theme,
   Steps
 } from "antd";
-import { ArrowRightOutlined, CloseOutlined, SearchOutlined } from "@ant-design/icons";
+import { AppstoreAddOutlined, ArrowRightOutlined, CloseOutlined, ExpandAltOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, SearchOutlined, TeamOutlined } from "@ant-design/icons";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
@@ -505,121 +505,442 @@ const sanitizeInput = (input) =>
     
   ];
 
-    const renderPendingTab = () => (
-    <Content className="pending-content">
-            <div className="activity-header">
-      </div>
+  //   const renderPendingTab = () => (
+  //   <Content className="pending-content">
+  //           <div className="activity-header">
+  //     </div>
  
       
-        {loading ? (
-          <Spin size="large" />
-        ) : (
-          <Table
-  columns={columns}
-  dataSource={requests.filter((item) =>
-    item.requester.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.usageType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (item.courseDescription?.toLowerCase() || '').includes(searchQuery.toLowerCase())
-  )}
-  pagination={{ pageSize: 10 }}
-  rowKey="id"
-  className="pending-table"
-          />
-        )}
+  //       {loading ? (
+  //         <Spin size="large" />
+  //       ) : (
+  //         <Table
+  // columns={columns}
+  // dataSource={requests.filter((item) =>
+  //   item.requester.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   item.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   item.usageType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //   (item.courseDescription?.toLowerCase() || '').includes(searchQuery.toLowerCase())
+  // )}
+  // pagination={{ pageSize: 10 }}
+  // rowKey="id"
+  // className="pending-table"
+  //         />
+  //       )}
       
-      <Modal
-        className="request-list-modal"
-        open={viewDetailsModalVisible}
-        onCancel={handleModalClose}
-        width={800}
-        zIndex={1008}
-        closable={false}
-        footer={[
-          <Button key="close" onClick={handleModalClose}>Close</Button>,
-          <Button key="cancel" danger onClick={() => setIsCancelVisible(true)} icon={<CloseOutlined />}>Cancel Request</Button>,
-        ]}
-      >
-        {selectedRequest && (
-          <>
-            <div className="request-details-container" style={{ justifyContent: 'space-between' }}>
-              <strong style={{ fontSize: '18px', color: 'white' }}>Request Details</strong>
-              {/* <span style={{ fontSize: 12, color: 'white' }}>{selectedRequest?.id}</span> */}
-            </div>
-            <div className="request-details-whole">
-              <div className="request-details-left">
-                <div><p><strong>Requester:</strong></p><p>{selectedRequest.requester}</p></div>
-                <div><p><strong>Requisition Date:</strong></p><p>{selectedRequest.dateRequested}</p></div>
-                <div><p><strong>Date Required:</strong></p><p>{selectedRequest.dateRequired}</p></div>
-                <div><p><strong>Time Needed:</strong></p><p>{selectedRequest.timeNeeded}</p></div>
-              </div>
-              <div className="request-details-right">
-                <div><p><strong>Course Code:</strong></p><p>{selectedRequest.courseCode}</p></div>
-                <div><p><strong>Course Description:</strong></p><p>{selectedRequest.requester}</p></div>
-                <div><p><strong>Room:</strong></p><p>{selectedRequest.room}</p></div>
-                <div><p><strong>Usage Type:</strong></p><p>{selectedRequest.usageType}</p></div>
-              </div>
-            </div>
-            <div className="details-table">
-              <Title level={5}>Requested Items:</Title>
-              <Table
-                columns={itemColumns}
-                dataSource={selectedRequest.items}
-                rowKey={(_, index) => index}
-                size="small"
-                pagination={false}
-              />
-              <br />
-              <p style={{ marginBottom: '30px' }}><strong>Note:</strong> {selectedRequest.message || "No message provided."}</p>
-            </div>
-          </>
-        )}
-      </Modal>
+  //     <Modal
+  //       className="request-list-modal"
+  //       open={viewDetailsModalVisible}
+  //       onCancel={handleModalClose}
+  //       width={800}
+  //       zIndex={1008}
+  //       closable={false}
+  //       footer={[
+  //         <Button key="close" onClick={handleModalClose}>Close</Button>,
+  //         <Button key="cancel" danger onClick={() => setIsCancelVisible(true)} icon={<CloseOutlined />}>Cancel Request</Button>,
+  //       ]}
+  //     >
+  //       {selectedRequest && (
+  //         <>
+  //           <div className="request-details-container" style={{ justifyContent: 'space-between' }}>
+  //             <strong style={{ fontSize: '18px', color: 'white' }}>Request Details</strong>
+  //             {/* <span style={{ fontSize: 12, color: 'white' }}>{selectedRequest?.id}</span> */}
+  //           </div>
+  //           <div className="request-details-whole">
+  //             <div className="request-details-left">
+  //               <div><p><strong>Requester:</strong></p><p>{selectedRequest.requester}</p></div>
+  //               <div><p><strong>Requisition Date:</strong></p><p>{selectedRequest.dateRequested}</p></div>
+  //               <div><p><strong>Date Required:</strong></p><p>{selectedRequest.dateRequired}</p></div>
+  //               <div><p><strong>Time Needed:</strong></p><p>{selectedRequest.timeNeeded}</p></div>
+  //             </div>
+  //             <div className="request-details-right">
+  //               <div><p><strong>Course Code:</strong></p><p>{selectedRequest.courseCode}</p></div>
+  //               <div><p><strong>Course Description:</strong></p><p>{selectedRequest.requester}</p></div>
+  //               <div><p><strong>Room:</strong></p><p>{selectedRequest.room}</p></div>
+  //               <div><p><strong>Usage Type:</strong></p><p>{selectedRequest.usageType}</p></div>
+  //             </div>
+  //           </div>
+  //           <div className="details-table">
+  //             <Title level={5}>Requested Items:</Title>
+  //             <Table
+  //               columns={itemColumns}
+  //               dataSource={selectedRequest.items}
+  //               rowKey={(_, index) => index}
+  //               size="small"
+  //               pagination={false}
+  //             />
+  //             <br />
+  //             <p style={{ marginBottom: '30px' }}><strong>Note:</strong> {selectedRequest.message || "No message provided."}</p>
+  //           </div>
+  //         </>
+  //       )}
+  //     </Modal>
 
-      <Modal
-        title="Confirm Cancellation"
-        open={isCancelVisible}
-        onCancel={() => setIsCancelVisible(false)}
-        onOk={handleCancelRequest}
-        zIndex={1009}
-        okText="Yes, Cancel"
-        cancelText="No"
-      >
-        <p>Are you sure you want to cancel this request?</p>
-      </Modal>
-    </Content>
-  );
+  //     <Modal
+  //       title="Confirm Cancellation"
+  //       open={isCancelVisible}
+  //       onCancel={() => setIsCancelVisible(false)}
+  //       onOk={handleCancelRequest}
+  //       zIndex={1009}
+  //       okText="Yes, Cancel"
+  //       cancelText="No"
+  //     >
+  //       <p>Are you sure you want to cancel this request?</p>
+  //     </Modal>
+  //   </Content>
+  // );
+
+  const getUsageIcon = (usageType) => {
+  switch (usageType) {
+    case "Research":
+      return <FileSearchOutlined style={{ fontSize: 20 }} />;
+    case "Laboratory Experiment":
+      return <ExperimentOutlined style={{ fontSize: 20 }} />;
+    case "Community Extension":
+      return <TeamOutlined style={{ fontSize: 20 }} />;
+    case "Others":
+    default:
+      return <AppstoreAddOutlined style={{ fontSize: 20 }} />;
+  }
+};
+
+const renderPendingTab = () => (
+  <Content className="pending-content">
+    <div style={{display: 'flex', gap: 10, alignItems: 'flex-start'}}>
+    <ClockCircleOutlined style={{fontSize: 28, color: '#66b6d2', paddingTop: 10}}/>
+
+    <div>
+      <h1 style={{ color:'#66b6d2', margin: 0, padding: 0, textDecoration: 'none'}}>Pending Requisitions</h1>
+      <p>Please wait for your requisitions to be approved by the stockroom personnels or laboratory technicians.</p>
+      </div>
+      </div>
+    {loading ? (
+      <Spin size="large" />
+    ) : (
+      <div className="pending-cards">
+        {requests
+          .filter((item) =>
+            item.requester.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            item.usageType.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.courseDescription?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+          )
+          .map((item) => (
+            <div
+              key={item.id}
+              className="request-card"
+              onClick={() => {
+                setSelectedRequest(item);
+                setViewDetailsModalVisible(true);
+              }}
+              style={{
+                border: "1px solid #e0e0e0",
+                borderRadius: "12px",
+                padding: "16px",
+                marginBottom: "16px",
+                boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                cursor: "pointer",
+                transition: "0.2s ease-in-out",
+                display: 'flex',  
+                flexDirection: 'column',
+       
+              }}
+            >
+
+           
+              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #e1e1e1', paddingBottom: 10}}>
+              <p style={{fontWeight: 'bold', backgroundColor: 'orange', margin: 0,paddingTop: 4, paddingBottom: 4, paddingLeft: 10, paddingRight: 10, color: 'white', borderRadius: 3, fontSize: 15}}>PENDING</p>
+              <p style={{padding: 0, margin: 0, fontSize: 15, fontWeight: 300}}> Date Submitted: {item.dateRequested} </p>
+              </div> 
+
+              <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 10, marginTop: 10 }}>
+                {getUsageIcon(item.usageType)}
+                <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.usageType}</h3>
+              </div>
+
+              <div style={{display: 'flex', justifyContent: 'space-between', padding: 10, backgroundColor: '#e9f5f9', borderRadius: 7, paddingBottom: 0}}>
+                <div>     
+              <p><strong>Requester:</strong> {item.requester}</p>
+              <p><strong>Date Required:</strong> {item.dateRequired}</p>
+              
+              {/* <p><strong>Usage Type:</strong> {item.courseCode} - {item.courseDescription}</p> */}
+              </div>
+
+              <div>
+                <p><strong>Time Needed:</strong> {item.timeNeeded}</p>
+                <p><strong>Room:</strong> {item.room}</p>
+              </div>
+
+              <div style={{ width: 250}}>
+              {item.items && item.items.length > 0 && (
+                  <div>
+                    <strong>Requested Items:</strong>
+                    <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+                      {item.items.map((reqItem, idx) => (
+                        <li key={idx}>
+                          {reqItem.itemName} ({reqItem.quantity})
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                </div>
+                </div>
+                          </div>
+          ))}
+          
+      </div>
+    )}
+
+    {/* Request Details Modal */}
+    <Modal
+      className="request-list-modal"
+      open={viewDetailsModalVisible}
+      onCancel={handleModalClose}
+      width={800}
+      zIndex={1008}
+      closable={false}
+      footer={[
+        <Button key="close" onClick={handleModalClose}>Close</Button>,
+        <Button
+          key="cancel"
+          danger
+          onClick={() => setIsCancelVisible(true)}
+          icon={<CloseOutlined />}
+        >
+          Cancel Request
+        </Button>,
+      ]}
+    >
+      {selectedRequest && (
+        <>
+          <div
+            className="request-details-container"
+            style={{ justifyContent: "space-between" }}
+          >
+            <strong style={{ fontSize: "18px", color: "white" }}>Request Details</strong>
+          </div>
+          <div className="request-details-whole">
+            <div className="request-details-left">
+              <div><p><strong>Requester:</strong></p><p>{selectedRequest.requester}</p></div>
+              <div><p><strong>Requisition Date:</strong></p><p>{selectedRequest.dateRequested}</p></div>
+              <div><p><strong>Date Required:</strong></p><p>{selectedRequest.dateRequired}</p></div>
+              <div><p><strong>Time Needed:</strong></p><p>{selectedRequest.timeNeeded}</p></div>
+            </div>
+            <div className="request-details-right">
+              <div><p><strong>Course Code:</strong></p><p>{selectedRequest.courseCode}</p></div>
+              <div><p><strong>Course Description:</strong></p><p>{selectedRequest.courseDescription}</p></div>
+              <div><p><strong>Room:</strong></p><p>{selectedRequest.room}</p></div>
+              <div><p><strong>Usage Type:</strong></p><p>{selectedRequest.usageType}</p></div>
+            </div>
+          </div>
+          <div className="details-table">
+            <Title level={5}>Requested Items:</Title>
+            <Table
+              columns={itemColumns}
+              dataSource={selectedRequest.items}
+              rowKey={(_, index) => index}
+              size="small"
+              pagination={false}
+            />
+            <br />
+            <p style={{ marginBottom: "30px" }}>
+              <strong>Note:</strong> {selectedRequest.message || "No message provided."}
+            </p>
+          </div>
+        </>
+      )}
+    </Modal>
+
+    {/* Cancel Request Modal */}
+    <Modal
+      title="Confirm Cancellation"
+      open={isCancelVisible}
+      onCancel={() => setIsCancelVisible(false)}
+      onOk={handleCancelRequest}
+      zIndex={1009}
+      okText="Yes, Cancel"
+      cancelText="No"
+    >
+      <p>Are you sure you want to cancel this request?</p>
+    </Modal>
+  </Content>
+);
+
 
 // Assuming you only need Approved requests
+// const renderApprovedTab = () => {
+//   const approvedData = filteredData.filter((item) => item.action === 'Request Approved');
+
+//   return (
+//     <Content className="approved-content">
+//       {loading ? (
+//         <Spin size="large" />
+//       ) : (
+//         <Table
+//           columns={columns2}
+//           dataSource={approvedData}
+//           pagination={{ pageSize: 10 }}
+//           rowKey="id"
+//           bordered
+//           onRow={(record) => ({
+//             onClick: () => handleRowClick(record), // Make the row clickable
+//           })}
+//           locale={{
+//             emptyText: (
+//               <div className="empty-row">
+//                 <span>No activity found.</span>
+//               </div>
+//             ),
+//           }}
+//         />
+//       )}
+//     </Content>
+//   );
+// };
+
 const renderApprovedTab = () => {
-  const approvedData = filteredData.filter((item) => item.action === 'Request Approved');
+  const approvedData = filteredData.filter((item) => item.action === "Request Approved");
 
   return (
-    <Content className="approved-content">
+    <Content className="pending-content">
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 20 }}>
+        <LikeOutlined style={{ fontSize: 28, color: "#66b6d2", paddingTop: 10 }} />
+        <div>
+          <h1 style={{ color: "#66b6d2", margin: 0, padding: 0, textDecoration: "none" }}>
+            Approved Requisitions
+          </h1>
+          <p>These requisitions have already been approved by the stockroom personnels/laboratory technicians.</p>
+        </div>
+      </div>
+
       {loading ? (
         <Spin size="large" />
       ) : (
-        <Table
-          columns={columns2}
-          dataSource={approvedData}
-          pagination={{ pageSize: 10 }}
-          rowKey="id"
-          bordered
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record), // Make the row clickable
-          })}
-          locale={{
-            emptyText: (
-              <div className="empty-row">
-                <span>No activity found.</span>
+        <div className="approved-cards">
+          {approvedData.length > 0 ? (
+            approvedData.map((item) => (
+              <div
+                key={item.id}
+                // className="approved-card"
+                onClick={() => handleRowClick(item)}
+                style={{
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "12px",
+                  padding: "16px",
+                  marginBottom: "16px",
+                  boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                  cursor: "pointer",
+                  transition: "0.2s ease-in-out",
+                  display: "flex",
+                  flexDirection: "column",
+                }}
+              >
+                {/* Status + Date */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    borderBottom: "1px solid #e1e1e1",
+                    paddingBottom: 10,
+                  }}
+                >
+                  <p
+                    style={{
+                      fontWeight: "bold",
+                      backgroundColor: "#0f3c4c",
+                      margin: 0,
+                      paddingTop: 4,
+                      paddingBottom: 4,
+                      paddingLeft: 10,
+                      paddingRight: 10,
+                      color: "white",
+                      borderRadius: 3,
+                      fontSize: 15,
+                    }}
+                  >
+                    APPROVED
+                  </p>
+                  <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
+                    Date Approved: {item.dateApproved || item.dateRequested}
+                  </p>
+                </div>
+
+                {/* Usage Type */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 5,
+                    marginBottom: 10,
+                    marginTop: 10,
+                  }}
+                >
+                  {getUsageIcon(item.usageType)}
+                  <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.usageType}</h3>
+                </div>
+
+                {/* Info Section */}
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    padding: 10,
+                    backgroundColor: "#e9f5f9",
+                    borderRadius: 7,
+                    paddingBottom: 0,
+                  }}
+                >
+                  <div>
+                    <p>
+                      <strong>Requester:</strong> {item.requester}
+                    </p>
+                    <p>
+                      <strong>Date Required:</strong> {item.dateRequired}
+                    </p>
+                  </div>
+
+                  <div>
+                    <p>
+                      <strong>Time Needed:</strong> {item.timeNeeded}
+                    </p>
+                    <p>
+                      <strong>Room:</strong> {item.room}
+                    </p>
+                  </div>
+
+<div style={{ width: 250 }}>
+  {item.requestList && item.requestList.length > 0 && (
+    <div>
+      <strong>Requested Items:</strong>
+      <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+        {item.requestList.map((req, idx) => (
+          <li key={idx}>
+            {req.itemName} - {req.department}
+            <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: 13 }}>
+            </ul>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )}
+</div>
+
+                </div>
               </div>
-            ),
-          }}
-        />
+            ))
+          ) : (
+            <div className="empty-row">
+              <span>No approved requisitions found.</span>
+            </div>
+          )}
+        </div>
       )}
     </Content>
   );
 };
+
 
 const renderDeployedTab = () => {
   const deployedData = filteredData.filter((item) => item.action === 'Deployed');
@@ -897,7 +1218,7 @@ const ProcessedTab = () => {
           Step 1: Pending
         </>
       ),
-      children: renderPendingTab(),  // This will render your Pending tab content
+      children: renderPendingTab(),  
     },
     {
       key: "approved",
