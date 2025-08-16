@@ -212,12 +212,13 @@ const RestockRequest = () => {
           </Col>
         </Row>
 
-        <Row className="filter-row" gutter={16}>
-          <Col span={6}>
+        <Row className="filter-row">
+          <Col>
             <Select
               className="filter-select"
+              style={{ width: 150, marginRight: 8 }} // add small space between filters
               placeholder="Filter by Status"
-              value={filterStatus || ""}
+              value={filterStatus === "" ? undefined : filterStatus}
               onChange={(value) => setFilterStatus(value)}
               allowClear
             >
@@ -228,11 +229,12 @@ const RestockRequest = () => {
             </Select>
           </Col>
 
-          <Col span={6}>
+          <Col>
             <Select
               className="filter-select"
+              style={{ width: 200 }}
               placeholder="Filter by Department"
-              value={filterDepartment || ""}
+              value={filterDepartment === "" ? undefined : filterDepartment}
               onChange={(value) => setFilterDepartment(value)}
               allowClear
             >
