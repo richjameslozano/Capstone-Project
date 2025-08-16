@@ -44,8 +44,8 @@ const PendingRequest = () => {
 const sanitizeInput = (input) =>
   input
 
-    .replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
-    .replace(/[^a-z0-9 \-.,()]/g, ""); // remove unwanted characters
+    .replace(/\s+/g, " ")         
+    .replace(/[^a-z0-9 \-.,()]/g, "");
 
 
 const [selectedFilter, setSelectedFilter] = useState('All');
@@ -411,6 +411,7 @@ const getCollegeByDepartment = async (departmentName) => {
         approvedBy: userName,
         reason: selectedRequest.reason || "No reason provided",
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const rejectLogEntry = {
@@ -429,6 +430,7 @@ const getCollegeByDepartment = async (departmentName) => {
         rejectedBy: userName,
         reason: rejectionReason || "No reason provided",
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const logRequestOrReturn = async (
@@ -465,6 +467,7 @@ const getCollegeByDepartment = async (departmentName) => {
           timeTo: selectedRequest.timeTo || "N/A",
           timestamp: selectedRequest.timestamp || "N/A",
           rawTimestamp: new Date(),
+          usageType: selectedRequest.usageType || "N/A",  
         }
       );
   
@@ -487,6 +490,7 @@ const getCollegeByDepartment = async (departmentName) => {
             timeTo: selectedRequest.timeTo || "N/A",
             timestamp: selectedRequest.timestamp || "N/A",
             rawTimestamp: new Date(),
+            usageType: selectedRequest.usageType || "N/A",  
           }
         );
       }
@@ -1403,6 +1407,7 @@ try {
         approvedBy: userName,
         reason: selectedRequest.reason || "No reason provided",
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const rejectLogEntry = {
@@ -1420,6 +1425,7 @@ try {
         status: "Rejected",
         rejectedBy: userName,
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const logRequestOrReturn = async (
@@ -1460,6 +1466,7 @@ try {
             timeTo: selectedRequest.timeTo || "N/A",
             timestamp: selectedRequest.timestamp || "N/A",
             rawTimestamp: new Date(),
+            usageType: selectedRequest.usageType || "N/A",  
           }
         );
       }
@@ -1483,6 +1490,7 @@ try {
             timeTo: selectedRequest.timeTo || "N/A",
             timestamp: selectedRequest.timestamp || "N/A",
             rawTimestamp: new Date(),
+            usageType: selectedRequest.usageType || "N/A",  
           }
         );
       }
@@ -2722,6 +2730,7 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
       approvedBy: userName, 
       reason: selectedRequest.reason || "No reason provided",
       program: selectedRequest.program,
+      usageType: selectedRequest.usageType || "N/A",  
     };
 
     const rejectLogEntry = {
@@ -2738,8 +2747,9 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
       requestList: rejectedItems, 
       status: "Rejected", 
       rejectedBy: userName, 
-      reason: rejectionReason || "No reason provided",  // Use the rejection reason from the input prompt
+      reason: rejectionReason || "No reason provided",  
       program: selectedRequest.program,
+      usageType: selectedRequest.usageType || "N/A",  
     };
 
     // Log approved items in historylog subcollection
@@ -2777,6 +2787,7 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
         timeTo: selectedRequest.timeTo || "N/A",  
         timestamp: selectedRequest.timestamp || "N/A",
         rawTimestamp: new Date(),
+        usageType: selectedRequest.usageType || "N/A",  
       }
     );
 
@@ -2799,6 +2810,7 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
           timeTo: selectedRequest.timeTo || "N/A",  
           timestamp: selectedRequest.timestamp || "N/A",
           rawTimestamp: new Date(),
+          usageType: selectedRequest.usageType || "N/A",  
         }
       );
     }
@@ -2875,9 +2887,6 @@ try {
             'condition.Defect': newDefect,
             'condition.Lost' : newLost,
           });
-
-         
-           
 
           // 🔁 Update labRoom item quantity
           const roomNumber = item.labRoom; // e.g. "0930"
