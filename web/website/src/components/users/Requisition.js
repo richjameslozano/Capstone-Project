@@ -2302,7 +2302,15 @@ const Requisition = () => {
                   <DatePicker
                     value={dateRequired ? dayjs(dateRequired, "YYYY-MM-DD") : null}
                     onChange={(date, dateString) => setDateRequired(dateString)}
-                    disabledDate={(current) => current && current < moment().startOf("day")}
+                    disabledDate={(current) => {
+                      const today = moment().startOf('day');
+                      const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
+                      return (
+                        current && (
+                          current < today || current > threeWeeksFromNow
+                        )
+                      );
+                    }}
                     style={{
                       width: "100%",
                       marginTop: "8px",
@@ -2316,7 +2324,7 @@ const Requisition = () => {
                   )}
                 </div>
 
-                                  <div className="program-container">
+                  <div className="program-container">
                     <strong>Program:</strong>
                     <select
                       value={program}
