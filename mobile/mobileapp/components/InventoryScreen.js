@@ -93,7 +93,11 @@ export default function InventoryScreen({ navigation }) {
           StatusBar.setTranslucent(true)
     }, [])
   );
-   
+
+  const threeWeeksLaterDate = new Date();
+  threeWeeksLaterDate.setDate(threeWeeksLaterDate.getDate() + 21);
+  const maxDate = threeWeeksLaterDate.toISOString().split('T')[0]
+    
   // VERSION NI BERLENE NO DATE EXPIRY CONDITION
   // useEffect(() => {
   //   const inventoryCollection = collection(db, 'inventory');  
@@ -841,6 +845,32 @@ export default function InventoryScreen({ navigation }) {
       </TouchableOpacity>
 
       {/* Modal with Calendar */}
+      {/* <Modal
+        animationType="fade"
+        transparent={true}
+        visible={calendarVisible}
+        onRequestClose={() => setCalendarVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Calendar
+              onDayPress={(day) => {
+                setSelectedDate(day.dateString);
+                setCalendarVisible(false);
+                setMetadata((prev) => ({ ...prev, dateRequired: day.dateString }));
+              }}
+              markedDates={{
+                [selectedDate]: { selected: true, selectedColor: '#00796B' }
+              }}
+              minDate={today}
+            />
+            <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.closeButton}>
+              <Text style={{ color: 'white' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal> */}
+
       <Modal
         animationType="fade"
         transparent={true}
@@ -859,6 +889,7 @@ export default function InventoryScreen({ navigation }) {
                 [selectedDate]: { selected: true, selectedColor: '#00796B' }
               }}
               minDate={today}
+              maxDate={maxDate}
             />
             <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.closeButton}>
               <Text style={{ color: 'white' }}>Close</Text>
