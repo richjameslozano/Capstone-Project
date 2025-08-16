@@ -829,7 +829,7 @@ const CapexRequest = () => {
             </Form>
           </Modal>
 
-          <div style={{ marginTop: "50px" }}>
+          <div style={{ marginTop: "30px" }}>
             <h2>Submitted CAPEX History</h2>
             <Select
               value={subjectFilter}
