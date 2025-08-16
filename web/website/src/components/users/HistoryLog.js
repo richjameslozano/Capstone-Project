@@ -13,7 +13,7 @@ import {
   theme,
   Steps
 } from "antd";
-import { AppstoreAddOutlined, ArrowRightOutlined, CloseOutlined, ExpandAltOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, SearchOutlined, TeamOutlined } from "@ant-design/icons";
+import { AppstoreAddOutlined, ArrowRightOutlined, CloseOutlined, ExpandAltOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, MessageOutlined, RocketOutlined, SearchOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
@@ -607,11 +607,11 @@ const sanitizeInput = (input) =>
 const renderPendingTab = () => (
   <Content className="pending-content">
     <div style={{display: 'flex', gap: 10, alignItems: 'flex-start'}}>
-    <ClockCircleOutlined style={{fontSize: 28, color: '#66b6d2', paddingTop: 10}}/>
+    <ClockCircleOutlined style={{fontSize: 28, color: 'orange', paddingTop: 10}}/>
 
     <div>
-      <h1 style={{ color:'#66b6d2', margin: 0, padding: 0, textDecoration: 'none'}}>Pending Requisitions</h1>
-      <p>Please wait for your requisitions to be approved by the stockroom personnels or laboratory technicians.</p>
+      <h1 style={{ color:'orange', margin: 0, padding: 0, textDecoration: 'none'}}>Pending Requisitions</h1>
+      <p>Please wait for your requisitions to be approved by the stockroom personnels/laboratory technicians.</p>
       </div>
       </div>
     {loading ? (
@@ -804,10 +804,10 @@ const renderApprovedTab = () => {
 
   return (
     <Content className="pending-content">
-      <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 20 }}>
-        <LikeOutlined style={{ fontSize: 28, color: "#66b6d2", paddingTop: 10 }} />
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
+        <LikeOutlined style={{ fontSize: 28, color: "#0f3c4c", paddingTop: 10 }} />
         <div>
-          <h1 style={{ color: "#66b6d2", margin: 0, padding: 0, textDecoration: "none" }}>
+          <h1 style={{ color: "#0f3c4c", margin: 0, padding: 0, textDecoration: "none" }}>
             Approved Requisitions
           </h1>
           <p>These requisitions have already been approved by the stockroom personnels/laboratory technicians.</p>
@@ -822,7 +822,7 @@ const renderApprovedTab = () => {
             approvedData.map((item) => (
               <div
                 key={item.id}
-                // className="approved-card"
+               className="request-card"
                 onClick={() => handleRowClick(item)}
                 style={{
                   border: "1px solid #e0e0e0",
@@ -894,7 +894,7 @@ const renderApprovedTab = () => {
                 >
                   <div>
                     <p>
-                      <strong>Requester:</strong> {item.requester}
+                      <strong>Requester:</strong> {item.fullData.userName}
                     </p>
                     <p>
                       <strong>Date Required:</strong> {item.dateRequired}
@@ -903,7 +903,7 @@ const renderApprovedTab = () => {
 
                   <div>
                     <p>
-                      <strong>Time Needed:</strong> {item.timeNeeded}
+                      <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
                     </p>
                     <p>
                       <strong>Room:</strong> {item.room}
@@ -943,60 +943,290 @@ const renderApprovedTab = () => {
 
 
 const renderDeployedTab = () => {
-  const deployedData = filteredData.filter((item) => item.action === 'Deployed');
-
+  const deployedData = filteredData.filter((item) => item.action === "Deployed");
+console.log(deployedData);
   return (
-    <Content className="deployed-content">
+    <Content className="pending-content">
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
+        <SendOutlined style={{ fontSize: 28, color: "#66b6d2", paddingTop: 10 }} />
+        <div>
+          <h1 style={{ color: "#66b6d2", margin: 0, padding: 0, textDecoration: "none" }}>
+            Deployed Requisitions
+          </h1>
+          <p>Please return the borrowed items to the stockroom and proceed to the "Return Items" page to complete this requisition.</p>
+        </div>
+      </div>
+
       {loading ? (
         <Spin size="large" />
       ) : (
-        <Table
-          columns={columns2}
-          dataSource={deployedData}
-          pagination={{ pageSize: 10 }}
-          rowKey="id"
-          bordered
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record), // Make the row clickable
-          })}
-          locale={{
-            emptyText: (
-              <div className="empty-row">
-                <span>No activity found.</span>
-              </div>
-            ),
-          }}
-        />
+        <div className="approved-cards">
+          {deployedData.length > 0 ? (
+            deployedData.map((item, index) => {
+              console.log(item); // Debugging the structure of each item
+              return (
+                <div
+                  key={item.id || index} // Fallback to index if id is not unique
+                  className="request-card"
+                  onClick={() => handleRowClick(item)}
+                  style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "12px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                    cursor: "pointer",
+                    transition: "0.2s ease-in-out",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Status + Date */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderBottom: "1px solid #e1e1e1",
+                      paddingBottom: 10,
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: "bold",
+                        backgroundColor: "#2596be",
+                        margin: 0,
+                        paddingTop: 4,
+                        paddingBottom: 4,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        color: "white",
+                        borderRadius: 3,
+                        fontSize: 15,
+                      }}
+                    >
+                      DEPLOYED
+                    </p>
+                    <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
+                      Date Approved: {item.dateApproved || item.dateRequested}
+                    </p>
+                  </div>
+
+                  {/* Usage Type */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      marginBottom: 10,
+                      marginTop: 10,
+                    }}
+                  >
+                    {getUsageIcon(item.usageType)}
+                    <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.usageType}</h3>
+                  </div>
+
+                  {/* Info Section */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: 10,
+                      backgroundColor: "#e9f5f9",
+                      borderRadius: 7,
+                      paddingBottom: 0,
+                    }}
+                  >
+                    <div key={index}>
+                      <p>
+                        <strong>Requester:</strong> {item.fullData.userName}
+                      </p>
+                      <p>
+                        <strong>Date Required:</strong> {item.dateRequired}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p>
+                    <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
+                      </p>
+                      <p>
+                        <strong>Room:</strong> {item.room}
+                      </p>
+                    </div>
+
+                    <div style={{ width: 250 }}>
+                      {item.requestList && item.requestList.length > 0 && (
+                        <div>
+                          <strong>Requested Items:</strong>
+                          <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+                            {item.requestList.map((req, idx) => (
+                              <li key={idx}>
+                                {req.itemName} - {req.department}
+                                <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: 13 }}></ul>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="empty-row">
+              <span>No approved requisitions found.</span>
+            </div>
+          )}
+        </div>
       )}
     </Content>
   );
 };
 
-const renderReturnedTab = () => {
-  const deployedData = filteredData.filter((item) => item.action === 'Returned');
 
+const renderReturnedTab = () => {
+  const returnedData = filteredData.filter((item) => item.action === 'Returned');
+
+console.log(returnedData);
   return (
-    <Content className="deployed-content">
+    <Content className="pending-content">
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
+        <CheckCircleOutlined style={{ fontSize: 28, color: "#37c225ff", paddingTop: 10 }} />
+        <div>
+          <h1 style={{ color: "#37c225ff", margin: 0, padding: 0, textDecoration: "none" }}>
+            Completed Requisitions
+          </h1>
+          <p>Please return the borrowed items to the stockroom and proceed to the "Return Items" page to complete this requisition.</p>
+        </div>
+      </div>
+
       {loading ? (
         <Spin size="large" />
       ) : (
-        <Table
-          columns={columns2}
-          dataSource={deployedData}
-          pagination={{ pageSize: 10 }}
-          rowKey="id"
-          bordered
-          onRow={(record) => ({
-            onClick: () => handleRowClick(record), // Make the row clickable
-          })}
-          locale={{
-            emptyText: (
-              <div className="empty-row">
-                <span>No activity found.</span>
-              </div>
-            ),
-          }}
-        />
+        <div className="approved-cards">
+          {returnedData.length > 0 ? (
+            returnedData.map((item, index) => {
+              console.log(item); // Debugging the structure of each item
+              return (
+                <div
+                  key={item.id || index} // Fallback to index if id is not unique
+                  className="request-card"
+                  onClick={() => handleRowClick(item)}
+                  style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "12px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                    cursor: "pointer",
+                    transition: "0.2s ease-in-out",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Status + Date */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderBottom: "1px solid #e1e1e1",
+                      paddingBottom: 10,
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: "bold",
+                        backgroundColor: "#37c225ff",
+                        margin: 0,
+                        paddingTop: 4,
+                        paddingBottom: 4,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        color: "white",
+                        borderRadius: 3,
+                        fontSize: 15,
+                      }}
+                    >
+                      COMPLETED
+                    </p>
+                    <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
+                      Date Approved: {item.dateApproved || item.dateRequested}
+                    </p>
+                  </div>
+
+                  {/* Usage Type */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      marginBottom: 10,
+                      marginTop: 10,
+                    }}
+                  >
+                    {getUsageIcon(item.usageType)}
+                    <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.usageType}</h3>
+                  </div>
+
+                  {/* Info Section */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: 10,
+                      backgroundColor: "#e9f5f9",
+                      borderRadius: 7,
+                      paddingBottom: 0,
+                    }}
+                  >
+                    <div key={index}>
+                      <p>
+                        <strong>Requester:</strong> {item.fullData.userName}
+                      </p>
+                      <p>
+                        <strong>Date Required:</strong> {item.dateRequired}
+                      </p>
+                    </div>
+
+                    <div>
+                      <p>
+                    <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
+                      </p>
+                      <p>
+                        <strong>Room:</strong> {item.room}
+                      </p>
+                    </div>
+
+                    <div style={{ width: 250 }}>
+                      {item.requestList && item.requestList.length > 0 && (
+                        <div>
+                          <strong>Requested Items:</strong>
+                          <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+                            {item.requestList.map((req, idx) => (
+                              <li key={idx}>
+                                {req.itemName} - {req.department}
+                                <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: 13 }}></ul>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="empty-row">
+              <span>No approved requisitions found.</span>
+            </div>
+          )}
+        </div>
       )}
     </Content>
   );
