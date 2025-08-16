@@ -972,7 +972,35 @@ const renderDeployedTab = () => {
   );
 };
 
+const renderReturnedTab = () => {
+  const deployedData = filteredData.filter((item) => item.action === 'Returned');
 
+  return (
+    <Content className="deployed-content">
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <Table
+          columns={columns2}
+          dataSource={deployedData}
+          pagination={{ pageSize: 10 }}
+          rowKey="id"
+          bordered
+          onRow={(record) => ({
+            onClick: () => handleRowClick(record), // Make the row clickable
+          })}
+          locale={{
+            emptyText: (
+              <div className="empty-row">
+                <span>No activity found.</span>
+              </div>
+            ),
+          }}
+        />
+      )}
+    </Content>
+  );
+};
 
 const ProcessedTab = () => {
   const [activeTab, setActiveTab] = useState('APPROVED');
@@ -1228,7 +1256,7 @@ const ProcessedTab = () => {
           Step 2: Approved
         </>
       ),
-      children: renderApprovedTab(),  // This will render the Approved data
+      children: renderApprovedTab(),  
     },
     {
       key: 'deployed',
@@ -1248,7 +1276,7 @@ const ProcessedTab = () => {
         Step 4: Completed
         </>
       ),
-
+      children: renderReturnedTab(),
     },
   ]}
 />
