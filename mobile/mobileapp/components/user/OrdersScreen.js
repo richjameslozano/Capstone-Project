@@ -328,6 +328,14 @@ const filteredApproved = activityData
     items: req.items || req.requestList || [] // ensure array exists
   }));
 
+  const filteredReturned = activityData
+  .filter(req => req.action === 'Returned')
+  .map(req => ({
+    ...req,
+    action: 'DEPLOYED', // just for UI
+    items: req.items || req.requestList || [] // ensure array exists
+  }));
+
   const renderPending = ({ item }) => (
     <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
       <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
@@ -657,16 +665,19 @@ const renderDeployed = ({ item }) => {
       <Icon name={activePage ===0 ? "clock": "clock-outline"} size={20} color="#165a72" />
       <Text style={styles.timeText}>Pending</Text>
     </TouchableOpacity>
+
     <TouchableOpacity style={[styles.timelineBtn, activePage === 1 && styles.activeBtn]}
     onPress={()=>handleButtonPress(1)}>
       <Icon name={activePage ===1  ? "thumb-up":"thumb-up-outline"} size={20} color="#165a72" />
       <Text style={styles.timeText}>Approved</Text>
     </TouchableOpacity>
+
     <TouchableOpacity style={[styles.timelineBtn, activePage === 2 && styles.activeBtn]}
     onPress={()=>handleButtonPress(2)}>
       <Icon name={activePage === 2 ? "send":"send-outline"} size={20} color="#165a72" />
       <Text style={styles.timeText}>Deployed</Text>
     </TouchableOpacity>
+
     <TouchableOpacity style={[styles.timelineBtn, activePage === 3 && styles.activeBtn]}
     onPress={()=>handleButtonPress(3)}>
       <Icon name="check-circle-outline" size={20} color="#165a72" />
@@ -809,6 +820,7 @@ const renderDeployed = ({ item }) => {
           renderItem={renderItem}
           contentContainerStyle={styles.listContainer}
         />
+
         </View>
 
           {/* <View style={[styles.searchFilter]}>
@@ -995,8 +1007,21 @@ const renderDeployed = ({ item }) => {
         </View>
       </View>
 
+      <View key="4" style={styles.page}>
+                  <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='send-outline' size={23} color='#6abce2'/>
+                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Completed Orders</Text>
+                  </View>
 
-
+        <FlatList
+          data={filteredReturned} // Approved items from the right collection
+          keyExtractor={(item) => item.id || item.key || Math.random().toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+        </View>
+      </View>
       </PagerView>
 </View>
 
