@@ -2839,7 +2839,14 @@ useEffect(() => {
                       </tr>
                     </tbody>
                   </table> */}
-                  <StockLog inventoryDocId={selectedRow?.docId} />
+                  {/* <StockLog inventoryDocId={selectedRow?.docId} /> */}
+
+                    <StockLog 
+                        inventoryDocId={selectedRow?.docId}
+                        editingItem={editingItem || selectedRow}  
+                        setDataSource={setDataSource}
+                    />
+
                   </div>
               </div>
             )}
