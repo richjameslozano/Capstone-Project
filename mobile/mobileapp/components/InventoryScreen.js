@@ -665,7 +665,7 @@ export default function InventoryScreen({ navigation }) {
     <View style={styles.container}>
       
       <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
+        {/* <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
         }}>
               <TouchableOpacity onPress={!isComplete ? () => navigation.goBack(): ()=> setIsComplete(false)} style={styles.backButton}>
                 <Icon name="keyboard-backspace" size={28} color="white" />
@@ -677,7 +677,38 @@ export default function InventoryScreen({ navigation }) {
               <TouchableOpacity style={{padding: 2}}>
                 <Icon name="dots-vertical" size={24} color="#fff" />
               </TouchableOpacity>
+          </View> */}
+
+          <View 
+            style={{
+              flexDirection: 'row',
+              justifyContent: 'space-between',
+              width: '100%',
+              paddingHorizontal: 15,
+              paddingBottom: 10,
+              alignItems: 'center',
+            }}
+          >
+            <TouchableOpacity 
+              onPress={!isComplete ? () => navigation.goBack() : () => setIsComplete(false)} 
+              style={styles.backButton}
+            >
+              <Icon name="keyboard-backspace" size={28} color="white" />
+            </TouchableOpacity>
+
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 17, color: 'white' }}>
+                Requisition Slip
+              </Text>
+              <Text style={{ color: 'white', fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+                Request Items
+              </Text>
+            </View>
+
+            {/* Placeholder to balance back button width */}
+            <View style={{ width: 28 }} />
           </View>
+          
           {!isComplete && (<Text style={styles.inst}>Please fill in the required information to proceed.</Text>)}
             </View>
 
@@ -759,10 +790,11 @@ export default function InventoryScreen({ navigation }) {
                 setCourseDescription(courseMap[itemValue]); 
               }}
               style={{
-                color: course ? 'white' : 'black', // White when selected, black when placeholder
+                color: 'white', // White when selected, black when placeholder
               }}
             >
-              <Picker.Item label="Select Course Code" value="" />
+              <Picker.Item label="Select Course Code" value="" color="white" />
+
               {Object.entries(courseMap).map(([code, desc]) => (
                 <Picker.Item key={code} label={code} value={code} />
               ))}

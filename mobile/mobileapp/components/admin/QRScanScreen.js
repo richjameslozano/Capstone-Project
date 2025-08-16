@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, ActivityIndicator, StatusBar, ImageBackgr
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
+import { useAuth } from "../contexts/AuthContext";
 import styles from "../styles/adminStyle/QRScanStyle";
 import Header from "../Header";
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -12,6 +13,7 @@ const QRScanScreen = () => {
   const navigation = useNavigation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
 
     const [headerHeight, setHeaderHeight] = useState(0);
       const handleHeaderLayout = (event) => {
@@ -105,12 +107,18 @@ const QRScanScreen = () => {
         <Text style={styles.buttonText}>Update Stock Item</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={styles.button}
         onPress={handleDeployReturnStock}
       >
         <Text style={styles.buttonText}>Deploy / Return Items</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
+
+          {user?.role !== "admin" && user?.role !== "admin1" && user?.role !== "admin2" && (
+            <TouchableOpacity style={styles.button} onPress={handleDeployReturnStock}>
+              <Text style={styles.buttonText}>Deploy / Return Items</Text>
+            </TouchableOpacity>
+          )}
       </View>
 
       {/* List of Inventory Items */}

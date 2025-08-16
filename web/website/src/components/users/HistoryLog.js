@@ -20,6 +20,8 @@ import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
 import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import StickyBox from 'react-sticky-box';
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const { Option } = Select; 
 const { Content } = Layout;
@@ -48,6 +50,33 @@ const columns2 = [
     className: "table-header",
     align: "center",
   },
+  {
+    title: "Date Required",
+    dataIndex: "dateRequired",
+    key: "dateRequired",
+    className: "table-header",
+    align: "center",
+    render: (value) => value || "N/A", 
+  },
+  {
+    title: "Items Requested",
+    dataIndex: "itemsRequested",
+    key: "itemsRequested",
+    className: "table-header",
+    align: "center",
+    render: (items) =>
+      Array.isArray(items) && items.length > 0 ? (
+        <ul style={{ listStyleType: "disc", paddingLeft: 20, textAlign: "left" }}>
+          {items.map((item, idx) => (
+            <li key={idx}>
+              {item.itemName} ({item.quantity})
+            </li>
+          ))}
+        </ul>
+      ) : (
+        "N/A"
+      ),
+  }
 ];
 
 const HistoryLog = () => {
@@ -272,28 +301,88 @@ const sanitizeInput = (input) =>
     },
   ];
 
+  // useEffect(() => {
+  //   const userId = localStorage.getItem("userId");
+  //   if (!userId) return;
+  
+  //   const activityRef = collection(db, `accounts/${userId}/historylog`);
+  
+  //   const unsubscribe = onSnapshot(
+  //     activityRef,
+  //     (querySnapshot) => {
+  //       const logs = querySnapshot.docs.map((doc, index) => {
+  //         const data = doc.data();
+  //         const logDate =
+  //           data.cancelledAt?.toDate?.() ||
+  //           data.timestamp?.toDate?.() ||
+  //           new Date();
+  
+  //         const isCancelled = data.status === "CANCELLED";
+  //         const action = isCancelled
+  //           ? "Cancelled a request"
+  //           : data.action || "Modified a request";
+            
+  //         const by = 
+  //           action === "Request Approved"
+  //             ? data.approvedBy
+  //             : action === "Request Rejected"
+  //             ? data.rejectedBy
+  //             : action === "Deployed"
+  //             ? data.approvedBy
+  //             : data.userName || "Unknown User";
+  
+  //         return {
+  //           key: doc.id || index.toString(),
+  //           date: logDate.toLocaleString("en-US", {
+  //             year: "numeric",
+  //             month: "short",
+  //             day: "numeric",
+  //             hour: "numeric",
+  //             minute: "2-digit",
+  //             hour12: true,
+  //           }),
+  //           rawDate: logDate,
+  //           action: action,
+  //           by: by,
+  //           fullData: data,
+  //         };
+  //       });
+  
+  //       const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
+  //       setActivityData(sortedLogs);
+  //     },
+  //     (error) => {
+     
+  //     }
+  //   );
+  
+  //   // Cleanup the listener when the component unmounts
+  //   return () => unsubscribe();
+  // }, []);
+
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
-  
+
     const activityRef = collection(db, `accounts/${userId}/historylog`);
-  
+
     const unsubscribe = onSnapshot(
       activityRef,
       (querySnapshot) => {
         const logs = querySnapshot.docs.map((doc, index) => {
           const data = doc.data();
+
           const logDate =
             data.cancelledAt?.toDate?.() ||
             data.timestamp?.toDate?.() ||
             new Date();
-  
+
           const isCancelled = data.status === "CANCELLED";
           const action = isCancelled
             ? "Cancelled a request"
             : data.action || "Modified a request";
-            
-          const by = 
+
+          const by =
             action === "Request Approved"
               ? data.approvedBy
               : action === "Request Rejected"
@@ -301,7 +390,7 @@ const sanitizeInput = (input) =>
               : action === "Deployed"
               ? data.approvedBy
               : data.userName || "Unknown User";
-  
+
           return {
             key: doc.id || index.toString(),
             date: logDate.toLocaleString("en-US", {
@@ -313,24 +402,37 @@ const sanitizeInput = (input) =>
               hour12: true,
             }),
             rawDate: logDate,
-            action: action,
-            by: by,
+            action,
+            by,
+            dateRequired: data.dateRequired || "N/A", // ✅ Matches modal display
+            itemsRequested:
+              (data.filteredMergedData && data.filteredMergedData.length > 0
+                ? data.filteredMergedData
+                : data.requestList) || [], // ✅ Same fallback as modal
+            program: data.program || "N/A", // ✅ Matches modal
+            reason:
+              action !== "Request Rejected"
+                ? data.reason || "N/A"
+                : data.reason || data.rejectionReason || "N/A", // ✅ Covers both fields
+            room: data.room || "N/A", // ✅ Matches modal
+            time:
+              data.timeFrom && data.timeTo
+                ? `${data.timeFrom} - ${data.timeTo}`
+                : "N/A", // ✅ Matches modal
             fullData: data,
           };
         });
-  
+
         const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
         setActivityData(sortedLogs);
       },
       (error) => {
-     
+        console.error("Error fetching activity logs:", error);
       }
     );
-  
-    // Cleanup the listener when the component unmounts
+
     return () => unsubscribe();
   }, []);
-
 
   const filteredData = activityData.filter((item) => {
     // Filter by action type
@@ -673,6 +775,113 @@ const ProcessedTab = () => {
   );
 };
 
+  const handleGeneratePDF = () => {
+    if (!selectedLog) {
+      alert("No data to export.");
+      return;
+    }
+
+    const doc = new jsPDF();
+
+    // Title
+    doc.setFontSize(18);
+    doc.text("Activity Details", 14, 20);
+
+    // Details list
+    doc.setFontSize(12);
+    const details = [
+      ["Action", selectedLog.action || "N/A"],
+      ["By", selectedLog.userName || "N/A"],
+      ["Program", selectedLog.program || "N/A"],
+      ["Room", selectedLog.room || "N/A"],
+      ["Time", selectedLog.timeFrom && selectedLog.timeTo ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}` : "N/A"],
+      ["Date Required", selectedLog.dateRequired || "N/A"],
+    ];
+    details.forEach(([label, value], idx) => {
+      doc.text(`${label}: ${value}`, 14, 30 + idx * 6);
+    });
+
+    // Items table
+    const items = selectedLog.requestList || selectedLog.filteredMergedData || [];
+    autoTable(doc, {
+      startY: 30 + details.length * 6 + 5,
+      head: [["Item Name", "Quantity", "Category", "Department"]],
+      body: items.map(item => [
+        item.itemName || "",
+        item.quantity || "",
+        item.category || "",
+        item.department || "",
+      ]),
+    });
+
+    doc.save("activity-details.pdf");
+  };
+
+  const handlePrint = () => {
+    if (!selectedLog) {
+      alert("No data to print.");
+      return;
+    }
+
+    const items = selectedLog.requestList || selectedLog.filteredMergedData || [];
+
+    // Build HTML from data
+    const htmlContent = `
+      <html>
+        <head>
+          <title>Activity Details</title>
+          <style>
+            body { font-family: Arial, sans-serif; }
+            h2 { margin-bottom: 10px; }
+            ul { list-style: none; padding: 0; }
+            ul li { margin-bottom: 5px; }
+            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+            table, th, td { border: 1px solid #000; }
+            th, td { padding: 8px; text-align: left; }
+          </style>
+        </head>
+        <body>
+          <h2>Activity Details</h2>
+          <ul>
+            <li><strong>Action:</strong> ${selectedLog.action || "N/A"}</li>
+            <li><strong>By:</strong> ${selectedLog.userName || "N/A"}</li>
+            <li><strong>Program:</strong> ${selectedLog.program || "N/A"}</li>
+            <li><strong>Room:</strong> ${selectedLog.room || "N/A"}</li>
+            <li><strong>Time:</strong> ${selectedLog.timeFrom && selectedLog.timeTo ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}` : "N/A"}</li>
+            <li><strong>Date Required:</strong> ${selectedLog.dateRequired || "N/A"}</li>
+          </ul>
+          <h3>Items Requested</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Category</th>
+                <th>Department</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${items.map(item => `
+                <tr>
+                  <td>${item.itemName || ""}</td>
+                  <td>${item.quantity || ""}</td>
+                  <td>${item.category || ""}</td>
+                  <td>${item.department || ""}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </body>
+      </html>
+    `;
+
+    // Open and print
+    const printWindow = window.open("", "_blank");
+    printWindow.document.write(htmlContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
+
   return (
     <Layout style={{ minHeight: "100vh"}}>
 <Tabs
@@ -722,6 +931,7 @@ const ProcessedTab = () => {
     },
   ]}
 />
+     
       <Modal
         title="Activity Details"
         visible={modalVisible}
@@ -730,69 +940,105 @@ const ProcessedTab = () => {
         footer={null}
       >
         {selectedLog && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Action">
-              {selectedLog.status === 'CANCELLED'
-                ? 'Cancelled a request'
-                : selectedLog.action || 'Modified a request'}
-            </Descriptions.Item>
+          <>
+            <div id="activity-details-content">
+              <Descriptions column={1} bordered size="small">
+                <Descriptions.Item label="Action">
+                  {selectedLog.status === 'CANCELLED'
+                    ? 'Cancelled a request'
+                    : selectedLog.action || 'Modified a request'}
+                </Descriptions.Item>
 
-            <Descriptions.Item label="By">
-              {selectedLog.userName || 'Unknown User'}
-            </Descriptions.Item>
+                <Descriptions.Item label="By">
+                  {selectedLog.userName || 'Unknown User'}
+                </Descriptions.Item>
 
-            <Descriptions.Item label="Program">
-              {selectedLog.program || 'N/A'}
-            </Descriptions.Item>
+                <Descriptions.Item label="Program">
+                  {selectedLog.program || 'N/A'}
+                </Descriptions.Item>
 
-            <Descriptions.Item label="Items Requested">
-              {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                <ul style={{ paddingLeft: 20 }}>
-                  {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                    <li key={index} style={{ marginBottom: 10 }}>
-                      <strong>{item.itemName}</strong>
-                      <ul style={{ marginLeft: 20 }}>
-                        <li>Quantity: {item.quantity}</li>
-                        {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
-                          <li>Unit: {item.unit}</li>
-                        )}
-                        {item.category && <li>Category: {item.category}</li>}
-                        {item.category === 'Glasswares' && item.volume && (
-                          <li>Volume: {item.volume}</li>
-                        )}
-                        {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                        {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                        {item.itemType && <li>Item Type: {item.itemType}</li>}
-                        {item.department && <li>Department: {item.department}</li>}
-                        {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
-                          <>
-                            {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
-                            {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
-                          </>
-                        )}
-                      </ul>
-                    </li>
-                  ))}
-                </ul>
-              ) : 'None'}
-            </Descriptions.Item>
-            {selectedLog.action !== 'Request Rejected' && (
-              <Descriptions.Item label="Reason">
-                {selectedLog.reason || 'N/A'}
-              </Descriptions.Item>
+                <Descriptions.Item label="Items Requested">
+                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+                    <ul style={{ paddingLeft: 20 }}>
+                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+                        <li key={index} style={{ marginBottom: 10 }}>
+                          <strong>{item.itemName}</strong>
+                          <ul style={{ marginLeft: 20 }}>
+                            <li>Quantity: {item.quantity}</li>
+                            {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
+                              <li>Unit: {item.unit}</li>
+                            )}
+                            {item.category && <li>Category: {item.category}</li>}
+                            {item.category === 'Glasswares' && item.volume && (
+                              <li>Volume: {item.volume}</li>
+                            )}
+                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
+                            {item.itemType && <li>Item Type: {item.itemType}</li>}
+                            {item.department && <li>Department: {item.department}</li>}
+                            {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
+                              <>
+                                {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
+                                {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+                              </>
+                            )}
+                          </ul>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : 'None'}
+                </Descriptions.Item>
+                {selectedLog.action !== 'Request Rejected' && (
+                  <Descriptions.Item label="Reason">
+                    {selectedLog.reason || 'N/A'}
+                  </Descriptions.Item>
+                )}
+                <Descriptions.Item label="Room">
+                  {selectedLog.room || 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Time">
+                  {selectedLog.timeFrom && selectedLog.timeTo
+                    ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+                    : 'N/A'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Date Required">
+                  {selectedLog.dateRequired || 'N/A'}
+                </Descriptions.Item>
+              </Descriptions>
+            </div>
+
+            {/* Show PDF and Print buttons if approved */}
+            {(selectedLog.status === 'APPROVED' || selectedLog.action === 'Request Approved') && (
+              <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+                <button
+                  style={{
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 4,
+                    cursor: 'pointer'
+                  }}
+                  onClick={handleGeneratePDF}
+                >
+                  Download PDF
+                </button>
+                <button
+                  style={{
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    border: 'none',
+                    padding: '6px 12px',
+                    borderRadius: 4,
+                    cursor: 'pointer'
+                  }}
+                  onClick={handlePrint}
+                >
+                  Print
+                </button>
+              </div>
             )}
-            <Descriptions.Item label="Room">
-              {selectedLog.room || 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Time">
-              {selectedLog.timeFrom && selectedLog.timeTo
-                ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-                : 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Date Required">
-              {selectedLog.dateRequired || 'N/A'}
-            </Descriptions.Item>
-          </Descriptions>
+          </>
         )}
       </Modal>
     </Layout>
