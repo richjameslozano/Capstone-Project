@@ -369,7 +369,6 @@ export default function InventoryScreen({ navigation }) {
       return;
     }
 
-
     if (
       !metadata?.dateRequired || 
       !metadata?.timeFrom || 
