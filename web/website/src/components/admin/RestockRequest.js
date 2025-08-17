@@ -9,6 +9,7 @@ import {
   Button,
   Select,
   Spin,
+  Tag,
 } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot, query, where, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -17,6 +18,7 @@ import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "../styles/adminStyle/RestockRequest.css";
+import NotificationModal from "../customs/NotificationModal";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -32,6 +34,8 @@ const RestockRequest = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [comment, setComment] = useState("");
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
@@ -152,6 +156,13 @@ const RestockRequest = () => {
         });
       }
 
+      setNotificationMessage(
+          newStatus === "approved"
+            ? "Restock request approved successfully!"
+            : "Restock request denied."
+        );
+      setIsNotificationVisible(true);
+
       setComment("");
       setIsModalVisible(false);
       setSelectedRequest(null);
@@ -177,10 +188,21 @@ const RestockRequest = () => {
       dataIndex: "department",
       key: "department",
     },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    // },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status) => {
+        let color = status === 'approved' ? 'green'
+                  : status === 'denied' ? 'red'
+                  : 'gold';
+        return <Tag color={color}>{status.toUpperCase()}</Tag>
+      }
     },
     {
       title: "Date Created",
@@ -327,6 +349,7 @@ const RestockRequest = () => {
           )}
         </Modal>
 
+        <NotificationModal/>
       </Content>
     </Layout>
   );
