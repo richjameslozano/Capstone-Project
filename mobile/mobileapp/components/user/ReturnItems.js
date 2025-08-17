@@ -88,6 +88,7 @@ const ReturnItems = () => {
               rawDate,
               rawTimestamp,
               timestamp: formattedTimestamp,
+              dateRequired: data.dateRequired,
               raw: data
             };
           });
@@ -554,6 +555,7 @@ const ReturnItems = () => {
                     {/* <Text>Name: {selectedRequest?.raw?.userName}</Text>
                     <Text>Requisition ID: {selectedRequest?.requisitionId}</Text> */}
                     <Text>Request Date: {selectedRequest?.timestamp}</Text>
+                    <Text>Required Date: {selectedRequest?.dateRequired}</Text>
 
                     <Text style={styles.boldText}>Requested Items:</Text>
 
