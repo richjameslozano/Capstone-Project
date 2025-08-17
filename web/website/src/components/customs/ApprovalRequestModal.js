@@ -313,7 +313,12 @@ const ApprovalRequestModal = ({
           </Row>
       </Modal>
 
-      <NotificationModal/>
+      <NotificationModal
+        isVisible={isNotificationVisible}
+        onClose={() => setIsNotificationVisible(false)}
+        message={notificationMessage}
+      />
+
     </>
   );
 };

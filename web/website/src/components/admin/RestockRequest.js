@@ -349,7 +349,12 @@ const RestockRequest = () => {
           )}
         </Modal>
 
-        <NotificationModal/>
+        <NotificationModal
+          isVisible={isNotificationVisible}
+          onClose={() => setIsNotificationVisible(false)}
+          message={notificationMessage}
+        />
+
       </Content>
     </Layout>
   );
