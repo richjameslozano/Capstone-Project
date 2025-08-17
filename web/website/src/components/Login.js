@@ -20,7 +20,7 @@ import axios from "axios";
 import NotificationModal from "./customs/NotificationModal";
 import TermsModal from "./customs/TermsModal";
 import { MdEmail } from 'react-icons/md';
-import nulsLogo from './lablogo.svg'
+import nulsLogo from './images/NULS LOGO.png'
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -1567,7 +1567,7 @@ const Login = () => {
                       placeholder="enter email (NU account)"
                       required
                     />
-                    {error && <p className="error-message">{error}</p>}
+                   
                   </div>
 
                   <div className="form-group">
@@ -1706,6 +1706,8 @@ const Login = () => {
                         Terms & Conditions
                       </span>
                     </label>
+
+                    {error && <p className="error-message">{error}</p>}
 
                     {/* {error && <p className="error-message">{error}</p>} */}
                   </div>

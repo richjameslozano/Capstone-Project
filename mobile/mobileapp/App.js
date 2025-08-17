@@ -158,7 +158,7 @@ const CustomDrawerContent = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.5}>
-        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Icon2 name="bell-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Notifications</Title>
       </TouchableOpacity>
 
@@ -263,7 +263,7 @@ const CustomAdminDrawerContent = ({ navigation }) => {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.5}>
-        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Icon2 name="bell-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Notifications</Title>
       </TouchableOpacity>
 
@@ -351,7 +351,7 @@ const CustomSuperUserDrawerContent = ({ navigation }) => {
     </View>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('Notifications')} activeOpacity={0.5}>
-        <Icon2 name="account-circle-outline" size={25} style={styles.icon} />
+        <Icon2 name="bell-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Notifications</Title>
       </TouchableOpacity>
 

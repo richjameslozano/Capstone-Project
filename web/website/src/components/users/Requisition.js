@@ -1561,6 +1561,75 @@ const Requisition = () => {
   };
 
   const columns = [
+    // {
+    //   title: "Item Name",
+    //   dataIndex: "selectedItemId",
+    //   key: "selectedItemId",
+    //   render: (value, record, index) => {
+    //     // Get all selected item IDs except the current row
+    //     const selectedIds = mergedData
+    //       .filter((_, i) => i !== index)
+    //       .map((row) => row.selectedItemId);
+  
+    //     return (
+    //       <Select
+    //         showSearch
+    //         placeholder="Select item"
+    //         style={{ width: 100 }}
+    //         dropdownStyle={{ width: 700 }}
+    //         optionFilterProp="label"
+    //         labelInValue
+    //         value={record.selectedItem || undefined}
+    //         onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
+    //         filterOption={(input, option) =>
+    //           option?.label?.toLowerCase().includes(input.toLowerCase())
+    //         }>
+    //         {/* Map through filtered items instead of the entire items list */}
+    //         {/* {filteredItems.map((item) => {
+    //           // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+    //           } | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+    //           const isDisabled = selectedIds.includes(item.id);
+  
+    //           return (
+    //             <Select.Option
+    //               key={item.id}
+    //               value={item.id}
+    //               label={item.itemName}
+    //               disabled={isDisabled}
+    //             >
+    //               {label}
+    //             </Select.Option>
+    //           );
+    //         })} */}
+
+    //         {filteredItems
+    //         .filter((item) => item.status !== "out of stock" && item.status !== "in use")
+    //         .map((item) => {
+    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+    //           } | ${item.status} | ${item.department}`;
+    //           const isDisabled = selectedIds.includes(item.id);
+
+    //           return (
+    //             <Select.Option
+    //               key={item.id}
+    //               value={item.id}
+    //               label={item.itemName}
+    //               disabled={isDisabled}
+    //             >
+    //               {label}
+    //             </Select.Option>
+    //           );
+    //         })}
+    //       </Select>
+    //     );
+    //   },
+    // },
     {
       title: "Item Name",
       dataIndex: "selectedItemId",
@@ -1570,7 +1639,7 @@ const Requisition = () => {
         const selectedIds = mergedData
           .filter((_, i) => i !== index)
           .map((row) => row.selectedItemId);
-  
+
         return (
           <Select
             showSearch
@@ -1580,52 +1649,37 @@ const Requisition = () => {
             optionFilterProp="label"
             labelInValue
             value={record.selectedItem || undefined}
-            onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
+            onChange={(selected) => handleItemSelect(selected, index)}
             filterOption={(input, option) =>
               option?.label?.toLowerCase().includes(input.toLowerCase())
-            }>
-            {/* Map through filtered items instead of the entire items list */}
-            {/* {filteredItems.map((item) => {
-              // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
-              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-              } | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              const isDisabled = selectedIds.includes(item.id);
-  
-              return (
-                <Select.Option
-                  key={item.id}
-                  value={item.id}
-                  label={item.itemName}
-                  disabled={isDisabled}
-                >
-                  {label}
-                </Select.Option>
-              );
-            })} */}
-
+            }
+          >
             {filteredItems
-            .filter((item) => item.status !== "out of stock" && item.status !== "in use")
-            .map((item) => {
-              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-              } | ${item.status} | ${item.department}`;
-              const isDisabled = selectedIds.includes(item.id);
+              .filter(
+                (item) => item.status !== "out of stock" && item.status !== "in use"
+              )
+              .sort((a, b) =>
+                a.itemName.localeCompare(b.itemName, undefined, { sensitivity: "base" })
+              )
+              .map((item) => {
+                const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+                  ["Chemical", "Reagent"].includes(item.category) && item.unit
+                    ? ` ${item.unit}`
+                    : ""
+                } | ${item.status} | ${item.department}`;
+                const isDisabled = selectedIds.includes(item.id);
 
-              return (
-                <Select.Option
-                  key={item.id}
-                  value={item.id}
-                  label={item.itemName}
-                  disabled={isDisabled}
-                >
-                  {label}
-                </Select.Option>
-              );
-            })}
+                return (
+                  <Select.Option
+                    key={item.id}
+                    value={item.id}
+                    label={item.itemName}
+                    disabled={isDisabled}
+                  >
+                    {label}
+                  </Select.Option>
+                );
+              })}
           </Select>
         );
       },
@@ -2248,7 +2302,15 @@ const Requisition = () => {
                   <DatePicker
                     value={dateRequired ? dayjs(dateRequired, "YYYY-MM-DD") : null}
                     onChange={(date, dateString) => setDateRequired(dateString)}
-                    disabledDate={(current) => current && current < moment().startOf("day")}
+                    disabledDate={(current) => {
+                      const today = moment().startOf('day');
+                      const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
+                      return (
+                        current && (
+                          current < today || current > threeWeeksFromNow
+                        )
+                      );
+                    }}
                     style={{
                       width: "100%",
                       marginTop: "8px",
@@ -2262,7 +2324,7 @@ const Requisition = () => {
                   )}
                 </div>
 
-                                  <div className="program-container">
+                  <div className="program-container">
                     <strong>Program:</strong>
                     <select
                       value={program}
@@ -2296,8 +2358,8 @@ const Requisition = () => {
                     <strong>Time Needed:</strong>
                     <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
                       <TimePicker
-                      minuteStep={10}
-                      value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
+                        minuteStep={10}
+                        value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
                         placeholder="From"
                         onChange={(time, timeString) => {
                           setTimeFrom(timeString);
@@ -2306,26 +2368,32 @@ const Requisition = () => {
                         format="HH:mm"
                         use12Hours={false}
                         style={{ width: "50%" }}
+                        hideDisabledOptions
+                        disabledHours={() => {
+                          // hide hours outside 7–21
+                          return [...Array(24).keys()].filter(h => h < 7 || h > 21);
+                        }}
                       />
 
                       <TimePicker
-                      minuteStep={10}
+                        minuteStep={10}
                         value={timeTo ? dayjs(timeTo, "HH:mm") : null}
                         placeholder="To"
                         onChange={(time, timeString) => setTimeTo(timeString)}
                         format="HH:mm"
                         use12Hours={false}
                         disabled={!timeFrom}
-                        style={{ width: "50%", padding: 8}}
+                        style={{ width: "50%", padding: 8 }}
+                        hideDisabledOptions
                         disabledHours={() => {
                           if (!timeFrom) return [];
                           const [startHour] = timeFrom.split(":").map(Number);
-                          return Array.from({ length: startHour }, (_, i) => i);
+                          // hide hours before startHour and outside 7–21
+                          return [...Array(24).keys()].filter(h => h < Math.max(7, startHour) || h > 21);
                         }}
                         disabledMinutes={(selectedHour) => {
                           if (!timeFrom) return [];
                           const [startHour, startMinute] = timeFrom.split(":").map(Number);
-
                           if (selectedHour === startHour) {
                             return Array.from({ length: startMinute }, (_, i) => i);
                           }

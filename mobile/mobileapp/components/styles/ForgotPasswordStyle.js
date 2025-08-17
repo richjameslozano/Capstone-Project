@@ -21,20 +21,23 @@ export default StyleSheet.create({
   },
 
   modalTitle: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     textAlign: 'center',
     marginBottom: 10,
   },
 
   modalText: {
-    fontSize: 16,
+    fontSize: 13,
     textAlign: 'center',
     marginBottom: 15,
+    color: 'gray'
   },
 
   input: {
     marginBottom: 10,
+    height: 40,
+    backgroundColor: 'transparent'
   },
 
   successText: {
@@ -45,11 +48,13 @@ export default StyleSheet.create({
 
   modalButton: {
     marginTop: 10,
+    backgroundColor: '#1a6985',
+    borderRadius: 4, 
   },
 
   modalCancel: {
     textAlign: 'center',
     marginTop: 10,
-    color: 'blue',
+    color: '#1a6985',
   },
 });

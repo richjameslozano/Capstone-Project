@@ -20,7 +20,7 @@ import {
   UserSwitchOutlined,
   IdcardOutlined,
 } from '@ant-design/icons';
-
+import nulsLogo from './images/NULS_Favicon_white.png'
 
 import { Button, Layout, Menu, theme } from 'antd';
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
@@ -510,23 +510,36 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
                 height: "100vh",
                 zIndex: 1000,
                 overflow: "auto",
-                padding: 0
+                padding: 0,
               }}
             >
 
 
           <div className="demo-logo-vertical" />
 
-          <div className="logo">
-              {!collapsed || isMobile ? (
-                <>
-                  <h3 className="logo-title">NU MOA</h3>
-                   <p className="logo-subtitle">Laboratory System</p>
-                </>
-              ) : (
-                <h3 className="logo-title">NU MOA</h3>
-              )}
-            </div>
+<div className="logo">
+  {!collapsed || isMobile ? (
+    <div style={{ display: 'flex', alignItems: 'center', maxHeight: 40, gap: 10 }}>
+      <img
+        src={nulsLogo}
+        alt="NULS Logo"
+        style={{
+          maxHeight: '60px',
+          maxWidth: '60px',
+          objectFit: 'contain',
+          verticalAlign: 'middle', // Aligns image with text
+        }}
+      />
+      <div style={{}}>
+        <h3 className="logo-title" style={{margin: 0, textAlign: 'left'}}>NU MOA</h3> {/* Remove default margin */}
+        <p className="logo-subtitle" style={{ margin: 0 }}>Laboratory System</p> {/* Remove default margin */}
+      </div>
+    </div>
+  ) : (
+    <h3 className="logo-title">NU MOA</h3>
+  )}
+</div>
+
 
           <Menu
             theme="dark"

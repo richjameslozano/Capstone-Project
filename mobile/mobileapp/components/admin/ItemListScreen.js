@@ -203,7 +203,10 @@ const ItemListScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+      <View 
+        style={[styles.inventoryStocksHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
         <TouchableOpacity
           onPress={() => navigation.navigate("QRScanScreen")}
           style={styles.backButton}
@@ -211,7 +214,7 @@ const ItemListScreen = () => {
           <Icon name="keyboard-backspace" size={28} color="black" />
         </TouchableOpacity>
 
-        <View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
           <Text
             style={{
               textAlign: "center",
@@ -229,9 +232,7 @@ const ItemListScreen = () => {
           </Text>
         </View>
 
-        <TouchableOpacity style={{ padding: 2 }}>
-          <Icon name="information-outline" size={24} color="#000" />
-        </TouchableOpacity>
+        <View style={{ width: 28 }} />
       </View>
 
       <View
@@ -242,8 +243,8 @@ const ItemListScreen = () => {
           padding: 10,
         }}
       >
-        <Text style={styles.title}>All Inventory Items</Text>
-        <Text style={{ color: "gray", marginBottom: 10 }}>Select an Item</Text>
+        {/* <Text style={styles.title}>All Inventory Items</Text>
+        <Text style={{ color: "gray", marginBottom: 10 }}>Select an Item</Text> */}
 
         {/* Search bar */}
         <TextInput

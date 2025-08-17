@@ -9,6 +9,7 @@ import {
   Button,
   Select,
   Spin,
+  Tag,
 } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot, query, where, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -17,6 +18,7 @@ import "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "../styles/adminStyle/RestockRequest.css";
+import NotificationModal from "../customs/NotificationModal";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -32,6 +34,8 @@ const RestockRequest = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [userRole, setUserRole] = useState(null);
   const [comment, setComment] = useState("");
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
@@ -152,6 +156,13 @@ const RestockRequest = () => {
         });
       }
 
+      setNotificationMessage(
+          newStatus === "approved"
+            ? "Restock request approved successfully!"
+            : "Restock request denied."
+        );
+      setIsNotificationVisible(true);
+
       setComment("");
       setIsModalVisible(false);
       setSelectedRequest(null);
@@ -177,10 +188,21 @@ const RestockRequest = () => {
       dataIndex: "department",
       key: "department",
     },
+    // {
+    //   title: "Status",
+    //   dataIndex: "status",
+    //   key: "status",
+    // },
     {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status) => {
+        let color = status === 'approved' ? 'green'
+                  : status === 'denied' ? 'red'
+                  : 'gold';
+        return <Tag color={color}>{status.toUpperCase()}</Tag>
+      }
     },
     {
       title: "Date Created",
@@ -212,12 +234,13 @@ const RestockRequest = () => {
           </Col>
         </Row>
 
-        <Row className="filter-row" gutter={16}>
-          <Col span={6}>
+        <Row className="filter-row">
+          <Col>
             <Select
               className="filter-select"
+              style={{ width: 150, marginRight: 8 }} // add small space between filters
               placeholder="Filter by Status"
-              value={filterStatus || ""}
+              value={filterStatus === "" ? undefined : filterStatus}
               onChange={(value) => setFilterStatus(value)}
               allowClear
             >
@@ -228,11 +251,12 @@ const RestockRequest = () => {
             </Select>
           </Col>
 
-          <Col span={6}>
+          <Col>
             <Select
               className="filter-select"
+              style={{ width: 200 }}
               placeholder="Filter by Department"
-              value={filterDepartment || ""}
+              value={filterDepartment === "" ? undefined : filterDepartment}
               onChange={(value) => setFilterDepartment(value)}
               allowClear
             >
@@ -269,7 +293,13 @@ const RestockRequest = () => {
         </Spin>
 
         <Modal
-          title="Approve Restock Request"
+          title={
+            selectedRequest?.status === "denied"
+              ? "Denied Restock Request"
+              : selectedRequest?.status === "pending"
+              ? "Pending Restock Request"
+              : "Approve Restock Request"
+          }
           open={isModalVisible}
           onCancel={() => {
             setIsModalVisible(false);
@@ -319,6 +349,7 @@ const RestockRequest = () => {
           )}
         </Modal>
 
+        <NotificationModal/>
       </Content>
     </Layout>
   );
