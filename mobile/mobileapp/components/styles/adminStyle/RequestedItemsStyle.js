@@ -38,6 +38,8 @@ export default StyleSheet.create({
     padding: 12,
     marginVertical: 8,
     borderRadius: 8,
+    width: '90%',
+    marginLeft: 20,
   },
   
   itemText: {

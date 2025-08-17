@@ -783,11 +783,15 @@ const renderDeployed = ({ item }) => {
                       {
                         text: 'No',
                         style: 'cancel',
+                        onPress: () => setModal2Visible(false), // closes modal if user cancels
                       },
                       {
                         text: 'Yes, Cancel',
                         style: 'destructive',
-                        onPress: cancelRequest, // calls your existing function
+                        onPress: () => {
+                          cancelRequest(); // your existing cancel logic
+                          setModal2Visible(false); // close the modal after cancelling
+                        },
                       },
                     ],
                     { cancelable: true }

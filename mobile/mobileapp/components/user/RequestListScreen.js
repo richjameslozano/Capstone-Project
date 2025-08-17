@@ -425,20 +425,26 @@ const boldLabel = {
 
   return (
     <View style={[styles.container]}>
-      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                     <Icon2 name="keyboard-backspace" size={28} color="black" />
-                                   </TouchableOpacity>
+        <View 
+          style={[styles.inventoryStocksHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+          onLayout={handleHeaderLayout}
+        >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon2 name="keyboard-backspace" size={28} color="black" />
+          </TouchableOpacity>
 
-                    <View>
-                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Item List</Text>
-                      <Text style={{ fontWeight: 300, fontSize: 13}}>Finalize Your Requisition</Text>
-                    </View>
+          <View style={{ flex: 1, alignItems: 'center' }}>
+            <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 18, color: '#395a7f' }}>
+              Item List
+            </Text>
+            <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+              Finalize Your Requisition
+            </Text>
+          </View>
 
-                     <TouchableOpacity style={{padding: 2}}>
-                       <Icon2 name="information-outline" size={24} color="#000" />
-                     </TouchableOpacity>
-                   </View>
+          {/* Placeholder to balance back button width */}
+          <View style={{ width: 28 }} />
+        </View>
 
         <FlatList
         style={{ paddingHorizontal: 5, marginTop: headerHeight+5, paddingTop: 10, backgroundColor:'#fff', borderRadius: 10}}

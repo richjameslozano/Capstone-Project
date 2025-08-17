@@ -264,14 +264,33 @@ export default function InventoryScreen({ navigation }) {
   //   return isCategoryMatch && isUsageTypeMatch && isSearchMatch;
   // }); 
   
-  const filteredItems = inventoryItems.filter((item) => {
-    const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
-    const isUsageTypeMatch = selectedUsageType === 'All' || selectedUsageType === '' || item.usageType === selectedUsageType;
-    const isSearchMatch = !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
-    const isStatusValid =
-    !['out of stock', 'in use'].includes((item.status || '').toLowerCase());
+  // const filteredItems = inventoryItems.filter((item) => {
+  //   const isCategoryMatch = selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
+  //   const isUsageTypeMatch = selectedUsageType === 'All' || selectedUsageType === '' || item.usageType === selectedUsageType;
+  //   const isSearchMatch = !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
+  //   const isStatusValid =
+  //   !['out of stock', 'in use'].includes((item.status || '').toLowerCase());
 
-    return isCategoryMatch && isUsageTypeMatch && isSearchMatch && isStatusValid;
+  //   return isCategoryMatch && isUsageTypeMatch && isSearchMatch && isStatusValid;
+  // });
+
+  const filteredItems = inventoryItems.filter((item) => {
+    const isCategoryMatch =
+      selectedCategory === 'All' || selectedCategory === '' || item.category === selectedCategory;
+      
+    const isUsageTypeMatch =
+      selectedUsageType === 'All' || selectedUsageType === '' || item.usageType === selectedUsageType;
+      
+    const isSearchMatch =
+      !searchQuery || item.itemName?.toLowerCase().includes(searchQuery.toLowerCase());
+      
+    const isStatusValid =
+      !['out of stock', 'in use'].includes((item.status || '').toLowerCase());
+      
+    const isDepartmentMatch =
+      !selectedDepartment || selectedDepartment === 'All Departments' || item.department === selectedDepartment;
+
+    return isCategoryMatch && isUsageTypeMatch && isSearchMatch && isStatusValid && isDepartmentMatch;
   });
 
   const openModal = (item) => {
