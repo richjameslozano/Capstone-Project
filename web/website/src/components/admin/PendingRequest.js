@@ -3199,7 +3199,7 @@ try {
         setSelectedRequest(null);
         setIsFinalizeModalVisible(false)
 
-        setNotificationMessage("Approval and rejection have been logged successfully.");
+        setNotificationMessage("Request has been approved and logged successfully.");
         setIsNotificationVisible(true);
 
         notification.success({
