@@ -2517,6 +2517,10 @@ const LabRoomQR = () => {
           ))
       )} */}
 
+      {filteredRooms.length === 0 && (
+        <p style={{ color: 'red', marginTop: '20px' }}>Room Not Found</p>
+      )}
+
       {filteredRooms
         .filter(room => room.items && room.items.length > 0)
         .map(room => {
