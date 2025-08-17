@@ -2358,8 +2358,8 @@ const Requisition = () => {
                     <strong>Time Needed:</strong>
                     <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
                       <TimePicker
-                      minuteStep={10}
-                      value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
+                        minuteStep={10}
+                        value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
                         placeholder="From"
                         onChange={(time, timeString) => {
                           setTimeFrom(timeString);
@@ -2368,26 +2368,32 @@ const Requisition = () => {
                         format="HH:mm"
                         use12Hours={false}
                         style={{ width: "50%" }}
+                        hideDisabledOptions
+                        disabledHours={() => {
+                          // hide hours outside 7–21
+                          return [...Array(24).keys()].filter(h => h < 7 || h > 21);
+                        }}
                       />
 
                       <TimePicker
-                      minuteStep={10}
+                        minuteStep={10}
                         value={timeTo ? dayjs(timeTo, "HH:mm") : null}
                         placeholder="To"
                         onChange={(time, timeString) => setTimeTo(timeString)}
                         format="HH:mm"
                         use12Hours={false}
                         disabled={!timeFrom}
-                        style={{ width: "50%", padding: 8}}
+                        style={{ width: "50%", padding: 8 }}
+                        hideDisabledOptions
                         disabledHours={() => {
                           if (!timeFrom) return [];
                           const [startHour] = timeFrom.split(":").map(Number);
-                          return Array.from({ length: startHour }, (_, i) => i);
+                          // hide hours before startHour and outside 7–21
+                          return [...Array(24).keys()].filter(h => h < Math.max(7, startHour) || h > 21);
                         }}
                         disabledMinutes={(selectedHour) => {
                           if (!timeFrom) return [];
                           const [startHour, startMinute] = timeFrom.split(":").map(Number);
-
                           if (selectedHour === startHour) {
                             return Array.from({ length: startMinute }, (_, i) => i);
                           }

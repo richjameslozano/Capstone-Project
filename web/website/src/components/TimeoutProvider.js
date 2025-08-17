@@ -9,7 +9,7 @@ export function TimeoutProvider({ children }) {
     const location = useLocation();
     const timeoutRef = useRef();
     const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
-    const SESSION_TIMEOUT = 600000; // 60 seconds change when desired
+    const SESSION_TIMEOUT = 900000; // 60 seconds change when desired
     const exemptedRoutes = ['/', '/signup']; // Routes that should not trigger timeout
 
     useEffect(() => {
