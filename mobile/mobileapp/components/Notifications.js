@@ -405,16 +405,15 @@
 
 
 //VERSION 4
-
 import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
   FlatList,
-  SafeAreaView,
   ActivityIndicator,
   TouchableOpacity,
   StatusBar,
+  Platform,
 } from 'react-native';
 import {
   collection,
@@ -427,64 +426,50 @@ import {
 import { db } from '../backend/firebase/FirebaseConfig';
 import styles from './styles/NotificationsStyle';
 import { useAuth } from './contexts/AuthContext';
-import * as Notifications from 'expo-notifications'; // Expo notifications for both dev and prod
-import messaging from '@react-native-firebase/messaging'; // Firebase messaging for handling background notifications
-import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
-
-
 
 const NotificationItem = ({ title, message, timestamp, onPress, unread }) => {
   const formattedTime = timestamp?.toDate?.().toLocaleString?.() || 'No timestamp';
 
   return (
     <TouchableOpacity onPress={onPress}>
-        <StatusBar
-        translucent
-        backgroundColor={'transparent'}
-        barStyle={'light-content'}
-        />
+      <StatusBar translucent backgroundColor={'transparent'} barStyle={'light-content'} />
       <View style={[styles.notificationCard, unread && { backgroundColor: '#ffecec' }]}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between'}}>
-          <View style={{flexDirection: 'row', gap: 10, alignItems: 'center'}}>
-          <Icon name='bell' size={18} color={'#51abcb'}/>
-          <Text style={[styles.title, unread && { fontWeight: 'bold' }]}>
-          {unread ? '• ' : ''}{title}
-        </Text>
-        </View>
-        
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+          <View style={{ flexDirection: 'row', gap: 10, alignItems: 'center' }}>
+            <Icon name="bell" size={18} color={'#51abcb'} />
+            <Text style={[styles.title, unread && { fontWeight: 'bold' }]}>
+              {unread ? '• ' : ''}
+              {title}
+            </Text>
+          </View>
           <Text style={styles.timestamp}>{formattedTime}</Text>
-        
-        
         </View>
-        
         <Text style={styles.message}>{message}</Text>
-        
       </View>
     </TouchableOpacity>
   );
 };
 
 const NotificationsScreen = () => {
-  const { user } = useAuth(); // Get user from auth context
+  const { user } = useAuth();
   const userId = user?.id;
   const role = user?.role?.toLowerCase() || 'user';
 
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Request notification permission and get FCM token
+  /** Request Expo notification permission + get Expo push token */
   useEffect(() => {
     const requestPermission = async () => {
-      // Request permission for notifications
       if (Platform.OS === 'ios') {
         await Notifications.requestPermissionsAsync();
       }
 
-      const token = await messaging().getToken();
-      console.log('FCM Token:', token); // Store this token to send notifications later
-      // You can save this token in Firestore or your backend server for later use
+      const tokenData = await Notifications.getExpoPushTokenAsync();
+      console.log('Expo Push Token:', tokenData.data);
     };
 
     requestPermission();
@@ -566,7 +551,6 @@ const NotificationsScreen = () => {
 
   const handleMarkAsRead = async (notifId, from) => {
     if (!notifId || !userId) return;
-
     try {
       const notifDocRef =
         from === 'user'
@@ -576,82 +560,75 @@ const NotificationsScreen = () => {
       await updateDoc(notifDocRef, {
         [`readBy.${userId}`]: true,
       });
-
     } catch (err) {
       console.error('❌ Failed to mark notification as read:', err);
     }
   };
 
-  // Handle push notifications while the app is in the foreground
+  /** Listen to notifications in foreground using Expo Notifications */
   useEffect(() => {
-    const unsubscribe = messaging().onMessage(async remoteMessage => {
-      console.log('Foreground notification received:', remoteMessage);
-      // Show a local notification or update the UI here
-      alert('New Notification: ' + remoteMessage.notification.title);
+    const listener = Notifications.addNotificationReceivedListener((notification) => {
+      console.log('Foreground notification received:', notification);
+      alert('New Notification: ' + notification.request.content.title);
     });
 
-    return unsubscribe;
+    return () => listener.remove();
   }, []);
 
-
-
-
   const [headerHeight, setHeaderHeight] = useState(0);
-
-    const handleHeaderLayout = (event) => {
+  const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
     setHeaderHeight(height);
   };
 
-  const navigation = useNavigation()
+  const navigation = useNavigation();
 
   return (
     <View style={styles.container}>
 
-            <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
-              <View style={{flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10
-              }}>
-                    <TouchableOpacity onPress={()=>navigation.goBack()} style={styles.backButton}>
-                      <Icon name="keyboard-backspace" size={28} color="white" />
-                    </TouchableOpacity>
-                    <View style={{alignItems: 'center'}}>
-                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white'}}>Notifications</Text>
-                      <Text style={{color: 'white', fontWeight: 300, fontSize: 13}}>Recent Activities </Text>
-                      </View>
-                    <TouchableOpacity style={{padding: 2}}>
-                      <Icon name="dots-vertical" size={24} color="#165a72" />
-                    </TouchableOpacity>
-                </View>
-                  </View>
+      <View style={styles.profileHeader} onLayout={handleHeaderLayout}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', width: '100%', paddingHorizontal: 15, paddingBottom: 10 }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon name="keyboard-backspace" size={28} color="white" />
+          </TouchableOpacity>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white' }}>Notifications</Text>
+            <Text style={{ color: 'white', fontWeight: 300, fontSize: 13 }}>Recent Activities </Text>
+          </View>
 
-      <View style={{padding: 5, borderRadius: 7, marginTop: headerHeight, backgroundColor: '#fff'}}>
-      {loading ? (
-        <ActivityIndicator size="large" color="#000" />
-      ) : (
-        
-        <FlatList
-          data={notifications}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => {
-            const unread = !item.readBy?.[userId];
-            return (
-              <NotificationItem
-                title={item.title || 'New Submission'}
-                message={item.message || item.action || 'No Message'}
-                timestamp={item.timestamp}
-                unread={unread}
-                onPress={() => handleMarkAsRead(item.id, item.from)}
-              />
-            );
-          }}
-          ListEmptyComponent={
-            <Text style={{ textAlign: 'center', marginTop: 20 }}>
-              No notifications found.
-            </Text>
-          }
-          contentContainerStyle={{ paddingBottom: 20, gap: 5 }}
-        />
-      )}
+          {/* <TouchableOpacity style={{ padding: 2 }}>
+            <Icon name="dots-vertical" size={24} color="#165a72" />
+          </TouchableOpacity> */}
+        </View>
+      </View>
+
+      <View style={{ padding: 5, borderRadius: 7, marginTop: headerHeight, backgroundColor: '#fff' }}>
+        {loading ? (
+          <ActivityIndicator size="large" color="#000" />
+        ) : (
+          <FlatList
+            data={notifications}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => {
+              const unread = !item.readBy?.[userId];
+              return (
+                <NotificationItem
+                  title={item.title || 'New Submission'}
+                  message={item.message || item.action || 'No Message'}
+                  timestamp={item.timestamp}
+                  unread={unread}
+                  onPress={() => handleMarkAsRead(item.id, item.from)}
+                />
+              );
+            }}
+            ListEmptyComponent={
+              <Text style={{ textAlign: 'center', marginTop: 20 }}>
+                No notifications found.
+              </Text>
+            }
+            contentContainerStyle={{ paddingBottom: 20, gap: 5 }}
+          />
+        )}
       </View>
     </View>
   );
