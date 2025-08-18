@@ -307,7 +307,7 @@ export default function RequestScreen() {
       if(item.status === 'PENDING') return 'orange';
       if(item.action === 'APPROVED') return '#134b5f';
       if(item.action === 'DEPLOYED') return '#2596be'; 
-      if(item.action === 'COMPLETED') return '#19d638ff';
+      if(item.action === 'COMPLETED') return '#18b933ff';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
 
@@ -680,7 +680,7 @@ const renderDeployed = ({ item }) => {
 
     <TouchableOpacity style={[styles.timelineBtn, activePage === 3 && styles.activeBtn]}
     onPress={()=>handleButtonPress(3)}>
-      <Icon name="check-circle-outline" size={20} color="#165a72" />
+      <Icon name={activePage === 3 ? "check-circle":"check-circle-outline"} size={20} color="#165a72" />
       <Text style={styles.timeText}>Completed</Text>
     </TouchableOpacity>
   </View>
@@ -708,8 +708,8 @@ const renderDeployed = ({ item }) => {
       ) : (
         <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
-                    <Icon name='clock-outline' size={23} color='#6abce2'/>
-                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Pending Orders</Text>
+                    <Icon name='clock-outline' size={23} color='#e7c247ff'/>
+                    <Text style={{color: '#e7c247ff', fontSize: 15, fontWeight: 'bold'}}>Pending Orders</Text>
                   </View>
             <FlatList
           data={requests}
@@ -814,8 +814,8 @@ const renderDeployed = ({ item }) => {
       <View key="2" style={styles.page}>
           <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
-                    <Icon name='thumb-up-outline' size={23} color='#6abce2'/>
-                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Approved Orders</Text>
+                    <Icon name='thumb-up-outline' size={23} color='#134b5f'/>
+                    <Text style={{color: '#134b5f', fontSize: 15, fontWeight: 'bold'}}>Approved Orders</Text>
                   </View>
 
         <FlatList
@@ -1014,8 +1014,8 @@ const renderDeployed = ({ item }) => {
       <View key="4" style={styles.page}>
                   <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
-                    <Icon name='send-outline' size={23} color='#6abce2'/>
-                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Completed Orders</Text>
+                    <Icon name='check-circle-outline' size={23} color='#40cf70ff'/>
+                    <Text style={{color: '#40cf70ff', fontSize: 15, fontWeight: 'bold'}}>Completed Orders</Text>
                   </View>
 
         <FlatList
