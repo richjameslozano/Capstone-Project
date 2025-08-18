@@ -307,7 +307,7 @@ export default function RequestScreen() {
       if(item.status === 'PENDING') return 'orange';
       if(item.action === 'APPROVED') return '#134b5f';
       if(item.action === 'DEPLOYED') return '#2596be'; 
-      if(item.action === 'Reagent') return '#b8e2f4';
+      if(item.action === 'COMPLETED') return '#19d638ff';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
 
@@ -332,7 +332,7 @@ const filteredApproved = activityData
   .filter(req => req.action === 'Returned')
   .map(req => ({
     ...req,
-    action: 'DEPLOYED', // just for UI
+    action: 'COMPLETED', // just for UI
     items: req.items || req.requestList || [] // ensure array exists
   }));
 
