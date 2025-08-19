@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {Layout,Input,Table,Button,Card,Modal, DatePicker,TimePicker,message,Select,Typography,Descriptions,Spin,} from "antd";
-import { PlusOutlined,DeleteOutlined,CalendarOutlined,CloseOutlined,SearchOutlined} from "@ant-design/icons";
+import { PlusOutlined,DeleteOutlined,CalendarOutlined,CloseOutlined, PlusSquareOutlined, PlusSquareFilled, FormOutlined} from "@ant-design/icons";
 import moment from "moment";
 import dayjs from 'dayjs';
 import { useLocation, useNavigate } from "react-router-dom";
@@ -2191,12 +2191,24 @@ const Requisition = () => {
   return (
 
     
-    <Layout style={{ minHeight: "100vh" }}>
-      <Layout className="site-layout">
+    <Layout style={{ minHeight: "100vh", height: 'auto'}}>
+      <Layout className="site-layout-req" style={{minHeight: '120vh'}}>
         
     <div className="page-sections" style={{ display: "flex", flexDirection: "column", gap: "0", padding: "24px",height:"100vh" }}>
 
          <div className="section requisition-form">
+          <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
+          <PlusSquareFilled style={{fontSize: 25, color: '#1e7898'}}/>
+          <h1 style={{margin: 0, padding: 0, color: '#1e7898'}}>Add items to your list</h1>
+          </div>
+
+          <ul style={{marginTop: 10, fontSize: 16, fontWeight: 400, padding: 15, marginLeft: 20}}>
+            <li style={{margin: 5}}>Click the text field under the item name and search for the item you need.</li>
+            <li style={{margin: 5}}>In the quantity column, specify the amount you need.</li>
+            <li style={{margin: 5}}>Click "Add Item Row" to add another item.</li>
+            <li style={{margin: 5}}>Once all items are added, proceed to fill out the form below.</li>
+          </ul>
+
           <div className="request-details">
   <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>
                 {/* Category Dropdown */}
@@ -2256,7 +2268,7 @@ const Requisition = () => {
                   </select>
                 </div>
 
-                <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
+                <div style={{ overflow: "auto", marginBottom: 50}}>
                   <Table
                     className="requisition-table"
                     dataSource={mergedData}
@@ -2273,25 +2285,17 @@ const Requisition = () => {
                       Add Item Row
                     </Button>
 
-                    <Button 
-                      type="primary"
-                      className="finalize-btn"
-                      disabled={!isFormValid}
-                      onClick={async () => {
-                        const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
-
-                        if (hasConflict) {
-                          setNotificationMessage("This room is already booked for the selected date and time.");
-                          setIsNotificationVisible(true);
-                          return;
-                        }
-                        setIsFinalizeModalVisible(true);
-                        
-                      }}
-                    >
-                      Finalize
-                    </Button>
                 </div>
+
+         
+          <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 50}}>
+          <FormOutlined style={{fontSize: 25, color: '#1e7898'}}/>
+          <div style={{display: 'flex', flexDirection: 'column', gap: 5}}>
+          <h1 style={{margin: 0, padding: 0, color: '#1e7898'}}>Requsition Form</h1>
+          <p style={{padding: 0 , margin: 0, fontSize: 15}}>Kindly complete and submit the form to process the requisition.</p>
+          </div>
+          </div>
+          
             
             <div className="whole-section" >
               <div className="left-section">
@@ -2539,6 +2543,7 @@ const Requisition = () => {
             </div>
             
               <div className="reason-container">
+                <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
                 <strong style={{marginBottom: '5px'}}>Note (Optional):</strong>
                 <Input.TextArea
                   rows={3}
@@ -2550,6 +2555,26 @@ const Requisition = () => {
                    onChange={(e) => setReason(sanitizeInput(e.target.value))}
                   placeholder="Leave a note for the custodian"
                 />
+                </div>
+
+                    <Button 
+                      type="primary"
+                      className="finalize-btn"
+                      disabled={!isFormValid}
+                      onClick={async () => {
+                        const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
+
+                        if (hasConflict) {
+                          setNotificationMessage("This room is already booked for the selected date and time.");
+                          setIsNotificationVisible(true);
+                          return;
+                        }
+                        setIsFinalizeModalVisible(true);
+                        
+                      }}
+                    >
+                      Finalize
+                    </Button>
               </div>
             </div>
           </div>

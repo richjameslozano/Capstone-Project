@@ -43,7 +43,7 @@
   display: flex;
   flex-direction: column;
   width: 50%;
-  
+  gap: 50px;
 }
 .bottom-btns{
   display: flex;
@@ -51,8 +51,9 @@
 }
 
 .finalize-btn {
-  margin: 16px 0 24px 12px; /* add spacing between buttons */
-  max-width: 200px;
+  width: 30%;
+  min-height: 35px;
+  align-self: flex-end;
   font-weight: 600;
   background-color: #39910d; /* Ant Design green */
   color: white;
@@ -97,7 +98,7 @@
 } */
 
 .finalize-modal  button:nth-child(2){
-  background-color: #39910d;
+  background-color: #0f3c4c;
   font-weight: 500;
   border-width: 1px ;
   border:none;
@@ -117,17 +118,18 @@
 
 
 .finalize-title-container{
+  position: absolute;
+  left: 0;
+  top: 0;
+  gap: 5px;
   display: flex;
   align-items: center;
-  justify-content: center;
   width: 800px; 
-  background-color: #39910d;
+  background-color: #0f3c4c;
   height: 50px;
   padding-left: 20px;
   border-top-right-radius: 8px;
   border-top-left-radius: 8px;
-  margin-top: -20px;
-  margin-left: -24px;
 }
 
 .modal-whole{
@@ -135,8 +137,8 @@
   display: flex;
   flex-direction: row;
   gap: 20px;
-  width: 800px;
-  padding-top: 15px;
+  min-width: 800px;
+  padding-top: 50px;
   margin-left: -24px;
   padding-left: 20px;
   font-size: 16px;
@@ -259,7 +261,9 @@ gap: 15px;
   padding-top: 10px;
 }
 
-
+.site-layout-req{
+  height: 'auto';
+}
 
 .requisition-table .ant-table-tbody > tr:nth-child(odd) > td {
   background-color: #fafafa; /* Light gray */
