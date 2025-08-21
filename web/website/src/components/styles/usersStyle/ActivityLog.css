@@ -110,18 +110,17 @@
   border-radius: 12px;
   padding: 24px;
 }
-
-.request-details-container {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
+/* 
+.pending-modal-header {
+  position: absolute;
+  top: 20px;
+  left: 24px;
+  background-color: orange;
+} */
 
 .request-details-whole {
   display: flex;
   justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 20px;
 }
 
 .request-details-left,

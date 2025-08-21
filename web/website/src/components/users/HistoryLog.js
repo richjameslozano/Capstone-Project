@@ -13,7 +13,7 @@ import {
   theme,
   Steps
 } from "antd";
-import { AppstoreAddOutlined, ArrowRightOutlined, CloseOutlined, ExpandAltOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, MessageOutlined, RocketOutlined, SearchOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
+import { AppstoreAddOutlined, ArrowRightOutlined, CloseOutlined, ExpandAltOutlined, ExperimentOutlined, FileSearchOutlined, FormOutlined, LikeOutlined, MessageOutlined, RocketOutlined, SearchOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
@@ -747,12 +747,12 @@ const renderPendingTab = () => (
       ]}
     >
       {selectedRequest && (
-        <>
+        <div style={{paddingTop: 20, backgroundColor: '#ffeedbff'}}>
           <div
-            className="request-details-container"
-            style={{ justifyContent: "space-between" }}
+            className="pending-modal-header" style={{backgroundColor: '#e68020ff', position: 'absolute', top: 0, left: 0, borderRadius: '5px 5px 0 0', height: 60, width: '100%', display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 20}}
           >
-            <strong style={{ fontSize: "18px", color: "white" }}>Request Details</strong>
+            <ClockCircleOutlined style={{color: 'white', fontSize: 25}}/>
+            <strong style={{ fontSize: "20px", color: "white" }}>Request Details - PENDING</strong>
           </div>
           <div className="request-details-whole">
             <div className="request-details-left">
@@ -782,7 +782,7 @@ const renderPendingTab = () => (
               <strong>Note:</strong> {selectedRequest.message || "No message provided."}
             </p>
           </div>
-        </>
+        </div>
       )}
     </Modal>
 
