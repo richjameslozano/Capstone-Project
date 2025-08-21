@@ -457,7 +457,7 @@ const NotificationsScreen = () => {
   const { user } = useAuth();
   const userId = user?.id;
   const role = user?.role?.toLowerCase() || 'user';
-
+  const navigation = useNavigation();
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -549,20 +549,63 @@ const NotificationsScreen = () => {
     };
   }, [userId, role]);
 
-  const handleMarkAsRead = async (notifId, from) => {
-    if (!notifId || !userId) return;
-    try {
-      const notifDocRef =
-        from === 'user'
-          ? doc(db, 'accounts', userId, 'userNotifications', notifId)
-          : doc(db, 'allNotifications', notifId);
+  const handleMarkAsRead = async (notif) => {
+    if (!userId || !notif.id) return;
 
-      await updateDoc(notifDocRef, {
-        [`readBy.${userId}`]: true,
-      });
+    try {
+      let notifDocRef;
+
+      if (notif.from === "user" || role === "user") {
+        // ✅ Personal notification
+        notifDocRef = doc(db, "accounts", userId, "userNotifications", notif.id);
+
+        if (!notif.read) {
+          await updateDoc(notifDocRef, { read: true });
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+          );
+        }
+      } else {
+        // ✅ Global notification
+        notifDocRef = doc(db, "allNotifications", notif.id);
+
+        if (!notif.readBy || !notif.readBy[userId]) {
+          await updateDoc(notifDocRef, {
+            read: true,
+            [`readBy.${userId}`]: true,
+          });
+          setNotifications((prev) =>
+            prev.map((n) =>
+              n.id === notif.id
+                ? { ...n, read: true, readBy: { ...(n.readBy || {}), [userId]: true } }
+                : n
+            )
+          );
+        }
+      }
+      
     } catch (err) {
-      console.error('❌ Failed to mark notification as read:', err);
+      console.error("❌ Failed to mark notification as read:", err);
     }
+
+    // --- Navigation logic ---
+    const actionText = (notif.action || notif.message || "").toLowerCase().trim();
+    console.log("🔔 Notification clicked:", actionText);
+
+    if (actionText.startsWith("approved request")) {
+      console.log("➡️ Navigating to OrdersScreen");
+      navigation.navigate("OrdersScreen");
+      return;
+    }
+
+    if (actionText.startsWith("new requisition")) {
+      console.log("➡️ Navigating to RequestsScreen");
+      navigation.navigate("PendingRequestScreen"); 
+      return;
+    }
+
+    console.log("⚠️ No matching navigation for:", actionText);
+
   };
 
   /** Listen to notifications in foreground using Expo Notifications */
@@ -581,8 +624,6 @@ const NotificationsScreen = () => {
     setHeaderHeight(height);
   };
 
-  const navigation = useNavigation();
-
   return (
     <View style={styles.container}>
 
@@ -591,6 +632,7 @@ const NotificationsScreen = () => {
           <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
             <Icon name="keyboard-backspace" size={28} color="white" />
           </TouchableOpacity>
+          
           <View style={{ alignItems: 'center' }}>
             <Text style={{ textAlign: 'center', fontWeight: 800, fontSize: 17, color: 'white' }}>Notifications</Text>
             <Text style={{ color: 'white', fontWeight: 300, fontSize: 13 }}>Recent Activities </Text>
@@ -606,18 +648,44 @@ const NotificationsScreen = () => {
         {loading ? (
           <ActivityIndicator size="large" color="#000" />
         ) : (
+          // <FlatList
+          //   data={notifications}
+          //   keyExtractor={(item) => item.id}
+          //   renderItem={({ item }) => {
+          //     const unread = !item.readBy?.[userId];
+          //     return (
+          //       <NotificationItem
+          //         title={item.title || 'New Submission'}
+          //         message={item.message || item.action || 'No Message'}
+          //         timestamp={item.timestamp}
+          //         unread={unread}
+          //         onPress={() => handleMarkAsRead(item.id, item.from)}
+          //       />
+          //     );
+          //   }}
+          //   ListEmptyComponent={
+          //     <Text style={{ textAlign: 'center', marginTop: 20 }}>
+          //       No notifications found.
+          //     </Text>
+          //   }
+          //   contentContainerStyle={{ paddingBottom: 20, gap: 5 }}
+          // />
+
           <FlatList
             data={notifications}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => {
-              const unread = !item.readBy?.[userId];
+              const unread =
+                (item.hasOwnProperty("read") && !item.read) ||
+                (!item.hasOwnProperty("read") && !(item.readBy?.[userId]));
+
               return (
                 <NotificationItem
-                  title={item.title || 'New Submission'}
-                  message={item.message || item.action || 'No Message'}
+                  title={item.title || "New Submission"}
+                  message={item.message || item.action || "No Message"}
                   timestamp={item.timestamp}
                   unread={unread}
-                  onPress={() => handleMarkAsRead(item.id, item.from)}
+                  onPress={() => handleMarkAsRead(item)}
                 />
               );
             }}
