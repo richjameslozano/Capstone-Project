@@ -314,6 +314,20 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
       console.error("Failed to update notification:", error);
     }
 
+    // if (notif.link) {
+    //   navigate(notif.link);
+
+    // } else {
+    //   message.info(notif.action || "Notification clicked");
+    // }
+
+    const actionText = notif.action?.toLowerCase() || "";
+
+    if (actionText.startsWith("new requisition submitted")) {
+      navigate("/main/pending-request");
+      return;
+    }
+
     if (notif.link) {
       navigate(notif.link);
 
