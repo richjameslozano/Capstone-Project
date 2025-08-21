@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar,Image } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar,Image, ActivityIndicator } from 'react-native';
 import { Card } from 'react-native-paper';
 import { collection, getDocs, doc, updateDoc, getDoc, collectionGroup, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
@@ -13,11 +13,10 @@ export default function PendingRequestScreen() {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
-
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isNote, setIsNote] = useState(true)
   const [selectedFilter, setSelectedFilter] = useState('All'); // or 'All' if you want a default
-
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation()
 
@@ -46,6 +45,7 @@ export default function PendingRequestScreen() {
   const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
 
 useEffect(() => {
+  setLoading(true);
   const unsubscribe = onSnapshot(collection(db, 'userrequests'), (querySnapshot) => {
     const processRequests = async () => {
       try {
@@ -107,6 +107,9 @@ useEffect(() => {
         setPendingRequests(fetched);
       } catch (err) {
         console.error('Error processing requests:', err);
+
+      } finally {
+      setLoading(false);
       }
     };
 
@@ -327,9 +330,14 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
               </TouchableOpacity>
             ))}
           </ScrollView>
-</View>
+        </View>
           
-
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, color: '#395a7f' }}>Loading requests...</Text>
+        </View>
+      ) : (
       <ScrollView style={{ backgroundColor: '#e9ecee', paddingHorizontal: 7, paddingTop: 5, flex: 1}}
       contentContainerStyle={styles.pendingFlat}>
         {Object.entries(categorizedRequests)
@@ -356,7 +364,7 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
             </View>
           ))}
       </ScrollView>
-      
+      )}
 
       <Modal
         visible={viewModalVisible}
