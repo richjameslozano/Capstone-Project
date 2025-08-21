@@ -643,7 +643,7 @@ function getConditionSummary(conditionsArray) {
   //   }
   // };
 
-    const handleDeploy = async () => {
+  const handleDeploy = async () => {
     console.log("🚀 Selected Record:", selectedApprovedRequest);
 
     const userId = localStorage.getItem("userId");
@@ -665,6 +665,7 @@ function getConditionSummary(conditionsArray) {
         if (!accountsSnapshot.empty) {
           requestorAccountId = accountsSnapshot.docs[0].accountId;
           console.log("✅ accountId fetched:", requestorAccountId);
+          
         } else {
           throw new Error("No account found for userId");
         }
@@ -694,6 +695,27 @@ function getConditionSummary(conditionsArray) {
       });
 
       // ✅ 3. Add to historylog subcollection of the user
+      // await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
+      //   action: "Deployed",
+      //   userName: selectedApprovedRequest.userName,
+      //   timestamp: serverTimestamp(),
+      //   requestList: selectedApprovedRequest.requestList || [],
+      //   program: selectedApprovedRequest.program,
+      //   room: selectedApprovedRequest.room,
+      //   dateRequired: selectedApprovedRequest.dateRequired,
+      //   timeFrom: selectedApprovedRequest.timeFrom,
+      //   timeTo: selectedApprovedRequest.timeTo,
+      //   approvedBy: userName || "N/A",
+      //   usageType: selectedApprovedRequest.usageType || "N/A",
+      // });
+
+      const borrowDocRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+      const borrowDocSnap = await getDoc(borrowDocRef);
+      const borrowData = borrowDocSnap.exists() ? borrowDocSnap.data() : {};
+
+      // Use the usageType from the full document
+      const usageTypeToLog = borrowData.usageType || "N/A";
+
       await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
         action: "Deployed",
         userName: selectedApprovedRequest.userName,
@@ -705,7 +727,11 @@ function getConditionSummary(conditionsArray) {
         timeFrom: selectedApprovedRequest.timeFrom,
         timeTo: selectedApprovedRequest.timeTo,
         approvedBy: userName || "N/A",
+        usageType: usageTypeToLog,
       });
+
+      console.log("🚀 Selected Approved Request:", selectedApprovedRequest);
+      console.log("🚀 Usage Type:", selectedApprovedRequest.usageType);
 
       // 3.1
       const approvedHistoryQuery = query(
