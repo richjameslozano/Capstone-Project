@@ -862,8 +862,8 @@ const renderApprovedTab = () => {
                   >
                     APPROVED
                   </p>
-                  <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
-                    Date Approved: {item.dateApproved || item.dateRequested}
+                  <p style={{ padding: 0, margin: 0, fontSize: 15}}>
+                    <strong>Approved by:</strong>  {item.fullData.approvedBy}
                   </p>
                 </div>
 
@@ -877,8 +877,8 @@ const renderApprovedTab = () => {
                     marginTop: 10,
                   }}
                 >
-                  {getUsageIcon(item.usageType)}
-                  <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.usageType}</h3>
+                  {getUsageIcon(item.fullData.usageType)}
+                  <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.fullData.usageType}</h3>
                 </div>
 
                 {/* Info Section */}
@@ -1007,9 +1007,9 @@ console.log(deployedData);
                     >
                       DEPLOYED
                     </p>
-                    <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
-                      Date Approved: {item.dateApproved || item.dateRequested}
-                    </p>
+                  <p style={{ padding: 0, margin: 0, fontSize: 15}}>
+                    <strong>Approved by:</strong>  {item.fullData.approvedBy}
+                  </p>
                   </div>
 
                   {/* Usage Type */}
@@ -1022,8 +1022,8 @@ console.log(deployedData);
                       marginTop: 10,
                     }}
                   >
-                    {getUsageIcon(item.usageType)}
-                    <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.usageType}</h3>
+                    {getUsageIcon(item.fullData.usageType)}
+                    <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.fullData.usageType}</h3>
                   </div>
 
                   {/* Info Section */}
@@ -1077,7 +1077,7 @@ console.log(deployedData);
             })
           ) : (
             <div className="empty-row">
-              <span>No approved requisitions found.</span>
+              <span>No deployed requisitions found.</span>
             </div>
           )}
         </div>
@@ -1099,7 +1099,7 @@ console.log(returnedData);
           <h1 style={{ color: "#37c225ff", margin: 0, padding: 0, textDecoration: "none" }}>
             Completed Requisitions
           </h1>
-          <p>Please return the borrowed items to the stockroom and proceed to the "Return Items" page to complete this requisition.</p>
+          <p>These requisitions have been completed and will automatically be removed 7 days after completion.</p>
         </div>
       </div>
 
@@ -1223,7 +1223,7 @@ console.log(returnedData);
             })
           ) : (
             <div className="empty-row">
-              <span>No approved requisitions found.</span>
+              <span>No completed requisitions found.</span>
             </div>
           )}
         </div>
