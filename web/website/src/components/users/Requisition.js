@@ -1667,7 +1667,9 @@ const Requisition = () => {
                     ? ` ${item.unit}`
                     : ""
                 } | ${item.status} | ${item.department}`;
-                const isDisabled = selectedIds.includes(item.id);
+                // const isDisabled = selectedIds.includes(item.id);
+
+                const isDisabled = selectedIds.includes(item.id) || item.quantity === 0;
 
                 return (
                   <Select.Option
