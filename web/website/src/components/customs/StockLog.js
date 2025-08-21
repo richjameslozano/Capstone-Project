@@ -154,7 +154,7 @@ const StockLog = ({ inventoryDocId, editingItem, setDataSource }) => {
       <Table
         dataSource={stockLogs}
         columns={columns}
-        pagination={false}
+        pagination={5}
         scroll={{ y: 300 }}
         rowKey="key"
         rowClassName={(record) => (record.deducted ? 'grayed-row' : '')}
