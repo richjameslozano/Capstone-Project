@@ -153,8 +153,62 @@ const CameraScreen = ({ onClose, selectedItem }) => {
             found = true;
             const currentStatus = data.status?.toLowerCase();
 
-            if (currentStatus === "borrowed") {
+            // if (currentStatus === "borrowed") {
 
+
+            //   updatedRequestList = data.requestList.map((item) => {
+            //     if (
+            //       item.itemName === itemName &&
+            //       item.itemDetails === itemDetails &&
+            //       item.selectedItemId === selectedItem.selectedItemId &&
+            //       item.labRoom === selectedItem.labRoom &&
+            //       item.quantity === selectedItem.quantity &&
+            //       item.program === selectedItem.program &&
+            //       item.timeFrom === selectedItem.timeFrom &&
+            //       item.timeTo === selectedItem.timeTo
+            //     ) {
+            //       return {
+            //         ...item,
+            //         scannedCount: item.quantity,
+            //       };
+            //     }
+            //     return item;
+            //   });
+
+            //   allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity);
+
+            //   await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
+            //     requestList: updatedRequestList,
+            //     ...(allDeployed && { status: "Deployed" })
+            //   });
+              
+            //   const deployedItem = data.requestList.find(item => item.itemName === itemName);
+
+            //   Alert.alert("Deployed", `Deployed ${deployedItem.quantity} ${itemName} item(s).`);
+
+            //   borrowedItemsDetails.push({
+            //     borrower: data.userName || "Unknown",
+            //     borrowedDate: data.dateRequired,
+            //     timeFrom: data.timeFrom || "00:00",
+            //     timeTo: data.timeTo || "00:00"
+            //   });
+
+            //   requestorUserId = data.accountId;
+            //   requestorLogData = {
+            //     ...data,
+            //     action: "Deployed",
+            //     deployedBy: user.name || "Unknown",
+            //     deployedById: user.id,
+            //     deployedAt: getTodayDate(),
+            //     timestamp: serverTimestamp()
+            //   };
+
+            //   // 5️⃣ Write to historylog
+
+
+            // } else if (currentStatus === "deployed") {
+
+            if (currentStatus === "borrowed") {
 
               updatedRequestList = data.requestList.map((item) => {
                 if (
@@ -181,7 +235,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 requestList: updatedRequestList,
                 ...(allDeployed && { status: "Deployed" })
               });
-              
+
               const deployedItem = data.requestList.find(item => item.itemName === itemName);
 
               Alert.alert("Deployed", `Deployed ${deployedItem.quantity} ${itemName} item(s).`);
@@ -203,9 +257,45 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 timestamp: serverTimestamp()
               };
 
-              break;
+              // 5️⃣ Write to historylog
+              if (allDeployed && requestorUserId && requestorLogData) {
+                try {
+                  console.log("Writing to historylog for:", requestorUserId);
+                  await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), requestorLogData);
+
+                  // Remove matching "Approved" historylog entries
+                  const approvedHistoryQuery = query(
+                    collection(db, `accounts/${requestorUserId}/historylog`),
+                    where("action", "==", "Request Approved")
+                  );
+                  const approvedHistorySnapshot = await getDocs(approvedHistoryQuery);
+
+                  for (const docSnap of approvedHistorySnapshot.docs) {
+                    const docData = docSnap.data();
+                    const matches =
+                      docData.requestList?.[0]?.itemName === deployedItem.itemName &&
+                      docData.program === deployedItem.program &&
+                      docData.timeFrom === deployedItem.timeFrom &&
+                      docData.timeTo === deployedItem.timeTo;
+
+                    if (matches) {
+                      await deleteDoc(doc(db, `accounts/${requestorUserId}/historylog`, docSnap.id));
+                      console.log("✅ Removed matching 'Approved' history entry");
+                    }
+                  }
+
+                  break; // ✅ stop looping after deployment
+
+                } catch (error) {
+                  console.error("Failed to write to historylog:", error);
+                }
+
+              } else {
+                console.warn("Missing requestorUserId or log data.");
+              }
 
             } else if (currentStatus === "deployed") {
+
               alreadyDeployed = true;
 
             // } else if (currentStatus === "returned") {
