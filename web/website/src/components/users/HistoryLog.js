@@ -604,6 +604,40 @@ const sanitizeInput = (input) =>
   }
 };
 
+const getBGColor = (modalBG) => {
+  switch (modalBG){
+    case "Request Approved":
+      return "#081538"
+    case "Deployed":
+      return "#2596be"
+    case "Returned":
+      return "#056625ff"
+  }
+}
+
+const getLabel = (modalLabel) => {
+  switch (modalLabel){
+    case "Request Approved":
+      return "APPROVED"
+    case "Deployed":
+      return "DEPLOYED"
+    case "Returned":
+      return "COMPLETED"
+  }
+}
+const getIcon = (modalIcon) => {
+  switch (modalIcon){
+    case "Request Approved":
+      return <LikeOutlined style={{fontSize: 23, color: 'white'}}/>
+    case "Deployed":
+      return <SendOutlined style={{fontSize: 23, color: 'white'}}/>
+    case "Returned":
+      return <CheckCircleOutlined style={{fontSize: 23, color: 'white'}}/>
+  }
+}
+
+
+
 const renderPendingTab = () => (
   <Content className="pending-content">
     <div style={{display: 'flex', gap: 10, alignItems: 'flex-start'}}>
@@ -1232,127 +1266,127 @@ console.log(returnedData);
   );
 };
 
-const ProcessedTab = () => {
-  const [activeTab, setActiveTab] = useState('APPROVED');
+// const ProcessedTab = () => {
+//   const [activeTab, setActiveTab] = useState('APPROVED');
 
-  const getTabData = (type) => {
-    return filteredData.filter((item) => {
-      if (type === 'APPROVED') return item.action === 'Request Approved';
-      if (type === 'REJECTED') return item.action === 'Request Rejected';
-      if (type === 'CANCELLED') return item.action === 'Cancelled a request';
-      if (type === 'DEPLOYED') return item.action === 'Deployed';
-      return true;
-    });
-  };
+//   const getTabData = (type) => {
+//     return filteredData.filter((item) => {
+//       if (type === 'APPROVED') return item.action === 'Request Approved';
+//       if (type === 'REJECTED') return item.action === 'Request Rejected';
+//       if (type === 'CANCELLED') return item.action === 'Cancelled a request';
+//       if (type === 'DEPLOYED') return item.action === 'Deployed';
+//       return true;
+//     });
+//   };
 
-  const tabData = getTabData(activeTab);
+//   const tabData = getTabData(activeTab);
 
-  return (
-    <Content className="activity-content">
-      <div className="activity-controls">
+//   return (
+//     <Content className="activity-content">
+//       <div className="activity-controls">
 
-      </div>
+//       </div>
 
-      <Tabs activeKey={activeTab} onChange={setActiveTab}>
-        <TabPane tab={`Approved (${getTabData('APPROVED').length})`} key="APPROVED" />
-        <TabPane tab={`Deployed (${getTabData('DEPLOYED').length})`} key="DEPLOYED" />
-        <TabPane tab={`Rejected (${getTabData('REJECTED').length})`} key="REJECTED" />
-        <TabPane tab={`Cancelled (${getTabData('CANCELLED').length})`} key="CANCELLED" />
-      </Tabs>
+//       <Tabs activeKey={activeTab} onChange={setActiveTab}>
+//         <TabPane tab={`Approved (${getTabData('APPROVED').length})`} key="APPROVED" />
+//         <TabPane tab={`Deployed (${getTabData('DEPLOYED').length})`} key="DEPLOYED" />
+//         <TabPane tab={`Rejected (${getTabData('REJECTED').length})`} key="REJECTED" />
+//         <TabPane tab={`Cancelled (${getTabData('CANCELLED').length})`} key="CANCELLED" />
+//       </Tabs>
 
-      <Table
-        columns={columns2}
-        dataSource={tabData}
-        pagination={{ pageSize: 10 }}
-        bordered
-        className="activity-table"
-        rowClassName="activity-row"
-        onRow={(record) => ({ onClick: () => handleRowClick(record) })}
-        locale={{
-          emptyText: (
-            <div className="empty-row">
-              <span>No activity found.</span>
-            </div>
-          ),
-        }}
-      />
+//       <Table
+//         columns={columns2}
+//         dataSource={tabData}
+//         pagination={{ pageSize: 10 }}
+//         bordered
+//         className="activity-table"
+//         rowClassName="activity-row"
+//         onRow={(record) => ({ onClick: () => handleRowClick(record) })}
+//         locale={{
+//           emptyText: (
+//             <div className="empty-row">
+//               <span>No activity found.</span>
+//             </div>
+//           ),
+//         }}
+//       />
 
-      <Modal
-        title="Activity Details"
-        visible={modalVisible}
-        zIndex={1015}
-        onCancel={() => setModalVisible(false)}
-        footer={null}
-      >
-        {selectedLog && (
-          <Descriptions column={1} bordered size="small">
-            <Descriptions.Item label="Action">
-              {selectedLog.status === 'CANCELLED'
-                ? 'Cancelled a request'
-                : selectedLog.action || 'Modified a request'}
-            </Descriptions.Item>
+//       <Modal
+//         title="Activity Details"
+//         visible={modalVisible}
+//         zIndex={1015}
+//         onCancel={() => setModalVisible(false)}
+//         footer={null}
+//       >
+//         {selectedLog && (
+//           <Descriptions column={1} bordered size="small">
+//             <Descriptions.Item label="Action">
+//               {selectedLog.status === 'CANCELLED'
+//                 ? 'Cancelled a request'
+//                 : selectedLog.action || 'Modified a request'}
+//             </Descriptions.Item>
 
-            <Descriptions.Item label="By">
-              {selectedLog.userName || 'Unknown User'}
-            </Descriptions.Item>
+//             <Descriptions.Item label="By">
+//               {selectedLog.userName || 'Unknown User'}
+//             </Descriptions.Item>
 
-            <Descriptions.Item label="Program">
-              {selectedLog.program || 'N/A'}
-            </Descriptions.Item>
+//             <Descriptions.Item label="Program">
+//               {selectedLog.program || 'N/A'}
+//             </Descriptions.Item>
 
-            <Descriptions.Item label="Items Requested">
-              {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                <ul style={{ paddingLeft: 20 }}>
-                  {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                    <li key={index} style={{ marginBottom: 10 }}>
-                      <strong>{item.itemName}</strong>
-                      <ul style={{ marginLeft: 20 }}>
-                        <li>Quantity: {item.quantity}</li>
-                        {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
-                          <li>Unit: {item.unit}</li>
-                        )}
-                        {item.category && <li>Category: {item.category}</li>}
-                        {item.category === 'Glasswares' && item.volume && (
-                          <li>Volume: {item.volume}</li>
-                        )}
-                        {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                        {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                        {item.itemType && <li>Item Type: {item.itemType}</li>}
-                        {item.department && <li>Department: {item.department}</li>}
-                        {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
-                          <>
-                            {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
-                            {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
-                          </>
-                        )}
-                      </ul>
-                    </li>
-                  ))}
-                </ul>
-              ) : 'None'}
-            </Descriptions.Item>
-            {selectedLog.action !== 'Request Rejected' && (
-              <Descriptions.Item label="Reason">
-                {selectedLog.reason || 'N/A'}
-              </Descriptions.Item>
-            )}
-            <Descriptions.Item label="Room">
-              {selectedLog.room || 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Time">
-              {selectedLog.timeFrom && selectedLog.timeTo
-                ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-                : 'N/A'}
-            </Descriptions.Item>
-            <Descriptions.Item label="Date Required">
-              {selectedLog.dateRequired || 'N/A'}
-            </Descriptions.Item>
-          </Descriptions>
-        )}
-      </Modal>
-    </Content>
-  );
-};
+//             <Descriptions.Item label="Items Requested">
+//               {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+//                 <ul style={{ paddingLeft: 20 }}>
+//                   {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+//                     <li key={index} style={{ marginBottom: 10 }}>
+//                       <strong>{item.itemName}</strong>
+//                       <ul style={{ marginLeft: 20 }}>
+//                         <li>Quantity: {item.quantity}</li>
+//                         {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
+//                           <li>Unit: {item.unit}</li>
+//                         )}
+//                         {item.category && <li>Category: {item.category}</li>}
+//                         {item.category === 'Glasswares' && item.volume && (
+//                           <li>Volume: {item.volume}</li>
+//                         )}
+//                         {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
+//                         {item.usageType && <li>Usage Type: {item.usageType}</li>}
+//                         {item.itemType && <li>Item Type: {item.itemType}</li>}
+//                         {item.department && <li>Department: {item.department}</li>}
+//                         {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
+//                           <>
+//                             {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
+//                             {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+//                           </>
+//                         )}
+//                       </ul>
+//                     </li>
+//                   ))}
+//                 </ul>
+//               ) : 'None'}
+//             </Descriptions.Item>
+//             {selectedLog.action !== 'Request Rejected' && (
+//               <Descriptions.Item label="Reason">
+//                 {selectedLog.reason || 'N/A'}
+//               </Descriptions.Item>
+//             )}
+//             <Descriptions.Item label="Room">
+//               {selectedLog.room || 'N/A'}
+//             </Descriptions.Item>
+//             <Descriptions.Item label="Time">
+//               {selectedLog.timeFrom && selectedLog.timeTo
+//                 ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+//                 : 'N/A'}
+//             </Descriptions.Item>
+//             <Descriptions.Item label="Date Required">
+//               {selectedLog.dateRequired || 'N/A'}
+//             </Descriptions.Item>
+//           </Descriptions>
+//         )}
+//       </Modal>
+//     </Content>
+//   );
+// };
 
   const handleGeneratePDF = () => {
     if (!selectedLog) {
@@ -1510,25 +1544,31 @@ const ProcessedTab = () => {
     },
   ]}
 />
+
      
       <Modal
-        title="Activity Details"
         visible={modalVisible}
         zIndex={1015}
         onCancel={() => setModalVisible(false)}
         footer={null}
+        width={800}
       >
         {selectedLog && (
-          <>
-            <div id="activity-details-content">
+          <div style={{paddingTop: 60}}>
+              <div className="modal-header" style={{backgroundColor: getBGColor(selectedLog.action)}}>
+                {getIcon(selectedLog.action)}
+                <p style={{fontSize: 20, margin: 0, color: 'white', fontWeight: 600}}>Requisition Slip - {getLabel(selectedLog.action)}</p>
+              </div>
+            <div id="activity-details-content" >
+
               <Descriptions column={1} bordered size="small">
-                <Descriptions.Item label="Action">
+                <Descriptions.Item label="Approved By">
                   {selectedLog.status === 'CANCELLED'
                     ? 'Cancelled a request'
-                    : selectedLog.action || 'Modified a request'}
+                    : selectedLog.approvedBy || 'Modified a request'}
                 </Descriptions.Item>
 
-                <Descriptions.Item label="By">
+                <Descriptions.Item label="Requester">
                   {selectedLog.userName || 'Unknown User'}
                 </Descriptions.Item>
 
@@ -1551,14 +1591,10 @@ const ProcessedTab = () => {
                             {item.category === 'Glasswares' && item.volume && (
                               <li>Volume: {item.volume}</li>
                             )}
-                            {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                            {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                            {item.itemType && <li>Item Type: {item.itemType}</li>}
-                            {item.department && <li>Department: {item.department}</li>}
                             {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
                               <>
-                                {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
-                                {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
+                                {item.reason && <li><strong>Note:</strong> {item.reason}</li>}
+                                {item.rejectionReason && <li><strong>Rejection Note:</strong> {item.rejectionReason}</li>}
                               </>
                             )}
                           </ul>
@@ -1567,11 +1603,6 @@ const ProcessedTab = () => {
                     </ul>
                   ) : 'None'}
                 </Descriptions.Item>
-                {selectedLog.action !== 'Request Rejected' && (
-                  <Descriptions.Item label="Reason">
-                    {selectedLog.reason || 'N/A'}
-                  </Descriptions.Item>
-                )}
                 <Descriptions.Item label="Room">
                   {selectedLog.room || 'N/A'}
                 </Descriptions.Item>
@@ -1583,6 +1614,11 @@ const ProcessedTab = () => {
                 <Descriptions.Item label="Date Required">
                   {selectedLog.dateRequired || 'N/A'}
                 </Descriptions.Item>
+                  {selectedLog.action !== 'Request Rejected' && (
+                  <Descriptions.Item label="Note">
+                    {selectedLog.reason || 'N/A'}
+                  </Descriptions.Item>
+                )}
               </Descriptions>
             </div>
 
@@ -1617,7 +1653,7 @@ const ProcessedTab = () => {
                 </button>
               </div>
             )}
-          </>
+          </div>
         )}
       </Modal>
     </Layout>
