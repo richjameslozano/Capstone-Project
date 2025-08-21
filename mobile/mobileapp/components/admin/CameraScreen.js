@@ -231,6 +231,8 @@ const CameraScreen = ({ onClose, selectedItem }) => {
 
               allDeployed = updatedRequestList.every(item => (item.scannedCount || 0) >= item.quantity);
 
+              const usageTypeToLog = data.usageType || "N/A";
+
               await updateDoc(doc(db, "borrowcatalog", docSnap.id), {
                 requestList: updatedRequestList,
                 ...(allDeployed && { status: "Deployed" })
@@ -248,13 +250,23 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               });
 
               requestorUserId = data.accountId;
+              // requestorLogData = {
+              //   ...data,
+              //   action: "Deployed",
+              //   deployedBy: user.name || "Unknown",
+              //   deployedById: user.id,
+              //   deployedAt: getTodayDate(),
+              //   timestamp: serverTimestamp()
+              // };
+
               requestorLogData = {
                 ...data,
                 action: "Deployed",
                 deployedBy: user.name || "Unknown",
                 deployedById: user.id,
                 deployedAt: getTodayDate(),
-                timestamp: serverTimestamp()
+                timestamp: serverTimestamp(),
+                usageType: usageTypeToLog, // ✅ Add this line
               };
 
               // 5️⃣ Write to historylog
