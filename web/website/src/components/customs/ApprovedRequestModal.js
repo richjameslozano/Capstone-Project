@@ -319,7 +319,7 @@
 // VERSION 2
 import React, { useState, useEffect } from "react";
 import { Modal, Row, Col, Typography, Table, Button } from "antd";
-import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs  } from "firebase/firestore";
+import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs, deleteDoc  } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { getAuth } from "firebase/auth";
 import NotificationModal from "./NotificationModal";
@@ -516,6 +516,133 @@ function getConditionSummary(conditionsArray) {
   //   }
   // };
 
+  // const handleDeploy = async () => {
+  //   console.log("🚀 Selected Record:", selectedApprovedRequest);
+
+  //   const userId = localStorage.getItem("userId");
+  //   const userName = localStorage.getItem("userName");
+
+  //   let requestorAccountId = selectedApprovedRequest.accountId;
+
+  //   try {
+  //     // Fallback: if accountId is missing, fetch it using userId
+  //     if (!requestorAccountId && selectedApprovedRequest.accountId) {
+  //       console.warn("⚠️ accountId missing. Trying to fetch via userId...");
+
+  //       const accountsQuery = query(
+  //         collection(db, "accounts"),
+  //         where("accountId", "==", selectedApprovedRequest.accountId)
+  //       );
+
+  //       const accountsSnapshot = await getDocs(accountsQuery);
+  //       if (!accountsSnapshot.empty) {
+  //         requestorAccountId = accountsSnapshot.docs[0].accountId;
+  //         console.log("✅ accountId fetched:", requestorAccountId);
+  //       } else {
+  //         throw new Error("No account found for userId");
+  //       }
+  //     }
+
+  //     if (!requestorAccountId) {
+  //       console.error("❌ Cannot update userrequestlog: accountId is missing");
+  //       alert("Cannot update user request log. accountId is missing.");
+  //       return;
+  //     }
+
+  //     // 1. Update status in borrowcatalog
+  //     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+  //     await updateDoc(docRef, {
+  //       status: "Deployed",
+  //     });
+
+  //     const mainItemName = selectedApprovedRequest.requestList?.[0]?.itemName || "Item";
+  //     const deployMessage = `Deployed "${mainItemName}" to ${selectedApprovedRequest.userName} in ${selectedApprovedRequest.room}`;
+
+  //     // 2. Log the activity
+  //     await logRequestOrReturn(userId, userName, deployMessage, {
+  //       requestId: selectedApprovedRequest.id,
+  //       status: "Deployed",
+  //       itemName: mainItemName,
+  //       userDeployedTo: selectedApprovedRequest.userName,
+  //     });
+
+  //     // ✅ 3. Add to historylog subcollection of the user
+  //     await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
+  //       action: "Deployed",
+  //       userName: selectedApprovedRequest.userName,
+  //       timestamp: serverTimestamp(),
+  //       requestList: selectedApprovedRequest.requestList || [],
+  //       program: selectedApprovedRequest.program,
+  //       room: selectedApprovedRequest.room,
+  //       dateRequired: selectedApprovedRequest.dateRequired,
+  //       timeFrom: selectedApprovedRequest.timeFrom,
+  //       timeTo: selectedApprovedRequest.timeTo,
+  //       approvedBy: userName || "N/A",
+  //     });
+
+  //     // 4. Update userrequestlog
+  //     const userRequestQuery = query(
+  //       collection(db, `accounts/${requestorAccountId}/userrequestlog`)
+  //       // where("dateRequired", "==", selectedApprovedRequest.dateRequired)
+  //     );
+
+  //     const userRequestSnapshot = await getDocs(userRequestQuery);
+  //     console.log("📄 userrequestlog found:", userRequestSnapshot.docs.length);
+
+  //     for (const docSnap of userRequestSnapshot.docs) {
+  //       const docData = docSnap.data();
+  //       let hasMatchingItem = false;
+
+  //       docData.requestList?.forEach(async (item) => {
+  //         const selectedItem = selectedApprovedRequest.requestList?.[0];
+  //         const requestorLogData = selectedApprovedRequest;
+
+  //         const matches =
+  //           item.itemName === selectedItem?.itemName &&
+  //           item.itemDetails === selectedItem?.itemDetails &&
+  //           item.selectedItemId === selectedItem?.selectedItemId &&
+  //           item.labRoom === selectedItem?.labRoom &&
+  //           item.quantity === selectedItem?.quantity &&
+  //           docData.program === requestorLogData.program &&
+  //           docData.timeFrom === requestorLogData.timeFrom &&
+  //           docData.timeTo === requestorLogData.timeTo;
+
+  //         console.log("🔍 Comparing item:");
+  //         console.log("  itemName:", item.itemName, "==", selectedItem?.itemName);
+  //         console.log("  itemDetails:", item.itemDetails, "==", selectedItem?.itemDetails);
+  //         console.log("  selectedItemId:", item.selectedItemId, "==", selectedItem?.selectedItemId);
+  //         console.log("  labRoom:", item.labRoom, "==", selectedItem?.labRoom);
+  //         console.log("  quantity:", item.quantity, "==", selectedItem?.quantity);
+  //         console.log("  program:", docData.program, "==", requestorLogData.program);
+  //         console.log("  timeFrom:", docData.timeFrom, "==", requestorLogData.timeFrom);
+  //         console.log("  timeTo:", docData.timeTo, "==", requestorLogData.timeTo);
+  //         console.log("  ➤ Matches:", matches);
+
+  //         if (matches) {
+  //           hasMatchingItem = true;
+
+  //           await updateDoc(
+  //             doc(db, `accounts/${requestorAccountId}/userrequestlog/${docSnap.id}`),
+  //             {
+  //               status: "Deployed",
+  //             }
+  //           );
+
+  //           console.log("✅ userrequestlog updated to 'Deployed'");
+  //         }
+  //       });
+  //     }
+
+  //     // alert("Request successfully deployed!");
+  //     showNotification("Request successfully deployed!");
+  //     setIsApprovedModalVisible(false);
+
+  //   } catch (error) {
+  //     console.error("❌ Error during deployment:", error.message || error);
+  //     alert("Deployment failed. Check console for details.");
+  //   }
+  // };
+
   const handleDeploy = async () => {
     console.log("🚀 Selected Record:", selectedApprovedRequest);
 
@@ -538,6 +665,7 @@ function getConditionSummary(conditionsArray) {
         if (!accountsSnapshot.empty) {
           requestorAccountId = accountsSnapshot.docs[0].accountId;
           console.log("✅ accountId fetched:", requestorAccountId);
+          
         } else {
           throw new Error("No account found for userId");
         }
@@ -567,6 +695,27 @@ function getConditionSummary(conditionsArray) {
       });
 
       // ✅ 3. Add to historylog subcollection of the user
+      // await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
+      //   action: "Deployed",
+      //   userName: selectedApprovedRequest.userName,
+      //   timestamp: serverTimestamp(),
+      //   requestList: selectedApprovedRequest.requestList || [],
+      //   program: selectedApprovedRequest.program,
+      //   room: selectedApprovedRequest.room,
+      //   dateRequired: selectedApprovedRequest.dateRequired,
+      //   timeFrom: selectedApprovedRequest.timeFrom,
+      //   timeTo: selectedApprovedRequest.timeTo,
+      //   approvedBy: userName || "N/A",
+      //   usageType: selectedApprovedRequest.usageType || "N/A",
+      // });
+
+      const borrowDocRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+      const borrowDocSnap = await getDoc(borrowDocRef);
+      const borrowData = borrowDocSnap.exists() ? borrowDocSnap.data() : {};
+
+      // Use the usageType from the full document
+      const usageTypeToLog = borrowData.usageType || "N/A";
+
       await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
         action: "Deployed",
         userName: selectedApprovedRequest.userName,
@@ -578,7 +727,35 @@ function getConditionSummary(conditionsArray) {
         timeFrom: selectedApprovedRequest.timeFrom,
         timeTo: selectedApprovedRequest.timeTo,
         approvedBy: userName || "N/A",
+        usageType: usageTypeToLog,
       });
+
+      console.log("🚀 Selected Approved Request:", selectedApprovedRequest);
+      console.log("🚀 Usage Type:", selectedApprovedRequest.usageType);
+
+      // 3.1
+      const approvedHistoryQuery = query(
+        collection(db, `accounts/${requestorAccountId}/historylog`),
+        where("action", "==", "Request Approved")
+      );
+
+      // 3.2
+      const approvedHistorySnapshot = await getDocs(approvedHistoryQuery);
+
+      for (const docSnap of approvedHistorySnapshot.docs) {
+        const docData = docSnap.data();
+
+        const matches =
+          docData.requestList?.[0]?.itemName === selectedApprovedRequest.requestList?.[0]?.itemName &&
+          docData.program === selectedApprovedRequest.program &&
+          docData.timeFrom === selectedApprovedRequest.timeFrom &&
+          docData.timeTo === selectedApprovedRequest.timeTo;
+
+        if (matches) {
+          await deleteDoc(doc(db, `accounts/${requestorAccountId}/historylog/${docSnap.id}`));
+          console.log("✅ Removed matching 'Approved' history entry");
+        }
+      }
 
       // 4. Update userrequestlog
       const userRequestQuery = query(
