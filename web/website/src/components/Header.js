@@ -268,9 +268,20 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
   }, [userId, role]);
 
   // const unreadCount = notifications.filter(n => !n.read).length;
-  const unreadCount = notifications.filter(
-    (n) => !(n.readBy?.[userId])
-  ).length;
+  // const unreadCount = notifications.filter(
+  //   (n) => !(n.readBy?.[userId])
+  // ).length;
+
+    const unreadCount = notifications.filter((n) => {
+      if (n.hasOwnProperty("read")) {
+        // personal notifications
+        return !n.read;
+        
+      } else {
+        // global notifications
+        return !(n.readBy?.[userId] === true);
+      }
+    }).length;
 
   // const handleNotificationClick = async (notif) => {
   //   if (!userId || !notif.id) return;
@@ -301,30 +312,60 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     if (!userId || !notif.id) return;
 
     try {
-      let notifDocRef = doc(db, "allNotifications", notif.id);
+      let notifDocRef;
 
-      // Only update if userId not yet in readBy
-      if (!notif.readBy || !notif.readBy[userId]) {
-        await updateDoc(notifDocRef, {
-          [`readBy.${userId}`]: true,
-        });
+      if (notif.from === "user" || role === "user") {
+        // ✅ Personal notification
+        notifDocRef = doc(db, "accounts", userId, "userNotifications", notif.id);
+
+        if (!notif.read) {
+          await updateDoc(notifDocRef, { read: true });
+
+          // update local state
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+          );
+        }
+
+      } else {
+        // ✅ Global notification
+        notifDocRef = doc(db, "allNotifications", notif.id);
+
+        if (!notif.readBy || !notif.readBy[userId]) {
+          await updateDoc(notifDocRef, {
+            read: true, // 🔹 keep in sync with Firestore
+            [`readBy.${userId}`]: true,
+          });
+
+          // update local state
+          setNotifications((prev) =>
+            prev.map((n) =>
+              n.id === notif.id
+                ? {
+                    ...n,
+                    read: true, // 🔹 mark as read locally too
+                    readBy: { ...(n.readBy || {}), [userId]: true },
+                  }
+                : n
+            )
+          );
+        }
       }
-
+      
     } catch (error) {
       console.error("Failed to update notification:", error);
     }
 
-    // if (notif.link) {
-    //   navigate(notif.link);
-
-    // } else {
-    //   message.info(notif.action || "Notification clicked");
-    // }
-
+    // --- Navigation logic ---
     const actionText = notif.action?.toLowerCase() || "";
 
     if (actionText.startsWith("new requisition submitted")) {
       navigate("/main/pending-request");
+      return;
+    }
+
+    if (actionText.startsWith("approved request for")) {
+      navigate("/main/submitted-requisitions");
       return;
     }
 
@@ -336,11 +377,14 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     }
   };
 
-  const notificationMenu = (
-    <div className="notification-dropdown" style={{ maxHeight: 300, overflowY: "auto", width: 250 }}>
-      {loadingNotifications ? (
-        <Spin size="small" />
-      ) : (
+const notificationMenu = (
+  <div
+    className="notification-dropdown"
+    style={{ maxHeight: 300, overflowY: "auto", width: 250 }}
+  >
+    {loadingNotifications ? (
+      <Spin size="small" />
+    ) : (
       <List
         size="small"
         dataSource={notifications.slice(0, visibleCount)}
@@ -350,24 +394,26 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
             onClick={() => handleNotificationClick(item)}
           >
             <div>
-              {!item.readBy?.[userId] && <span style={{ color: "red", marginRight: 4 }}>•</span>}
+              {(
+                (item.hasOwnProperty("read") && !item.read) ||
+                (!item.hasOwnProperty("read") && !(item.readBy?.[userId]))
+              ) && <span style={{ color: "red", marginRight: 4 }}>•</span>}
               {item.action}
             </div>
           </List.Item>
         )}
       />
-      )}
+    )}
 
-      {notifications.length > visibleCount && (
-        <div style={{ textAlign: "center", marginTop: 8 }}>
-          <Button type="link" onClick={() => setVisibleCount(visibleCount + 5)}>
-            Show More
-          </Button>
-        </div>
-      )}
-
-    </div>
-  );
+    {notifications.length > visibleCount && (
+      <div style={{ textAlign: "center", marginTop: 8 }}>
+        <Button type="link" onClick={() => setVisibleCount(visibleCount + 5)}>
+          Show More
+        </Button>
+      </div>
+    )}
+  </div>
+);
 
   const goToProfile = () => navigate("/main/profile");
 
