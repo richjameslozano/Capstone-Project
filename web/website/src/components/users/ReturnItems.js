@@ -874,59 +874,191 @@ const ReturnItems = () => {
     return newItemUnitConditions;
   };
 
+  // const handleReturn = async () => {
+  //   try {
+  //     const userId = localStorage.getItem("userId");
+  //     if (!userId || !selectedRequest) {
+
+  //       return;
+  //     }
+  
+  //     const timestamp = serverTimestamp();
+  //     const currentDateString = new Date().toISOString();
+  
+  //     const fullReturnData = {
+  //       accountId: userId,
+  //       approvedBy: selectedRequest.raw?.approvedBy || "N/A",
+  //       courseCode: selectedRequest.raw?.courseCode || "N/A",
+  //       courseDescription: selectedRequest.raw?.courseDescription || "N/A",
+  //       dateRequired: selectedRequest.raw?.dateRequired || "N/A",
+  //       program: selectedRequest.raw?.program || "N/A",
+  //       reason: selectedRequest.raw?.reason || "No reason provided",
+  //       room: selectedRequest.raw?.room || "N/A",
+  //       timeFrom: selectedRequest.raw?.timeFrom || "N/A",
+  //       timeTo: selectedRequest.raw?.timeTo || "N/A",
+  //       timestamp: timestamp,
+  //       userName: selectedRequest.raw?.userName || "N/A",
+  //       requisitionId: selectedRequest.requisitionId,
+  //       status: "Returned",
+  //       requestList: (selectedRequest.raw?.requestList || []).map((item) => {
+  //         const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
+  //         // Ensure the conditions array matches the quantity, defaulting to "Good"
+  //         const conditions = Array.from({ length: item.quantity }, (_, idx) =>
+  //           returnedConditions[idx] || "Good"
+  //         );
+  //         return {
+  //           ...item,
+  //           itemId: item.itemIdFromInventory,
+  //           // returnedQuantity: conditions.length,
+  //           returnedQuantity: conditions.filter(c => c !== "Lost").length,
+  //           conditions,
+  //           scannedCount: 0,
+  //           dateReturned: currentDateString,
+  //         };
+  //       }),
+  //     };
+
+  //     // Update condition counts in the Borrow Catalog (inventory)
+  //   for (const item of selectedRequest.raw?.requestList || []) {
+  //     const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
+
+  //     if (returnedConditions.length === 0) continue;
+
+  //     const inventoryDocRef = doc(db, "inventory", item.itemIdFromInventory);
+  //     const inventoryDoc = await getDoc(inventoryDocRef);
+
+  //     if (!inventoryDoc.exists()) continue;
+
+  //     const inventoryData = inventoryDoc.data();
+  //     const existingConditionCount = inventoryData.conditionCount || {
+  //       Good: 0,
+  //       Damage: 0,
+  //       Defect: 0,
+  //       Lost: 0,
+  //     };
+
+  //     // Tally condition counts from the returned units
+  //     const newCounts = { ...existingConditionCount };
+  //     returnedConditions.forEach((condition) => {
+  //       if (newCounts[condition] !== undefined) {
+  //         newCounts[condition]++;
+  //       }
+  //     });
+
+  //     await updateDoc(inventoryDocRef, {
+  //       conditionCount: newCounts,
+  //     });
+  //   }
+
+      
+  //     // Save to returnedItems and userreturneditems
+  //     const returnedRef = doc(collection(db, "returnedItems"));
+  //     const userReturnedRef = doc(collection(db, `accounts/${userId}/userreturneditems`));
+  //     await setDoc(returnedRef, fullReturnData);
+  //     await setDoc(userReturnedRef, fullReturnData);
+  
+  //     const borrowQuery = query(
+  //       collection(db, "borrowcatalog"),
+  //       where("userName", "==", selectedRequest.raw?.userName),
+  //       where("dateRequired", "==", selectedRequest.raw?.dateRequired),
+  //       where("room", "==", selectedRequest.raw?.room),
+  //       where("timeFrom", "==", selectedRequest.raw?.timeFrom),
+  //       where("timeTo", "==", selectedRequest.raw?.timeTo)
+  //     );
+
+  //     const querySnapshot = await getDocs(borrowQuery);
+
+  //     if (!querySnapshot.empty) {
+  //       const docToUpdate = querySnapshot.docs[0];
+  //       const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
+        
+  //       await updateDoc(borrowDocRef, {
+  //         requestList: fullReturnData.requestList,
+  //         status: "Returned",
+  //       });
+
+  //     } else {
+
+  //     }
+
+  //     // 🗑️ Delete from userrequestlog
+  //     const userRequestLogRef = doc(
+  //       db,
+  //       `accounts/${userId}/userrequestlog/${selectedRequest.requisitionId}`
+  //     );
+  //     await deleteDoc(userRequestLogRef);
+
+  
+  //     // 📝 Add to history log
+  //     const historyRef = doc(collection(db, `accounts/${userId}/historylog`));
+  //     await setDoc(historyRef, {
+  //       ...fullReturnData,
+  //       action: "Returned",
+  //       date: currentDateString,
+  //     });
+
+  //     // 📝 Add to history log
+  //     const activityRef = doc(collection(db, `accounts/${userId}/activitylog`));
+  //     await setDoc(activityRef, {
+  //       ...fullReturnData,
+  //       action: "Returned",
+  //       date: currentDateString,
+  //     });
+  
+
+  //     closeModal();
+  
+  //   } catch (error) {
+
+  //   }
+  // };  
+
   const handleReturn = async () => {
-    try {
-      const userId = localStorage.getItem("userId");
-      if (!userId || !selectedRequest) {
+  try {
+    const userId = localStorage.getItem("userId");
+    if (!userId || !selectedRequest) return;
 
-        return;
-      }
-  
-      const timestamp = serverTimestamp();
-      const currentDateString = new Date().toISOString();
-  
-      const fullReturnData = {
-        accountId: userId,
-        approvedBy: selectedRequest.raw?.approvedBy || "N/A",
-        courseCode: selectedRequest.raw?.courseCode || "N/A",
-        courseDescription: selectedRequest.raw?.courseDescription || "N/A",
-        dateRequired: selectedRequest.raw?.dateRequired || "N/A",
-        program: selectedRequest.raw?.program || "N/A",
-        reason: selectedRequest.raw?.reason || "No reason provided",
-        room: selectedRequest.raw?.room || "N/A",
-        timeFrom: selectedRequest.raw?.timeFrom || "N/A",
-        timeTo: selectedRequest.raw?.timeTo || "N/A",
-        timestamp: timestamp,
-        userName: selectedRequest.raw?.userName || "N/A",
-        requisitionId: selectedRequest.requisitionId,
-        status: "Returned",
-        requestList: (selectedRequest.raw?.requestList || []).map((item) => {
-          const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
-          // Ensure the conditions array matches the quantity, defaulting to "Good"
-          const conditions = Array.from({ length: item.quantity }, (_, idx) =>
-            returnedConditions[idx] || "Good"
-          );
-          return {
-            ...item,
-            itemId: item.itemIdFromInventory,
-            // returnedQuantity: conditions.length,
-            returnedQuantity: conditions.filter(c => c !== "Lost").length,
-            conditions,
-            scannedCount: 0,
-            dateReturned: currentDateString,
-          };
-        }),
-      };
+    const timestamp = serverTimestamp();
+    const currentDateString = new Date().toISOString();
 
-      // Update condition counts in the Borrow Catalog (inventory)
+    const fullReturnData = {
+      accountId: userId,
+      approvedBy: selectedRequest.raw?.approvedBy || "N/A",
+      courseCode: selectedRequest.raw?.courseCode || "N/A",
+      courseDescription: selectedRequest.raw?.courseDescription || "N/A",
+      dateRequired: selectedRequest.raw?.dateRequired || "N/A",
+      program: selectedRequest.raw?.program || "N/A",
+      reason: selectedRequest.raw?.reason || "No reason provided",
+      room: selectedRequest.raw?.room || "N/A",
+      timeFrom: selectedRequest.raw?.timeFrom || "N/A",
+      timeTo: selectedRequest.raw?.timeTo || "N/A",
+      timestamp: timestamp,
+      userName: selectedRequest.raw?.userName || "N/A",
+      requisitionId: selectedRequest.requisitionId,
+      status: "Returned",
+      requestList: (selectedRequest.raw?.requestList || []).map((item) => {
+        const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
+        const conditions = Array.from({ length: item.quantity }, (_, idx) =>
+          returnedConditions[idx] || "Good"
+        );
+        return {
+          ...item,
+          itemId: item.itemIdFromInventory,
+          returnedQuantity: conditions.filter(c => c !== "Lost").length,
+          conditions,
+          scannedCount: 0,
+          dateReturned: currentDateString,
+        };
+      }),
+    };
+
+    // Update inventory condition counts
     for (const item of selectedRequest.raw?.requestList || []) {
       const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
-
-      if (returnedConditions.length === 0) continue;
+      if (!returnedConditions.length) continue;
 
       const inventoryDocRef = doc(db, "inventory", item.itemIdFromInventory);
       const inventoryDoc = await getDoc(inventoryDocRef);
-
       if (!inventoryDoc.exists()) continue;
 
       const inventoryData = inventoryDoc.data();
@@ -937,81 +1069,98 @@ const ReturnItems = () => {
         Lost: 0,
       };
 
-      // Tally condition counts from the returned units
       const newCounts = { ...existingConditionCount };
       returnedConditions.forEach((condition) => {
-        if (newCounts[condition] !== undefined) {
-          newCounts[condition]++;
-        }
+        if (newCounts[condition] !== undefined) newCounts[condition]++;
       });
 
-      await updateDoc(inventoryDocRef, {
-        conditionCount: newCounts,
+      await updateDoc(inventoryDocRef, { conditionCount: newCounts });
+    }
+
+    // Save returned data
+    const returnedRef = doc(collection(db, "returnedItems"));
+    const userReturnedRef = doc(collection(db, `accounts/${userId}/userreturneditems`));
+    await setDoc(returnedRef, fullReturnData);
+    await setDoc(userReturnedRef, fullReturnData);
+
+    const borrowQuery = query(
+      collection(db, "borrowcatalog"),
+      where("userName", "==", selectedRequest.raw?.userName),
+      where("dateRequired", "==", selectedRequest.raw?.dateRequired),
+      where("room", "==", selectedRequest.raw?.room),
+      where("timeFrom", "==", selectedRequest.raw?.timeFrom),
+      where("timeTo", "==", selectedRequest.raw?.timeTo)
+    );
+
+    const querySnapshot = await getDocs(borrowQuery);
+    if (!querySnapshot.empty) {
+      const docToUpdate = querySnapshot.docs[0];
+      const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
+      await updateDoc(borrowDocRef, {
+        requestList: fullReturnData.requestList,
+        status: "Returned",
       });
     }
 
-      
-      // Save to returnedItems and userreturneditems
-      const returnedRef = doc(collection(db, "returnedItems"));
-      const userReturnedRef = doc(collection(db, `accounts/${userId}/userreturneditems`));
-      await setDoc(returnedRef, fullReturnData);
-      await setDoc(userReturnedRef, fullReturnData);
-  
-      const borrowQuery = query(
-        collection(db, "borrowcatalog"),
-        where("userName", "==", selectedRequest.raw?.userName),
-        where("dateRequired", "==", selectedRequest.raw?.dateRequired),
-        where("room", "==", selectedRequest.raw?.room),
-        where("timeFrom", "==", selectedRequest.raw?.timeFrom),
-        where("timeTo", "==", selectedRequest.raw?.timeTo)
-      );
+    // Delete from userrequestlog
+    const userRequestLogRef = doc(
+      db,
+      `accounts/${userId}/userrequestlog/${selectedRequest.requisitionId}`
+    );
+    
+    await deleteDoc(userRequestLogRef);
 
-      const querySnapshot = await getDocs(borrowQuery);
+    // 🗑️ Remove previous "Deployed" entries for the same request in historylog
+    const historyCollectionRef = collection(db, `accounts/${userId}/historylog`);
+    const deployedHistoryQuery = query(
+      historyCollectionRef,
+      where("action", "==", "Deployed"),
+      where("userName", "==", selectedRequest.raw?.userName),
+      where("dateRequired", "==", selectedRequest.raw?.dateRequired),
+      where("room", "==", selectedRequest.raw?.room),
+      where("timeFrom", "==", selectedRequest.raw?.timeFrom),
+      where("timeTo", "==", selectedRequest.raw?.timeTo)
+    );
 
-      if (!querySnapshot.empty) {
-        const docToUpdate = querySnapshot.docs[0];
-        const borrowDocRef = doc(db, "borrowcatalog", docToUpdate.id);
-        
-        await updateDoc(borrowDocRef, {
-          requestList: fullReturnData.requestList,
-          status: "Returned",
-        });
-
-      } else {
-
-      }
-
-      // 🗑️ Delete from userrequestlog
-      const userRequestLogRef = doc(
-        db,
-        `accounts/${userId}/userrequestlog/${selectedRequest.requisitionId}`
-      );
-      await deleteDoc(userRequestLogRef);
-
-  
-      // 📝 Add to history log
-      const historyRef = doc(collection(db, `accounts/${userId}/historylog`));
-      await setDoc(historyRef, {
-        ...fullReturnData,
-        action: "Returned",
-        date: currentDateString,
-      });
-
-      // 📝 Add to history log
-      const activityRef = doc(collection(db, `accounts/${userId}/activitylog`));
-      await setDoc(activityRef, {
-        ...fullReturnData,
-        action: "Returned",
-        date: currentDateString,
-      });
-  
-
-      closeModal();
-  
-    } catch (error) {
-
+    const deployedHistorySnapshot = await getDocs(deployedHistoryQuery);
+    for (const docSnap of deployedHistorySnapshot.docs) {
+      await deleteDoc(doc(db, `accounts/${userId}/historylog`, docSnap.id));
     }
-  };  
+
+    // 📝 Add "Returned" to historylog
+    const historyRef = doc(historyCollectionRef);
+    await setDoc(historyRef, {
+      ...fullReturnData,
+      action: "Returned",
+      date: currentDateString,
+    });
+
+    // 🗑️ Remove previous "Deployed" entries for the same request in activitylog
+    const activityCollectionRef = collection(db, `accounts/${userId}/activitylog`);
+    const deployedActivityQuery = query(
+      activityCollectionRef,
+      where("action", "==", "Deployed"),
+      where("requisitionId", "==", selectedRequest.requisitionId)
+    );
+    const deployedActivitySnapshot = await getDocs(deployedActivityQuery);
+    for (const docSnap of deployedActivitySnapshot.docs) {
+      await deleteDoc(doc(db, `accounts/${userId}/activitylog`, docSnap.id));
+    }
+
+    // 📝 Add "Returned" to activitylog
+    const activityRef = doc(activityCollectionRef);
+    await setDoc(activityRef, {
+      ...fullReturnData,
+      action: "Returned",
+      date: currentDateString,
+    });
+
+    closeModal();
+  } catch (error) {
+    console.error("Error handling return:", error);
+  }
+};
+
   
  const filteredData =
     filterStatus === "All"
