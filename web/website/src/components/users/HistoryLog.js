@@ -747,36 +747,89 @@ const renderPendingTab = () => (
       ]}
     >
       {selectedRequest && (
-        <div style={{paddingTop: 20, backgroundColor: '#ffeedbff'}}>
+        <div style={{paddingTop: 20}}>
           <div
             className="pending-modal-header" style={{backgroundColor: '#e68020ff', position: 'absolute', top: 0, left: 0, borderRadius: '5px 5px 0 0', height: 60, width: '100%', display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 20}}
           >
             <ClockCircleOutlined style={{color: 'white', fontSize: 25}}/>
-            <strong style={{ fontSize: "20px", color: "white" }}>Request Details - PENDING</strong>
+            <strong style={{ fontSize: "20px", color: "white" }}>Requisition Slip - PENDING</strong>
           </div>
-          <div className="request-details-whole">
-            <div className="request-details-left">
-              <div><p><strong>Requester:</strong></p><p>{selectedRequest.requester}</p></div>
-              <div><p><strong>Requisition Date:</strong></p><p>{selectedRequest.dateRequested}</p></div>
-              <div><p><strong>Date Required:</strong></p><p>{selectedRequest.dateRequired}</p></div>
-              <div><p><strong>Time Needed:</strong></p><p>{selectedRequest.timeNeeded}</p></div>
-            </div>
-            <div className="request-details-right">
-              <div><p><strong>Course Code:</strong></p><p>{selectedRequest.courseCode}</p></div>
-              <div><p><strong>Course Description:</strong></p><p>{selectedRequest.courseDescription}</p></div>
-              <div><p><strong>Room:</strong></p><p>{selectedRequest.room}</p></div>
-              <div><p><strong>Usage Type:</strong></p><p>{selectedRequest.usageType}</p></div>
-            </div>
-          </div>
+
           <div className="details-table">
-            <Title level={5}>Requested Items:</Title>
-            <Table
-              columns={itemColumns}
-              dataSource={selectedRequest.items}
-              rowKey={(_, index) => index}
-              size="small"
-              pagination={false}
-            />
+            <Title level={5}>Request Details:</Title>
+          <Descriptions
+            bordered
+            size="small"
+            column={{ xs: 1, sm: 1, md: 2 }} // responsive: 1 col on mobile, 2 cols on desktop
+            style={{marginBottom: 30}}
+          >
+            <Descriptions.Item label="Requester">
+              {selectedRequest.requester}
+            </Descriptions.Item>
+            <Descriptions.Item label="Course Code">
+              {selectedRequest.courseCode}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Requisition Date">
+              {selectedRequest.dateRequested}
+            </Descriptions.Item>
+            <Descriptions.Item label="Course Description">
+              {selectedRequest.courseDescription}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Date Required">
+              {selectedRequest.dateRequired}
+            </Descriptions.Item>
+            <Descriptions.Item label="Room">
+              {selectedRequest.room}
+            </Descriptions.Item>
+
+            <Descriptions.Item label="Time Needed">
+              {selectedRequest.timeNeeded}
+            </Descriptions.Item>
+            <Descriptions.Item label="Usage Type">
+              {selectedRequest.usageType}
+            </Descriptions.Item>
+          </Descriptions>
+
+  
+<Title level={5}>Items:</Title>
+<table style={{ width: "100%", borderCollapse: "collapse" }}>
+  <thead>
+    <tr>
+      {itemColumns.map((col) => (
+        <th
+          key={col.key || col.dataIndex}
+          style={{
+            border: "1px solid #ddd",
+            padding: "8px",
+            textAlign: "left",
+            background: "#f5f5f5",
+          }}
+        >
+          {col.title}
+        </th>
+      ))}
+    </tr>
+  </thead>
+  <tbody>
+    {selectedRequest.items.map((item, index) => (
+      <tr key={index}>
+        {itemColumns.map((col) => (
+          <td
+            key={col.key || col.dataIndex}
+            style={{ border: "1px solid #ddd", padding: "8px" }}
+          >
+            {col.render
+              ? col.render(item[col.dataIndex], item, index)
+              : item[col.dataIndex]}
+          </td>
+        ))}
+      </tr>
+    ))}
+  </tbody>
+</table>
+
             <br />
             <p style={{ marginBottom: "30px" }}>
               <strong>Note:</strong> {selectedRequest.message || "No message provided."}
@@ -1552,79 +1605,120 @@ console.log(returnedData);
         onCancel={() => setModalVisible(false)}
         footer={null}
         width={800}
+        className="other-modal"
       >
         {selectedLog && (
-          <div style={{paddingTop: 60}}>
+          <div style={{paddingTop: 50}}>
               <div className="modal-header" style={{backgroundColor: getBGColor(selectedLog.action)}}>
                 {getIcon(selectedLog.action)}
                 <p style={{fontSize: 20, margin: 0, color: 'white', fontWeight: 600}}>Requisition Slip - {getLabel(selectedLog.action)}</p>
               </div>
-            <div id="activity-details-content" >
+<div id="activity-details-content">
+  <Title level={5}>Request Details:</Title>
+ <Descriptions
+  bordered
+  size="small"
+  column={{ xs: 1, sm: 1, md: 2 }} // responsive 2 cols
+>
+  <Descriptions.Item label="Approved By">
+    {selectedLog.status === 'CANCELLED'
+      ? 'Cancelled a request'
+      : selectedLog.approvedBy || 'Modified a request'}
+  </Descriptions.Item>
 
-              <Descriptions column={1} bordered size="small">
-                <Descriptions.Item label="Approved By">
-                  {selectedLog.status === 'CANCELLED'
-                    ? 'Cancelled a request'
-                    : selectedLog.approvedBy || 'Modified a request'}
-                </Descriptions.Item>
+  <Descriptions.Item label="Program">
+    {selectedLog.program || 'N/A'}
+  </Descriptions.Item>
 
-                <Descriptions.Item label="Requester">
-                  {selectedLog.userName || 'Unknown User'}
-                </Descriptions.Item>
+  <Descriptions.Item label="Room">
+    {selectedLog.room || 'N/A'}
+  </Descriptions.Item>
 
-                <Descriptions.Item label="Program">
-                  {selectedLog.program || 'N/A'}
-                </Descriptions.Item>
+    <Descriptions.Item label="Requester">
+    {selectedLog.userName || 'Unknown User'}
+  </Descriptions.Item>
 
-                <Descriptions.Item label="Items Requested">
-                  {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                    <ul style={{ paddingLeft: 20 }}>
-                      {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                        <li key={index} style={{ marginBottom: 10 }}>
-                          <strong>{item.itemName}</strong>
-                          <ul style={{ marginLeft: 20 }}>
-                            <li>Quantity: {item.quantity}</li>
-                            {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
-                              <li>Unit: {item.unit}</li>
-                            )}
-                            {item.category && <li>Category: {item.category}</li>}
-                            {item.category === 'Glasswares' && item.volume && (
-                              <li>Volume: {item.volume}</li>
-                            )}
-                            {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
-                              <>
-                                {item.reason && <li><strong>Note:</strong> {item.reason}</li>}
-                                {item.rejectionReason && <li><strong>Rejection Note:</strong> {item.rejectionReason}</li>}
-                              </>
-                            )}
-                          </ul>
-                        </li>
-                      ))}
-                    </ul>
-                  ) : 'None'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Room">
-                  {selectedLog.room || 'N/A'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Time">
-                  {selectedLog.timeFrom && selectedLog.timeTo
-                    ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-                    : 'N/A'}
-                </Descriptions.Item>
-                <Descriptions.Item label="Date Required">
-                  {selectedLog.dateRequired || 'N/A'}
-                </Descriptions.Item>
-                  {selectedLog.action !== 'Request Rejected' && (
-                  <Descriptions.Item label="Note">
-                    {selectedLog.reason || 'N/A'}
-                  </Descriptions.Item>
-                )}
-              </Descriptions>
-            </div>
+  <Descriptions.Item label="Time">
+    {selectedLog.timeFrom && selectedLog.timeTo
+      ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+      : 'N/A'}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Date Required">
+    {selectedLog.dateRequired || 'N/A'}
+  </Descriptions.Item>
+
+  {selectedLog.action !== 'Request Rejected' && (
+    <Descriptions.Item label="Note">
+      {selectedLog.reason || 'N/A'}
+    </Descriptions.Item>
+  )}
+</Descriptions>
+
+
+  {/* Separate Items Table */}
+  <div style={{ marginTop: 40 }}>
+    <Title level={5}>Items Requested</Title>
+    {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
+      <table style={{ width: "100%", borderCollapse: "collapse" }}>
+        <thead>
+          <tr>
+            <th style={{ border: "1px solid #ddd", padding: "8px", background: "#f5f5f5" }}>Item ID</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px", background: "#f5f5f5" }}>Item Name</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px", background: "#f5f5f5" }}>Quantity</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px", background: "#f5f5f5" }}>Category</th>
+            <th style={{ border: "1px solid #ddd", padding: "8px", background: "#f5f5f5" }}>Unit</th>
+          </tr>
+        </thead>
+        <tbody>
+          {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
+            <tr key={index}>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {item.itemIdFromInventory || "N/A"}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {item.itemName}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {item.quantity}
+              </td>
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                {item.category || "N/A"}
+              </td>
+
+              
+              <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+                <ul style={{ margin: 0, paddingLeft: 16 }}>
+                  {(item.category === "Chemical" || item.category === "Reagent") && item.unit && (
+                    <li>Unit: {item.unit}</li>
+                  )}
+                  {item.category === "Glasswares" && item.volume && (
+                    <li>Volume: {item.volume}</li>
+                  )}
+                  {selectedLog.action === "Request Rejected" && (item.reason || item.rejectionReason) && (
+                    <>
+                      {item.reason && <li><strong>Note:</strong> {item.reason}</li>}
+                      {item.rejectionReason && (
+                        <li><strong>Rejection Note:</strong> {item.rejectionReason}</li>
+                      )}
+                    </>
+                  )}
+                </ul>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    ) : (
+      <p style={{ marginTop: 8 }}>None</p>
+    )}
+  </div>
+</div>
+
 
             {/* Show PDF and Print buttons if approved */}
             {(selectedLog.status === 'APPROVED' || selectedLog.action === 'Request Approved') && (
-              <div style={{ marginTop: 16, display: 'flex', gap: 8 }}>
+              <div style={{ marginTop: 70, display: 'flex', gap: 8 }}>
                 <button
                   style={{
                     backgroundColor: '#4CAF50',
