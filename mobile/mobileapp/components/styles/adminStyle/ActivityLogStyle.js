@@ -161,5 +161,46 @@ export default StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 5,
   },
+
+  // Pagination Styles
+  paginationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    backgroundColor: '#fff',
+    borderTopWidth: 1,
+    borderColor: '#ddd',
+  },
+
+  paginationButton: {
+    paddingHorizontal: 15,
+    paddingVertical: 8,
+    backgroundColor: '#1890ff',
+    borderRadius: 6,
+    minWidth: 80,
+    alignItems: 'center',
+  },
+
+  paginationButtonDisabled: {
+    backgroundColor: '#ccc',
+  },
+
+  paginationButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+
+  paginationButtonTextDisabled: {
+    color: '#999',
+  },
+
+  paginationText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+  },
   
 });

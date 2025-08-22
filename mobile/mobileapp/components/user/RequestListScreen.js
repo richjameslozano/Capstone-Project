@@ -195,7 +195,7 @@ const RequestListScreen = ({}) => {
         return false;
       }
   
-    try {
+      try {
       const userDocRef = doc(db, 'accounts', user.id);
       const userDocSnapshot = await getDoc(userDocRef);
   
@@ -306,10 +306,15 @@ const RequestListScreen = ({}) => {
       console.log('Request submitted successfully');
       return true; 
 
+      } catch (error) {
+        console.error('Error submitting request:', error);
+        Alert.alert('Error', 'Failed to submit request. Please try again.');
+        return false; 
+      }
     } catch (error) {
-      console.error('Error submitting request:', error);
+      console.error('Error in submitRequest:', error);
       Alert.alert('Error', 'Failed to submit request. Please try again.');
-      return false; 
+      return false;
     } finally {
       setSubmitLoading(false);
     }
