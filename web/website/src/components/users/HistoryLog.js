@@ -95,6 +95,7 @@ const HistoryLog = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [selectedActivityLog, setSelectedActivityLog] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
 const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
@@ -202,6 +203,7 @@ const sanitizeInput = (input) =>
   }, []);
 
   const handleCancelRequest = async () => {
+    setCancelLoading(true);
     try {
       const userId = localStorage.getItem("userId");
   
@@ -255,6 +257,8 @@ const sanitizeInput = (input) =>
     
       setNotificationMessage("Failed to cancel the request.");
       setNotificationVisible(true);
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -848,6 +852,7 @@ const renderPendingTab = () => (
       zIndex={1009}
       okText="Yes, Cancel"
       cancelText="No"
+      okButtonProps={{ loading: cancelLoading }}
     >
       <p>Are you sure you want to cancel this request?</p>
     </Modal>

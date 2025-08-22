@@ -337,6 +337,9 @@ const ApprovedRequestModal = ({
 const requestList = selectedApprovedRequest?.requestList || [];
 const [notificationMessage, setNotificationMessage] = useState("");
 const [isNotificationModalVisible, setIsNotificationModalVisible] = useState(false);
+const [approveLoading, setApproveLoading] = useState(false);
+const [releaseLoading, setReleaseLoading] = useState(false);
+const [deployLoading, setDeployLoading] = useState(false);
 
   const conditionCounts = requestList.reduce((acc, item) => {
     const condition = item.condition;
@@ -644,6 +647,7 @@ function getConditionSummary(conditionsArray) {
   // };
 
   const handleDeploy = async () => {
+    setDeployLoading(true);
     console.log("🚀 Selected Record:", selectedApprovedRequest);
 
     const userId = localStorage.getItem("userId");
@@ -817,6 +821,8 @@ function getConditionSummary(conditionsArray) {
     } catch (error) {
       console.error("❌ Error during deployment:", error.message || error);
       alert("Deployment failed. Check console for details.");
+    } finally {
+      setDeployLoading(false);
     }
   };
 
@@ -957,9 +963,13 @@ function getConditionSummary(conditionsArray) {
   // };  
 
   const handleApprove = async () => {
+    setApproveLoading(true);
     try {
       const requisitionId = selectedApprovedRequest?.id;
-      if (!requisitionId) return;
+      if (!requisitionId) {
+        setApproveLoading(false);
+        return;
+      }
 
       const auth = getAuth();
       const currentUser = auth.currentUser;
@@ -1103,11 +1113,14 @@ function getConditionSummary(conditionsArray) {
 
     } catch (error) {
       console.error("Approval error:", error);
+    } finally {
+      setApproveLoading(false);
     }
   };
 
 
   const handleRelease = async () => {
+    setReleaseLoading(true);
     try {
       const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
       await updateDoc(docRef, { status: "Released" });
@@ -1119,6 +1132,8 @@ function getConditionSummary(conditionsArray) {
     } catch (err) {
       console.error("Error releasing request:", err);
       alert("Release failed.");
+    } finally {
+      setReleaseLoading(false);
     }
   };
 
@@ -1142,11 +1157,11 @@ function getConditionSummary(conditionsArray) {
       zIndex={1024}
       footer={
         selectedApprovedRequest?.status === "Returned" ? (
-          <Button type="primary" onClick={handleApprove}>
+          <Button type="primary" onClick={handleApprove} loading={approveLoading} disabled={releaseLoading || deployLoading}>
             Approve
           </Button>
         ) : selectedApprovedRequest?.status === "For Release" ? (
-          <Button type="primary" onClick={handleRelease}>
+          <Button type="primary" onClick={handleRelease} loading={releaseLoading} disabled={approveLoading || deployLoading}>
             Release
           </Button>
         ) : null
@@ -1189,7 +1204,7 @@ function getConditionSummary(conditionsArray) {
             bordered
           />
           {selectedApprovedRequest?.status === "Borrowed" && (
-            <Button type="primary" danger onClick={handleDeploy}>
+            <Button type="primary" danger onClick={handleDeploy} loading={deployLoading} disabled={approveLoading || releaseLoading}>
               Deploy
             </Button>
           )}
