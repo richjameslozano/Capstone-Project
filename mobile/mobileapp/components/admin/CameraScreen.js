@@ -266,7 +266,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                 deployedById: user.id,
                 deployedAt: getTodayDate(),
                 timestamp: serverTimestamp(),
-                usageType: usageTypeToLog, // ✅ Add this line
+                usageType: usageTypeToLog, 
               };
 
               // 5️⃣ Write to historylog
