@@ -346,6 +346,64 @@ const getCollegeByDepartment = async (departmentName) => {
       setIsNotificationVisible(true);
       return;
     }
+
+    // 🔍 Check inventory quantities before approval
+    const insufficientItems = [];
+    
+    for (const item of enrichedItems) {
+      const inventoryId = item.selectedItemId;
+      const requestedQty = Number(item.quantity);
+      
+      if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        continue;
+      }
+
+      try {
+        const inventoryRef = doc(db, "inventory", inventoryId);
+        const inventorySnap = await getDoc(inventoryRef);
+        
+        if (!inventorySnap.exists()) {
+          insufficientItems.push({
+            itemName: item.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: 0,
+            reason: "Item not found in inventory"
+          });
+          continue;
+        }
+
+        const data = inventorySnap.data();
+        const availableQty = Number(data.quantity || 0);
+        
+        if (availableQty < requestedQty) {
+          insufficientItems.push({
+            itemName: item.itemName || data.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: availableQty,
+            reason: "Insufficient quantity"
+          });
+        }
+      } catch (error) {
+        console.error("Error checking inventory for item:", item.itemName, error);
+        insufficientItems.push({
+          itemName: item.itemName || "Unknown Item",
+          requested: requestedQty,
+          available: 0,
+          reason: "Error checking inventory"
+        });
+      }
+    }
+
+    // If there are insufficient items, show error and prevent approval
+    if (insufficientItems.length > 0) {
+      const errorMessage = insufficientItems.map(item => 
+        `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
+      ).join('\n');
+      
+      setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
+      setIsNotificationVisible(true);
+      return;
+    }
   
     try {
       const rejectedItems = await Promise.all(
@@ -1314,6 +1372,69 @@ try {
       setIsNotificationVisible(true);
       return;
     }
+
+    // 🔍 Check inventory quantities before approval
+    const approvedItems = mergedRequestList.filter((item, index) => {
+      const key = `${selectedRequest.id}-${index}`;
+      return checkedItems[key]; // Only items the user selected
+    });
+
+    const insufficientItems = [];
+    
+    for (const item of approvedItems) {
+      const inventoryId = item.selectedItemId;
+      const requestedQty = Number(item.quantity);
+      
+      if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        continue;
+      }
+
+      try {
+        const inventoryRef = doc(db, "inventory", inventoryId);
+        const inventorySnap = await getDoc(inventoryRef);
+        
+        if (!inventorySnap.exists()) {
+          insufficientItems.push({
+            itemName: item.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: 0,
+            reason: "Item not found in inventory"
+          });
+          continue;
+        }
+
+        const data = inventorySnap.data();
+        const availableQty = Number(data.quantity || 0);
+        
+        if (availableQty < requestedQty) {
+          insufficientItems.push({
+            itemName: item.itemName || data.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: availableQty,
+            reason: "Insufficient quantity"
+          });
+        }
+      } catch (error) {
+        console.error("Error checking inventory for item:", item.itemName, error);
+        insufficientItems.push({
+          itemName: item.itemName || "Unknown Item",
+          requested: requestedQty,
+          available: 0,
+          reason: "Error checking inventory"
+        });
+      }
+    }
+
+    // If there are insufficient items, show error and prevent approval
+    if (insufficientItems.length > 0) {
+      const errorMessage = insufficientItems.map(item => 
+        `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
+      ).join('\n');
+      
+      setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
+      setIsNotificationVisible(true);
+      return;
+    }
   
     try {
       const rejectedItems = await Promise.all(
@@ -1364,11 +1485,10 @@ try {
        
       }
 
-    const approvedItems = mergedRequestList.filter((item, index) => {
-      const key = `${selectedRequest.id}-${index}`;
-      return checkedItems[key]; // Only items the user selected
-    });
-
+      // const approvedItems = mergedRequestList.filter((item, index) => {
+      //   const key = `${selectedRequest.id}-${index}`;
+      //   return checkedItems[key]; // Only items the user selected
+      // });
     const approvedItemsWithType = await Promise.all(
       approvedItems.map(async (item, index) => {
         let itemType = "Unknown";
@@ -2561,6 +2681,64 @@ const mergedRequestList = selectedRequest.requestList.map((item, index) => {
 
     if (filteredItems.length === 0) {
       setNotificationMessage("No Items selected");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    // 🔍 Check inventory quantities before approval
+    const insufficientItems = [];
+    
+    for (const item of filteredItems) {
+      const inventoryId = item.selectedItemId;
+      const requestedQty = Number(item.quantity);
+      
+      if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        continue;
+      }
+
+      try {
+        const inventoryRef = doc(db, "inventory", inventoryId);
+        const inventorySnap = await getDoc(inventoryRef);
+        
+        if (!inventorySnap.exists()) {
+          insufficientItems.push({
+            itemName: item.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: 0,
+            reason: "Item not found in inventory"
+          });
+          continue;
+        }
+
+        const data = inventorySnap.data();
+        const availableQty = Number(data.quantity || 0);
+        
+        if (availableQty < requestedQty) {
+          insufficientItems.push({
+            itemName: item.itemName || data.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: availableQty,
+            reason: "Insufficient quantity"
+          });
+        }
+      } catch (error) {
+        console.error("Error checking inventory for item:", item.itemName, error);
+        insufficientItems.push({
+          itemName: item.itemName || "Unknown Item",
+          requested: requestedQty,
+          available: 0,
+          reason: "Error checking inventory"
+        });
+      }
+    }
+
+    // If there are insufficient items, show error and prevent approval
+    if (insufficientItems.length > 0) {
+      const errorMessage = insufficientItems.map(item => 
+        `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
+      ).join('\n');
+      
+      setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
       return;
     }
