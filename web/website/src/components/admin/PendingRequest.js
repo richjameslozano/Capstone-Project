@@ -40,6 +40,9 @@ const PendingRequest = () => {
   const [requestOrderMap, setRequestOrderMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [editableItems, setEditableItems] = useState([]);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [multiRejectLoading, setMultiRejectLoading] = useState(false);
 
 const sanitizeInput = (input) =>
   input
@@ -317,7 +320,7 @@ const getCollegeByDepartment = async (departmentName) => {
 
 
    const handleMultiRejectConfirm = async () => {
- 
+    setMultiRejectLoading(true);
     setIsMultiRejectModalVisible(false);
   
     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
@@ -875,6 +878,8 @@ try {
         message: "Error",
         description: "Failed to process the request after rejection confirmation.",
       });
+    } finally {
+      setMultiRejectLoading(false);
     }
   };
 
@@ -1338,6 +1343,7 @@ try {
 
   // FRONTEND
   const handleRejectConfirm = async () => {  
+    setRejectLoading(true);
     setIsMultiRejectModalVisible(false);
   
     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
@@ -1928,6 +1934,8 @@ try {
         message: "Error",
         description: "Failed to process the request after rejection confirmation.",
       });
+    } finally {
+      setRejectLoading(false);
     }
   };
 
@@ -2617,11 +2625,14 @@ try {
 
 // FRONTEND
  const handleApprove = async () => {  
+  setApproveLoading(true);
+  
   const isChecked = Object.values(checkedItems).some((checked) => checked);
 
   if (!isChecked) {
     setNotificationMessage("No Items selected");
     setIsNotificationVisible(true);
+    setApproveLoading(false);
     return;
   }
 
@@ -3392,6 +3403,8 @@ try {
           message: "Approval Failed",
           description: "There was an error logging the approved request.",
         });
+      } finally {
+        setApproveLoading(false);
       }
     }
   };
@@ -4581,11 +4594,11 @@ useEffect(() => {
             width={'40%'}
             onCancel={() => setIsMultiRejectModalVisible(false)}
             footer={[
-              <Button key="cancel" onClick={() => setIsMultiRejectModalVisible(false)}>
+              <Button key="cancel" onClick={() => setIsMultiRejectModalVisible(false)} disabled={multiRejectLoading}>
                 Cancel
               </Button>,
 
-              <Button key="confirm" type="primary" onClick={handleOpenFinalizeModal}>
+              <Button key="confirm" type="primary" onClick={handleOpenFinalizeModal} loading={multiRejectLoading}>
                 Confirm
               </Button>,
             ]}
@@ -4607,10 +4620,10 @@ useEffect(() => {
             width={'50%'}
             onCancel={() => setIsFinalizeModalVisible(false)}
             footer={[
-              <Button key="back" onClick={() => setIsFinalizeModalVisible(false)}>
+              <Button key="back" onClick={() => setIsFinalizeModalVisible(false)} disabled={rejectLoading}>
                 Cancel
               </Button>,
-              <Button key="submit" type="primary" onClick={handleRejectConfirm}>
+              <Button key="submit" type="primary" onClick={handleRejectConfirm} loading={rejectLoading}>
                 Finalize
               </Button>,
             ]}
@@ -4671,6 +4684,8 @@ useEffect(() => {
           formatDate={formatDate}
           allItemsChecked={allItemsChecked} 
           college={selectedCollege} 
+          approveLoading={approveLoading}
+          rejectLoading={rejectLoading}
         />
 
         <ApprovedRequestModal
