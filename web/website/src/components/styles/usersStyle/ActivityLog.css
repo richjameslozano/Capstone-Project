@@ -106,9 +106,10 @@
 
 /* Modal Enhancements */
 .request-list-modal .ant-modal-content {
-  background: #f5faff;
+  /* background: #fffae4; */
   border-radius: 12px;
   padding: 24px;
+
 }
 /* 
 .pending-modal-header {
@@ -121,15 +122,17 @@
 .request-details-whole {
   display: flex;
   justify-content: space-between;
+  background: none !important;
+  background-color: transparent;
+  padding: 20px !important;
+  margin-top: 20px !important;
 }
 
 .request-details-left,
 .request-details-right {
-  flex: 1;
-  background: white;
-  padding: 16px;
-  border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  align-items: center !important;
+  justify-content: center !important;
+  padding-left: 10px !important;
 }
 
 .request-details-left p,
@@ -142,7 +145,10 @@
   background: white;
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.other-modal .ant-modal-content{
+  padding: 35px !important;
 }
 
 /* Responsive */
