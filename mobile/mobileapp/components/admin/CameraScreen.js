@@ -280,6 +280,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     collection(db, `accounts/${requestorUserId}/historylog`),
                     where("action", "==", "Request Approved")
                   );
+                  
                   const approvedHistorySnapshot = await getDocs(approvedHistoryQuery);
 
                   for (const docSnap of approvedHistorySnapshot.docs) {
