@@ -55,6 +55,8 @@ export default function InventoryScreen({ navigation }) {
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [isDepartmentModalVisible, setIsDepartmentModalVisible] = useState(false);
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
+  const [addToListLoading, setAddToListLoading] = useState({});
+  const [handleNextLoading, setHandleNextLoading] = useState(false);
 
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
@@ -322,79 +324,81 @@ export default function InventoryScreen({ navigation }) {
   };
 
   const addToList = async (item) => {
-    const quantity = itemQuantities[item.id];
-  
-    if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
-      alert('Please enter a valid quantity.');
-      return;
-    }
-
-    if (!selectedUsageTypeInput) {
-      alert('Please select a usage type.');
-      return;
-    }
-
-    console.log('metadata.usageTypeOther:', metadata.usageTypeOther);
-    console.log('selectedUsageTypeInput:', selectedUsageTypeInput);
-
-
-    const finalUsageType =
-      selectedUsageTypeInput === 'Others'
-        ? metadata?.usageTypeOther || ''
-        : selectedUsageTypeInput;
-
-    const requestedQty = parseInt(quantity);
-    const availableQty = parseInt(item.quantity);
-  
-    if (requestedQty > availableQty) {
-      alert(`The quantity you requested exceeds available stock (${availableQty}).`);
-      return;
-    }
-
-    console.log({
-      dateRequired: metadata?.dateRequired,
-      timeFrom: metadata?.timeFrom,
-      timeTo: metadata?.timeTo,
-      program: metadata?.program,
-      course: metadata?.course,
-      courseDescription: metadata?.courseDescription,
-      room: metadata?.room,
-      usageType: metadata?.usageType,
-      usageTypeOther: metadata?.usageTypeOther,
-      finalUsageType
-    });
-
-    if (selectedUsageTypeInput === 'Others' && !finalUsageType) {
-      alert('Please specify the usage type in the text field.');
-      return;
-    }
-
-    if (
-      !metadata?.dateRequired || 
-      !metadata?.timeFrom || 
-      !metadata?.timeTo || 
-      !metadata?.program || 
-      !metadata?.course || 
-      !metadata?.courseDescription ||
-      !metadata?.room || 
-      !finalUsageType 
-    ) {
-      alert('Please fill out all the borrowing details before adding an item.');
-      return;
-    }
-  
+    setAddToListLoading(prev => ({ ...prev, [item.id]: true }));
+    
     try {
+      const quantity = itemQuantities[item.id];
+    
+      if (!quantity || isNaN(quantity) || parseInt(quantity) <= 0) {
+        alert('Please enter a valid quantity.');
+        return;
+      }
+
+      if (!selectedUsageTypeInput) {
+        alert('Please select a usage type.');
+        return;
+      }
+
+      console.log('metadata.usageTypeOther:', metadata.usageTypeOther);
+      console.log('selectedUsageTypeInput:', selectedUsageTypeInput);
+
+
+      const finalUsageType =
+        selectedUsageTypeInput === 'Others'
+          ? metadata?.usageTypeOther || ''
+          : selectedUsageTypeInput;
+
+      const requestedQty = parseInt(quantity);
+      const availableQty = parseInt(item.quantity);
+    
+      if (requestedQty > availableQty) {
+        alert(`The quantity you requested exceeds available stock (${availableQty}).`);
+        return;
+      }
+
+      console.log({
+        dateRequired: metadata?.dateRequired,
+        timeFrom: metadata?.timeFrom,
+        timeTo: metadata?.timeTo,
+        program: metadata?.program,
+        course: metadata?.course,
+        courseDescription: metadata?.courseDescription,
+        room: metadata?.room,
+        usageType: metadata?.usageType,
+        usageTypeOther: metadata?.usageTypeOther,
+        finalUsageType
+      });
+
+      if (selectedUsageTypeInput === 'Others' && !finalUsageType) {
+        alert('Please specify the usage type in the text field.');
+        return;
+      }
+
+      if (
+        !metadata?.dateRequired || 
+        !metadata?.timeFrom || 
+        !metadata?.timeTo || 
+        !metadata?.program || 
+        !metadata?.course || 
+        !metadata?.courseDescription ||
+        !metadata?.room || 
+        !finalUsageType 
+      ) {
+        alert('Please fill out all the borrowing details before adding an item.');
+        return;
+      }
+    
       const collectionRef = collection(db, 'accounts', user.id, 'temporaryRequests');
-  
+    
       // 🔍 Check for duplicates by "id"
       const q = query(collectionRef, where('id', '==', item.id));
       const querySnapshot = await getDocs(q);
-  
+    
       if (!querySnapshot.empty) {
         alert('This item is already in your request list.');
         return;
       }
-  
+    
       await addDoc(collectionRef, {
         category: item.category || '',
         // condition: item.condition || '',
@@ -424,6 +428,8 @@ export default function InventoryScreen({ navigation }) {
     } catch (error) {
       console.error('Error adding item to temporaryRequests:', error);
       alert('Failed to add item. Try again.');
+    } finally {
+      setAddToListLoading(prev => ({ ...prev, [item.id]: false }));
     }
   };
 
@@ -495,10 +501,15 @@ export default function InventoryScreen({ navigation }) {
                 onChangeText={(text) => handleQuantityChange(text, item.id)}
               />
               <TouchableOpacity
-                style={styles.confirmButton}
+                style={[styles.confirmButton, addToListLoading[item.id] && styles.disabledButton]}
                 onPress={() => addToList(item)}
+                disabled={addToListLoading[item.id]}
               >
-                <Text style={styles.confirmButtonText}>Add</Text>
+                {addToListLoading[item.id] ? (
+                  <Text style={styles.confirmButtonText}>Adding...</Text>
+                ) : (
+                  <Text style={styles.confirmButtonText}>Add</Text>
+                )}
               </TouchableOpacity>
             </View>
           )}
@@ -607,65 +618,74 @@ export default function InventoryScreen({ navigation }) {
   };
 
   const handleNext = async () => {
-    const formattedStartTime = formatTime(selectedStartTime);
-    const formattedEndTime = formatTime(selectedEndTime);
+    setHandleNextLoading(true);
+    
+    try {
+      const formattedStartTime = formatTime(selectedStartTime);
+      const formattedEndTime = formatTime(selectedEndTime);
 
-    console.log({
-      dateRequired: selectedDate,
-      timeFrom: formatTime(selectedStartTime),
-      timeTo: formatTime(selectedEndTime),
-      room,
-      course,
-      courseDescription,
-    });
+      console.log({
+        dateRequired: selectedDate,
+        timeFrom: formatTime(selectedStartTime),
+        timeTo: formatTime(selectedEndTime),
+        room,
+        course,
+        courseDescription,
+      });
 
-    const newErrors = {
-      date: !selectedDate,
-      startTime: !selectedStartTime,
-      endTime: !selectedEndTime,
-      program: !program,
-      course: !course,
-      room: !room,
-      usageType: !selectedUsageTypeInput,
-    };
+      const newErrors = {
+        date: !selectedDate,
+        startTime: !selectedStartTime,
+        endTime: !selectedEndTime,
+        program: !program,
+        course: !course,
+        room: !room,
+        usageType: !selectedUsageTypeInput,
+      };
 
-    setErrors(newErrors);
+      setErrors(newErrors);
 
-    const hasErrors = Object.values(newErrors).some(Boolean);
-    if (hasErrors) return;
+      const hasErrors = Object.values(newErrors).some(Boolean);
+      if (hasErrors) return;
 
-    // 🔍 Conflict validation
-    const hasConflict = await isRoomTimeConflict(
-      room,
-      formattedStartTime,
-      formattedEndTime,
-      selectedDate
-    );
+      // 🔍 Conflict validation
+      const hasConflict = await isRoomTimeConflict(
+        room,
+        formattedStartTime,
+        formattedEndTime,
+        selectedDate
+      );
 
-    if (hasConflict) {
-      Alert.alert("Conflict Detected", "The selected room and time slot is already booked.");
-      return; 
+      if (hasConflict) {
+        Alert.alert("Conflict Detected", "The selected room and time slot is already booked.");
+        return; 
+      }
+
+      const finalUsageType =
+        selectedUsageTypeInput === 'Others'
+          ? metadata?.usageTypeOther || ''
+          : selectedUsageTypeInput;
+
+      setMetadata((prev) => ({
+        ...prev,
+        dateRequired: selectedDate,
+        timeFrom: formattedStartTime,
+        timeTo: formattedEndTime,
+        program,
+        course,
+        courseDescription,
+        room,
+        usageType: finalUsageType,
+        reason,
+      }));
+
+      setIsComplete(true);
+    } catch (error) {
+      console.error('Error in handleNext:', error);
+      Alert.alert("Error", "Failed to proceed. Please try again.");
+    } finally {
+      setHandleNextLoading(false);
     }
-
-    const finalUsageType =
-      selectedUsageTypeInput === 'Others'
-        ? metadata?.usageTypeOther || ''
-        : selectedUsageTypeInput;
-
-    setMetadata((prev) => ({
-      ...prev,
-      dateRequired: selectedDate,
-      timeFrom: formattedStartTime,
-      timeTo: formattedEndTime,
-      program,
-      course,
-      courseDescription,
-      room,
-      usageType: finalUsageType,
-      reason,
-    }));
-
-    setIsComplete(true);
   };
   const [description, setDescription] = useState("");
 
@@ -1057,9 +1077,19 @@ export default function InventoryScreen({ navigation }) {
             <Icon name='file-document-edit-outline' size={15} color='#395a7f'/>
             <Text style={{color: '#395a7f', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Add to Drafts</Text>
           </TouchableOpacity> */}
-          <TouchableOpacity style={styles.proceedBtn} onPress={() => handleNext()}>
-            <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Next</Text>
-            <Icon2 name='chevron-forward' color='#fff' size={15}/>
+          <TouchableOpacity 
+            style={[styles.proceedBtn, handleNextLoading && styles.disabledButton]} 
+            onPress={() => handleNext()}
+            disabled={handleNextLoading}
+          >
+            {handleNextLoading ? (
+              <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Processing...</Text>
+            ) : (
+              <>
+                <Text style={{color: '#fff', fontWeight: 'bold', fontSize: 15, marginRight: 10, textAlign: 'center'}}>Next</Text>
+                <Icon2 name='chevron-forward' color='#fff' size={15}/>
+              </>
+            )}
           </TouchableOpacity>
         </View>
         </View>

@@ -20,6 +20,9 @@ const CapexList = () => {
   const [subjectOptions, setSubjectOptions] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
   const currentYear = new Date().getFullYear();
   const nextYear = currentYear + 1;
   const yearRange = `${currentYear}-${nextYear}`;
@@ -181,64 +184,85 @@ const CapexList = () => {
 
   // Save PDF
   const saveAsPdf = () => {
-    const doc = generatePdfFromFilteredData();
-    if (doc) {
-      const fileName = subjectFilter 
-        ? `CAPEX_Requests_${subjectFilter.replace(/\s+/g, '_')}.pdf`
-        : 'CAPEX_Requests_All.pdf';
-      doc.save(fileName);
+    setPdfLoading(true);
+    try {
+      const doc = generatePdfFromFilteredData();
+      if (doc) {
+        const fileName = subjectFilter 
+          ? `CAPEX_Requests_${subjectFilter.replace(/\s+/g, '_')}.pdf`
+          : 'CAPEX_Requests_All.pdf';
+        doc.save(fileName);
+      }
+    } catch (error) {
+      console.error("Error saving PDF:", error);
+    } finally {
+      setPdfLoading(false);
     }
   };
 
   // Print PDF
   const printPdf = () => {
-    const doc = generatePdfFromFilteredData();
-    if (doc) {
-      doc.autoPrint();
-      window.open(doc.output("bloburl"), "_blank");
+    setPrintLoading(true);
+    try {
+      const doc = generatePdfFromFilteredData();
+      if (doc) {
+        doc.autoPrint();
+        window.open(doc.output("bloburl"), "_blank");
+      }
+    } catch (error) {
+      console.error("Error printing PDF:", error);
+    } finally {
+      setPrintLoading(false);
     }
   };
 
   // Export to Excel
   const exportToExcel = () => {
-    // Prepare data for Excel
-    const excelData = filteredRequests.map((request, index) => {
-      const baseData = {
-        'No.': index + 1,
-        'Requestor': request.userName || '',
-        'Submission Date': formatDate(request.createdAt) || '',
-        'Total Price': `₱${request.totalPrice?.toLocaleString() || '0'}`,
-      };
+    setExportLoading(true);
+    try {
+      // Prepare data for Excel
+      const excelData = filteredRequests.map((request, index) => {
+        const baseData = {
+          'No.': index + 1,
+          'Requestor': request.userName || '',
+          'Submission Date': formatDate(request.createdAt) || '',
+          'Total Price': `₱${request.totalPrice?.toLocaleString() || '0'}`,
+        };
 
-      // Add items data
-      (request.items || []).forEach((item, itemIndex) => {
-        baseData[`Item ${itemIndex + 1} Description`] = item.itemDescription || '';
-        baseData[`Item ${itemIndex + 1} Subject`] = item.subject || '';
-        baseData[`Item ${itemIndex + 1} Justification`] = item.justification || '';
-        baseData[`Item ${itemIndex + 1} Quantity`] = item.qty || '';
-        baseData[`Item ${itemIndex + 1} Estimated Cost`] = `₱${item.estimatedCost?.toLocaleString() || '0'}`;
-        baseData[`Item ${itemIndex + 1} Total Price`] = `₱${item.totalPrice?.toLocaleString() || '0'}`;
+        // Add items data
+        (request.items || []).forEach((item, itemIndex) => {
+          baseData[`Item ${itemIndex + 1} Description`] = item.itemDescription || '';
+          baseData[`Item ${itemIndex + 1} Subject`] = item.subject || '';
+          baseData[`Item ${itemIndex + 1} Justification`] = item.justification || '';
+          baseData[`Item ${itemIndex + 1} Quantity`] = item.qty || '';
+          baseData[`Item ${itemIndex + 1} Estimated Cost`] = `₱${item.estimatedCost?.toLocaleString() || '0'}`;
+          baseData[`Item ${itemIndex + 1} Total Price`] = `₱${item.totalPrice?.toLocaleString() || '0'}`;
+        });
+
+        return baseData;
       });
 
-      return baseData;
-    });
+      // Create worksheet
+      const ws = XLSX.utils.json_to_sheet(excelData);
 
-    // Create worksheet
-    const ws = XLSX.utils.json_to_sheet(excelData);
+      // Create workbook
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'CAPEX Requests');
 
-    // Create workbook
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'CAPEX Requests');
+      // Generate Excel file
+      const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
+      const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-    // Generate Excel file
-    const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
-    const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
-    // Save file
-    const fileName = subjectFilter 
-      ? `CAPEX_Requests_${subjectFilter.replace(/\s+/g, '_')}.xlsx`
-      : 'CAPEX_Requests_All.xlsx';
-    saveAs(data, fileName);
+      // Save file
+      const fileName = subjectFilter 
+        ? `CAPEX_Requests_${subjectFilter.replace(/\s+/g, '_')}.xlsx`
+        : 'CAPEX_Requests_All.xlsx';
+      saveAs(data, fileName);
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   // Table columns configuration
@@ -302,14 +326,14 @@ const CapexList = () => {
               </Select>
 
               <div>
-                <Button className='export-excel-button'onClick={exportToExcel}>
+                <Button className='export-excel-button'onClick={exportToExcel} loading={exportLoading} disabled={pdfLoading || printLoading}>
                   Export to Excel
                 </Button>
-                <Button className='save-pdf-button'type="primary" onClick={saveAsPdf} style={{ marginRight: 8, marginLeft: 8 }}>
+                <Button className='save-pdf-button'type="primary" onClick={saveAsPdf} loading={pdfLoading} disabled={exportLoading || printLoading} style={{ marginRight: 8, marginLeft: 8 }}>
                   Save as PDF
                 </Button>
                 
-                <Button className='print-pdf-button'onClick={printPdf} style={{ marginRight: 8 }}>
+                <Button className='print-pdf-button'onClick={printPdf} loading={printLoading} disabled={exportLoading || pdfLoading} style={{ marginRight: 8 }}>
                   Print
                 </Button>
                 

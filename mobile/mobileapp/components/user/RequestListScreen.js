@@ -35,6 +35,8 @@ const RequestListScreen = ({}) => {
   const [showConfirmationModal, setShowConfirmationModal] = useState(false); 
   const [confirmationData, setConfirmationData] = useState(null);
   const [tempDocIdsToDelete, setTempDocIdsToDelete] = useState([]);
+  const [submitLoading, setSubmitLoading] = useState(false);
+  const [removeLoading, setRemoveLoading] = useState({});
 
     const navigation = useNavigation()
   
@@ -175,20 +177,23 @@ const RequestListScreen = ({}) => {
   };
 
  const submitRequest = async () => {
-    console.log('submitRequest initiated');
-    console.log('Submitting for user:', user?.id);
-  
-    if (!user || !user.id) {
-      console.log('No user logged in');
-      Alert.alert('Error', 'User is not logged in.');
-      return false;
-    }
-  
-    if (!requestList || requestList.length === 0) {
-      console.log('Request list is empty');
-      Alert.alert('Error', 'No items in the request list.');
-      return false;
-    }
+    setSubmitLoading(true);
+    
+    try {
+      console.log('submitRequest initiated');
+      console.log('Submitting for user:', user?.id);
+    
+      if (!user || !user.id) {
+        console.log('No user logged in');
+        Alert.alert('Error', 'User is not logged in.');
+        return false;
+      }
+    
+      if (!requestList || requestList.length === 0) {
+        console.log('Request list is empty');
+        Alert.alert('Error', 'No items in the request list.');
+        return false;
+      }
   
     try {
       const userDocRef = doc(db, 'accounts', user.id);
@@ -305,6 +310,8 @@ const RequestListScreen = ({}) => {
       console.error('Error submitting request:', error);
       Alert.alert('Error', 'Failed to submit request. Please try again.');
       return false; 
+    } finally {
+      setSubmitLoading(false);
     }
   };
   
@@ -336,6 +343,8 @@ const RequestListScreen = ({}) => {
   };
 
   const removeFromList = async (idToDelete) => {
+    setRemoveLoading(prev => ({ ...prev, [idToDelete]: true }));
+    
     try {
       const tempRequestRef = collection(db, 'accounts', user.id, 'temporaryRequests');
       const querySnapshot = await getDocs(tempRequestRef);
@@ -363,6 +372,8 @@ const RequestListScreen = ({}) => {
 
     } catch (error) {
       console.error('Error removing item from Firestore:', error);
+    } finally {
+      setRemoveLoading(prev => ({ ...prev, [idToDelete]: false }));
     }
   };
   
@@ -408,9 +419,17 @@ const boldLabel = {
       </View>
         </View>
     </TouchableOpacity>
-    <TouchableOpacity onPress={() => confirmRemoveItem(item)} style={styles.trash} >
-            <Icon name='trash' size={15} color='#fff'/>
-          </TouchableOpacity>
+    <TouchableOpacity 
+      onPress={() => confirmRemoveItem(item)} 
+      style={[styles.trash, removeLoading[item.selectedItemId] && styles.disabledButton]} 
+      disabled={removeLoading[item.selectedItemId]}
+    >
+      {removeLoading[item.selectedItemId] ? (
+        <Text style={{color: '#fff', fontSize: 12}}>...</Text>
+      ) : (
+        <Icon name='trash' size={15} color='#fff'/>
+      )}
+    </TouchableOpacity>
     </View>
   );
 
@@ -643,7 +662,7 @@ const boldLabel = {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.confirmButton}
+              style={[styles.confirmButton, submitLoading && styles.disabledButton]}
               onPress={async () => {
                 const requestSuccess = await submitRequest();
                 if (requestSuccess) {
@@ -654,8 +673,11 @@ const boldLabel = {
                   alert('There was a problem processing your request. Try again later.');
                 }
               }}
+              disabled={submitLoading}
             >
-              <Text style={styles.confirmButtonText}>Confirm</Text>
+              <Text style={styles.confirmButtonText}>
+                {submitLoading ? 'Submitting...' : 'Confirm'}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>

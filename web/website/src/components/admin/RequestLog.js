@@ -20,6 +20,8 @@ const RequestLog = () => {
   const [historyData, setHistoryData] = useState([]);
   const modalRef = useRef(null); 
   const [selectedMonth, setSelectedMonth] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
 
   const generateAllRequestsPdf = () => {
     if (!filteredData || filteredData.length === 0) {
@@ -86,19 +88,35 @@ const RequestLog = () => {
   };
 
   const saveAllAsPdf = () => {
-    const doc = generateAllRequestsPdf();
-    if (doc) {
-      doc.save(`Request_Log_${new Date().toISOString().split('T')[0]}.pdf`);
-      message.success("PDF saved successfully");
+    setPdfLoading(true);
+    try {
+      const doc = generateAllRequestsPdf();
+      if (doc) {
+        doc.save(`Request_Log_${new Date().toISOString().split('T')[0]}.pdf`);
+        message.success("PDF saved successfully");
+      }
+    } catch (error) {
+      console.error("Error saving PDF:", error);
+      message.error("Failed to save PDF");
+    } finally {
+      setPdfLoading(false);
     }
   };
 
   const printAllPdf = () => {
-    const doc = generateAllRequestsPdf();
-    if (doc) {
-      doc.autoPrint();
-      window.open(doc.output("bloburl"), "_blank");
-      message.success("Print dialog opened");
+    setPrintLoading(true);
+    try {
+      const doc = generateAllRequestsPdf();
+      if (doc) {
+        doc.autoPrint();
+        window.open(doc.output("bloburl"), "_blank");
+        message.success("Print dialog opened");
+      }
+    } catch (error) {
+      console.error("Error printing PDF:", error);
+      message.error("Failed to print PDF");
+    } finally {
+      setPrintLoading(false);
     }
   };
 
@@ -518,10 +536,10 @@ const printPdf = () => {
           visible={modalVisible}
           onCancel={closeModal}
           footer={[
-            <Button className='save-all-pdf-button' key="save" type="primary" onClick={saveAsPdf}>
+            <Button className='save-all-pdf-button' key="save" type="primary" onClick={saveAsPdf} loading={pdfLoading} disabled={printLoading}>
               Save as PDF
             </Button>,
-              <Button className='print-all-button'type="primary" key="print" onClick={() => printPdf(selectedRequest)}>
+              <Button className='print-all-button'type="primary" key="print" onClick={() => printPdf(selectedRequest)} loading={printLoading} disabled={pdfLoading}>
               Print
             </Button>,
 

@@ -36,6 +36,10 @@ const RestockRequest = () => {
   const [comment, setComment] = useState("");
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [denyLoading, setDenyLoading] = useState(false);
+  const [exportLoading, setExportLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
@@ -91,37 +95,57 @@ const RestockRequest = () => {
   });
 
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Restock Requests");
+    setExportLoading(true);
+    try {
+      const worksheet = XLSX.utils.json_to_sheet(filteredData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Restock Requests");
 
-    const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "Restock_Requests.xlsx");
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+      saveAs(data, "Restock_Requests.xlsx");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const generatePDF = () => {
-    const doc = new jsPDF();
-    const headers = ["Item Name", "Quantity Needed", "Department", "Status", "Date Created"];
-    const data = filteredData.map((item) => [
-      item.item_name,
-      item.quantity_needed,
-      item.department,
-      item.status,
-      item.created_at.toDate().toLocaleDateString(),
-    ]);
+    setPdfLoading(true);
+    try {
+      const doc = new jsPDF();
+      const headers = ["Item Name", "Quantity Needed", "Department", "Status", "Date Created"];
+      const data = filteredData.map((item) => [
+        item.item_name,
+        item.quantity_needed,
+        item.department,
+        item.status,
+        item.created_at.toDate().toLocaleDateString(),
+      ]);
 
-    doc.autoTable({
-      head: [headers],
-      body: data,
-      startY: 40,
-      theme: "grid",
-    });
-    doc.save("Restock_Requests.pdf");
+      doc.autoTable({
+        head: [headers],
+        body: data,
+        startY: 40,
+        theme: "grid",
+      });
+      doc.save("Restock_Requests.pdf");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+    } finally {
+      setPdfLoading(false);
+    }
   };
 
   const handleUpdateStatus = async (newStatus) => {
     if (!selectedRequest) return;
+
+    if (newStatus === "approved") {
+      setApproveLoading(true);
+    } else {
+      setDenyLoading(true);
+    }
 
     try {
       const requestRef = doc(db, "restock_requests", selectedRequest.id);
@@ -169,6 +193,12 @@ const RestockRequest = () => {
 
     } catch (error) {
       console.error("Error updating status:", error);
+    } finally {
+      if (newStatus === "approved") {
+        setApproveLoading(false);
+      } else {
+        setDenyLoading(false);
+      }
     }
   };
 
@@ -224,11 +254,11 @@ const RestockRequest = () => {
           </Col>
 
           <Col span={12} className="export-buttons">
-            <Button type="primary" onClick={generatePDF}>
+            <Button type="primary" onClick={generatePDF} loading={pdfLoading} disabled={exportLoading}>
               Export as PDF
             </Button>
 
-            <Button type="primary" onClick={exportToExcel}>
+            <Button type="primary" onClick={exportToExcel} loading={exportLoading} disabled={pdfLoading}>
               Export to Excel
             </Button>
           </Col>
@@ -309,11 +339,11 @@ const RestockRequest = () => {
           zIndex={1030}
           footer={
             userRole === "admin" && selectedRequest?.status === "pending" ? [
-              <Button key="deny" danger onClick={() => handleUpdateStatus("denied")}>
+              <Button key="deny" danger onClick={() => handleUpdateStatus("denied")} loading={denyLoading} disabled={approveLoading}>
                 Deny
               </Button>,
 
-              <Button key="approve" type="primary" onClick={() => handleUpdateStatus("approved")}>
+              <Button key="approve" type="primary" onClick={() => handleUpdateStatus("approved")} loading={approveLoading} disabled={denyLoading}>
                 Approve
               </Button>,
             ] : null

@@ -18,6 +18,8 @@ const ApprovalRequestModal = ({
   const [comment, setComment] = React.useState("");
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   console.log("requestList in Modal:", requestList);
 
@@ -105,6 +107,8 @@ const ApprovalRequestModal = ({
   };
 
     const handleReject = async () => {
+        setRejectLoading(true);
+        
         let userRequestId = selectedApprovedRequest?.firestoreId;
 
         if (userRequestId?.startsWith("/userrequests/")) {
@@ -117,12 +121,14 @@ const ApprovalRequestModal = ({
             console.error("❌ Missing userrequests ID in selectedApprovedRequest");
             setNotificationMessage("Missing request ID. Cannot reject the request.");
             setIsNotificationVisible(true);
+            setRejectLoading(false);
             return;
         }
 
         if (!comment.trim()) {
             setNotificationMessage("Please enter a comment before rejecting.");
             setIsNotificationVisible(true);
+            setRejectLoading(false);
             return;
         }
 
@@ -170,10 +176,14 @@ const ApprovalRequestModal = ({
         } catch (error) {
             console.error("❌ Error updating userrequests document:", error);
             alert("Something went wrong while approving the request.");
+        } finally {
+            setRejectLoading(false);
         }
     };
 
     const handleApprove = async () => {
+        setApproveLoading(true);
+        
         let userRequestId = selectedApprovedRequest?.firestoreId;
 
         if (userRequestId?.startsWith("/userrequests/")) {
@@ -186,12 +196,14 @@ const ApprovalRequestModal = ({
             console.error("❌ Missing userrequests ID in selectedApprovedRequest");
             setNotificationMessage("Missing request ID. Cannot approve the request.");
             setIsNotificationVisible(true);
+            setApproveLoading(false);
             return;
         }
 
         if (!comment.trim()) {
             setNotificationMessage("Please enter a comment before approving.");
             setIsNotificationVisible(true);
+            setApproveLoading(false);
             return;
         }
 
@@ -234,6 +246,8 @@ const ApprovalRequestModal = ({
         } catch (error) {
             console.error("❌ Error updating userrequests document:", error);
             alert("Something went wrong while approving the request.");
+        } finally {
+            setApproveLoading(false);
         }
     };
 
@@ -253,10 +267,10 @@ const ApprovalRequestModal = ({
         width={800}
         zIndex={1024}
         footer={[
-          <Button key="reject" danger onClick={handleReject}>
+          <Button key="reject" danger onClick={handleReject} loading={rejectLoading} disabled={approveLoading}>
           Reject
           </Button>,
-          <Button key="approve" type="primary" onClick={handleApprove}>
+          <Button key="approve" type="primary" onClick={handleApprove} loading={approveLoading} disabled={rejectLoading}>
           Approve
           </Button>,
         ]}

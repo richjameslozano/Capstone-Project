@@ -41,6 +41,9 @@ const CapexRequest = () => {
   const [subjectFilter, setSubjectFilter] = useState("");
   const [capexHistory, setCapexHistory] = useState([]);
   const [subjectOptions, setSubjectOptions] = useState([]);
+  const [saveLoading, setSaveLoading] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [submitLoading, setSubmitLoading] = useState(false);
 
   const currentYear = new Date().getFullYear();
   const nextYear = currentYear + 1;
@@ -312,6 +315,7 @@ const CapexRequest = () => {
 // };
 
   const handleSave = async (values) => {
+    setSaveLoading(true);
     setIsModalVisible(false);
 
     // Sanitize input values before saving
@@ -389,11 +393,14 @@ const CapexRequest = () => {
         console.error("Add Item Error:", error);
         setNotificationMessage("Failed to add Item.");
         setNotificationVisible(true);
+      } finally {
+        setSaveLoading(false);
       }
     }
   };
 
  const handleDelete = async (id) => {
+  setDeleteLoading(true);
   const sanitizedId = sanitizeInput(id); // Ensure sanitized ID
 
   const updatedData = dataSource.filter((item) => item.id !== sanitizedId);
@@ -416,6 +423,8 @@ const CapexRequest = () => {
     } catch (error) {
       setNotificationMessage("Failed to delete Item");
       setNotificationVisible(true);
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -426,9 +435,11 @@ const CapexRequest = () => {
   };
 
   const handleSubmit = async () => {
+    setSubmitLoading(true);
     if (dataSource.length === 0) {
       setNotificationMessage("Please add at least one item to submit");
       setNotificationVisible(true);
+      setSubmitLoading(false);
       return;
     }
   
@@ -476,6 +487,8 @@ const CapexRequest = () => {
     
       setNotificationMessage("Failed to submit CAPEX request");
       setNotificationVisible(true);
+    } finally {
+      setSubmitLoading(false);
     }
   };  
 
@@ -584,7 +597,7 @@ const CapexRequest = () => {
             okText="Yes"
             cancelText="No"
           >
-            <Button type="link" danger>
+            <Button type="link" danger loading={deleteLoading} disabled={saveLoading || submitLoading}>
             ❌
             </Button>
           </Popconfirm>
@@ -700,7 +713,8 @@ const CapexRequest = () => {
               type="primary"
               icon={<CheckOutlined />}
               onClick={() => setIsFinalizeModalVisible(true)}
-              disabled={dataSource.length === 0}
+              loading={submitLoading}
+              disabled={dataSource.length === 0 || saveLoading || deleteLoading}
             >
               Submit
             </Button>
@@ -721,6 +735,7 @@ const CapexRequest = () => {
             zIndex={1011}
             onOk={() => form.submit()}
             okText={editingRow ? "Update" : "Add"}
+            okButtonProps={{ loading: saveLoading, disabled: deleteLoading || submitLoading }}
           >
             <Form
               form={form}

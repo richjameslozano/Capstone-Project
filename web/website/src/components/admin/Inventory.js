@@ -69,6 +69,9 @@ const Inventory = () => {
   const userRole = localStorage.getItem("userPosition")?.toLowerCase();
   const userName = localStorage.getItem("userName");
   const userId = localStorage.getItem("userId");
+  const [exportLoading, setExportLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
 
   const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                   
@@ -1431,32 +1434,39 @@ const handleCategoryChange = (value) => {
   const handleCancel = () => setIsModalVisible(false);
 
     const exportToExcel = () => {
-    const flattenedData = filteredData.map((item) => ({
-      ItemID: item.itemId || "",
-      ItemName: item.itemName || "",
-      ItemDetails: item.itemDetails || "",
-      Category: item.category || "",
-      Department: item.department || "",
-      Quantity: item.quantity?.toString() || "0", 
-      Status: item.status || "",
-      Condition: item.condition
-        ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
-        : "",
-      unit: item.unit || "",
-    }));
+    setExportLoading(true);
+    try {
+      const flattenedData = filteredData.map((item) => ({
+        ItemID: item.itemId || "",
+        ItemName: item.itemName || "",
+        ItemDetails: item.itemDetails || "",
+        Category: item.category || "",
+        Department: item.department || "",
+        Quantity: item.quantity?.toString() || "0", 
+        Status: item.status || "",
+        Condition: item.condition
+          ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
+          : "",
+        unit: item.unit || "",
+      }));
 
-    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
-    const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(flattenedData);
+      const workbook = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
 
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "Filtered_Inventory.xlsx");
+      const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+      saveAs(data, "Filtered_Inventory.xlsx");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const generatePdfFromFilteredData = () => {
@@ -1544,19 +1554,33 @@ const handleCategoryChange = (value) => {
 
 // Save PDF
 const saveAsPdf = () => {
-  const doc = generatePdfFromFilteredData();
-  if (doc) {
-    const fileName = `Inventory_List_${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
+  setPdfLoading(true);
+  try {
+    const doc = generatePdfFromFilteredData();
+    if (doc) {
+      const fileName = `Inventory_List_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+    }
+  } catch (error) {
+    console.error("Error saving PDF:", error);
+  } finally {
+    setPdfLoading(false);
   }
 };
 
 // Print PDF
 const printPdf = () => {
-  const doc = generatePdfFromFilteredData();
-  if (doc) {
-    doc.autoPrint();
-    window.open(doc.output("bloburl"), "_blank");
+  setPrintLoading(true);
+  try {
+    const doc = generatePdfFromFilteredData();
+    if (doc) {
+      doc.autoPrint();
+      window.open(doc.output("bloburl"), "_blank");
+    }
+  } catch (error) {
+    console.error("Error printing PDF:", error);
+  } finally {
+    setPrintLoading(false);
   }
 };
 
@@ -2257,6 +2281,8 @@ useEffect(() => {
       tooltip="Download PDF"
       className="gradient-float-btn"
       style={{ width: 60, height: 60, }}
+      loading={pdfLoading}
+      disabled={exportLoading || printLoading}
     />
     <FloatButton
     onClick={exportToExcel}
@@ -2274,6 +2300,8 @@ useEffect(() => {
       tooltip="Export Excel"
       className="gradient-float-btn"
       style={{ width: 60, height: 60 }}
+      loading={exportLoading}
+      disabled={pdfLoading || printLoading}
     />
     <FloatButton
     onClick={printPdf}
@@ -2291,6 +2319,8 @@ useEffect(() => {
       tooltip="Print"
       className="gradient-float-btn"
       style={{ width: 60, height: 60, marginBottom: 20 }}
+      loading={printLoading}
+      disabled={exportLoading || pdfLoading}
     />
   </FloatButton.Group>
           </div>

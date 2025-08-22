@@ -1229,6 +1229,8 @@ const LabRoomQR = () => {
   const qrRefs = useRef({});
   const qrModalRef = useRef(null);
   const [editingRoomId, setEditingRoomId] = useState(null);
+  const [downloadLoading, setDownloadLoading] = useState({});
+  const [modalDownloadLoading, setModalDownloadLoading] = useState(false);
 
   const [qrModal, setQrModal] = useState({
     visible: false,
@@ -1823,65 +1825,107 @@ const LabRoomQR = () => {
   // };
 
   const downloadQRCode = (id) => {
+    setDownloadLoading(prev => ({ ...prev, [id]: true }));
+    
     const svg = qrRefs.current[id]?.querySelector("svg");
-    if (!svg) return;
+    if (!svg) {
+      setDownloadLoading(prev => ({ ...prev, [id]: false }));
+      return;
+    }
 
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    try {
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-    const img = new Image();
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
+      img.onload = () => {
+        try {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
 
-      const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+          const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
 
-      const downloadLink = document.createElement("a");
-      downloadLink.href = pngUrl;
-      downloadLink.download = `${id}-QR.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    };
+          const downloadLink = document.createElement("a");
+          downloadLink.href = pngUrl;
+          downloadLink.download = `${id}-QR.png`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        } catch (error) {
+          console.error("Error downloading QR code:", error);
+        } finally {
+          setDownloadLoading(prev => ({ ...prev, [id]: false }));
+        }
+      };
 
-    img.src = url;
+      img.onerror = () => {
+        console.error("Error loading image for QR code download");
+        setDownloadLoading(prev => ({ ...prev, [id]: false }));
+      };
+
+      img.src = url;
+    } catch (error) {
+      console.error("Error setting up QR code download:", error);
+      setDownloadLoading(prev => ({ ...prev, [id]: false }));
+    }
   };
 
   const downloadQRCodeFromModal = () => {
+    setModalDownloadLoading(true);
+    
     const svg = qrModalRef.current?.querySelector("svg");
-    if (!svg) return;
+    if (!svg) {
+      setModalDownloadLoading(false);
+      return;
+    }
 
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    try {
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-    const img = new Image();
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
+      img.onload = () => {
+        try {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
 
-      const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+          const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
 
-      const downloadLink = document.createElement("a");
-      downloadLink.href = pngUrl;
-      downloadLink.download = `${qrModal.title || "qr"}-QR.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    };
+          const downloadLink = document.createElement("a");
+          downloadLink.href = pngUrl;
+          downloadLink.download = `${qrModal.title || "qr"}-QR.png`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        } catch (error) {
+          console.error("Error downloading QR code from modal:", error);
+        } finally {
+          setModalDownloadLoading(false);
+        }
+      };
 
-    img.src = url;
+      img.onerror = () => {
+        console.error("Error loading image for modal QR code download");
+        setModalDownloadLoading(false);
+      };
+
+      img.src = url;
+    } catch (error) {
+      console.error("Error setting up modal QR code download:", error);
+      setModalDownloadLoading(false);
+    }
   };
 
   // return (
@@ -2665,8 +2709,9 @@ return (
                                     <button
                                       onClick={() => downloadQRCode(room.id)}
                                       className="labroom-download-button"
+                                      disabled={downloadLoading[room.id]}
                                     >
-                                      Download QR
+                                      {downloadLoading[room.id] ? "Downloading..." : "Download QR"}
                                     </button>
                                   </div>
                                 </td>
@@ -2766,6 +2811,7 @@ return (
             </div>
             <button
               onClick={downloadQRCodeFromModal}
+              disabled={modalDownloadLoading}
               style={{
                 marginTop: "1rem",
                 padding: "6px 12px",
@@ -2773,10 +2819,11 @@ return (
                 color: "white",
                 border: "none",
                 borderRadius: "4px",
-                cursor: "pointer",
+                cursor: modalDownloadLoading ? "not-allowed" : "pointer",
+                opacity: modalDownloadLoading ? 0.6 : 1,
               }}
             >
-              Download QR
+              {modalDownloadLoading ? "Downloading..." : "Download QR"}
             </button>
           </div>
         </Modal>
