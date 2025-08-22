@@ -3,7 +3,7 @@ import { Picker } from '@react-native-picker/picker';
 import {
   View, Text, TouchableOpacity, Modal,
   Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, 
-  StatusBar, Dimensions } from 'react-native';
+  StatusBar, Dimensions, ActivityIndicator } from 'react-native';
 import {
   collection, getDocs, doc, updateDoc, getDoc, deleteDoc,
   setDoc, addDoc, serverTimestamp, onSnapshot, query, where
@@ -32,6 +32,7 @@ const ReturnItems = () => {
   const [issueQuantities, setIssueQuantities] = useState({});
   const [glasswareIssues, setGlasswareIssues] = useState({});
   const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const screenHeight = Dimensions.get("window").height;
   const modalMaxHeight = screenHeight * 0.8; 
@@ -44,6 +45,7 @@ const ReturnItems = () => {
 
 
   useEffect(() => {
+    setLoading(true);
     const unsubscribe = () => {
       if (user?.id) {
         const requestLogRef = collection(db, `accounts/${user.id}/userrequestlog`);
@@ -102,6 +104,10 @@ const ReturnItems = () => {
           });
   
           setHistoryData(sortedLogs); // Update the state with the sorted logs
+          setLoading(false);
+        }, (error) => {
+          console.error('Error fetching history data:', error);
+          setLoading(false);
         });
       }
     };
@@ -663,29 +669,40 @@ const ReturnItems = () => {
         ))}
       </View>
 
-      <View style={styles.returnTableContainer}>
-        <ScrollView style={{ maxHeight: 650, padding: 5 }}>
-          {/* Header */}
-          <View style={[styles.returnTableRow, styles.returnTableHeader]}>
-            <Text style={[styles.returnHeaderCell, styles.returnColDate]}>Date</Text>
-            <Text style={[styles.returnHeaderCell, styles.returnColStatus]}>Status</Text>
-            <Text style={[styles.returnHeaderCell, styles.returnColAction]}>Action</Text>
-          </View>
-
-          {/* Data Rows */}
-          {filteredData.map((item) => (
-            <View key={item.id} style={styles.returnTableRow}>
-              <Text style={[styles.returnCell, styles.returnColDate]}>
-                {item.rawTimestamp?.split(',')[0] || 'N/A'}
-              </Text>
-              <Text style={[styles.returnCell, styles.returnColStatus]}>{item.status}</Text>
-              <TouchableOpacity style={styles.returnColAction} onPress={() => handleViewDetails(item)}>
-                <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
-              </TouchableOpacity>
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading return history...</Text>
+        </View>
+      ) : filteredData.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 16, color: '#666' }}>No return history found.</Text>
+        </View>
+      ) : (
+        <View style={styles.returnTableContainer}>
+          <ScrollView style={{ maxHeight: 650, padding: 5 }}>
+            {/* Header */}
+            <View style={[styles.returnTableRow, styles.returnTableHeader]}>
+              <Text style={[styles.returnHeaderCell, styles.returnColDate]}>Date</Text>
+              <Text style={[styles.returnHeaderCell, styles.returnColStatus]}>Status</Text>
+              <Text style={[styles.returnHeaderCell, styles.returnColAction]}>Action</Text>
             </View>
-          ))}
-        </ScrollView>
-      </View>
+
+            {/* Data Rows */}
+            {filteredData.map((item) => (
+              <View key={item.id} style={styles.returnTableRow}>
+                <Text style={[styles.returnCell, styles.returnColDate]}>
+                  {item.rawTimestamp?.split(',')[0] || 'N/A'}
+                </Text>
+                <Text style={[styles.returnCell, styles.returnColStatus]}>{item.status}</Text>
+                <TouchableOpacity style={styles.returnColAction} onPress={() => handleViewDetails(item)}>
+                  <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
         <Modal
           visible={modalVisible}
