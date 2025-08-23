@@ -26,6 +26,8 @@ const UserActivityLogScreen = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 const navigation = useNavigation()
   
     const [headerHeight, setHeaderHeight] = useState(0);
@@ -109,7 +111,18 @@ const navigation = useNavigation()
     );
 
     setFilteredLogs(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
   }, [searchQuery]);
+
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const renderItem = ({ item, index }) => (
     <Pressable
@@ -127,20 +140,40 @@ const navigation = useNavigation()
 
   return (
     <View style={styles.container}>
-      <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+      {/* <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
                                 <Icon name="keyboard-backspace" size={28} color="black" />
                               </TouchableOpacity>
 
-              <View>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>CAPEX Request</Text>
-                <Text style={{ fontWeight: 300, fontSize: 13}}>Capital Expenditure Proposal</Text>
-              </View>
+          <View style={{ alignItems: 'center' }}>
+            <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 18, color: '#395a7f' }}>
+              Activity Log
+            </Text>
+            <Text style={{ fontWeight: 300, fontSize: 13}}>Activity Log</Text>
+          </View>
+
 
                 <TouchableOpacity style={{padding: 2}}>
                   <Icon name="information-outline" size={24} color="#000" />
                 </TouchableOpacity>
-              </View>
+        </View> */}
+
+        <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <Icon name="keyboard-backspace" size={28} color="black" />
+          </TouchableOpacity>
+
+          <View style={{ position: 'absolute', left: 0, right: 0, alignItems: 'center', paddingTop: 30 }}>
+            <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 18, color: '#395a7f' }}>
+              Activity Log
+            </Text>
+          </View>
+
+          {/* Optional future right button */}
+          {/* <TouchableOpacity style={{padding: 2}}>
+            <Icon name="information-outline" size={24} color="#000" />
+          </TouchableOpacity> */}
+        </View>
 
         <View style={[styles.wholeSection,{ marginTop: headerHeight }]}>
 
@@ -155,13 +188,42 @@ const navigation = useNavigation()
 </View>
 
           <FlatList
-            data={filteredLogs}
+            data={currentItems}
             keyExtractor={(item) => item.key}
             renderItem={renderItem}
             ListEmptyComponent={
               <Text style={styles.emptyText}>No activity found.</Text>
             }
           />
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <View style={styles.paginationContainer}>
+              <TouchableOpacity
+                style={[styles.paginationButton, currentPage === 1 && styles.paginationButtonDisabled]}
+                onPress={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <Text style={[styles.paginationButtonText, currentPage === 1 && styles.paginationButtonTextDisabled]}>
+                  Previous
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.paginationText}>
+                Page {currentPage} of {totalPages}
+              </Text>
+
+              <TouchableOpacity
+                style={[styles.paginationButton, currentPage === totalPages && styles.paginationButtonDisabled]}
+                onPress={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <Text style={[styles.paginationButtonText, currentPage === totalPages && styles.paginationButtonTextDisabled]}>
+                  Next
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
 

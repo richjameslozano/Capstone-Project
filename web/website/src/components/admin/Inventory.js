@@ -1,20 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import {
-  Layout,
-  Table,
-  Input,
-  Button,
-  Select,
-  Form,
-  Row,
-  Col,
-  Space,
-  DatePicker,
-  Modal,
-  InputNumber,
-  Radio,
-  FloatButton,Spin
-} from "antd";
+import {Layout,Table,Input,Button,Select,Form,Row,Col,Space,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
 import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
 import moment from "moment";
 import Sidebar from "../Sidebar";
@@ -79,18 +64,20 @@ const Inventory = () => {
   const [isRestockRequestModalVisible, setIsRestockRequestModalVisible] = useState(false);
   const [restockForm] = Form.useForm();
   const [itemToRestock, setItemToRestock] = useState(null);
-
   const [isFullEditModalVisible, setIsFullEditModalVisible] = useState(false);
   const [fullEditForm] = Form.useForm();
+  const userRole = localStorage.getItem("userPosition")?.toLowerCase();
+  const userName = localStorage.getItem("userName");
+  const userId = localStorage.getItem("userId");
+  const [exportLoading, setExportLoading] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
 
   const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                   
       .replace(/[^a-zA-Z0-9\s\-.,()]/g, "");
-  
-
   const [headerHeight, setHeaderHeight] = useState(0);
   const headerRef = useRef(null);
-
   useEffect(() => {
     const measureHeight = () => {
       if (headerRef.current) {
@@ -98,9 +85,7 @@ const Inventory = () => {
         setHeaderHeight(height);
       }
     };
-
     measureHeight();
-
     // Optional: watch for resize events
     const observer = new ResizeObserver(measureHeight);
     if (headerRef.current) {
@@ -109,7 +94,6 @@ const Inventory = () => {
 
     return () => observer.disconnect();
   }, []);
-
 
   // useEffect(() => {
   //   const inventoryRef = collection(db, "inventory");
@@ -151,149 +135,393 @@ const Inventory = () => {
   //   return () => unsubscribe(); // Clean up the listener on unmount
   // }, []);
 
-  useEffect(() => {
-    const inventoryRef = collection(db, "inventory");
+//VERSION 1 CRITICAL LEVEL REPURPOSE
+  // useEffect(() => {
+  //   const inventoryRef = collection(db, "inventory");
 
-    const unsubscribe = onSnapshot(
-      inventoryRef,
-      async (snapshot) => {
-        setLoading(true); // Start loading
-        try {
-          const batch = writeBatch(db); // use batch to reduce writes
+  //   const unsubscribe = onSnapshot(
+  //     inventoryRef,
+  //     async (snapshot) => {
+  //       setLoading(true); // Start loading
+  //       try {
+  //         const batch = writeBatch(db); // use batch to reduce writes
 
-          const items = await Promise.all(
-            snapshot.docs.map(async (docSnap, index) => {
-              const data = docSnap.data();
-              const docId = docSnap.id;
+  //         const items = await Promise.all(
+  //           snapshot.docs.map(async (docSnap, index) => {
+  //             const data = docSnap.data();
+  //             const docId = docSnap.id;
 
-              const entryDate = data.entryDate || "N/A";
-              const expiryDate = data.expiryDate || "N/A";
+  //             const entryDate = data.entryDate || "N/A";
+  //             const expiryDate = data.expiryDate || "N/A";
 
-              const quantity = Number(data.quantity) || 0;
-              const category = (data.category || "").toLowerCase();
+  //             const quantity = Number(data.quantity) || 0;
+  //             const category = (data.category || "").toLowerCase();
 
-              let status = data.status || ""; // base status
-              let newStatus = status;
+  //             let status = data.status || ""; // base status
+  //             let newStatus = status;
               
-              try {
-                        if (data.itemId) {
-                          const usageQuery = query(
-                            collection(db, "itemUsage"),
-                            where("itemId", "==", data.itemId),
-                            orderBy("timestamp", "desc"),
-                            limit(30)
-                          );
+  //             try {
+  //                       if (data.itemId) {
+  //                         const usageQuery = query(
+  //                           collection(db, "itemUsage"),
+  //                           where("itemId", "==", data.itemId),
+  //                           orderBy("timestamp", "desc"),
+  //                           limit(30)
+  //                         );
 
-                          const usageSnapshot = await getDocs(usageQuery);
+  //                         const usageSnapshot = await getDocs(usageQuery);
 
-                          const totalUsed = usageSnapshot.docs.reduce((sum, doc) => {
-                            const usageData = doc.data();
-                            const used = Number(usageData.usedQuantity) || 0;
-                            return sum + used;
-                          }, 0);
+  //                         const totalUsed = usageSnapshot.docs.reduce((sum, doc) => {
+  //                           const usageData = doc.data();
+  //                           const used = Number(usageData.usedQuantity) || 0;
+  //                           return sum + used;
+  //                         }, 0);
 
-                          const uniqueDays = new Set(
-                            usageSnapshot.docs
-                              .map(doc => {
-                                const ts = doc.data().timestamp;
-                                return ts instanceof Timestamp ? ts.toDate().toDateString() : null;
-                              })
-                              .filter(Boolean)
-                          );
+  //                         const uniqueDays = new Set(
+  //                           usageSnapshot.docs
+  //                             .map(doc => {
+  //                               const ts = doc.data().timestamp;
+  //                               return ts instanceof Timestamp ? ts.toDate().toDateString() : null;
+  //                             })
+  //                             .filter(Boolean)
+  //                         );
 
-                          const numDays = Math.max(uniqueDays.size, 1);
-                          const avgDailyUsage = totalUsed / numDays;
+  //                         const numDays = Math.max(uniqueDays.size, 1);
+  //                         const avgDailyUsage = totalUsed / numDays;
 
-                          const isCritical = quantity <= avgDailyUsage * 30;
-                          console.log("Critical check:", {
-                            item: data.itemName,
-                            avgDailyUsage,
-                            quantity,
-                            isCritical
-                          });
+  //                         const isCritical = quantity <= avgDailyUsage * 30;
+  //                         console.log("Critical check:", {
+  //                           item: data.itemName,
+  //                           avgDailyUsage,
+  //                           quantity,
+  //                           isCritical
+  //                         });
 
 
-                          batch.update(doc(db, "inventory", docId), {
-                            averageDailyUsage: avgDailyUsage,
-                             ...(avgDailyUsage > 0 ? { averageDailyUsage: avgDailyUsage } : {}),
+  //                         batch.update(doc(db, "inventory", docId), {
+  //                           averageDailyUsage: avgDailyUsage,
+  //                            ...(avgDailyUsage > 0 ? { averageDailyUsage: avgDailyUsage } : {}),
                             
-                          });
-                        }
-                      } catch (err) {
-                        console.error("Error calculating critical status for item:", data.itemName, err);
-                      }
+  //                         });
+  //                       }
+  //                     } catch (err) {
+  //                       console.error("Error calculating critical status for item:", data.itemName, err);
+  //                     }
 
-              // Update logic
-              if (quantity === 0) {
-                if (["chemical", "reagent", "materials"].includes(category)) {
-                  newStatus = "out of stock";
+  //             // Update logic
+  //             if (quantity === 0) {
+  //               if (["chemical", "reagent", "materials"].includes(category)) {
+  //                 newStatus = "out of stock";
                   
-                } else if (["equipment", "glasswares"].includes(category)) {
-                  newStatus = "in use";
-                }
-              }
+  //               } else if (["equipment", "glasswares"].includes(category)) {
+  //                 newStatus = "in use";
+  //               }
+  //             }
 
-              // If status changed in logic, update inventory
-              if (newStatus !== status) {
-                const itemRef = doc(db, "inventory", docId);
-                batch.update(itemRef, { status: newStatus });
-              }
+  //             // If status changed in logic, update inventory
+  //             if (newStatus !== status) {
+  //               const itemRef = doc(db, "inventory", docId);
+  //               batch.update(itemRef, { status: newStatus });
+  //             }
 
-              // 🔁 SYNC TO LABROOM ITEMS
-              const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
+  //             // 🔁 SYNC TO LABROOM ITEMS
+  //             const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
 
-              for (const roomDoc of labRoomsSnapshot.docs) {
-                const roomId = roomDoc.id;
-                const itemsRef = collection(db, `labRoom/${roomId}/items`);
-                const itemsSnap = await getDocs(itemsRef);
+  //             for (const roomDoc of labRoomsSnapshot.docs) {
+  //               const roomId = roomDoc.id;
+  //               const itemsRef = collection(db, `labRoom/${roomId}/items`);
+  //               const itemsSnap = await getDocs(itemsRef);
 
-                itemsSnap.forEach((itemDoc) => {
-                  const itemData = itemDoc.data();
-                  if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
-                    const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
-                    batch.update(labItemRef, { status: newStatus });
-                  }
-                });
-              }
+  //               itemsSnap.forEach((itemDoc) => {
+  //                 const itemData = itemDoc.data();
+  //                 if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
+  //                   const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
+  //                   batch.update(labItemRef, { status: newStatus });
+  //                 }
+  //               });
+  //             }
 
-              return {
-                docId,
-                id: index + 1,
-                itemId: data.itemId,
-                item: data.itemName,
-                entryDate,
-                expiryDate,
-                qrCode: data.qrCode,
-                status: newStatus,
+  //             return {
+  //               docId,
+  //               id: index + 1,
+  //               itemId: data.itemId,
+  //               item: data.itemName,
+  //               entryDate,
+  //               expiryDate,
+  //               qrCode: data.qrCode,
+  //               status: newStatus,
+  //               ...data,
+  //             };
+  //           })
+  //         );
+
+  //         // ✅ Commit all batched updates
+  //         await batch.commit();
+
+  //         // Update state
+  //         items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+  //         setDataSource(items);
+  //         setCount(items.length);
+
+  //       } catch (error) {
+  //         console.error("Error processing inventory snapshot: ", error);
+  //       }finally {
+  //       setLoading(false); // Stop loading
+  //     }
+  //     },
+  //     (error) => {
+  //       console.error("Error fetching inventory with onSnapshot: ", error);
+  //       setLoading(false); // Stop loading even on error
+  //     }
+  //   );
+
+  //   return () => unsubscribe();
+  // }, []);
+
+  //VERSION 2
+  const isConsumable = (cat) =>
+  ["chemical", "reagent", "materials"].includes((cat || "").toLowerCase());
+const isDurable = (cat) =>
+  ["equipment", "glasswares"].includes((cat || "").toLowerCase());
+
+// If you have a fixed annual cycle, set it here (month is 0-based: 5 = June)
+const DEFAULT_RESTOCK_MONTH = 5; // June
+const DEFAULT_RESTOCK_DAY = 1;   // 1st
+
+function nextCycleDateFromFixedToday(today = new Date()) {
+  const y = today.getFullYear();
+  const candidate = new Date(Date.UTC(y, DEFAULT_RESTOCK_MONTH, DEFAULT_RESTOCK_DAY));
+  const todayUTC = new Date(Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()));
+  if (candidate <= todayUTC) {
+    // If the fixed date already passed this year, use next year
+    return new Date(Date.UTC(y + 1, DEFAULT_RESTOCK_MONTH, DEFAULT_RESTOCK_DAY));
+  }
+  return candidate;
+}
+
+function daysBetweenUTC(a, b) {
+  const MS = 24 * 60 * 60 * 1000;
+  const aUTC = new Date(Date.UTC(a.getFullYear(), a.getMonth(), a.getDate()));
+  const bUTC = new Date(Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()));
+  return Math.max(1, Math.ceil((bUTC.getTime() - aUTC.getTime()) / MS));
+}
+
+function computeBufferPct(avgDaily, stdDaily) {
+  const cv = stdDaily / Math.max(avgDaily, 1e-6);
+  const raw = 0.15 + 0.5 * cv; // 15% base + variability up to 50%
+  return Math.min(0.5, Math.max(0.15, raw));
+}
+
+// Group last 30 usage docs by day -> avg & std
+async function getDailyUsageStats(db, itemId) {
+  const usageQuery = query(
+    collection(db, "itemUsage"),
+    where("itemId", "==", itemId),
+    orderBy("timestamp", "desc"),
+    limit(30)
+  );
+  const snap = await getDocs(usageQuery);
+  if (snap.empty) return { avgDaily: 0, stdDaily: 0, daysCount: 0 };
+
+  const perDay = new Map();
+  snap.docs.forEach((d) => {
+    const u = d.data();
+    const ts =
+      u.timestamp instanceof Timestamp
+        ? u.timestamp.toDate()
+        : new Date(u.timestamp);
+    const key = ts.toDateString();
+    const used = Number(u.usedQuantity) || 0;
+    perDay.set(key, (perDay.get(key) || 0) + used);
+  });
+
+  const vals = Array.from(perDay.values());
+  const n = Math.max(vals.length, 1);
+  const sum = vals.reduce((a, b) => a + b, 0);
+  const mean = sum / n;
+  const variance =
+    vals.reduce((acc, v) => acc + Math.pow(v - mean, 2), 0) / Math.max(n - 1, 1);
+  const std = Math.sqrt(variance);
+  return { avgDaily: mean, stdDaily: std, daysCount: vals.length };
+}
+
+// For durables (fallback: quantity is what's available)
+function getDurableAvailabilityFields(itemDocData) {
+  const quantity = Number(itemDocData.quantity) || 0;
+  const availabilityThreshold =
+    Number(itemDocData.availabilityThreshold) > 0
+      ? Number(itemDocData.availabilityThreshold)
+      : 1; // default minimum
+  return { availableNow: quantity, availabilityThreshold };
+}
+
+// === Restock request: CONSUMABLES ONLY, dedup by pending, order shortfall (or minOrderQty)
+  useEffect(() => {
+  const inventoryRef = collection(db, "inventory");
+
+  const unsubscribe = onSnapshot(
+    inventoryRef,
+    async (snapshot) => {
+      setLoading(true);
+
+      try {
+        const batch = writeBatch(db);
+
+        const items = await Promise.all(
+          snapshot.docs.map(async (docSnap, index) => {
+            const data = docSnap.data();
+            const docId = docSnap.id;
+
+            const entryDate = data.entryDate || "N/A";
+            const expiryDate = data.expiryDate || "N/A";
+
+            const quantity = Number(data.quantity) || 0;
+            const category = (data.category || "").toLowerCase();
+
+            let status = data.status || "";
+            let newStatus = status;
+
+            // ===== Compute by type =====
+            let avgDailyUsage = 0;
+            let finalCriticalLevel = Number(data.criticalLevel) || 0; // for consumables
+            let availabilityThresholdOut = Number(data.availabilityThreshold) || undefined;
+            let availableNowOut = undefined;
+
+            if (isConsumable(category) && data.itemId) {
+              // Annual-window critical level
+              const { avgDaily, stdDaily } = await getDailyUsageStats(db, data.itemId);
+              avgDailyUsage = avgDaily;
+
+              const today = new Date();
+              const nextRestockDate = resolveNextRestockDate(data);
+              const daysUntilRestock = daysBetweenUTC(today, nextRestockDate);
+              const bufferPct = computeBufferPct(avgDaily, stdDaily);
+
+              const computedAnnualCL = Math.ceil(
+                avgDaily * daysUntilRestock * (1 + bufferPct)
+              );
+
+              // Honor a manual CL on the doc if present; pick the higher
+              finalCriticalLevel = Math.max(computedAnnualCL, Number(data.criticalLevel) || 0);
+
+              // Runout projection for UI (optional but helpful)
+              const runoutDays = quantity / Math.max(avgDaily, 1e-6);
+              const runoutDate = new Date(
+                today.getTime() + runoutDays * 24 * 60 * 60 * 1000
+              );
+              const atRisk = runoutDate < nextRestockDate;
+
+              // Persist computed fields (keeps your UI fast on next load)
+              batch.update(doc(db, "inventory", docId), {
+                averageDailyUsage: avgDaily,
+                criticalLevel: finalCriticalLevel,               // reuse your existing field
+                nextRestockDate: nextRestockDate.toISOString(),  // optional; now per-item
+                runoutDate: runoutDate.toISOString(),
+                atRisk,
+              });
+            }
+
+            if (isDurable(category)) {
+              const { availableNow, availabilityThreshold } =
+                getDurableAvailabilityFields(data);
+              availableNowOut = availableNow;
+              availabilityThresholdOut = availabilityThreshold;
+
+              // Persist durable fields
+              batch.update(doc(db, "inventory", docId), {
+                availableNow: availableNowOut,
+                availabilityThreshold: availabilityThresholdOut,
+              });
+            }
+
+            // ===== Status logic =====
+            if (isConsumable(category)) {
+              if (quantity === 0) newStatus = "out of stock";
+              else if (quantity <= finalCriticalLevel) newStatus = "low stock";
+              else newStatus = "in stock";
+            }
+
+            if (isDurable(category)) {
+              if (quantity === 0) newStatus = "unavailable";
+              else if (
+                availabilityThresholdOut != null &&
+                quantity < availabilityThresholdOut
+              ) newStatus = "low availability";
+              else newStatus = "available";
+            }
+
+            if (newStatus !== status) {
+              batch.update(doc(db, "inventory", docId), { status: newStatus });
+            }
+
+            // ===== Triggers =====
+            if (isConsumable(category) && quantity <= finalCriticalLevel) {
+              const shortfall = Math.max(
+                finalCriticalLevel - quantity,
+                Number(data.minOrderQty) || 1
+              );
+              await createRestockRequest({
                 ...data,
-              };
-            })
-          );
+                criticalLevel: finalCriticalLevel,
+                shortfall,
+              });
+            }
 
-          // ✅ Commit all batched updates
-          await batch.commit();
+            // ===== SYNC TO LABROOM ITEMS (your original logic) =====
+            const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
+            for (const roomDoc of labRoomsSnapshot.docs) {
+              const roomId = roomDoc.id;
+              const itemsRef = collection(db, `labRoom/${roomId}/items`);
+              const itemsSnap = await getDocs(itemsRef);
 
-          // Update state
-          items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
-          setDataSource(items);
-          setCount(items.length);
+              itemsSnap.forEach((itemDoc) => {
+                const itemData = itemDoc.data();
+                if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
+                  const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
+                  batch.update(labItemRef, { status: newStatus });
+                }
+              });
+            }
 
-        } catch (error) {
-          console.error("Error processing inventory snapshot: ", error);
-        }finally {
-        setLoading(false); // Stop loading
+            return {
+              docId,
+              id: index + 1,
+              itemId: data.itemId,
+              item: data.itemName,
+              entryDate,
+              expiryDate,
+              qrCode: data.qrCode,
+              category,
+              quantity,
+              status: newStatus,
+              averageDailyUsage: avgDailyUsage || undefined,
+              criticalLevel: isConsumable(category) ? finalCriticalLevel : undefined,
+              availabilityThreshold: isDurable(category) ? availabilityThresholdOut : undefined,
+              availableNow: isDurable(category) ? availableNowOut : undefined,
+              ...data,
+            };
+          })
+        );
+
+        await batch.commit();
+
+        items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+        setDataSource(items);
+        setCount(items.length);
+      } catch (error) {
+        console.error("Error processing inventory snapshot: ", error);
+      } finally {
+        setLoading(false);
       }
-      },
-      (error) => {
-        console.error("Error fetching inventory with onSnapshot: ", error);
-        setLoading(false); // Stop loading even on error
-      }
-    );
+    },
+    (error) => {
+      console.error("Error fetching inventory with onSnapshot: ", error);
+      setLoading(false);
+    }
+  );
 
-    return () => unsubscribe();
-  }, []);
-
-
+  return () => unsubscribe();
+}, []);
 
   useEffect(() => {
     const departmentsCollection = collection(db, "departments");
@@ -375,9 +603,6 @@ const Inventory = () => {
 
   return () => unsubscribe();
 }, []);
-
-
-
 
   // useEffect(() => {
   //   const fetchInventory = async () => {
@@ -464,16 +689,40 @@ const handleRestockSubmit = async (values) => {
     // If no existing request found, proceed to submit the new request
     const restockRequest = {
       department: itemToRestock.department,
-      itemName: itemToRestock.itemName,
+      item_name: itemToRestock.itemName,
       quantity_needed: values.quantityNeeded,
       reason: values.reason,
-      status: "pending", // Set status as pending initially
+      status: "pending",
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
+      accountId: userId,      
+      userName: userName || "User" 
     };
 
     // Add the request to the "restock_requests" collection
     await addDoc(collection(db, "restock_requests"), restockRequest);
+
+    if (userRole === "super-user" || userRole === "laboratory custodian") {
+      await addDoc(collection(db, "allNotifications"), {
+        action: `Restock request submitted by ${userName}`,
+        userId: userId,
+        userName: userName,
+        read: false,
+        visibleTo: "admin", // restricts this notif to admin view
+        type: "restock-request",
+        timestamp: serverTimestamp()
+      });
+    }
+
+    // Add to user's activity log
+    await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+      action: `Requested restock for ${itemToRestock.itemName} (Qty: ${values.quantityNeeded})`,
+      userName: userName || "User",
+      timestamp: serverTimestamp(),
+    });
+
+
+    restockForm.resetFields();
 
     // Optionally, show a success message or notification
     setNotificationMessage("Restock request submitted successfully!");
@@ -481,6 +730,7 @@ const handleRestockSubmit = async (values) => {
 
     // Close the modal after submission
     setIsRestockRequestModalVisible(false);
+    
   } catch (error) {
     console.error("Error submitting restock request:", error);
     setNotificationMessage("Failed to submit restock request. Please try again.");
@@ -651,32 +901,74 @@ useEffect(() => {
     return () => unsubscribe();
   }, []);
 // Function to automatically create restock requests
-   const createRestockRequest = async (item) => {
+
+//VERSION 1
+//    const createRestockRequest = async (item) => {
+//   try {
+//     // Check if the item is already in the restock requests list
+//     const restockCollection = collection(db, "restock_requests");
+//     const q = query(restockCollection, where("item_name", "==", item.itemName), where("status", "==", "pending"));
+
+//     const querySnapshot = await getDocs(q);
+
+//     if (!querySnapshot.empty) {
+//       // If the item already exists in the pending state, prevent adding
+//       console.log(`${item.itemName} is already in the restock request list.`);
+//       return;
+//     }
+
+//     // If the item doesn't exist, create a new restock request
+//     await addDoc(collection(db, "restock_requests"), {
+//       item_name: item.itemName,
+//       quantity_needed: item.criticalLevel, // You can use `criticalLevel` as the quantity needed
+//       department: item.department,
+//       status: 'pending',
+//       created_at: serverTimestamp(),
+//       updated_at: serverTimestamp(),
+//     });
+
+//     // Optionally, show a notification to the user
+//     setNotificationMessage(`${item.itemName} needs restocking. A request has been generated.`);
+//     setIsNotificationVisible(true);
+//   } catch (error) {
+//     console.error("Error creating restock request: ", error);
+//     setNotificationMessage("Failed to create restock request.");
+//     setIsNotificationVisible(true);
+//   }
+// };
+
+//VERSION 2
+const createRestockRequest = async (item) => {
   try {
-    // Check if the item is already in the restock requests list
     const restockCollection = collection(db, "restock_requests");
-    const q = query(restockCollection, where("item_name", "==", item.itemName), where("status", "==", "pending"));
-
+    const q = query(
+      restockCollection,
+      where("item_name", "==", item.itemName),
+      where("status", "==", "pending")
+    );
     const querySnapshot = await getDocs(q);
-
     if (!querySnapshot.empty) {
-      // If the item already exists in the pending state, prevent adding
       console.log(`${item.itemName} is already in the restock request list.`);
       return;
     }
 
-    // If the item doesn't exist, create a new restock request
-    await addDoc(collection(db, "restock_requests"), {
+    const qtyNeeded = Math.max(
+      Number(item.shortfall) || 0,
+      Number(item.minOrderQty) || 1
+    );
+
+    await addDoc(restockCollection, {
       item_name: item.itemName,
-      quantity_needed: item.criticalLevel, // You can use `criticalLevel` as the quantity needed
+      quantity_needed: qtyNeeded,
       department: item.department,
-      status: 'pending',
+      status: "pending",
       created_at: serverTimestamp(),
       updated_at: serverTimestamp(),
     });
 
-    // Optionally, show a notification to the user
-    setNotificationMessage(`${item.itemName} needs restocking. A request has been generated.`);
+    setNotificationMessage(
+      `${item.itemName} needs restocking. A request was generated for ${item.itemName}.`
+    );
     setIsNotificationVisible(true);
   } catch (error) {
     console.error("Error creating restock request: ", error);
@@ -685,10 +977,222 @@ useEffect(() => {
   }
 };
 
+// Decide the next restock date WITHOUT a settings doc
+function resolveNextRestockDate(data) {
+  const today = new Date();
+
+  // 1) If the item doc already has nextRestockDate, use it.
+  if (data.nextRestockDate) {
+    const d = new Date(data.nextRestockDate);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  // 2) If the item has lastRestockedAt or entryDate, add 1 year
+  const baseDateStr = data.lastRestockedAt || data.entryDate;
+  if (baseDateStr) {
+    const base = new Date(baseDateStr);
+    if (!isNaN(base.getTime())) {
+      const next = new Date(Date.UTC(base.getUTCFullYear() + 1, base.getUTCMonth(), base.getUTCDate()));
+      // If computed next is already past, fallback to next fixed cycle
+      if (next > today) return next;
+    }
+  }
+
+  // 3) Fallback: fixed annual cycle (e.g., June 1)
+  return nextCycleDateFromFixedToday(today);
+}
 
   
 // BACKEND
-const handleFullUpdate = async (values) => {
+// const handleFullUpdate = async (values) => {
+//   try {
+//     if (!editingItem || !editingItem.docId) {
+//       console.error("❌ No item selected or docId missing.");
+//       setNotificationMessage("Item selection error.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+
+//     // Basic sanitization
+//     const sanitizedItemName = values.itemName?.trim();
+//     const sanitizedItemDetails = values.itemDetails?.trim();
+//     const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel || 1), 1);
+
+//     if (!sanitizedItemName || !sanitizedItemDetails) {
+//       setNotificationMessage("Item name and details are required.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+
+//     // Construct payload
+//     const payload = {
+//       itemName: sanitizedItemName,
+//       itemDetails: sanitizedItemDetails,
+//       category: values.category,
+//       department: values.department,
+//       criticalLevel: sanitizedCriticalLevel,
+//       labRoom: values.labRoom,
+//       shelves: values.shelves,
+//       row: values.row, 
+//       unit: values.unit,
+//       status: values.status,
+//       condition: {
+//         Good: Number(values.condition?.Good || 0),
+//         Defect: Number(values.condition?.Defect || 0),
+//         Damage: Number(values.condition?.Damage || 0),
+//         Lost: Number(values.condition?.Lost || 0),
+//       },
+//     };
+
+//     const userId = localStorage.getItem("userId");
+//     const userName = localStorage.getItem("userName") || "User";
+
+//     const response = await axios.post("https://webnuls.onrender.com/update-inventory-full", {
+//       values: payload,
+//       editingItem,
+//       userId,
+//       userName,
+//     });
+
+//     if (response.status === 200) {
+//       setNotificationMessage("Item updated successfully!");
+//       setIsNotificationVisible(true);
+
+//       // Update local state
+//       const updatedItem = {
+//         ...editingItem,
+//         ...payload,
+//         quantity: payload.condition.Good, // assumes quantity = Good
+//       };
+
+//       setDataSource((prev) =>
+//         prev.map((item) =>
+//           item.docId === editingItem.docId ? updatedItem : item
+//         )
+//       );
+
+//       // Reset UI
+//       setIsFullEditModalVisible(false);
+//       setIsRowModalVisible(false);
+//       setEditingItem(null);
+//       fullEditForm.resetFields();
+      
+//     } else {
+//       setNotificationMessage("Failed to update item.");
+//       setIsNotificationVisible(true);
+//     }
+
+//   } catch (error) {
+//     console.error("Error in handleFullUpdate:", error);
+//     setNotificationMessage("Error updating item. Check console.");
+//     setIsNotificationVisible(true);
+//   }
+// };
+
+  //version 1 handlefullupdate
+  // const handleFullUpdate = async (values) => {
+  //   try {
+  //     if (!editingItem || !editingItem.docId) {
+  //       console.error("❌ No item selected or docId missing.");
+  //       setNotificationMessage("Item selection error.");
+  //       setIsNotificationVisible(true);
+  //       return;
+  //     }
+
+  //     // Basic sanitization
+  //     const sanitizedItemName = values.itemName?.trim();
+  //     const sanitizedItemDetails = values.itemDetails?.trim();
+  //     const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel || 1), 1);
+
+  //     if (!sanitizedItemName || !sanitizedItemDetails) {
+  //       setNotificationMessage("Item name and details are required.");
+  //       setIsNotificationVisible(true);
+  //       return;
+  //     }
+
+  //     // Sanitize and calculate condition values
+  //     const Good = Number(values.condition?.Good || 0);
+  //     const Defect = Number(values.condition?.Defect || 0);
+  //     const Damage = Number(values.condition?.Damage || 0);
+  //     const Lost = Number(values.condition?.Lost || 0);
+
+  //     const conditionTotal = Good + Defect + Damage + Lost;
+  //     const originalQuantity = editingItem.quantity || 0;
+
+  //     if (conditionTotal !== originalQuantity) {
+  //       setNotificationMessage(`❌ Total of Good, Defect, Damage, and Lost (${conditionTotal}) must equal original quantity (${originalQuantity}).`);
+  //       setIsNotificationVisible(true);
+  //       return;
+  //     }
+
+  //     // Construct payload
+  //     const payload = {
+  //       itemName: sanitizedItemName,
+  //       itemDetails: sanitizedItemDetails,
+  //       category: values.category,
+  //       department: values.department,
+  //       criticalLevel: sanitizedCriticalLevel,
+  //       labRoom: values.labRoom,
+  //       shelves: values.shelves,
+  //       row: values.row, 
+  //       unit: values.unit,
+  //       status: values.status,
+  //       condition: {
+  //         Good,
+  //         Defect,
+  //         Damage,
+  //         Lost,
+  //       },
+  //     };
+
+  //     const userId = localStorage.getItem("userId");
+  //     const userName = localStorage.getItem("userName") || "User";
+
+  //     const response = await axios.post("https://webnuls.onrender.com/update-inventory-full", {
+  //       values: payload,
+  //       editingItem,
+  //       userId,
+  //       userName,
+  //     });
+
+  //     if (response.status === 200) {
+  //       setNotificationMessage("✅ Item updated successfully!");
+  //       setIsNotificationVisible(true);
+
+  //       // Update local state
+  //       const updatedItem = {
+  //         ...editingItem,
+  //         ...payload,
+  //         quantity: payload.condition.Good, // assumes quantity = Good
+  //       };
+
+  //       setDataSource((prev) =>
+  //         prev.map((item) =>
+  //           item.docId === editingItem.docId ? updatedItem : item
+  //         )
+  //       );
+
+  //       // Reset UI
+  //       setIsFullEditModalVisible(false);
+  //       setIsRowModalVisible(false);
+  //       setEditingItem(null);
+  //       fullEditForm.resetFields();
+        
+  //     } else {
+  //       setNotificationMessage("❌ Failed to update item.");
+  //       setIsNotificationVisible(true);
+  //     }
+
+  //   } catch (error) {
+  //     console.error("Error in handleFullUpdate:", error);
+  //     setNotificationMessage("❌ Error updating item. Check console.");
+  //     setIsNotificationVisible(true);
+  //   }
+  // };
+
+  //version 2 (revised critical)
+
+  const handleFullUpdate = async (values) => {
   try {
     if (!editingItem || !editingItem.docId) {
       console.error("❌ No item selected or docId missing.");
@@ -697,10 +1201,14 @@ const handleFullUpdate = async (values) => {
       return;
     }
 
-    // Basic sanitization
+    // --- Category helpers
+    const cat = values.category;
+    const isConsumable = ["Chemical", "Reagent", "Materials"].includes(cat);
+    const isDurable    = ["Equipment", "Glasswares"].includes(cat);
+
+    // --- Basic sanitization
     const sanitizedItemName = values.itemName?.trim();
     const sanitizedItemDetails = values.itemDetails?.trim();
-    const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel || 1), 1);
 
     if (!sanitizedItemName || !sanitizedItemDetails) {
       setNotificationMessage("Item name and details are required.");
@@ -708,29 +1216,86 @@ const handleFullUpdate = async (values) => {
       return;
     }
 
-    // Construct payload
+    // --- Condition validation ONLY for categories that capture conditions
+    //     (you show the Good/Defect/Damage/Lost fields for Glasswares/Equipment/Materials)
+    let Good = 0, Defect = 0, Damage = 0, Lost = 0;
+    if (["Equipment", "Glasswares", "Materials"].includes(cat)) {
+      Good   = Number(values.condition?.Good || 0);
+      Defect = Number(values.condition?.Defect || 0);
+      Damage = Number(values.condition?.Damage || 0);
+      Lost   = Number(values.condition?.Lost || 0);
+
+      const conditionTotal = Good + Defect + Damage + Lost;
+      const originalQuantity = editingItem.quantity || 0;
+
+      if (conditionTotal !== originalQuantity) {
+        setNotificationMessage(
+          `❌ Total of Good, Defect, Damage, and Lost (${conditionTotal}) must equal original quantity (${originalQuantity}).`
+        );
+        setIsNotificationVisible(true);
+        return;
+      }
+    }
+
+    // --- Build payload with adaptive fields
     const payload = {
       itemName: sanitizedItemName,
       itemDetails: sanitizedItemDetails,
-      category: values.category,
+      category: cat,
       department: values.department,
-      criticalLevel: sanitizedCriticalLevel,
       labRoom: values.labRoom,
       shelves: values.shelves,
-      row: values.row, 
-      unit: values.unit,
+      row: values.row,
+      unit: values.unit,               // you only render this for Chemical/Reagent; fine to pass through
       status: values.status,
-      condition: {
-        Good: Number(values.condition?.Good || 0),
-        Defect: Number(values.condition?.Defect || 0),
-        Damage: Number(values.condition?.Damage || 0),
-        Lost: Number(values.condition?.Lost || 0),
-      },
     };
 
+    // ---- Consumables: Critical Level is OPTIONAL (manual override only)
+    // If your Edit form has a checkbox `manualCriticalOverride`, honor it.
+    // If not present, we treat it as false (auto-computed critical level by backend).
+    const manualCriticalOverride = Boolean(values.manualCriticalOverride);
+    if (isConsumable) {
+      if (manualCriticalOverride) {
+        const n = Number(values.criticalLevel);
+        if (!Number.isFinite(n) || n < 1) {
+          setNotificationMessage("❌ Critical Level must be a number ≥ 1 (or untick manual override).");
+          setIsNotificationVisible(true);
+          return;
+        }
+        payload.criticalLevel = Math.floor(n);
+        payload.manualCriticalOverride = true;
+      } else {
+        // Do not send any criticalLevel so your backend/system computes it automatically
+        payload.manualCriticalOverride = false;
+      }
+    }
+
+    // ---- Durables: NO Critical Level; use Availability Threshold instead
+    if (isDurable) {
+      delete payload.criticalLevel;
+      delete payload.manualCriticalOverride;
+
+      // availabilityThreshold is optional; default to 1 if omitted/invalid
+      const atRaw = values.availabilityThreshold;
+      const atNum = atRaw === "" || atRaw == null ? 1 : Number(atRaw);
+      if (!Number.isFinite(atNum) || atNum < 0) {
+        setNotificationMessage("❌ Availability Threshold must be a number ≥ 0.");
+        setIsNotificationVisible(true);
+        return;
+      }
+      payload.availabilityThreshold = Math.floor(atNum);
+    }
+
+    // ---- Condition block (only for the categories that use it)
+    if (["Equipment", "Glasswares", "Materials"].includes(cat)) {
+      payload.condition = { Good, Defect, Damage, Lost };
+    }
+
+    // --- User metadata (unchanged)
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName") || "User";
 
+    // --- API call (unchanged endpoint)
     const response = await axios.post("https://webnuls.onrender.com/update-inventory-full", {
       values: payload,
       editingItem,
@@ -739,20 +1304,23 @@ const handleFullUpdate = async (values) => {
     });
 
     if (response.status === 200) {
-      setNotificationMessage("Item updated successfully!");
+      setNotificationMessage("✅ Item updated successfully!");
       setIsNotificationVisible(true);
 
       // Update local state
       const updatedItem = {
         ...editingItem,
         ...payload,
-        quantity: payload.condition.Good, // assumes quantity = Good
+        // Keep your assumption: quantity = Good for categories that use condition;
+        // for others, keep the existing quantity (no change here because Edit modal didn't change it)
+        quantity:
+          ["Equipment", "Glasswares", "Materials"].includes(cat)
+            ? (payload.condition?.Good ?? editingItem.quantity ?? 0)
+            : editingItem.quantity,
       };
 
       setDataSource((prev) =>
-        prev.map((item) =>
-          item.docId === editingItem.docId ? updatedItem : item
-        )
+        prev.map((item) => (item.docId === editingItem.docId ? updatedItem : item))
       );
 
       // Reset UI
@@ -760,18 +1328,17 @@ const handleFullUpdate = async (values) => {
       setIsRowModalVisible(false);
       setEditingItem(null);
       fullEditForm.resetFields();
-      
     } else {
-      setNotificationMessage("Failed to update item.");
+      setNotificationMessage("❌ Failed to update item.");
       setIsNotificationVisible(true);
     }
-
   } catch (error) {
     console.error("Error in handleFullUpdate:", error);
-    setNotificationMessage("Error updating item. Check console.");
+    setNotificationMessage("❌ Error updating item. Check console.");
     setIsNotificationVisible(true);
   }
 };
+
 
   useEffect(() => {
     if (isEditModalVisible) {
@@ -867,32 +1434,39 @@ const handleCategoryChange = (value) => {
   const handleCancel = () => setIsModalVisible(false);
 
     const exportToExcel = () => {
-    const flattenedData = filteredData.map((item) => ({
-      ItemID: item.itemId || "",
-      ItemName: item.itemName || "",
-      ItemDetails: item.itemDetails || "",
-      Category: item.category || "",
-      Department: item.department || "",
-      Quantity: item.quantity?.toString() || "0", 
-      Status: item.status || "",
-      Condition: item.condition
-        ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
-        : "",
-      unit: item.unit || "",
-    }));
+    setExportLoading(true);
+    try {
+      const flattenedData = filteredData.map((item) => ({
+        ItemID: item.itemId || "",
+        ItemName: item.itemName || "",
+        ItemDetails: item.itemDetails || "",
+        Category: item.category || "",
+        Department: item.department || "",
+        Quantity: item.quantity?.toString() || "0", 
+        Status: item.status || "",
+        Condition: item.condition
+          ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
+          : "",
+        unit: item.unit || "",
+      }));
 
-    const worksheet = XLSX.utils.json_to_sheet(flattenedData);
-    const workbook = XLSX.utils.book_new();
+      const worksheet = XLSX.utils.json_to_sheet(flattenedData);
+      const workbook = XLSX.utils.book_new();
 
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Filtered Inventory");
 
-    const excelBuffer = XLSX.write(workbook, {
-      bookType: "xlsx",
-      type: "array",
-    });
+      const excelBuffer = XLSX.write(workbook, {
+        bookType: "xlsx",
+        type: "array",
+      });
 
-    const data = new Blob([excelBuffer], { type: "application/octet-stream" });
-    saveAs(data, "Filtered_Inventory.xlsx");
+      const data = new Blob([excelBuffer], { type: "application/octet-stream" });
+      saveAs(data, "Filtered_Inventory.xlsx");
+    } catch (error) {
+      console.error("Error exporting to Excel:", error);
+    } finally {
+      setExportLoading(false);
+    }
   };
 
   const generatePdfFromFilteredData = () => {
@@ -980,19 +1554,33 @@ const handleCategoryChange = (value) => {
 
 // Save PDF
 const saveAsPdf = () => {
-  const doc = generatePdfFromFilteredData();
-  if (doc) {
-    const fileName = `Inventory_List_${new Date().toISOString().split('T')[0]}.pdf`;
-    doc.save(fileName);
+  setPdfLoading(true);
+  try {
+    const doc = generatePdfFromFilteredData();
+    if (doc) {
+      const fileName = `Inventory_List_${new Date().toISOString().split('T')[0]}.pdf`;
+      doc.save(fileName);
+    }
+  } catch (error) {
+    console.error("Error saving PDF:", error);
+  } finally {
+    setPdfLoading(false);
   }
 };
 
 // Print PDF
 const printPdf = () => {
-  const doc = generatePdfFromFilteredData();
-  if (doc) {
-    doc.autoPrint();
-    window.open(doc.output("bloburl"), "_blank");
+  setPrintLoading(true);
+  try {
+    const doc = generatePdfFromFilteredData();
+    if (doc) {
+      doc.autoPrint();
+      window.open(doc.output("bloburl"), "_blank");
+    }
+  } catch (error) {
+    console.error("Error printing PDF:", error);
+  } finally {
+    setPrintLoading(false);
   }
 };
 
@@ -1693,6 +2281,8 @@ useEffect(() => {
       tooltip="Download PDF"
       className="gradient-float-btn"
       style={{ width: 60, height: 60, }}
+      loading={pdfLoading}
+      disabled={exportLoading || printLoading}
     />
     <FloatButton
     onClick={exportToExcel}
@@ -1710,6 +2300,8 @@ useEffect(() => {
       tooltip="Export Excel"
       className="gradient-float-btn"
       style={{ width: 60, height: 60 }}
+      loading={exportLoading}
+      disabled={pdfLoading || printLoading}
     />
     <FloatButton
     onClick={printPdf}
@@ -1727,6 +2319,8 @@ useEffect(() => {
       tooltip="Print"
       className="gradient-float-btn"
       style={{ width: 60, height: 60, marginBottom: 20 }}
+      loading={printLoading}
+      disabled={exportLoading || pdfLoading}
     />
   </FloatButton.Group>
           </div>
@@ -1964,7 +2558,7 @@ useEffect(() => {
           )}
 
           <Col xs={24} md={8}>
-            <Form.Item
+            {/* <Form.Item
               name="criticalLevel"
               label="Critical Level"
               rules={[
@@ -1987,7 +2581,84 @@ useEffect(() => {
                   e.target.value = e.target.value.replace(/\D/g, "");
                 }}
               />
+            </Form.Item> */}
+            {/* ---- Critical / Availability (auto-adapts to category) ---- */}
+            <Form.Item noStyle shouldUpdate={(prev, cur) => prev.category !== cur.category || prev.manualCriticalOverride !== cur.manualCriticalOverride}>
+              {({ getFieldValue }) => {
+                const cat = getFieldValue("category") || selectedCategory; // use form value or your state
+                const isConsumable = ["Chemical", "Reagent", "Materials"].includes(cat);
+                const isDurable    = ["Equipment", "Glasswares"].includes(cat);
+                const manual = getFieldValue("manualCriticalOverride");
+
+                return (
+                  <>
+                    {isConsumable && (
+                      <>
+                        {/* Optional manual override toggle */}
+                        <Form.Item
+                          name="manualCriticalOverride"
+                          valuePropName="checked"
+                          style={{ marginBottom: 0 }}
+                        >
+                          <Checkbox>Set manual <b>Critical Level</b> (override auto)</Checkbox>
+                        </Form.Item>
+
+                        {manual && (
+                          <Form.Item
+                            name="criticalLevel"
+                            label="Critical Level"
+                            rules={[
+                              { required: true, message: "Enter Critical Level or untick override" },
+                              {
+                                validator: (_, value) => {
+                                  const n = parseInt(value, 10);
+                                  if (!value || isNaN(n) || n < 1) {
+                                    return Promise.reject("Value must be a number greater than 0");
+                                  }
+                                  return Promise.resolve();
+                                },
+                              },
+                            ]}
+                          >
+                            <Input
+                              className="add-input"
+                              placeholder="Enter Critical Stock"
+                              onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                            />
+                          </Form.Item>
+                        )}
+                      </>
+                    )}
+
+                    {isDurable && (
+                      <Form.Item
+                        name="availabilityThreshold"
+                        label="Availability Threshold"
+                        tooltip="Alert when available quantity drops below this number (durables only)."
+                        rules={[
+                          {
+                            validator: (_, value) => {
+                              if (value == null || value === "") return Promise.resolve(); // optional
+                              const n = parseInt(value, 10);
+                              return !isNaN(n) && n >= 0
+                                ? Promise.resolve()
+                                : Promise.reject("Must be a number ≥ 0");
+                            },
+                          },
+                        ]}
+                      >
+                        <Input
+                          className="add-input"
+                          placeholder="e.g., 2 or 3"
+                          onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                        />
+                      </Form.Item>
+                    )}
+                  </>
+                );
+              }}
             </Form.Item>
+
           </Col>
 
           <Col xs={24} md={8}>
@@ -2174,45 +2845,86 @@ useEffect(() => {
             zIndex={1030}
           >
             <Form form={fullEditForm} layout="vertical" onFinish={handleFullUpdate}
+            // onValuesChange={(changedValues, allValues) => {
+            //     if ('condition' in changedValues) {
+            //       const condition = allValues.condition || {};
+            //       const originalGood = editingItem.condition?.Good ?? 0;
+
+            //       const defect = Number(condition.Defect) || 0;
+            //       const damage = Number(condition.Damage) || 0;
+            //       const lost = Number(condition.Lost) || 0;
+
+            //       const newGood = originalGood - defect - damage - lost;
+
+            //       if (newGood < 0) {
+            //         fullEditForm.setFields([
+            //           {
+            //             name: ['condition', 'Defect'],
+            //             errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
+            //           },
+            //           {
+            //             name: ['condition', 'Damage'],
+            //             errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
+            //           },
+            //           {
+            //             name: ['condition', 'Lost'],
+            //             errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
+            //           },
+            //         ]);
+            //       } else {
+            //         fullEditForm.setFields([
+            //           { name: ['condition', 'Defect'], errors: [] },
+            //           { name: ['condition', 'Damage'], errors: [] },
+            //           { name: ['condition', 'Lost'], errors: [] },
+            //         ]);
+            //         const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
+            //         if (currentGood !== newGood) {
+            //           fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
+            //         }
+            //       }
+            //     }
+            //   }}
+              
             onValuesChange={(changedValues, allValues) => {
-                if ('condition' in changedValues) {
-                  const condition = allValues.condition || {};
-                  const originalGood = editingItem.condition?.Good ?? 0;
+              if ('condition' in changedValues) {
+                const condition = allValues.condition || {};
+                const totalCondition =
+                  Number(condition.Good || 0) +
+                  Number(condition.Defect || 0) +
+                  Number(condition.Damage || 0) +
+                  Number(condition.Lost || 0);
 
-                  const defect = Number(condition.Defect) || 0;
-                  const damage = Number(condition.Damage) || 0;
-                  const lost = Number(condition.Lost) || 0;
+                const originalQuantity = editingItem.quantity || 0;
 
-                  const newGood = originalGood - defect - damage - lost;
-
-                  if (newGood < 0) {
-                    fullEditForm.setFields([
-                      {
-                        name: ['condition', 'Defect'],
-                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
-                      },
-                      {
-                        name: ['condition', 'Damage'],
-                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
-                      },
-                      {
-                        name: ['condition', 'Lost'],
-                        errors: ['Sum of Defect, Damage and Lost cannot exceed original Good quantity'],
-                      },
-                    ]);
-                  } else {
-                    fullEditForm.setFields([
-                      { name: ['condition', 'Defect'], errors: [] },
-                      { name: ['condition', 'Damage'], errors: [] },
-                      { name: ['condition', 'Lost'], errors: [] },
-                    ]);
-                    const currentGood = fullEditForm.getFieldValue(['condition', 'Good']) || 0;
-                    if (currentGood !== newGood) {
-                      fullEditForm.setFieldsValue({ condition: { ...condition, Good: newGood } });
-                    }
-                  }
+                if (totalCondition !== originalQuantity) {
+                  fullEditForm.setFields([
+                    {
+                      name: ['condition', 'Good'],
+                      errors: ['Total of all conditions must equal original quantity: ' + originalQuantity],
+                    },
+                    {
+                      name: ['condition', 'Defect'],
+                      errors: [''],
+                    },
+                    {
+                      name: ['condition', 'Damage'],
+                      errors: [''],
+                    },
+                    {
+                      name: ['condition', 'Lost'],
+                      errors: [''],
+                    },
+                  ]);
+                } else {
+                  fullEditForm.setFields([
+                    { name: ['condition', 'Good'], errors: [] },
+                    { name: ['condition', 'Defect'], errors: [] },
+                    { name: ['condition', 'Damage'], errors: [] },
+                    { name: ['condition', 'Lost'], errors: [] },
+                  ]);
                 }
-              }}
+              }
+            }}
               >
             <Row gutter={16}>
               <Col span={12}>
@@ -2277,7 +2989,7 @@ useEffect(() => {
 
             <Row gutter={16}>
               <Col span={12}>
-               <Form.Item
+               {/* <Form.Item
                       name="criticalLevel"
                       label="Critical Level"
                       rules={[
@@ -2299,7 +3011,70 @@ useEffect(() => {
                           e.target.value = e.target.value.replace(/\D/g, ""); // Keep digits only
                         }}
                       />
+                    </Form.Item> */}
+                    {/* ---- Critical / Availability (auto-adapts to category) ---- */}
+                    <Form.Item noStyle shouldUpdate={(prev, cur) => prev.category !== cur.category || prev.manualCriticalOverride !== cur.manualCriticalOverride}>
+                      {({ getFieldValue }) => {
+                        const cat = getFieldValue("category") || selectedCategory;
+                        const isConsumable = ["Chemical", "Reagent", "Materials"].includes(cat);
+                        const isDurable    = ["Equipment", "Glasswares"].includes(cat);
+                        const manual = getFieldValue("manualCriticalOverride");
+
+                        return (
+                          <>
+                            {isConsumable && (
+                              <>
+                                <Form.Item
+                                  name="manualCriticalOverride"
+                                  valuePropName="checked"
+                                  style={{ marginBottom: 0 }}
+                                >
+                                  <Checkbox>Set manual <b>Critical Level</b> (override auto)</Checkbox>
+                                </Form.Item>
+
+                                {manual && (
+                                  <Form.Item
+                                    name="criticalLevel"
+                                    label="Critical Level"
+                                    rules={[
+                                      { required: true, message: "Enter Critical Level or untick override" },
+                                      {
+                                        validator: (_, value) => {
+                                          const n = parseInt(value, 10);
+                                          if (!value || isNaN(n) || n < 1) {
+                                            return Promise.reject("Value must be a number greater than 0");
+                                          }
+                                          return Promise.resolve();
+                                        },
+                                      },
+                                    ]}
+                                  >
+                                    <Input
+                                      placeholder="Enter Critical Stock"
+                                      onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                                    />
+                                  </Form.Item>
+                                )}
+                              </>
+                            )}
+
+                            {isDurable && (
+                              <Form.Item
+                                name="availabilityThreshold"
+                                label="Availability Threshold"
+                                tooltip="Alert when available quantity drops below this number (durables only)."
+                              >
+                                <Input
+                                  placeholder="e.g., 2 or 3"
+                                  onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                                />
+                              </Form.Item>
+                            )}
+                          </>
+                        );
+                      }}
                     </Form.Item>
+
 
               </Col>
 
@@ -2352,11 +3127,14 @@ useEffect(() => {
             )}
             </Row>
              {(selectedCategory === "Glasswares" || selectedCategory === "Equipment"|| selectedCategory ==="Materials") && (
-                   <Row gutter={16}>
+      <Row gutter={16}>
                     <Form.Item
                       label="Good"
                       name={['condition', 'Good']}
-                      rules={[{ required: true, message: "Please enter Good quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Good quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
                       <InputNumber min={0} style={{ width: '100%' }} />
                     </Form.Item>
@@ -2364,27 +3142,60 @@ useEffect(() => {
                     <Form.Item
                       label="Defect"
                       name={['condition', 'Defect']}
-                      rules={[{ required: true, message: "Please enter Defect quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Defect quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                      <InputNumber
+                        min={0}
+                        style={{ width: '100%' }}
+                        onKeyPress={(e) => {
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
                     </Form.Item>
 
                     <Form.Item
                       label="Damage"
                       name={['condition', 'Damage']}
-                      rules={[{ required: true, message: "Please enter Damage quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Damage quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                      <InputNumber
+                        min={0}
+                        style={{ width: '100%' }}
+                        onKeyPress={(e) => {
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
                     </Form.Item>
 
                     <Form.Item
                       label="Lost"
                       name={['condition', 'Lost']}
-                      rules={[{ required: true, message: "Please enter Lost quantity" }]}
+                      rules={[
+                        { required: true, message: "Please enter Lost quantity" },
+                        { type: 'number', message: 'Must be a number' },
+                      ]}
                     >
-                      <InputNumber min={0} style={{ width: '100%' }} />
+                      <InputNumber
+                        min={0}
+                        style={{ width: '100%' }}
+                        onKeyPress={(e) => {
+                          if (!/[0-9]/.test(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                      />
                     </Form.Item>
-                  </Row>
+                  </Row>                
                 )}
             </Form>
           </Modal>
@@ -2485,8 +3296,22 @@ useEffect(() => {
                         </tr> */}
 
                         <tr>
-                          <th>Critical Level</th>
-                          <td>{selectedRow.criticalLevel || 'N/A'}</td>
+                          {/* <th>Critical Level</th>
+                          <td>{selectedRow.criticalLevel || 'N/A'}</td> */}
+
+                          {/* Show Critical Level for consumables; Availability Threshold for durables */}
+                          {["Chemical", "Reagent", "Materials"].includes(selectedRow.category) ? (
+                            <tr>
+                              <th>Critical Level</th>
+                              <td>{selectedRow.criticalLevel ?? "Auto (not set)"}</td>
+                            </tr>
+                          ) : ["Equipment", "Glasswares"].includes(selectedRow.category) ? (
+                            <tr>
+                              <th>Availability Threshold</th>
+                              <td>{selectedRow.availabilityThreshold ?? "—"}</td>
+                            </tr>
+                          ) : null}
+
                         </tr>
                         <tr>
 
@@ -2519,41 +3344,57 @@ useEffect(() => {
                       <p>No QR Code Available</p>
                     )}
 
-                    <div style={{ marginTop: 24, textAlign: 'center', gap: 10, width: '100%', display: 'flex', justifyContent: 'center'}}>
-                    <Button
-                      type="primary"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDelete(selectedRow)}
+                    <div
+                      style={{
+                        marginTop: 24,
+                        textAlign: 'center',
+                        gap: 10,
+                        width: '100%',
+                        display: 'flex',
+                        flexDirection: 'column', // Stack vertically
+                        alignItems: 'center',
+                      }}
                     >
-                      Archive
-                    </Button>
+                      {/* Top Row: Archive + Update Stock */}
+                      <div style={{ display: 'flex', gap: 10 }}>
+                        <Button
+                          type="primary"
+                          danger
+                          icon={<DeleteOutlined />}
+                          onClick={() => handleDelete(selectedRow)}
+                        >
+                          Archive
+                        </Button>
 
-                   <Button
-                    type="link"
-                    icon={<EditOutlined />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setSelectedRow(selectedRow);
-                      editItem(selectedRow, true); // clears quantity & expiry
-                    }}
-                  >
-                    Update Stock
-                  </Button>
+                        <Button
+                          type="link"
+                          icon={<EditOutlined />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedRow(selectedRow);
+                            editItem(selectedRow, true);
+                          }}
+                        >
+                          Update Stock
+                        </Button>
+                      </div>
 
-                    <Button type="primary" onClick={() => openFullEditModal(selectedRow)}>
-                      Edit Item
-                    </Button>
-                    
-                    <Button
-                    type="primary"
-                    icon={<PlusOutlined />}
-                    onClick={() => handleRestockRequest(selectedRow)} // Opens restock request modal
-                  >
-                    Request Restock
-                  </Button>
+                      {/* Bottom Row: Edit Item + Request Restock */}
+                      <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                        <Button type="primary" onClick={() => openFullEditModal(selectedRow)}>
+                          Edit Item
+                        </Button>
 
-
+                        {userRole !== 'admin' && userRole !== 'dean' && (
+                          <Button
+                            type="primary"
+                            icon={<PlusOutlined />}
+                            onClick={() => handleRestockRequest(selectedRow)}
+                          >
+                            Request Restock
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                   </div>
@@ -2704,7 +3545,7 @@ useEffect(() => {
                         }
 
                         if (parseInt(value) !== totalCondition) {
-                          return Promise.reject("Quantity must equal sum of Good, Defect, Damage and Lost");
+                          // return Promise.reject("Quantity must equal sum of Good, Defect, Damage and Lost");
                         }
 
                         return Promise.resolve();
@@ -2737,108 +3578,12 @@ useEffect(() => {
                 </Col>
               </Row>
 
-              {/* <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item name="quantity" label="Quantity">
-                    <Input placeholder="Enter quantity" />
-                  </Form.Item>
-                </Col>
-              </Row> */}
-
-              {/* <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item name="status" label="Status">
-                    <Select placeholder="Select Status">
-                      <Option value="Available">Available</Option>
-                      <Option value="In Use">In Use</Option>
-                      <Option value="Damaged">Damaged</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-
-                <Col span={12}>
-                  <Form.Item name="condition" label="Condition">
-                    <Select placeholder="Select Condition">
-                      <Option value="Good">Good</Option>
-                      <Option value="Fair">Fair</Option>
-                      <Option value="Poor">Poor</Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row> */}
-
-              {/* <Row gutter={16}>
-                <Col span={8}>
-                  <Form.Item
-                    name={["condition", "Good"]}
-                    label="Good"
-                    rules={[{ required: true, message: "Enter Good qty" }]}
-                  >
-                    <Input type="number" min={0} />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item
-                    name={["condition", "Defect"]}
-                    label="Defect"
-                    rules={[{ required: true, message: "Enter Defect qty" }]}
-                  >
-                    <Input type="number" min={0} />
-                  </Form.Item>
-                </Col>
-
-                <Col span={8}>
-                  <Form.Item
-                    name={["condition", "Damage"]}
-                    label="Damage"
-                    rules={[{ required: true, message: "Enter Damage qty" }]}
-                  >
-                    <Input type="number" min={0} />
-                  </Form.Item>
-                </Col>
-              </Row> */}
+         
 
               {selectedCategory !== "Chemical" && selectedCategory !== "Reagent" && (
                 <Row gutter={16}>
                   <Col span={8}>
-                    {/* <Form.Item
-                      name={["condition", "Good"]}
-                      label="Good"
-                      rules={[{ required: true, message: "Enter Good qty" }]}
-                    >
-                      <Input type="number" min={0} />
-                    </Form.Item>
-                  </Col>
-
-                  <Col span={8}>
-                    <Form.Item
-                      name={["condition", "Defect"]}
-                      label="Defect"
-                      rules={[{ required: true, message: "Enter Defect qty" }]}
-                    >
-                      <Input type="number" min={0} />
-                    </Form.Item> */}
-                  {/* </Col> */}
-
-                  {/* <Col span={8}>
-                    <Form.Item
-                      name={["condition", "Damage"]}
-                      label="Damage"
-                      rules={[{ required: true, message: "Enter Damage qty" }]}
-                    >
-                      <Input type="number" min={0} /> */}
-                    {/* </Form.Item> */}
-
-                    {/* <Col span={8}>
-                      <Form.Item
-                        name={["condition", "Lost"]}
-                        label="Lost"
-                        rules={[{ required: true, message: "Enter Lost qty" }]}
-                      >
-                        <Input type="number" min={0} />
-                      </Form.Item>
-                    </Col> */}
+                   
                   </Col>
                 </Row>
               )}
@@ -2857,19 +3602,31 @@ useEffect(() => {
               onFinish={handleRestockSubmit} // Handle form submission
               layout="vertical"
             >
-              {/* Input for quantity needed */}
               <Form.Item
                 name="quantityNeeded"
                 label="Quantity Needed"
                 rules={[
                   { required: true, message: "Please enter the quantity to be restocked" },
-                  { type: "number", min: 1, message: "Quantity must be greater than 0" },
+                  {
+                    validator: (_, value) =>
+                      Number.isInteger(value) && value > 0
+                        ? Promise.resolve()
+                        : Promise.reject("Quantity must be a whole number greater than 0"),
+                  },
                 ]}
               >
                 <InputNumber
                   style={{ width: "100%" }}
                   min={1}
                   placeholder="Enter quantity to restock"
+                  step={1}
+                  controls={true}
+                  parser={(value) => value.replace(/\D/g, '')}
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault(); 
+                    }
+                  }}
                 />
               </Form.Item>
 

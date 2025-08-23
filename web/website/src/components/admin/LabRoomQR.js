@@ -1205,6 +1205,7 @@
 // export default LabRoomQR;
 
 
+// VERSION 2
 import React, { useEffect, useState, useRef } from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { Layout, Row, Col, Table, Input, Button, Typography, Modal, Tabs, Select } from "antd";
@@ -1227,6 +1228,9 @@ const LabRoomQR = () => {
   const [activeTab, setActiveTab] = useState("1"); // Default to Stock Room tab (1)
   const qrRefs = useRef({});
   const qrModalRef = useRef(null);
+  const [editingRoomId, setEditingRoomId] = useState(null);
+  const [downloadLoading, setDownloadLoading] = useState({});
+  const [modalDownloadLoading, setModalDownloadLoading] = useState(false);
 
   const [qrModal, setQrModal] = useState({
     visible: false,
@@ -1821,65 +1825,107 @@ const LabRoomQR = () => {
   // };
 
   const downloadQRCode = (id) => {
+    setDownloadLoading(prev => ({ ...prev, [id]: true }));
+    
     const svg = qrRefs.current[id]?.querySelector("svg");
-    if (!svg) return;
+    if (!svg) {
+      setDownloadLoading(prev => ({ ...prev, [id]: false }));
+      return;
+    }
 
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    try {
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-    const img = new Image();
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
+      img.onload = () => {
+        try {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
 
-      const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+          const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
 
-      const downloadLink = document.createElement("a");
-      downloadLink.href = pngUrl;
-      downloadLink.download = `${id}-QR.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    };
+          const downloadLink = document.createElement("a");
+          downloadLink.href = pngUrl;
+          downloadLink.download = `${id}-QR.png`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        } catch (error) {
+          console.error("Error downloading QR code:", error);
+        } finally {
+          setDownloadLoading(prev => ({ ...prev, [id]: false }));
+        }
+      };
 
-    img.src = url;
+      img.onerror = () => {
+        console.error("Error loading image for QR code download");
+        setDownloadLoading(prev => ({ ...prev, [id]: false }));
+      };
+
+      img.src = url;
+    } catch (error) {
+      console.error("Error setting up QR code download:", error);
+      setDownloadLoading(prev => ({ ...prev, [id]: false }));
+    }
   };
 
   const downloadQRCodeFromModal = () => {
+    setModalDownloadLoading(true);
+    
     const svg = qrModalRef.current?.querySelector("svg");
-    if (!svg) return;
+    if (!svg) {
+      setModalDownloadLoading(false);
+      return;
+    }
 
-    const svgData = new XMLSerializer().serializeToString(svg);
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
+    try {
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
 
-    const img = new Image();
-    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
-    const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+      const url = URL.createObjectURL(svgBlob);
 
-    img.onload = () => {
-      canvas.width = img.width;
-      canvas.height = img.height;
-      ctx.drawImage(img, 0, 0);
-      URL.revokeObjectURL(url);
+      img.onload = () => {
+        try {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
 
-      const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+          const pngUrl = canvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
 
-      const downloadLink = document.createElement("a");
-      downloadLink.href = pngUrl;
-      downloadLink.download = `${qrModal.title || "qr"}-QR.png`;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      document.body.removeChild(downloadLink);
-    };
+          const downloadLink = document.createElement("a");
+          downloadLink.href = pngUrl;
+          downloadLink.download = `${qrModal.title || "qr"}-QR.png`;
+          document.body.appendChild(downloadLink);
+          downloadLink.click();
+          document.body.removeChild(downloadLink);
+        } catch (error) {
+          console.error("Error downloading QR code from modal:", error);
+        } finally {
+          setModalDownloadLoading(false);
+        }
+      };
 
-    img.src = url;
+      img.onerror = () => {
+        console.error("Error loading image for modal QR code download");
+        setModalDownloadLoading(false);
+      };
+
+      img.src = url;
+    } catch (error) {
+      console.error("Error setting up modal QR code download:", error);
+      setModalDownloadLoading(false);
+    }
   };
 
   // return (
@@ -2515,6 +2561,10 @@ const LabRoomQR = () => {
           ))
       )} */}
 
+      {filteredRooms.length === 0 && (
+        <p style={{ color: 'red', marginTop: '20px' }}>Room Not Found</p>
+      )}
+
       {filteredRooms
         .filter(room => room.items && room.items.length > 0)
         .map(room => {
@@ -2526,39 +2576,54 @@ const LabRoomQR = () => {
             item.category.toLowerCase().includes((itemSearchTerms[room.id] || "").toLowerCase())
           );
 
-          return (
-            <div key={room.id} className="labroom-table-wrapper">
-              <div className="labroom-title-wrapper" onClick={() => toggleRoomExpansion(room.id)}>
-                <h3 className="labroom-title">
-                  Room:
-                  <input
-                    type="number"
-                    value={room.roomNumber}
-                    onChange={(e) => {
-                      const newRoomNumber = e.target.value;
-                      setLabRooms(prev =>
-                        prev.map(r => r.id === room.id ? { ...r, roomNumber: newRoomNumber } : r)
-                      );
-                    }}
-                    style={{ marginLeft: "10px", width: "120px" }}
-                    onClick={(e) => e.stopPropagation()}
-                  />
+return (
+  <div key={room.id} className="labroom-table-wrapper">
+    <div className="labroom-title-wrapper" onClick={() => toggleRoomExpansion(room.id)}>
+      <h3 className="labroom-title" onClick={(e) => e.stopPropagation()}>
+        Room:
+        {editingRoomId === room.id ? (
+          <input
+            type="number"
+            value={room.roomNumber}
+            onChange={(e) => {
+              const newRoomNumber = e.target.value;
+              setLabRooms(prev =>
+                prev.map(r => r.id === room.id ? { ...r, roomNumber: newRoomNumber } : r)
+              );
+            }}
+            style={{ marginLeft: "10px", width: "120px" }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        ) : (
+          <span style={{ marginLeft: "10px" }}>{room.roomNumber}</span>
+        )}
 
-                  <Button
-                    type="primary"
-                    onClick={(e) => {
-                      e.stopPropagation(); // Prevent collapse toggle when clicking button
-                      setConfirmRoomId(room.id);
-                      setIsConfirmModalVisible(true);
-                    }}
-                    style={{ marginLeft: "10px" }}
-                  >
-                    Save
-                  </Button>
+        {/* Only show the button when the room is expanded */}
+        {isExpanded && (
+          <Button
+            type="primary"
+            onClick={(e) => {
+              e.stopPropagation();
+              if (editingRoomId === room.id) {
+                // Save logic
+                setConfirmRoomId(room.id);
+                setIsConfirmModalVisible(true);
+                setEditingRoomId(null);
+              } else {
+                // Enter edit mode
+                setEditingRoomId(room.id);
+              }
+            }}
+            style={{ marginLeft: "10px" }}
+          >
+            {editingRoomId === room.id ? "Save" : "Edit"}
+          </Button>
+        )}
+      </h3>
 
-                </h3>
-                <span className="dropdown-arrow">{isExpanded ? "▲" : "▼"}</span>
-              </div>
+      <span className="dropdown-arrow">{isExpanded ? "▲" : "▼"}</span>
+    </div>
+
 
               {isExpanded && (
                 <>
@@ -2644,8 +2709,9 @@ const LabRoomQR = () => {
                                     <button
                                       onClick={() => downloadQRCode(room.id)}
                                       className="labroom-download-button"
+                                      disabled={downloadLoading[room.id]}
                                     >
-                                      Download QR
+                                      {downloadLoading[room.id] ? "Downloading..." : "Download QR"}
                                     </button>
                                   </div>
                                 </td>
@@ -2745,6 +2811,7 @@ const LabRoomQR = () => {
             </div>
             <button
               onClick={downloadQRCodeFromModal}
+              disabled={modalDownloadLoading}
               style={{
                 marginTop: "1rem",
                 padding: "6px 12px",
@@ -2752,10 +2819,11 @@ const LabRoomQR = () => {
                 color: "white",
                 border: "none",
                 borderRadius: "4px",
-                cursor: "pointer",
+                cursor: modalDownloadLoading ? "not-allowed" : "pointer",
+                opacity: modalDownloadLoading ? 0.6 : 1,
               }}
             >
-              Download QR
+              {modalDownloadLoading ? "Downloading..." : "Download QR"}
             </button>
           </div>
         </Modal>

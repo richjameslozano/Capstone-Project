@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Modal, Row, Col, Typography, Table, Button, Input } from "antd";
 import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { getAuth } from "firebase/auth";
+import NotificationModal from "./NotificationModal";
 const { Text, Title } = Typography;
 
 const ApprovalRequestModal = ({
@@ -15,6 +16,10 @@ const ApprovalRequestModal = ({
 
   const requestList = selectedApprovedRequest?.requestList || [];
   const [comment, setComment] = React.useState("");
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   console.log("requestList in Modal:", requestList);
 
@@ -102,6 +107,8 @@ const ApprovalRequestModal = ({
   };
 
     const handleReject = async () => {
+        setRejectLoading(true);
+        
         let userRequestId = selectedApprovedRequest?.firestoreId;
 
         if (userRequestId?.startsWith("/userrequests/")) {
@@ -112,12 +119,16 @@ const ApprovalRequestModal = ({
 
         if (!userRequestId) {
             console.error("❌ Missing userrequests ID in selectedApprovedRequest");
-            alert("Missing request ID. Cannot approve the request.");
+            setNotificationMessage("Missing request ID. Cannot reject the request.");
+            setIsNotificationVisible(true);
+            setRejectLoading(false);
             return;
         }
 
         if (!comment.trim()) {
-            alert("Please enter a comment before rejecting.");
+            setNotificationMessage("Please enter a comment before rejecting.");
+            setIsNotificationVisible(true);
+            setRejectLoading(false);
             return;
         }
 
@@ -159,13 +170,20 @@ const ApprovalRequestModal = ({
             setSelectedApprovedRequest(null);
             setComment("");
 
+            setNotificationMessage("Request rejected successfully.");
+            setIsNotificationVisible(true);
+
         } catch (error) {
             console.error("❌ Error updating userrequests document:", error);
             alert("Something went wrong while approving the request.");
+        } finally {
+            setRejectLoading(false);
         }
     };
 
     const handleApprove = async () => {
+        setApproveLoading(true);
+        
         let userRequestId = selectedApprovedRequest?.firestoreId;
 
         if (userRequestId?.startsWith("/userrequests/")) {
@@ -176,12 +194,16 @@ const ApprovalRequestModal = ({
 
         if (!userRequestId) {
             console.error("❌ Missing userrequests ID in selectedApprovedRequest");
-            alert("Missing request ID. Cannot approve the request.");
+            setNotificationMessage("Missing request ID. Cannot approve the request.");
+            setIsNotificationVisible(true);
+            setApproveLoading(false);
             return;
         }
 
         if (!comment.trim()) {
-            alert("Please enter a comment before approving.");
+            setNotificationMessage("Please enter a comment before approving.");
+            setIsNotificationVisible(true);
+            setApproveLoading(false);
             return;
         }
 
@@ -218,87 +240,100 @@ const ApprovalRequestModal = ({
             setSelectedApprovedRequest(null);
             setComment("");
 
+            setNotificationMessage("Request approved successfully.");
+            setIsNotificationVisible(true);
+
         } catch (error) {
             console.error("❌ Error updating userrequests document:", error);
             alert("Something went wrong while approving the request.");
+        } finally {
+            setApproveLoading(false);
         }
     };
 
   return (
-    <Modal
-      title={
-        <div style={{ background: "#389e0d", padding: "12px", color: "#fff" }}>
-          <Text strong>Request Details</Text>
-        </div>
-      }
-      open={isApprovedModalVisible}
-      onCancel={() => {
-        setIsApprovedModalVisible(false);
-        setSelectedApprovedRequest(null);
-      }}
-      width={800}
-      zIndex={1024}
-      footer={[
-        <Button key="reject" danger onClick={handleReject}>
-        Reject
-        </Button>,
-        <Button key="approve" type="primary" onClick={handleApprove}>
-        Approve
-        </Button>,
-      ]}
-    >
-      {selectedApprovedRequest && (
-        <div style={{ padding: "20px" }}>   
-          <Row gutter={[16, 16]}>
-            <Col span={12}>
-              <Text strong>Name:</Text> {selectedApprovedRequest.userName || "N/A"}<br />
-              <Text strong>Department:</Text> {selectedApprovedRequest.department || "N/A"}<br />
-              <Text strong>Request Date:</Text>{" "}
-              {selectedApprovedRequest?.timestamp
-                ? formatDate(selectedApprovedRequest.timestamp)
-                : "N/A"}
-              <br />
-              <Text strong>Required Date:</Text> {selectedApprovedRequest.dateRequired || "N/A"}<br />
-              <Text strong>Time Needed:</Text> {selectedApprovedRequest.timeFrom || "N/A"} - {selectedApprovedRequest.timeTo || "N/A"}
-            </Col>
-            <Col span={12}>
-              <Text strong>Reason of Request:</Text>
-              <p style={{ fontSize: "12px", marginTop: 5 }}>{selectedApprovedRequest.reason || "N/A"}</p>
-              <Text strong>Room:</Text> {selectedApprovedRequest.room || "N/A"}<br />
-              <Text strong>Course Code:</Text> {selectedApprovedRequest.course || "N/A"}<br />
-              <Text strong>Course Description:</Text> {selectedApprovedRequest.courseDescription || "N/A"}<br />
-              <Text strong>Program:</Text> {selectedApprovedRequest.program || "N/A"}
-            </Col>
+    <>
+      <Modal
+        title={
+          <div style={{ background: "#389e0d", padding: "12px" }}>
+            <Text strong style={{ color: "#fff" }}>Request Details</Text>
+          </div>
+        }
+        open={isApprovedModalVisible}
+        onCancel={() => {
+          setIsApprovedModalVisible(false);
+          setSelectedApprovedRequest(null);
+        }}
+        width={800}
+        zIndex={1024}
+        footer={[
+          <Button key="reject" danger onClick={handleReject} loading={rejectLoading} disabled={approveLoading}>
+          Reject
+          </Button>,
+          <Button key="approve" type="primary" onClick={handleApprove} loading={approveLoading} disabled={rejectLoading}>
+          Approve
+          </Button>,
+        ]}
+      >
+        {selectedApprovedRequest && (
+          <div style={{ padding: "20px" }}>   
+            <Row gutter={[16, 16]}>
+              <Col span={12}>
+                <Text strong>Name:</Text> {selectedApprovedRequest.userName || "N/A"}<br />
+                <Text strong>Department:</Text> {selectedApprovedRequest.department || "N/A"}<br />
+                <Text strong>Request Date:</Text>{" "}
+                {selectedApprovedRequest?.timestamp
+                  ? formatDate(selectedApprovedRequest.timestamp)
+                  : "N/A"}
+                <br />
+                <Text strong>Required Date:</Text> {selectedApprovedRequest.dateRequired || "N/A"}<br />
+                <Text strong>Time Needed:</Text> {selectedApprovedRequest.timeFrom || "N/A"} - {selectedApprovedRequest.timeTo || "N/A"}
+              </Col>
+              <Col span={12}>
+                <Text strong>Reason of Request:</Text>
+                <p style={{ fontSize: "12px", marginTop: 5 }}>{selectedApprovedRequest.reason || "N/A"}</p>
+                <Text strong>Room:</Text> {selectedApprovedRequest.room || "N/A"}<br />
+                <Text strong>Course Code:</Text> {selectedApprovedRequest.course || "N/A"}<br />
+                <Text strong>Course Description:</Text> {selectedApprovedRequest.courseDescription || "N/A"}<br />
+                <Text strong>Program:</Text> {selectedApprovedRequest.program || "N/A"}
+              </Col>
+            </Row>
+
+            <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
+            <Table
+              dataSource={requestList.map((item, index) => ({
+                ...item,
+                key: item.itemIdFromInventory || `item-${index}`,
+                conditionSummary: getConditionSummary(item.conditions),
+              }))}
+              columns={approvedRequestColumns}
+              rowKey="key"
+              pagination={false}
+              bordered
+            />
+          </div>
+        )}
+
+          <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+              <Col span={24}>
+                  <Title level={5}>Comments</Title>
+                  <Input.TextArea 
+                  value={comment}
+                  onChange={(e) => setComment(e.target.value)}
+                  rows={4}
+                  placeholder="Enter comments or additional notes here..."
+                  />
+              </Col>
           </Row>
+      </Modal>
 
-          <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
-          <Table
-            dataSource={requestList.map((item, index) => ({
-              ...item,
-              key: item.itemIdFromInventory || `item-${index}`,
-              conditionSummary: getConditionSummary(item.conditions),
-            }))}
-            columns={approvedRequestColumns}
-            rowKey="key"
-            pagination={false}
-            bordered
-          />
-        </div>
-      )}
+      <NotificationModal
+        isVisible={isNotificationVisible}
+        onClose={() => setIsNotificationVisible(false)}
+        message={notificationMessage}
+      />
 
-        <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
-            <Col span={24}>
-                <Title level={5}>Comments</Title>
-                <Input.TextArea 
-                value={comment}
-                onChange={(e) => setComment(e.target.value)}
-                rows={4}
-                placeholder="Enter comments or additional notes here..."
-                />
-            </Col>
-        </Row>
-
-    </Modal>
+    </>
   );
 };
 

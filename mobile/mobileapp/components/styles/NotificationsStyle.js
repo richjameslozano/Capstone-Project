@@ -1,11 +1,10 @@
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 export default StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F3F4F6', // subtle off-white gray
-    paddingHorizontal: 16,
-    paddingTop: 10,
+    backgroundColor: '#e9ecee', // subtle off-white gray
+    padding: 5
   },
 
   header: {
@@ -16,23 +15,33 @@ export default StyleSheet.create({
     color: '#111827',
   },
 
+    profileHeader:{
+      position: 'absolute',
+      backgroundColor: '#165a72',
+      flex: 1,
+      paddingTop: StatusBar.currentHeight+15,
+      left: 0,
+      right:0,
+      alignItems: 'center',
+      justifyContent:'space-between',
+      zIndex: 999,
+    },
+
   notificationCard: {
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: '#e9f5f9',
+    borderRadius: 5,
     padding: 16,
-    marginBottom: 12,
     shadowColor: '#000',
     shadowOpacity: 0.08,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 8,
-    elevation: 3,
+    gap: 20
   },
 
   title: {
     fontSize: 16,
     fontWeight: '600',
     color: '#111827',
-    marginBottom: 6,
   },
 
   message: {
@@ -46,6 +55,6 @@ export default StyleSheet.create({
     fontSize: 12,
     color: '#6B7280',
     textAlign: 'right',
-    marginTop: 4,
+    fontWeight: 300
   },
 });

@@ -6,17 +6,22 @@ import jsPDF from "jspdf";
 import 'jspdf-autotable';
 import html2canvas from "html2canvas";
 import "../styles/adminStyle/RequestLog.css";
-
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
 const { Content } = Layout;
 const { Text } = Typography;
+const { RangePicker } = DatePicker;
 
 const RequestLog = () => {
   const [filterStatus, setFilterStatus] = useState("All");
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [historyData, setHistoryData] = useState([]);
-  const modalRef = useRef(null); // Reference for modal content to print/save
+  const modalRef = useRef(null); 
+  const [selectedMonth, setSelectedMonth] = useState(null);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
 
   const generateAllRequestsPdf = () => {
     if (!filteredData || filteredData.length === 0) {
@@ -83,19 +88,35 @@ const RequestLog = () => {
   };
 
   const saveAllAsPdf = () => {
-    const doc = generateAllRequestsPdf();
-    if (doc) {
-      doc.save(`Request_Log_${new Date().toISOString().split('T')[0]}.pdf`);
-      message.success("PDF saved successfully");
+    setPdfLoading(true);
+    try {
+      const doc = generateAllRequestsPdf();
+      if (doc) {
+        doc.save(`Request_Log_${new Date().toISOString().split('T')[0]}.pdf`);
+        message.success("PDF saved successfully");
+      }
+    } catch (error) {
+      console.error("Error saving PDF:", error);
+      message.error("Failed to save PDF");
+    } finally {
+      setPdfLoading(false);
     }
   };
 
   const printAllPdf = () => {
-    const doc = generateAllRequestsPdf();
-    if (doc) {
-      doc.autoPrint();
-      window.open(doc.output("bloburl"), "_blank");
-      message.success("Print dialog opened");
+    setPrintLoading(true);
+    try {
+      const doc = generateAllRequestsPdf();
+      if (doc) {
+        doc.autoPrint();
+        window.open(doc.output("bloburl"), "_blank");
+        message.success("Print dialog opened");
+      }
+    } catch (error) {
+      console.error("Error printing PDF:", error);
+      message.error("Failed to print PDF");
+    } finally {
+      setPrintLoading(false);
     }
   };
 
@@ -415,16 +436,41 @@ const printPdf = () => {
     },
   ];
 
-  const filteredData =
+  // const filteredData =
+  //   filterStatus === "All"
+  //     ? historyData
+  //     : historyData.filter((item) => item.status === filterStatus);
+
+  const filteredByStatus =
     filterStatus === "All"
       ? historyData
       : historyData.filter((item) => item.status === filterStatus);
+
+  const filteredData = filteredByStatus.filter((item) => {
+    // If no month selected, show all
+    if (!selectedMonth) return true;
+
+    // item.rawTimestamp.toDate() -> JS Date
+    const itemDate = dayjs(item.rawTimestamp?.toDate?.());
+    return (
+      itemDate.month() === selectedMonth.month() &&
+      itemDate.year() === selectedMonth.year()
+    );
+  });
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout>
         <Content style={{ margin: "20px" }}>
           <div style={{ marginBottom: 16 }}>
+
+            <DatePicker
+              picker="month"
+              onChange={(date) => setSelectedMonth(date)}
+              style={{ marginRight: 8 }}
+              placeholder="Select Month"
+            />
+
             <Button
               type={filterStatus === "All" ? "primary" : "default"}
               onClick={() => setFilterStatus("All")}
@@ -490,10 +536,10 @@ const printPdf = () => {
           visible={modalVisible}
           onCancel={closeModal}
           footer={[
-            <Button className='save-all-pdf-button' key="save" type="primary" onClick={saveAsPdf}>
+            <Button className='save-all-pdf-button' key="save" type="primary" onClick={saveAsPdf} loading={pdfLoading} disabled={printLoading}>
               Save as PDF
             </Button>,
-              <Button className='print-all-button'type="primary" key="print" onClick={() => printPdf(selectedRequest)}>
+              <Button className='print-all-button'type="primary" key="print" onClick={() => printPdf(selectedRequest)} loading={printLoading} disabled={pdfLoading}>
               Print
             </Button>,
 

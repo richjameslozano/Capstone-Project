@@ -11,6 +11,7 @@ export default function ForgotPasswordModal({ visible, onClose }) {
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
   const [forgotPasswordError, setForgotPasswordError] = useState('');
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState('');
+  const [forgotPasswordLoading, setForgotPasswordLoading] = useState(false);
 
   const handleForgotPassword = async () => {
     if (!forgotPasswordEmail.trim()) {
@@ -18,6 +19,8 @@ export default function ForgotPasswordModal({ visible, onClose }) {
       return;
     }
 
+    setForgotPasswordLoading(true);
+    
     try {
       const usersRef = collection(db, "accounts");
       const q = query(usersRef, where("email", "==", forgotPasswordEmail.trim()));
@@ -44,6 +47,8 @@ export default function ForgotPasswordModal({ visible, onClose }) {
       setTimeout(() => {
         setForgotPasswordEmail("");
       }, 50);
+    } finally {
+      setForgotPasswordLoading(false);
     }
   };
 
@@ -71,6 +76,7 @@ export default function ForgotPasswordModal({ visible, onClose }) {
             keyboardType="email-address"
             autoCapitalize="none"
             mode="outlined"
+            activeOutlineColor='gray'
             style={styles.input}
           />
 
@@ -82,8 +88,14 @@ export default function ForgotPasswordModal({ visible, onClose }) {
             <Text style={styles.successText}>{forgotPasswordSuccess}</Text>
           ) : null}
 
-          <Button mode="contained" onPress={handleForgotPassword} style={styles.modalButton}>
-            Send Reset Link
+          <Button 
+            mode="contained" 
+            onPress={handleForgotPassword} 
+            style={styles.modalButton}
+            loading={forgotPasswordLoading}
+            disabled={forgotPasswordLoading}
+          >
+            {forgotPasswordLoading ? 'Sending...' : 'Send Reset Link'}
           </Button>
 
           <TouchableOpacity onPress={onClose}>

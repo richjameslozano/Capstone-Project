@@ -1,6 +1,7 @@
 import React from "react";
 import { Modal } from "antd";
 import "../styles/usersStyle/Requisition.css";
+import { FileDoneOutlined, SaveOutlined } from '@ant-design/icons';
 
 const FinalizeRequestModal = ({
   visible,
@@ -31,7 +32,8 @@ const FinalizeRequestModal = ({
       zIndex={1007}
       closable={false}
     >
-      <div className="finalize-title-container" style={{}}>
+      <div className="finalize-title-container">
+        <FileDoneOutlined style={{fontSize: 25, color: 'white'}}/>
         <strong style={{fontSize: '22px', color: 'white'}}>Finalize Request</strong>
       </div>
 

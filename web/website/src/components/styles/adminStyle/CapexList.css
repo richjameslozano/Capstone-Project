@@ -214,3 +214,21 @@
   border-color: #388e3c !important;
   color: white !important;
 }
+
+.capex-list-table .ant-table-tbody > tr:nth-child(odd) > td {
+  background-color: #fafafa; /* Light gray */
+}
+
+.capex-list-table .ant-table-tbody > tr:nth-child(even) > td {
+  background-color: #ffffff; /* White */
+}
+
+.capex-list-table .ant-table-tbody > tr:hover > td {
+  background-color: #e6f7ff; /* Light blue on hover */
+}
+
+.capex-list-table .ant-table-thead > tr > th {
+  background-color: #f0f0f0;
+  color: #333;
+  font-weight: bold;
+}

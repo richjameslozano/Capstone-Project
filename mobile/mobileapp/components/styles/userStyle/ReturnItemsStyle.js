@@ -62,6 +62,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#fff',
     paddingBottom: 10,
+    marginBottom: 10,
     flex: 1,
   },
 
@@ -150,14 +151,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: 'rgba(0, 0, 0, 0.6)', // Dark overlay for focus
     paddingHorizontal: 20,
-    paddingTop: 200,
+    paddingTop: 100,
   },
 
   modalContent: {
     backgroundColor: '#fff',
     borderRadius: 14,
     padding: 24,
-    maxHeight: '85%',
+    maxHeight: '95%',
     width: '100%',
     elevation: 12,
     shadowColor: '#000',
@@ -186,7 +187,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 6,
     padding: 8,
-    fontSize: 14,
+    fontSize: 10,
     backgroundColor: '#fefefe',
     marginTop: 4,
   },
@@ -214,6 +215,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#222',
     paddingHorizontal: 6,
+    fontSize: 11,
   },
 
   cell: {                 // generic body text
@@ -222,7 +224,97 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: '#444',
     paddingHorizontal: 6,
+    fontSize: 12,
   },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  issueModalContent: {
+    width: '90%',
+    maxWidth: 400,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 20,
+    elevation: 5,  // Android shadow
+    shadowColor: '#000',  // iOS shadow
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+
+  modalTitle: {
+    fontWeight: 'bold',
+    fontSize: 18,
+    marginBottom: 15,
+  },
+  
+  dialogButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 15,
+    backgroundColor: '#1e7898',
+    borderRadius: 4,
+  },
+
+  dialogButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+  },
+
+returnHeaderCell: {
+  fontWeight: 'bold',
+  textAlign: 'center',
+  padding: 8,
+  backgroundColor: '#f2f2f2',
+},
+
+returnCell: {
+  textAlign: 'center',
+  color: '#444',
+  paddingVertical: 8,
+  fontSize: 13,
+},
+
+returnColDate: { flex: 2 },
+returnColStatus: { flex: 2 },
+returnColAction: { flex: 1 },
+
+returnTableHeader: {
+  backgroundColor: '#e8e8e8',
+  borderTopLeftRadius: 5,
+  borderTopRightRadius: 5,
+},
+
+returnTableRow: {
+  flexDirection: 'row',
+  borderBottomWidth: 1,
+  borderColor: '#eee',
+},
+
+modalBackground: {
+  flex: 1,
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'rgba(0,0,0,0.5)',
+},
+
+modalContainer: {
+  backgroundColor: 'white',
+  padding: 20,
+  borderRadius: 10,
+  alignItems: 'center',
+  minWidth: 250,
+},
+
+modalTitle: {
+  fontSize: 18,
+  fontWeight: 'bold',
+  marginBottom: 15,
+},
 
   /* –– reusable widths so header and rows always match –– */
   colName: { flex: 3 },       // wider for long names

@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Modal,
   Button,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from "react-native";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -24,6 +25,7 @@ const BorrowCatalogScreen = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const navigation = useNavigation()
   const handleHeaderLayout = (event) => {
@@ -32,6 +34,7 @@ const BorrowCatalogScreen = () => {
 };
 
   useEffect(() => {
+    setLoading(true);
     const fetchCatalogData = () => {
       try {
         // Set up the real-time listener using onSnapshot
@@ -86,6 +89,10 @@ const BorrowCatalogScreen = () => {
   
           // Update state
           setCatalog(sortedData);
+          setLoading(false);
+        }, (error) => {
+          console.error('Error fetching borrow catalog:', error);
+          setLoading(false);
         });
   
         // Cleanup listener when the component unmounts
@@ -93,6 +100,7 @@ const BorrowCatalogScreen = () => {
         
       } catch (err) {
         console.error("Error fetching borrow catalog:", err);
+        setLoading(false);
       }
     };
   
@@ -192,18 +200,25 @@ const BorrowCatalogScreen = () => {
 
   return (
     <View style={styles.container}>
-    <View style={styles.pendingHeader} onLayout={handleHeaderLayout}>
-      <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                            <Icon name="keyboard-backspace" size={28} color="black" />
-                                          </TouchableOpacity>
-      <View>
-        <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Borrow Catalog</Text>
-        <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Monitor Borrowed Items</Text>
-      </View>
-
-        <TouchableOpacity style={{padding: 2}}>
-          <Icon name="information-outline" size={24} color="#000" />
+      <View 
+        style={[styles.pendingHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
         </TouchableOpacity>
+
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            Borrow Catalog
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            Monitor Borrowed Items
+          </Text>
+        </View>
+
+        {/* Placeholder to balance back button width */}
+        <View style={{ width: 28 }} />
       </View>
 
       <View style={{flex: 1, marginTop: headerHeight, backgroundColor: '#e9ecee', borderRadius: 5, gap: 5}}>
@@ -240,14 +255,25 @@ const BorrowCatalogScreen = () => {
       </View>
     </View>
 
-      <FlatList
-        data={filteredCatalog}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        style={styles.list}
-        initialNumToRender={50}
-        contentContainerStyle={{gap: 5}}
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading borrow catalog...</Text>
+        </View>
+      ) : filteredCatalog.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 16, color: '#666' }}>No borrow catalog items found.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredCatalog}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          style={styles.list}
+          initialNumToRender={50}
+          contentContainerStyle={{gap: 5}}
+        />
+      )}
       </View>
 
       {modalVisible && (

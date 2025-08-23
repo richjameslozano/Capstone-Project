@@ -40,12 +40,15 @@ const PendingRequest = () => {
   const [requestOrderMap, setRequestOrderMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [editableItems, setEditableItems] = useState([]);
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [multiRejectLoading, setMultiRejectLoading] = useState(false);
 
 const sanitizeInput = (input) =>
   input
 
-    .replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
-    .replace(/[^a-z0-9 \-.,()]/g, ""); // remove unwanted characters
+    .replace(/\s+/g, " ")         
+    .replace(/[^a-z0-9 \-.,()]/g, "");
 
 
 const [selectedFilter, setSelectedFilter] = useState('All');
@@ -317,7 +320,7 @@ const getCollegeByDepartment = async (departmentName) => {
 
 
    const handleMultiRejectConfirm = async () => {
- 
+    setMultiRejectLoading(true);
     setIsMultiRejectModalVisible(false);
   
     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
@@ -343,6 +346,64 @@ const getCollegeByDepartment = async (departmentName) => {
     } catch (error) {
 
       setNotificationMessage("Error verifying account status. Please try again.");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    // 🔍 Check inventory quantities before approval
+    const insufficientItems = [];
+    
+    for (const item of enrichedItems) {
+      const inventoryId = item.selectedItemId;
+      const requestedQty = Number(item.quantity);
+      
+      if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        continue;
+      }
+
+      try {
+        const inventoryRef = doc(db, "inventory", inventoryId);
+        const inventorySnap = await getDoc(inventoryRef);
+        
+        if (!inventorySnap.exists()) {
+          insufficientItems.push({
+            itemName: item.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: 0,
+            reason: "Item not found in inventory"
+          });
+          continue;
+        }
+
+        const data = inventorySnap.data();
+        const availableQty = Number(data.quantity || 0);
+        
+        if (availableQty < requestedQty) {
+          insufficientItems.push({
+            itemName: item.itemName || data.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: availableQty,
+            reason: "Insufficient quantity"
+          });
+        }
+      } catch (error) {
+        console.error("Error checking inventory for item:", item.itemName, error);
+        insufficientItems.push({
+          itemName: item.itemName || "Unknown Item",
+          requested: requestedQty,
+          available: 0,
+          reason: "Error checking inventory"
+        });
+      }
+    }
+
+    // If there are insufficient items, show error and prevent approval
+    if (insufficientItems.length > 0) {
+      const errorMessage = insufficientItems.map(item => 
+        `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
+      ).join('\n');
+      
+      setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
       return;
     }
@@ -411,6 +472,7 @@ const getCollegeByDepartment = async (departmentName) => {
         approvedBy: userName,
         reason: selectedRequest.reason || "No reason provided",
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const rejectLogEntry = {
@@ -429,6 +491,7 @@ const getCollegeByDepartment = async (departmentName) => {
         rejectedBy: userName,
         reason: rejectionReason || "No reason provided",
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const logRequestOrReturn = async (
@@ -465,6 +528,7 @@ const getCollegeByDepartment = async (departmentName) => {
           timeTo: selectedRequest.timeTo || "N/A",
           timestamp: selectedRequest.timestamp || "N/A",
           rawTimestamp: new Date(),
+          usageType: selectedRequest.usageType || "N/A",  
         }
       );
   
@@ -487,6 +551,7 @@ const getCollegeByDepartment = async (departmentName) => {
             timeTo: selectedRequest.timeTo || "N/A",
             timestamp: selectedRequest.timestamp || "N/A",
             rawTimestamp: new Date(),
+            usageType: selectedRequest.usageType || "N/A",  
           }
         );
       }
@@ -798,6 +863,9 @@ try {
       setIsModalVisible(false);
       setSelectedRequest(null);
       setIsFinalizeModalVisible(false)
+
+      setNotificationMessage("Approval and rejection have been logged successfully.");
+      setIsNotificationVisible(true);
   
       notification.success({
         message: "Request Processed",
@@ -810,6 +878,8 @@ try {
         message: "Error",
         description: "Failed to process the request after rejection confirmation.",
       });
+    } finally {
+      setMultiRejectLoading(false);
     }
   };
 
@@ -1273,6 +1343,7 @@ try {
 
   // FRONTEND
   const handleRejectConfirm = async () => {  
+    setRejectLoading(true);
     setIsMultiRejectModalVisible(false);
   
     const { enrichedItems, uncheckedItems, selectedRequest } = pendingApprovalData;
@@ -1304,6 +1375,69 @@ try {
     } catch (error) {
      
       setNotificationMessage("Error verifying account status. Please try again.");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    // 🔍 Check inventory quantities before approval
+    const approvedItems = mergedRequestList.filter((item, index) => {
+      const key = `${selectedRequest.id}-${index}`;
+      return checkedItems[key]; // Only items the user selected
+    });
+
+    const insufficientItems = [];
+    
+    for (const item of approvedItems) {
+      const inventoryId = item.selectedItemId;
+      const requestedQty = Number(item.quantity);
+      
+      if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        continue;
+      }
+
+      try {
+        const inventoryRef = doc(db, "inventory", inventoryId);
+        const inventorySnap = await getDoc(inventoryRef);
+        
+        if (!inventorySnap.exists()) {
+          insufficientItems.push({
+            itemName: item.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: 0,
+            reason: "Item not found in inventory"
+          });
+          continue;
+        }
+
+        const data = inventorySnap.data();
+        const availableQty = Number(data.quantity || 0);
+        
+        if (availableQty < requestedQty) {
+          insufficientItems.push({
+            itemName: item.itemName || data.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: availableQty,
+            reason: "Insufficient quantity"
+          });
+        }
+      } catch (error) {
+        console.error("Error checking inventory for item:", item.itemName, error);
+        insufficientItems.push({
+          itemName: item.itemName || "Unknown Item",
+          requested: requestedQty,
+          available: 0,
+          reason: "Error checking inventory"
+        });
+      }
+    }
+
+    // If there are insufficient items, show error and prevent approval
+    if (insufficientItems.length > 0) {
+      const errorMessage = insufficientItems.map(item => 
+        `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
+      ).join('\n');
+      
+      setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
       return;
     }
@@ -1357,11 +1491,10 @@ try {
        
       }
 
-    const approvedItems = mergedRequestList.filter((item, index) => {
-      const key = `${selectedRequest.id}-${index}`;
-      return checkedItems[key]; // Only items the user selected
-    });
-
+      // const approvedItems = mergedRequestList.filter((item, index) => {
+      //   const key = `${selectedRequest.id}-${index}`;
+      //   return checkedItems[key]; // Only items the user selected
+      // });
     const approvedItemsWithType = await Promise.all(
       approvedItems.map(async (item, index) => {
         let itemType = "Unknown";
@@ -1400,6 +1533,7 @@ try {
         approvedBy: userName,
         reason: selectedRequest.reason || "No reason provided",
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const rejectLogEntry = {
@@ -1417,6 +1551,7 @@ try {
         status: "Rejected",
         rejectedBy: userName,
         program: selectedRequest.program,
+        usageType: selectedRequest.usageType || "N/A",  
       };
   
       const logRequestOrReturn = async (
@@ -1457,6 +1592,7 @@ try {
             timeTo: selectedRequest.timeTo || "N/A",
             timestamp: selectedRequest.timestamp || "N/A",
             rawTimestamp: new Date(),
+            usageType: selectedRequest.usageType || "N/A",  
           }
         );
       }
@@ -1480,6 +1616,7 @@ try {
             timeTo: selectedRequest.timeTo || "N/A",
             timestamp: selectedRequest.timestamp || "N/A",
             rawTimestamp: new Date(),
+            usageType: selectedRequest.usageType || "N/A",  
           }
         );
       }
@@ -1782,6 +1919,9 @@ try {
       setIsModalVisible(false);
       setSelectedRequest(null);
       setIsFinalizeModalVisible(false)
+
+      setNotificationMessage("Approval and rejection have been logged successfully.");
+      setIsNotificationVisible(true);
   
       notification.success({
         message: "Request Processed",
@@ -1794,6 +1934,8 @@ try {
         message: "Error",
         description: "Failed to process the request after rejection confirmation.",
       });
+    } finally {
+      setRejectLoading(false);
     }
   };
 
@@ -2483,11 +2625,14 @@ try {
 
 // FRONTEND
  const handleApprove = async () => {  
+  setApproveLoading(true);
+  
   const isChecked = Object.values(checkedItems).some((checked) => checked);
 
   if (!isChecked) {
     setNotificationMessage("No Items selected");
     setIsNotificationVisible(true);
+    setApproveLoading(false);
     return;
   }
 
@@ -2547,6 +2692,64 @@ const mergedRequestList = selectedRequest.requestList.map((item, index) => {
 
     if (filteredItems.length === 0) {
       setNotificationMessage("No Items selected");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    // 🔍 Check inventory quantities before approval
+    const insufficientItems = [];
+    
+    for (const item of filteredItems) {
+      const inventoryId = item.selectedItemId;
+      const requestedQty = Number(item.quantity);
+      
+      if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        continue;
+      }
+
+      try {
+        const inventoryRef = doc(db, "inventory", inventoryId);
+        const inventorySnap = await getDoc(inventoryRef);
+        
+        if (!inventorySnap.exists()) {
+          insufficientItems.push({
+            itemName: item.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: 0,
+            reason: "Item not found in inventory"
+          });
+          continue;
+        }
+
+        const data = inventorySnap.data();
+        const availableQty = Number(data.quantity || 0);
+        
+        if (availableQty < requestedQty) {
+          insufficientItems.push({
+            itemName: item.itemName || data.itemName || "Unknown Item",
+            requested: requestedQty,
+            available: availableQty,
+            reason: "Insufficient quantity"
+          });
+        }
+      } catch (error) {
+        console.error("Error checking inventory for item:", item.itemName, error);
+        insufficientItems.push({
+          itemName: item.itemName || "Unknown Item",
+          requested: requestedQty,
+          available: 0,
+          reason: "Error checking inventory"
+        });
+      }
+    }
+
+    // If there are insufficient items, show error and prevent approval
+    if (insufficientItems.length > 0) {
+      const errorMessage = insufficientItems.map(item => 
+        `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
+      ).join('\n');
+      
+      setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
       return;
     }
@@ -2716,6 +2919,7 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
       approvedBy: userName, 
       reason: selectedRequest.reason || "No reason provided",
       program: selectedRequest.program,
+      usageType: selectedRequest.usageType || "N/A",  
     };
 
     const rejectLogEntry = {
@@ -2732,8 +2936,9 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
       requestList: rejectedItems, 
       status: "Rejected", 
       rejectedBy: userName, 
-      reason: rejectionReason || "No reason provided",  // Use the rejection reason from the input prompt
+      reason: rejectionReason || "No reason provided",  
       program: selectedRequest.program,
+      usageType: selectedRequest.usageType || "N/A",  
     };
 
     // Log approved items in historylog subcollection
@@ -2771,6 +2976,7 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
         timeTo: selectedRequest.timeTo || "N/A",  
         timestamp: selectedRequest.timestamp || "N/A",
         rawTimestamp: new Date(),
+        usageType: selectedRequest.usageType || "N/A",  
       }
     );
 
@@ -2793,6 +2999,7 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
           timeTo: selectedRequest.timeTo || "N/A",  
           timestamp: selectedRequest.timestamp || "N/A",
           rawTimestamp: new Date(),
+          usageType: selectedRequest.usageType || "N/A",  
         }
       );
     }
@@ -2869,9 +3076,6 @@ try {
             'condition.Defect': newDefect,
             'condition.Lost' : newLost,
           });
-
-         
-           
 
           // 🔁 Update labRoom item quantity
           const roomNumber = item.labRoom; // e.g. "0930"
@@ -3010,6 +3214,7 @@ try {
           approvedBy: userName,
           reason: selectedRequest.reason || "No reason provided",
           program: selectedRequest.program,
+          usageType: selectedRequest.usageType || "N/A",
         };
   
         const userRequestLogEntry = {
@@ -3184,6 +3389,9 @@ try {
         setSelectedRequest(null);
         setIsFinalizeModalVisible(false)
 
+        setNotificationMessage("Request has been approved and logged successfully.");
+        setIsNotificationVisible(true);
+
         notification.success({
           message: "Request Approved",
           description: "Request has been approved and logged.",
@@ -3195,6 +3403,8 @@ try {
           message: "Approval Failed",
           description: "There was an error logging the approved request.",
         });
+      } finally {
+        setApproveLoading(false);
       }
     }
   };
@@ -4088,6 +4298,7 @@ useEffect(() => {
 
   const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
   
+  const filteredData = getFilteredRequests();
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -4123,7 +4334,12 @@ useEffect(() => {
             </div>
 
         
-
+<Spin spinning={loading} tip="Loading requests...">
+  {!loading && filteredData.length === 0 ? (
+    <div style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+      <h3>No Request Found</h3>
+    </div>
+    ) : (
   <div>
     {Object.entries(categorizedRequests).map(([label, group]) => {
       if (group.length === 0) return null;
@@ -4349,6 +4565,8 @@ useEffect(() => {
             );
           })}
         </div>
+         )}
+        </Spin>
 
 
         <Modal
@@ -4376,11 +4594,11 @@ useEffect(() => {
             width={'40%'}
             onCancel={() => setIsMultiRejectModalVisible(false)}
             footer={[
-              <Button key="cancel" onClick={() => setIsMultiRejectModalVisible(false)}>
+              <Button key="cancel" onClick={() => setIsMultiRejectModalVisible(false)} disabled={multiRejectLoading}>
                 Cancel
               </Button>,
 
-              <Button key="confirm" type="primary" onClick={handleOpenFinalizeModal}>
+              <Button key="confirm" type="primary" onClick={handleOpenFinalizeModal} loading={multiRejectLoading}>
                 Confirm
               </Button>,
             ]}
@@ -4402,10 +4620,10 @@ useEffect(() => {
             width={'50%'}
             onCancel={() => setIsFinalizeModalVisible(false)}
             footer={[
-              <Button key="back" onClick={() => setIsFinalizeModalVisible(false)}>
+              <Button key="back" onClick={() => setIsFinalizeModalVisible(false)} disabled={rejectLoading}>
                 Cancel
               </Button>,
-              <Button key="submit" type="primary" onClick={handleRejectConfirm}>
+              <Button key="submit" type="primary" onClick={handleRejectConfirm} loading={rejectLoading}>
                 Finalize
               </Button>,
             ]}
@@ -4466,6 +4684,8 @@ useEffect(() => {
           formatDate={formatDate}
           allItemsChecked={allItemsChecked} 
           college={selectedCollege} 
+          approveLoading={approveLoading}
+          rejectLoading={rejectLoading}
         />
 
         <ApprovedRequestModal

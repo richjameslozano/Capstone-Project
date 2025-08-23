@@ -152,12 +152,12 @@ const Profile = () => {
                       Change Photo
                     </text>
 
-                    <Button
+                    {/* <Button
                     className="edit-btn"
                      style={{backgroundColor: '#2187ab', color: '#fff', fontSize: 16}}
                     >
                       Edit Profile
-                      </Button>
+                      </Button> */}
 
                     <input
                       ref={fileInputRef}
@@ -223,7 +223,7 @@ const Profile = () => {
                   <div className="info">
                     <IdcardOutlined className="profile-icon"/>
                     <p className="text-display">
-                    {formData.jobTitle || "N/A"}
+                    {formData.employeeId || "N/A"}
                     <strong className="title">Employee ID</strong>
                     </p>
                   </div>

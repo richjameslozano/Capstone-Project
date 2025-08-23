@@ -114,19 +114,26 @@ const LogScreen = () => {
 
   return (
     <View style={styles.container}>
-            <View style={styles.pendingHeader} onLayout={handleHeaderLayout}>
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                                    <Icon name="keyboard-backspace" size={28} color="black" />
-                                                  </TouchableOpacity>
-              <View>
-                <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Request Log</Text>
-                <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>View Processed Requests</Text>
-              </View>
+      <View 
+        style={[styles.pendingHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
 
-                <TouchableOpacity style={{padding: 2}}>
-                  <Icon name="information-outline" size={24} color="#000" />
-                </TouchableOpacity>
-              </View>
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            Request Log
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            View Processed Requests
+          </Text>
+        </View>
+
+        {/* Empty space to match back button width for perfect centering */}
+        <View style={{ width: 28 }} />
+      </View>
 
       <View style={[styles.filterContainer, {marginTop: headerHeight+5}]}>
         {['All', 'Approved', 'Rejected', 'Returned'].map((status) => (
@@ -194,7 +201,7 @@ const LogScreen = () => {
             <ScrollView>
               {selectedRequest && (
                 <>
-                  <Text style={styles.modalTitle}>📄 Requisition Slip</Text>
+                  <Text style={styles.modalTitle}>Requisition Slip</Text>
 
                   <Text>Name: {selectedRequest.raw?.userName ?? "N/A"}</Text>
                   <Text>Room: {selectedRequest.raw?.room ?? "N/A"}</Text>

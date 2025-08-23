@@ -20,7 +20,7 @@ import {
   UserSwitchOutlined,
   IdcardOutlined,
 } from '@ant-design/icons';
-
+import nulsLogo from './images/NULS_Favicon_white.png'
 
 import { Button, Layout, Menu, theme } from 'antd';
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
@@ -192,9 +192,9 @@ const shouldShowSpinner = useMemo(() => {
         setPageTitle("Return Items");
         break;
 
-      case "/main/orders":
+      case "/main/submitted-requisitions":
         setSelectedKey("14");
-        setPageTitle("Orders");
+        setPageTitle("Submitted Requisitions");
         break;
 
       case "/main/request-log":
@@ -314,13 +314,13 @@ const shouldShowSpinner = useMemo(() => {
     children: [
       {
         key: "/main/requisition",
-        icon: <FileDoneOutlined />,
+        icon: <FileTextOutlined />,
         label: "Requisition",
       },
       {
-        key: "/main/orders",
-        icon: <ShoppingCartOutlined />,
-        label: "Orders",
+        key: "/main/submitted-requisitions",
+        icon: <FileDoneOutlined />,
+        label: "Submitted Requisitions",
       },
       {
         key: "/main/return-items",
@@ -441,23 +441,23 @@ const superUserMenuItems = [
 const userMenuItems = [
   {
     key: "/main/requisition",
-    icon: <FileDoneOutlined />,
+    icon: <FileTextOutlined />,
     label: "Requisition",
+  },
+    {
+    key: "/main/submitted-requisitions",
+    icon: <FileDoneOutlined />,
+    label: "Submitted Requisitions",
+  },
+    {
+    key: "/main/return-items",
+    icon: <RollbackOutlined />,
+    label: "Return Items",
   },
   {
     key: "/main/search-items",
     icon: <SearchOutlined />,
     label: "Search Items",
-  },
-  {
-    key: "/main/orders",
-    icon: <ShoppingCartOutlined />,
-    label: "Orders",
-  },
-  {
-    key: "/main/return-items",
-    icon: <RollbackOutlined />,
-    label: "Return Items",
   },
   {
     key: "/main/capex-request",
@@ -510,23 +510,36 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
                 height: "100vh",
                 zIndex: 1000,
                 overflow: "auto",
-                padding: 0
+                padding: 0,
               }}
             >
 
 
           <div className="demo-logo-vertical" />
 
-          <div className="logo">
-              {!collapsed || isMobile ? (
-                <>
-                  <h3 className="logo-title">NU MOA</h3>
-                   <p className="logo-subtitle">Laboratory System</p>
-                </>
-              ) : (
-                <h3 className="logo-title">NU MOA</h3>
-              )}
-            </div>
+<div className="logo">
+  {!collapsed || isMobile ? (
+    <div style={{ display: 'flex', alignItems: 'center', maxHeight: 40, gap: 10 }}>
+      <img
+        src={nulsLogo}
+        alt="NULS Logo"
+        style={{
+          maxHeight: '60px',
+          maxWidth: '60px',
+          objectFit: 'contain',
+          verticalAlign: 'middle', // Aligns image with text
+        }}
+      />
+      <div style={{}}>
+        <h3 className="logo-title" style={{margin: 0, textAlign: 'left'}}>NU MOA</h3> {/* Remove default margin */}
+        <p className="logo-subtitle" style={{ margin: 0 }}>Laboratory System</p> {/* Remove default margin */}
+      </div>
+    </div>
+  ) : (
+    <h3 className="logo-title">NU MOA</h3>
+  )}
+</div>
+
 
           <Menu
             theme="dark"
@@ -583,7 +596,7 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
             <Route element={<ProtectedRoute allowedRoles={["admin", "user", "super-admin", "super-user"]} />} >
               <Route path="/profile" element={<Profile />} />
               <Route path="/activity-log" element={<ActivityLog />} />
-              <Route path="/orders" element={<HistoryLog />} />
+              <Route path="/submitted-requisitions" element={<HistoryLog />} />
             </Route>
 
             {/* Superadmin-only routes */}

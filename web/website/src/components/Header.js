@@ -198,37 +198,90 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     if (!userId || userId === "system") return;
     setLoadingNotifications(true);
 
-    let notifRef;
-    if (role === "user") {
-      notifRef = collection(db, "accounts", userId, "userNotifications");
+    let unsubAll = () => {};
+    let unsubUser = () => {};
 
-    } else {
-      notifRef = collection(db, "allNotifications");
-    }
+    const fetchNotifications = () => {
+      const allNotifsQuery = query(collection(db, "allNotifications"), orderBy("timestamp", "desc"));
+      const userNotifsQuery = query(
+        collection(db, "accounts", userId, "userNotifications"),
+        orderBy("timestamp", "desc")
+      );
 
-    const q = query(notifRef, orderBy("timestamp", "desc"));
+      if (role === "super-user") {
+        // Listen to both global and user-specific notifications
+        unsubAll = onSnapshot(allNotifsQuery, (snapshot) => {
+          const all = snapshot.docs
+            .map((doc) => ({ id: doc.id, ...doc.data(), from: "all" }))
+            .filter((n) =>
+              !(
+                n.type === "restock-request" &&
+                typeof n.action === "string" &&
+                n.action.startsWith("Restock request submitted by")
+              )
+            ); // Exclude restock submit notifs for super-user
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const items = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
+          setNotifications((prev) => {
+            const userNotifs = prev.filter((n) => n.from === "user");
+            return [...all, ...userNotifs].sort(
+              (a, b) => b.timestamp?.seconds - a.timestamp?.seconds
+            );
+          });
 
-      // For user: only their own notifications
-      // For admin/super-user: show everything (no filter by userId)
-      const filtered = role === "user" ? items : items;
+          setLoadingNotifications(false);
+        });
 
-      setNotifications(filtered);
-      setLoadingNotifications(false);
-    });
+        unsubUser = onSnapshot(userNotifsQuery, (snapshot) => {
+          const user = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data(), from: "user" }));
+          setNotifications((prev) => {
+            const allNotifs = prev.filter((n) => n.from === "all");
+            return [...user, ...allNotifs].sort(
+              (a, b) => b.timestamp?.seconds - a.timestamp?.seconds
+            );
+          });
 
-    return () => unsubscribe();
+          setLoadingNotifications(false);
+        });
+
+      } else if (role === "user") {
+        unsubUser = onSnapshot(userNotifsQuery, (snapshot) => {
+          const user = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          setNotifications(user);
+          setLoadingNotifications(false);
+        });
+        
+      } else {
+        unsubAll = onSnapshot(allNotifsQuery, (snapshot) => {
+          const all = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          setNotifications(all);
+          setLoadingNotifications(false);
+        });
+      }
+    };
+
+    fetchNotifications();
+
+    return () => {
+      unsubAll();
+      unsubUser();
+    };
   }, [userId, role]);
 
   // const unreadCount = notifications.filter(n => !n.read).length;
-  const unreadCount = notifications.filter(
-    (n) => !(n.readBy?.[userId])
-  ).length;
+  // const unreadCount = notifications.filter(
+  //   (n) => !(n.readBy?.[userId])
+  // ).length;
+
+    const unreadCount = notifications.filter((n) => {
+      if (n.hasOwnProperty("read")) {
+        // personal notifications
+        return !n.read;
+        
+      } else {
+        // global notifications
+        return !(n.readBy?.[userId] === true);
+      }
+    }).length;
 
   // const handleNotificationClick = async (notif) => {
   //   if (!userId || !notif.id) return;
@@ -259,17 +312,61 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     if (!userId || !notif.id) return;
 
     try {
-      let notifDocRef = doc(db, "allNotifications", notif.id);
+      let notifDocRef;
 
-      // Only update if userId not yet in readBy
-      if (!notif.readBy || !notif.readBy[userId]) {
-        await updateDoc(notifDocRef, {
-          [`readBy.${userId}`]: true,
-        });
+      if (notif.from === "user" || role === "user") {
+        // ✅ Personal notification
+        notifDocRef = doc(db, "accounts", userId, "userNotifications", notif.id);
+
+        if (!notif.read) {
+          await updateDoc(notifDocRef, { read: true });
+
+          // update local state
+          setNotifications((prev) =>
+            prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+          );
+        }
+
+      } else {
+        // ✅ Global notification
+        notifDocRef = doc(db, "allNotifications", notif.id);
+
+        if (!notif.readBy || !notif.readBy[userId]) {
+          await updateDoc(notifDocRef, {
+            read: true, // 🔹 keep in sync with Firestore
+            [`readBy.${userId}`]: true,
+          });
+
+          // update local state
+          setNotifications((prev) =>
+            prev.map((n) =>
+              n.id === notif.id
+                ? {
+                    ...n,
+                    read: true, // 🔹 mark as read locally too
+                    readBy: { ...(n.readBy || {}), [userId]: true },
+                  }
+                : n
+            )
+          );
+        }
       }
-
+      
     } catch (error) {
       console.error("Failed to update notification:", error);
+    }
+
+    // --- Navigation logic ---
+    const actionText = notif.action?.toLowerCase() || "";
+
+    if (actionText.startsWith("new requisition submitted")) {
+      navigate("/main/pending-request");
+      return;
+    }
+
+    if (actionText.startsWith("approved request for")) {
+      navigate("/main/submitted-requisitions");
+      return;
     }
 
     if (notif.link) {
@@ -280,11 +377,14 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
     }
   };
 
-  const notificationMenu = (
-    <div className="notification-dropdown" style={{ maxHeight: 300, overflowY: "auto", width: 250 }}>
-      {loadingNotifications ? (
-        <Spin size="small" />
-      ) : (
+const notificationMenu = (
+  <div
+    className="notification-dropdown"
+    style={{ maxHeight: 300, overflowY: "auto", width: 250 }}
+  >
+    {loadingNotifications ? (
+      <Spin size="small" />
+    ) : (
       <List
         size="small"
         dataSource={notifications.slice(0, visibleCount)}
@@ -294,24 +394,26 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
             onClick={() => handleNotificationClick(item)}
           >
             <div>
-              {!item.readBy?.[userId] && <span style={{ color: "red", marginRight: 4 }}>•</span>}
+              {(
+                (item.hasOwnProperty("read") && !item.read) ||
+                (!item.hasOwnProperty("read") && !(item.readBy?.[userId]))
+              ) && <span style={{ color: "red", marginRight: 4 }}>•</span>}
               {item.action}
             </div>
           </List.Item>
         )}
       />
-      )}
+    )}
 
-      {notifications.length > visibleCount && (
-        <div style={{ textAlign: "center", marginTop: 8 }}>
-          <Button type="link" onClick={() => setVisibleCount(visibleCount + 5)}>
-            Show More
-          </Button>
-        </div>
-      )}
-
-    </div>
-  );
+    {notifications.length > visibleCount && (
+      <div style={{ textAlign: "center", marginTop: 8 }}>
+        <Button type="link" onClick={() => setVisibleCount(visibleCount + 5)}>
+          Show More
+        </Button>
+      </div>
+    )}
+  </div>
+);
 
   const goToProfile = () => navigate("/main/profile");
 

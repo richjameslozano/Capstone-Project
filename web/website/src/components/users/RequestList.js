@@ -39,6 +39,7 @@ const RequestList = () => {
   const [userName, setUserName] = useState("User");
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
+  const [cancelLoading, setCancelLoading] = useState(false);
 
   const fetchUserName = async () => {
     const auth = getAuth();
@@ -292,6 +293,7 @@ const RequestList = () => {
   }, []);
 
   const handleCancelRequest = async () => {
+    setCancelLoading(true);
     try {
       const userId = localStorage.getItem("userId");
   
@@ -345,6 +347,8 @@ const RequestList = () => {
       
       setNotificationMessage("Failed to cancel the request.");
       setNotificationVisible(true);
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -564,6 +568,7 @@ const RequestList = () => {
             zIndex={1009}
             okText="Yes, Cancel"
             cancelText="No"
+            okButtonProps={{ loading: cancelLoading }}
           >
             <p>Are you sure you want to cancel this request?</p>
           </Modal>

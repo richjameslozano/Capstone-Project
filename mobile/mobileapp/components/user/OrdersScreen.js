@@ -135,6 +135,8 @@ export default function RequestScreen() {
       fetchActivityLogs();
     }, [user]);
 
+
+
     useEffect(() => {
       handleSearch(searchQuery);
     }, [statusFilter]);
@@ -303,53 +305,38 @@ export default function RequestScreen() {
 
       const handleStatus =(item)=>{
       if(item.status === 'PENDING') return 'orange';
-      if(item.status === 'APPROVED') return '#395a7f';
-      if(item.status === 'Materials') return '#f8d496'; 
-      if(item.status === 'Reagent') return '#b8e2f4';
+      if(item.action === 'APPROVED') return '#134b5f';
+      if(item.action === 'DEPLOYED') return '#2596be'; 
+      if(item.action === 'COMPLETED') return '#18b933ff';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
 
 
-  const renderItem = ({ item }) => (
-          <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
-      <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
-        <Text style={{backgroundColor: handleStatus(item), fontWeight: 'bold', color: 'white', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 3}}>{item.status}</Text>
-        {/* <Text style={{fontWeight: 300, color: 'gray', fontSize: 13}}>{item.dateRequested.toLocaleDateString()}</Text> */}
-      </View>
+const filteredApproved = activityData
+  .filter(req => req.action === 'Request Approved')
+  .map(req => ({
+    ...req,
+    action: 'APPROVED', // just for UI
+    items: req.items || req.requestList || [] // ensure array exists
+  }));
 
-    <View>
-      <Text style={{fontWeight: 300, fontSize: 13}}>Items Requested:</Text>
-  {item.items?.length > 0 ? (
-  item.items.map((innerItem, index) => (
-    <View key={index} style={{paddingHorizontal: 10, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between'}}>
+  const filteredDeployed = activityData
+  .filter(req => req.action === 'Deployed')
+  .map(req => ({
+    ...req,
+    action: 'DEPLOYED', // just for UI
+    items: req.items || req.requestList || [] // ensure array exists
+  }));
 
-        <Text style={{fontWeight: 'bold'}}>{innerItem.itemName}</Text>
-        <Text style={{fontWeight: 300}}>x {innerItem.quantity}</Text>
-    </View>
-  ))
-) : (
-  <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
-)}
-    </View>
+  const filteredReturned = activityData
+  .filter(req => req.action === 'Returned')
+  .map(req => ({
+    ...req,
+    action: 'COMPLETED', // just for UI
+    items: req.items || req.requestList || [] // ensure array exists
+  }));
 
-      <View style={{padding: 10, backgroundColor: '#C8EAF9', marginTop: 5, borderRadius: 5,}}>
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-          <Text style={{fontSize: 13}}>Usage Type:</Text>
-          <Text style={{fontWeight: 300, fontSize: 13}}>{item.usageType}</Text>
-        </View>
-
-        <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
-          <Text style={{fontSize: 13}}>Date Required:</Text>
-          <Text style={{fontWeight: 'bold', fontSize: 13, color: '#395a7f'}}>{item.dateRequired}</Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-
-
-  );
-
-
-  const renderItem2 = ({ item }) => (
+  const renderPending = ({ item }) => (
     <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
       <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
         <Text style={{backgroundColor: handleStatus(item), fontWeight: 'bold', color: 'white', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 3}}>{item.status}</Text>
@@ -371,7 +358,7 @@ export default function RequestScreen() {
 )}
     </View>
 
-      <View style={{padding: 10, backgroundColor: '#C8EAF9', marginTop: 5, borderRadius: 5,}}>
+      <View style={{padding: 10, backgroundColor: '#d3eaf2', marginTop: 5, borderRadius: 5,}}>
         <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
           <Text style={{fontSize: 13}}>Usage Type:</Text>
           <Text style={{fontWeight: 300, fontSize: 13}}>{item.usageType}</Text>
@@ -385,14 +372,244 @@ export default function RequestScreen() {
     </TouchableOpacity>
   );
 
+//     useEffect(() => {
+//   console.log("Selected Log:", selectedLog);
+// }, [selectedLog]);
+
+const renderItem = ({ item }) => {
+  const data = item.fullData; // actual Firestore fields
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        setSelectedLog(data);
+        setModalVisible(true);
+      }}
+      style={styles.pendingCard}
+    >
+      {/* Status and Date */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderColor: '#e9ecee',
+        paddingBottom: 5
+      }}>
+        <Text style={{
+          backgroundColor: handleStatus(item),
+          fontWeight: 'bold',
+          color: "white",
+          paddingHorizontal: 10,
+          paddingVertical: 3,
+          borderRadius: 3
+        }}>
+          {item.action}
+        </Text>
+        <Text style={{ fontWeight: '300', color: 'gray', fontSize: 13 }}>
+          {data.dateRequested}
+        </Text>
+      </View>
+
+      {/* Items Requested */}
+      <View>
+        <Text style={{ fontWeight: '300', fontSize: 13 }}>Items Requested:</Text>
+        {data.requestList?.length > 0 ? (
+          data.requestList.map((innerItem) => (
+            <View
+              key={innerItem.id || `${innerItem.itemName}-${innerItem.quantity}`}
+              style={{
+                paddingHorizontal: 10,
+                marginTop: 8,
+                flexDirection: 'row',
+                justifyContent: 'space-between'
+              }}
+            >
+              <Text style={{ fontWeight: 'bold' }}>{innerItem.itemName}</Text>
+              <Text style={{ fontWeight: '300' }}>x {innerItem.quantity}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+        )}
+      </View>
+
+      {/* Usage Type & Date Required */}
+      <View style={{
+        padding: 10,
+        backgroundColor: '#d3eaf2',
+        marginTop: 5,
+        borderRadius: 5
+      }}>
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Text style={{ fontSize: 13 }}>Usage Type:</Text>
+          <Text style={{ fontWeight: '300', fontSize: 13 }}>
+            {data.usageType}
+          </Text>
+        </View>
+
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Text style={{ fontSize: 13 }}>Date Required:</Text>
+          <Text style={{
+            fontWeight: 'bold',
+            fontSize: 13,
+            color: '#395a7f'
+          }}>
+            {data.dateRequired}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+
+const renderDeployed = ({ item }) => {
+  const data = item.fullData; // actual Firestore fields
+  return (
+    <TouchableOpacity
+      onPress={() => {
+        setSelectedLog(data);
+        setModalVisible(true);
+      }}
+      style={styles.pendingCard}
+    >
+      {/* Status and Date */}
+      <View style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        borderBottomWidth: 1,
+        borderColor: '#e9ecee',
+        paddingBottom: 5
+      }}>
+        <Text style={{
+          backgroundColor: handleStatus(item),
+          fontWeight: 'bold',
+          color: 'white',
+          paddingHorizontal: 10,
+          paddingVertical: 3,
+          borderRadius: 3
+        }}>
+          {item.action}
+        </Text>
+        <Text style={{ fontWeight: '300', color: 'gray', fontSize: 13 }}>
+          {data.dateRequested}
+        </Text>
+      </View>
+
+      {/* Items Requested */}
+      <View>
+        <Text style={{ fontWeight: '300', fontSize: 13 }}>Items Requested:</Text>
+        {data.requestList?.length > 0 ? (
+          data.requestList.map((innerItem) => (
+            <View
+              key={innerItem.id || `${innerItem.itemName}-${innerItem.quantity}`}
+              style={{
+                paddingHorizontal: 10,
+                marginTop: 8,
+                flexDirection: 'row',
+                justifyContent: 'space-between'
+              }}
+            >
+              <Text style={{ fontWeight: 'bold' }}>{innerItem.itemName}</Text>
+              <Text style={{ fontWeight: '300' }}>x {innerItem.quantity}</Text>
+            </View>
+          ))
+        ) : (
+          <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+        )}
+      </View>
+
+      {/* Usage Type & Date Required */}
+      <View style={{
+        padding: 10,
+        backgroundColor: '#d3eaf2',
+        marginTop: 5,
+        borderRadius: 5
+      }}>
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Text style={{ fontSize: 13 }}>Usage Type:</Text>
+          <Text style={{ fontWeight: '300', fontSize: 13 }}>
+            {data.usageType}
+          </Text>
+        </View>
+
+        <View style={{
+          flexDirection: 'row',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <Text style={{ fontSize: 13 }}>Date Required:</Text>
+          <Text style={{
+            fontWeight: 'bold',
+            fontSize: 13,
+            color: '#395a7f'
+          }}>
+            {data.dateRequired}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+
+// const renderDeployed = ({ item }) => (
+//   <TouchableOpacity onPress={() => { setSelectedRequest(item); setModal2Visible(true); }} style={styles.pendingCard}>
+//     <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderColor: '#e9ecee', paddingBottom: 5}}>
+//       <Text style={{backgroundColor: handleStatus(item), fontWeight: 'bold', color: 'white', paddingHorizontal: 10, paddingVertical: 3, borderRadius: 3}}>{item.status}</Text>
+//       <Text style={{fontWeight: 300, color: 'gray', fontSize: 13}}>{item.dateRequested.toLocaleDateString()}</Text>
+//     </View>
+
+//     <View>
+//       <Text style={{fontWeight: 300, fontSize: 13}}>Items Requested:</Text>
+//       {item.items?.length > 0 ? (
+//         item.items.map((innerItem, index) => (
+//           <View key={index} style={{paddingHorizontal: 10, marginTop: 8, flexDirection: 'row', justifyContent: 'space-between'}}>
+//             <Text style={{fontWeight: 'bold'}}>{innerItem.itemName}</Text>
+//             <Text style={{fontWeight: 300}}>x {innerItem.quantity}</Text>
+//           </View>
+//         ))
+//       ) : (
+//         <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+//       )}
+//     </View>
+
+//     <View style={{padding: 10, backgroundColor: '#C8EAF9', marginTop: 5, borderRadius: 5,}}>
+//       <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+//         <Text style={{fontSize: 13}}>Usage Type:</Text>
+//         <Text style={{fontWeight: 300, fontSize: 13}}>{item.usageType}</Text>
+//       </View>
+
+//       <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+//         <Text style={{fontSize: 13}}>Date Required:</Text>
+//         <Text style={{fontWeight: 'bold', fontSize: 13, color: '#395a7f'}}>{item.dateRequired}</Text>
+//       </View>
+//     </View>
+//   </TouchableOpacity>
+// );
+
+
   useEffect(() => {
     fetchRequests();
   }, []);
 
-  const position = useRef(new Animated.Value(0)).current; // Animated value for swipe position
+  const position1 = useRef(new Animated.Value(0)).current; // Animated value for swipe position
 
   // Interpolate the border position
-  const borderTranslateX = position.interpolate({
+  const borderTranslateX = position1.interpolate({
     inputRange: [0, 1],
     outputRange: [0, 142], // Adjust 150 to match your tab width
   });
@@ -402,257 +619,88 @@ export default function RequestScreen() {
   );
 
   const pagerRef = useRef(null);
+  const [activePage, setActivePage] = useState(0);
+   const position = useRef(new Animated.Value(0)).current;
+
+    const handlePageSelected = (e) => {
+    setActivePage(e.nativeEvent.position); // Update active page on PagerView change
+  };
+
+    const handleButtonPress = (nextPage) => {
+    if (pagerRef.current) {
+      pagerRef.current.setPage(nextPage); // Change the page programmatically
+    }
+  };
 
   return (
     
     <View style={styles.container}>
-       <View style={styles.OrdersHeader} onLayout={handleHeaderLayout}>
-                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                     <Icon name="keyboard-backspace" size={28} color="black" />
-                                   </TouchableOpacity>
-
-                    <View>
-                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>My Orders</Text>
-                      <Text style={{ fontWeight: 300, fontSize: 13}}>Monitor Your Orders</Text>
-                    </View>
-
-                     <TouchableOpacity style={{padding: 2}}>
-                       <Icon name="information-outline" size={24} color="#000" />
-                     </TouchableOpacity>
-                   </View>
-
-            
-      
-      {/* <View style={[styles.topNav, {marginTop:headerHeight-3}]}>
-        <TouchableOpacity style={{width: '50%', backgroundColor: '#fff', justifyContent:'center',alignItems:'center'}}
-          onPress={() => pagerRef.current.setPage(0)}
-        >
-          <Text style={{fontWeight: 'bold', fontSize: 15}}>Processed</Text>
- 
-        </TouchableOpacity>
-
-        <Text style={{fontSize: 20, color: 'gray'}}>|</Text>
-
-        <TouchableOpacity style={{width: '50%', backgroundColor: 'white',justifyContent:'center',alignItems: 'center'}}
-        onPress={() => pagerRef.current.setPage(1)}
-        >
-        </TouchableOpacity>
-
-         <Animated.View style={[styles.border, { transform: [{ translateX: borderTranslateX }] }]} />
-      </View> */}
-
-<View style={{flex:1, borderRadius: 5, overflow: 'hidden', marginTop: headerHeight-3}}>
-      <PagerView ref={pagerRef} style={[styles.containerInner]} initialPage={0}
-      onPageScroll={(event) => {
-          Animated.spring(position, {
-    toValue: event.nativeEvent.position,
-    stiffness: 200, // Adjust bounce effect
-    damping: 50, // Smooth motion
-    useNativeDriver: false,
-  }).start();
-      }}
+      <View 
+        style={[styles.OrdersHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
       >
-      <View key="1" style={styles.page}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
 
-          <View style={[styles.searchFilter]}>
-              <View style={{height: 45, flexDirection: 'row', gap: 5, paddingHorizontal: 2}}>
-                <View style={styles.searchContainer}>
-                  <Icon name="magnify" size={20} color="#888"  />
-                  <TextInput
-                    style={styles.searchInput}
-                    placeholder="Search"
-                    value={searchQuery}
-                    onChangeText={handleSearch}
-                  />
-                </View>
-      
-              </View>
-      
-              <View>
-              {/* <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{paddingTop: 10}}>
-                {['All', 'Approved', 'Rejected', 'Cancelled', 'Deployed'].map((status) => (
-                  <TouchableOpacity
-                    key={status}
-                    style={{
-                      paddingVertical: 6,
-                      paddingHorizontal: 14,
-                      backgroundColor: statusFilter === status ? '#1a6985' : '#e0e0e0',
-                      borderRadius: 20,
-                      marginRight: 8,
-                    }}
-                    onPress={() => setStatusFilter(status)}
-                  >
-                    <Text style={{ color: statusFilter === status ? '#fff' : '#333', fontWeight: 500, }}>
-                      {status}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView> */}
-
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingTop: 10 }}>
-                {[
-                  { label: 'All', value: 'All' },
-                  { label: 'Approved', value: 'Request Approved' },
-                  { label: 'Rejected', value: 'Request Rejected' },
-                  { label: 'Cancelled', value: 'Cancelled a request' },
-                  { label: 'Deployed', value: 'Deployed' },
-                  { label: 'Returned', value: 'Returned' },
-                ].map((status) => (
-                  <TouchableOpacity
-                    key={status.value}
-                    style={{
-                      paddingVertical: 6,
-                      paddingHorizontal: 14,
-                      backgroundColor: statusFilter === status.value ? '#1a6985' : '#e0e0e0',
-                      borderRadius: 20,
-                      marginRight: 8,
-                    }}
-                    onPress={() => setStatusFilter(status.value)}
-                  >
-                    <Text
-                      style={{
-                        color: statusFilter === status.value ? '#fff' : '#333',
-                        fontWeight: '500',
-                      }}
-                    >
-                      {status.label}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-              
-              {/* <Picker
-                selectedValue={statusFilter}
-                onValueChange={(itemValue) => setStatusFilter(itemValue)}
-                style={{ height: 50, width: 200 }}
-              >
-                {['All', 'Request Approved', 'Request Rejected', 'Cancelled a request', 'Deployed', 'Returned'].map((status) => (
-                  <Picker.Item key={status} label={status} value={status} />
-                ))}
-              </Picker> */}
-            </View>
-            </View>
-
-          {/* <FlatList
-          data={requests}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          contentContainerStyle={styles.listContainer}
-        />
-             */}
-      
-            {/* Table Header */}
-            <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
-              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Date</Text>
-              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Action</Text>
-              <Text style={[styles.tableHeaderText, { flex: 1 }]}>By</Text>
-            </View>
-      
-            <ScrollView style={styles.content}>
-              {filteredData.map((log, index) => (
-                <TouchableOpacity
-
-                  key={log.key}
-                  onPress={() => handleRowPress(log)}
-                  style={[index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd, {padding: 10, paddingVertical: 15, backgroundColor: '#fff', borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#ececec'}]}
-                >
-                  <View style={{ flexDirection: 'row' }}>
-                  <Text style={[styles.tableCell, { flex: 1 }]}>
-                    {log.date.slice(0, 12)}
-                  </Text>
-
-
-                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.action}</Text>
-                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.by}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-<Modal visible={modalVisible} transparent animationType="fade">
-  <View style={styles.modalOverlay}>
-    <View style={styles.modalCard}>
-      <Text style={styles.modalTitle}>
-        {selectedLog?.status === 'CANCELLED'
-          ? 'Cancelled a Request'
-          : selectedLog?.action || 'Modified a Request'}
-      </Text>
-
-      <ScrollView style={styles.modalScroll}>
-        <View style={styles.infoSection}>
-          <Text style={styles.modalLabel}>By:</Text>
-          <Text style={styles.modalValue}>{selectedLog?.userName || 'Unknown User'}</Text>
-
-          <Text style={styles.modalLabel}>Program:</Text>
-          <Text style={styles.modalValue}>{selectedLog?.program || 'N/A'}</Text>
-
-          <Text style={styles.modalLabel}>Course:</Text>
-          <Text style={styles.modalValue}>{selectedLog?.course || 'N/A'}</Text>
-
-          <Text style={styles.modalLabel}>Note:</Text>
-          <Text style={styles.modalValue}>{selectedLog?.reason || 'N/A'}</Text>
-
-          <Text style={styles.modalLabel}>Room:</Text>
-          <Text style={styles.modalValue}>{selectedLog?.room || 'N/A'}</Text>
-
-          <Text style={styles.modalLabel}>Time:</Text>
-          <Text style={styles.modalValue}>
-            {selectedLog?.timeFrom && selectedLog?.timeTo
-              ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-              : 'N/A'}
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            My Orders
           </Text>
-
-          <Text style={styles.modalLabel}>Date Required:</Text>
-          <Text style={styles.modalValue}>{selectedLog?.dateRequired || 'N/A'}</Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            Monitor Your Orders
+          </Text>
         </View>
 
-        <Text style={styles.modalSubtitle}>Items</Text>
-
-        {(selectedLog?.filteredMergedData || selectedLog?.requestList)?.length > 0 ? (
-          <View style={styles.table}>
-            <View style={styles.tableHeader2}>
-              <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Item</Text>
-              <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Description</Text>
-              <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Qty</Text>
-              {hasUnitColumn && <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Unit</Text>}
-              <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Category</Text>
-            </View>
-
-            {(selectedLog?.filteredMergedData || selectedLog?.requestList).map((item, index) => (
-              <View
-                key={index}
-                style={[
-                  styles.tableRow,
-                  index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
-                ]}
-              >
-                <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemName}</Text>
-                <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemDetails}</Text>
-                <Text style={[styles.tableCell2, { flex: 1 }]}>{item.quantity}</Text>
-                {hasUnitColumn && (
-                  <Text style={[styles.tableCell2, { flex: 1 }]}>
-                    {["Chemical", "Reagent"].includes(item.category) ? item.unit || "—" : "—"}
-                  </Text>
-                )}
-                <Text style={[styles.tableCell2, { flex: 1 }]}>{item.category || '—'}</Text>
-              </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={styles.modalValue}>None</Text>
-        )}
-      </ScrollView>
-
-      <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
-        <Text style={styles.closeButtonText}>Close</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
-</Modal>
-
-
+        {/* <TouchableOpacity style={{ padding: 2 }}>
+          <Icon name="information-outline" size={24} color="#000" />
+        </TouchableOpacity> */}
       </View>
 
-      <View key="2" style={styles.page}>
+
+<View style={{flex:1, borderRadius: 5, overflow: 'hidden', marginTop: headerHeight-3, gap: 5}}>
+  <View style={styles.btnContainer}>
+    <TouchableOpacity style={[styles.timelineBtn, activePage === 0 && styles.activeBtn]}
+    onPress={()=>handleButtonPress(0)}>
+      <Icon name={activePage ===0 ? "clock": "clock-outline"} size={20} color="#165a72" />
+      <Text style={styles.timeText}>Pending</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={[styles.timelineBtn, activePage === 1 && styles.activeBtn]}
+    onPress={()=>handleButtonPress(1)}>
+      <Icon name={activePage ===1  ? "thumb-up":"thumb-up-outline"} size={20} color="#165a72" />
+      <Text style={styles.timeText}>Approved</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={[styles.timelineBtn, activePage === 2 && styles.activeBtn]}
+    onPress={()=>handleButtonPress(2)}>
+      <Icon name={activePage === 2 ? "send":"send-outline"} size={20} color="#165a72" />
+      <Text style={styles.timeText}>Deployed</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={[styles.timelineBtn, activePage === 3 && styles.activeBtn]}
+    onPress={()=>handleButtonPress(3)}>
+      <Icon name={activePage === 3 ? "check-circle":"check-circle-outline"} size={20} color="#165a72" />
+      <Text style={styles.timeText}>Completed</Text>
+    </TouchableOpacity>
+  </View>
+
+      <PagerView
+        ref={pagerRef}
+        style={[styles.containerInner]}
+        initialPage={0}
+        onPageSelected={handlePageSelected} // Handle page change
+        onPageScroll={(event) => {
+          // Track the position during scroll
+          Animated.spring(position, {
+            toValue: event.nativeEvent.offset, // Adjusts based on the scroll offset
+            stiffness: 200,
+            damping: 50,
+            useNativeDriver: false, // Use native driver for smoother performance
+          }).start();
+        }}
+      >
+          <View key="1" style={styles.page}>
          {loading ? (
         <ActivityIndicator size="large" color="#1890ff" style={{ marginTop: 30 }} />
       ) : requests.length === 0 ? (
@@ -660,13 +708,13 @@ export default function RequestScreen() {
       ) : (
         <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
           <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
-                    <Icon name='clock-outline' size={23} color='#6abce2'/>
-                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Pending Orders</Text>
+                    <Icon name='clock-outline' size={23} color='#e7c247ff'/>
+                    <Text style={{color: '#e7c247ff', fontSize: 15, fontWeight: 'bold'}}>Pending Orders</Text>
                   </View>
             <FlatList
           data={requests}
           keyExtractor={(item) => item.id}
-          renderItem={renderItem2}
+          renderItem={renderPending}
           contentContainerStyle={styles.listContainer}
         />
         </View>
@@ -724,9 +772,7 @@ export default function RequestScreen() {
             <Text><Text style={styles.label}>Message:</Text> {selectedRequest?.message || 'No message provided.'}</Text>
 
             <View style={styles.modalButtons}>
-              {/* <TouchableOpacity onPress={cancelRequest} style={styles.cancelButton}>
-                <Text style={styles.cancelText}>Cancel Request</Text>
-              </TouchableOpacity> */}
+
 
               <TouchableOpacity
                 onPress={() => {
@@ -737,11 +783,15 @@ export default function RequestScreen() {
                       {
                         text: 'No',
                         style: 'cancel',
+                        onPress: () => setModal2Visible(false), // closes modal if user cancels
                       },
                       {
                         text: 'Yes, Cancel',
                         style: 'destructive',
-                        onPress: cancelRequest, // calls your existing function
+                        onPress: () => {
+                          cancelRequest(); // your existing cancel logic
+                          setModal2Visible(false); // close the modal after cancelling
+                        },
                       },
                     ],
                     { cancelable: true }
@@ -761,6 +811,221 @@ export default function RequestScreen() {
       </Modal>
       </View>
 
+      <View key="2" style={styles.page}>
+          <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='thumb-up-outline' size={23} color='#134b5f'/>
+                    <Text style={{color: '#134b5f', fontSize: 15, fontWeight: 'bold'}}>Approved Orders</Text>
+                  </View>
+
+        <FlatList
+          data={filteredApproved} // Approved items from the right collection
+          keyExtractor={(item) => item.id || item.key || Math.random().toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+
+        </View>
+
+          {/* <View style={[styles.searchFilter]}>
+              <View style={{height: 45, flexDirection: 'row', gap: 5, paddingHorizontal: 2}}>
+                <View style={styles.searchContainer}>
+                  <Icon name="magnify" size={20} color="#888"  />
+                  <TextInput
+                    style={styles.searchInput}
+                    placeholder="Search"
+                    value={searchQuery}
+                    onChangeText={handleSearch}
+                  />
+                </View>
+      
+              </View>
+      
+              <View>
+
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ paddingTop: 10 }}>
+                {[
+                  { label: 'All', value: 'All' },
+                  { label: 'Approved', value: 'Request Approved' },
+                  { label: 'Rejected', value: 'Request Rejected' },
+                  { label: 'Cancelled', value: 'Cancelled a request' },
+                  { label: 'Deployed', value: 'Deployed' },
+                  { label: 'Returned', value: 'Returned' },
+                ].map((status) => (
+                  <TouchableOpacity
+                    key={status.value}
+                    style={{
+                      paddingVertical: 6,
+                      paddingHorizontal: 14,
+                      backgroundColor: statusFilter === status.value ? '#1a6985' : '#e0e0e0',
+                      borderRadius: 20,
+                      marginRight: 8,
+                    }}
+                    onPress={() => setStatusFilter(status.value)}
+                  >
+                    <Text
+                      style={{
+                        color: statusFilter === status.value ? '#fff' : '#333',
+                        fontWeight: '500',
+                      }}
+                    >
+                      {status.label}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+              
+
+            </View>
+            </View>
+
+
+      
+    
+            <View style={[styles.tableHeader, { flexDirection: 'row' }]}>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Date</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>Action</Text>
+              <Text style={[styles.tableHeaderText, { flex: 1 }]}>By</Text>
+            </View>
+      
+            <ScrollView style={styles.content}>
+              {filteredData.map((log, index) => (
+                <TouchableOpacity
+
+                  key={log.key}
+                  onPress={() => handleRowPress(log)}
+                  style={[index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd, {padding: 10, paddingVertical: 15, backgroundColor: '#fff', borderTopWidth: 1, borderBottomWidth: 1, borderColor: '#ececec'}]}
+                >
+                  <View style={{ flexDirection: 'row' }}>
+                  <Text style={[styles.tableCell, { flex: 1 }]}>
+                    {log.date.slice(0, 12)}
+                  </Text>
+
+
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.action}</Text>
+                    <Text style={[styles.tableCell, { flex: 1 }]}>{log.by}</Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </ScrollView> */}
+<Modal visible={modalVisible} transparent animationType="fade">
+  <View style={styles.modalOverlay}>
+    <View style={styles.modalCard}>
+      <Text style={styles.modalTitle}>
+        {selectedLog?.status === 'CANCELLED'
+          ? 'Cancelled a Request'
+          : selectedLog?.action || 'Modified a Request'}
+      </Text>
+
+      <ScrollView style={styles.modalScroll}>
+        <View style={styles.infoSection}>
+          <Text style={styles.modalLabel}>By:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.userName || 'Unknown User'}</Text>
+
+          <Text style={styles.modalLabel}>Program:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.program || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Course:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.course || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Note:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.reason || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Room:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.room || 'N/A'}</Text>
+
+          <Text style={styles.modalLabel}>Time:</Text>
+          <Text style={styles.modalValue}>
+            {selectedLog?.timeFrom && selectedLog?.timeTo
+              ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
+              : 'N/A'}
+          </Text>
+
+          <Text style={styles.modalLabel}>Date Required:</Text>
+          <Text style={styles.modalValue}>{selectedLog?.dateRequired || 'N/A'}</Text>
+        </View>
+
+<Text style={styles.modalSubtitle}>Items</Text>
+
+{selectedLog?.requestList?.length > 0 ? (
+  <View style={styles.table}>
+    <View style={styles.tableHeader2}>
+      <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Item</Text>
+      <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Description</Text>
+      <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Qty</Text>
+      {hasUnitColumn && <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Unit</Text>}
+      <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Category</Text>
+    </View>
+
+    {selectedLog.requestList.map((item, index) => (
+      <View
+        key={item.id || index}
+        style={[
+          styles.tableRow,
+          index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
+        ]}
+      >
+        <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemName}</Text>
+        <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemDetails}</Text>
+        <Text style={[styles.tableCell2, { flex: 1 }]}>{item.quantity}</Text>
+        {hasUnitColumn && (
+          <Text style={[styles.tableCell2, { flex: 1 }]}>
+            {["Chemical", "Reagent"].includes(item.category) ? item.unit || "—" : "—"}
+          </Text>
+        )}
+        <Text style={[styles.tableCell2, { flex: 1 }]}>{item.category || "—"}</Text>
+      </View>
+    ))}
+  </View>
+) : (
+  <Text style={styles.modalValue}>None</Text>
+)}
+
+
+
+      </ScrollView>
+
+      <TouchableOpacity onPress={() => setModalVisible(false)} style={styles.closeButton}>
+        <Text style={styles.closeButtonText}>Close</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+</Modal>
+      </View>
+
+
+      <View key="3" style={styles.page}>
+                  <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='send-outline' size={23} color='#6abce2'/>
+                    <Text style={{color: '#6abce2', fontSize: 15, fontWeight: 'bold'}}>Deployed Orders</Text>
+                  </View>
+
+        <FlatList
+          data={filteredDeployed} // Approved items from the right collection
+          keyExtractor={(item) => item.id || item.key || Math.random().toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+        </View>
+      </View>
+
+      <View key="4" style={styles.page}>
+                  <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='check-circle-outline' size={23} color='#40cf70ff'/>
+                    <Text style={{color: '#40cf70ff', fontSize: 15, fontWeight: 'bold'}}>Completed Orders</Text>
+                  </View>
+
+        <FlatList
+          data={filteredReturned} // Approved items from the right collection
+          keyExtractor={(item) => item.id || item.key || Math.random().toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+        </View>
+      </View>
       </PagerView>
 </View>
 

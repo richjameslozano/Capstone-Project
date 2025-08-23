@@ -161,7 +161,7 @@ const SearchItems = () => {
             status: data.status || "Unknown",
             category: data.category || "Uncategorized",
             room: data.labRoom || "No Room Info",
-            ...data, // Keep full data for modals/details
+            ...data,
           };
         });
 
@@ -200,6 +200,8 @@ const SearchItems = () => {
     if (sanitizedCategoryFilter) {
       data = data.filter((item) => item.category === sanitizedCategoryFilter);
     }
+
+    data.sort((a, b) => a.description.localeCompare(b.description));
 
     setFilteredData(data);
   }, [searchText, statusFilter, categoryFilter, inventoryData]);
@@ -262,9 +264,7 @@ const SearchItems = () => {
               className="search-table"
               onRow={(record) => ({
                 onClick: () => handleRowClick(record),
-                
               })}
-              
             />
           </div>
 

@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar,Image } from 'react-native';
+import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar,Image, ActivityIndicator } from 'react-native';
 import { Card } from 'react-native-paper';
 import { collection, getDocs, doc, updateDoc, getDoc, collectionGroup, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
@@ -13,11 +13,10 @@ export default function PendingRequestScreen() {
   const [pendingRequests, setPendingRequests] = useState([]);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [viewModalVisible, setViewModalVisible] = useState(false);
-
   const [headerHeight, setHeaderHeight] = useState(0);
   const [isNote, setIsNote] = useState(true)
   const [selectedFilter, setSelectedFilter] = useState('All'); // or 'All' if you want a default
-
+  const [loading, setLoading] = useState(false);
 
   const navigation = useNavigation()
 
@@ -46,6 +45,7 @@ export default function PendingRequestScreen() {
   const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
 
 useEffect(() => {
+  setLoading(true);
   const unsubscribe = onSnapshot(collection(db, 'userrequests'), (querySnapshot) => {
     const processRequests = async () => {
       try {
@@ -107,6 +107,9 @@ useEffect(() => {
         setPendingRequests(fetched);
       } catch (err) {
         console.error('Error processing requests:', err);
+
+      } finally {
+      setLoading(false);
       }
     };
 
@@ -257,20 +260,28 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
 
   return (
     <View style={styles.container}>
-             <View style={styles.pendingHeader} onLayout={handleHeaderLayout}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-                                                         <Icon name="keyboard-backspace" size={28} color="black" />
-                                                       </TouchableOpacity>
-                    <View>
-                      <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Pending Requests</Text>
-                      <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Subject for Approval</Text>
-                    </View>
-      
-                     <TouchableOpacity style={{padding: 2}}>
-                       <Icon name="information-outline" size={24} color="#000" />
-                     </TouchableOpacity>
-                   </View>
-              
+      <View 
+        style={[styles.pendingHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+        onLayout={handleHeaderLayout}
+      >
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+          <Icon name="keyboard-backspace" size={28} color="black" />
+        </TouchableOpacity>
+
+        <View style={{ flex: 1, alignItems: 'center' }}>
+          <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
+            Pending Requests
+          </Text>
+          <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+            Subject for Approval
+          </Text>
+        </View>
+
+        {/* Placeholder to balance back button width */}
+        <View style={{ width: 28 }} />
+      </View>
+
+                    
               <TouchableOpacity 
               style={[styles.note, { top: headerHeight }]} 
               onPress={handleIsNote}
@@ -319,9 +330,14 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
               </TouchableOpacity>
             ))}
           </ScrollView>
-</View>
+        </View>
           
-
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, color: '#395a7f' }}>Loading requests...</Text>
+        </View>
+      ) : (
       <ScrollView style={{ backgroundColor: '#e9ecee', paddingHorizontal: 7, paddingTop: 5, flex: 1}}
       contentContainerStyle={styles.pendingFlat}>
         {Object.entries(categorizedRequests)
@@ -348,7 +364,7 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
             </View>
           ))}
       </ScrollView>
-      
+      )}
 
       <Modal
         visible={viewModalVisible}
@@ -378,22 +394,38 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
 
                 <Text style={[styles.modalTitle, { marginTop: 10 }]}>Requested Items:</Text>
 
-                <ScrollView horizontal>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={true}
+                  scrollEventThrottle={16}
+                  bounces={true}
+                  contentContainerStyle={{
+                    paddingBottom: 10,
+                    paddingHorizontal: 5,
+                  }}
+                >
                   <View>
-                    <View style={[styles.tableRow, styles.tableHeader]}>
-                      <Text style={styles.tableCell}>Item ID</Text>
-                      <Text style={styles.tableCell}>Item</Text>
-                      <Text style={styles.tableCell}>Item Description</Text>
-                      <Text style={styles.tableCell}>Qty</Text> 
-                      <Text style={styles.tableCell}>Category</Text>
+                    {/* Table Header */}
+                    <View style={[styles.tableRow, styles.tableHeader, { minHeight: 45 }]}>
+                      <Text style={[styles.tableCell, { width: 80 }]}>Item ID</Text>
+                      <Text style={[styles.tableCell, { width: 140 }]}>Item</Text>
+                      <Text style={[styles.tableCell, { width: 160 }]}>Item Description</Text>
+                      <Text style={[styles.tableCell, { width: 70, textAlign: 'center' }]}>Qty</Text>
                     </View>
+
+                    {/* Table Rows */}
                     {selectedRequest.filteredMergedData?.map((item, idx) => (
-                      <View key={idx} style={styles.tableRow}>
-                        <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
-                        <Text style={styles.tableCell}>{item.itemName}</Text>
-                        <Text style={styles.tableCell}>{item.itemDetails}</Text>
-                        <Text style={styles.tableCell}>{item.quantity}</Text>
-                        <Text style={styles.tableCell}>{item.category}</Text>
+                      <View
+                        key={idx}
+                        style={[
+                          styles.tableRow,
+                          { paddingVertical: 12, minHeight: 45, backgroundColor: idx % 2 === 0 ? '#fafafa' : '#fff' }
+                        ]}
+                      >
+                        <Text style={[styles.tableCell, { width: 80 }]}>{item.itemIdFromInventory}</Text>
+                        <Text style={[styles.tableCell, { width: 140 }]}>{item.itemName}</Text>
+                        <Text style={[styles.tableCell, { width: 160 }]}>{item.itemDetails}</Text>
+                        <Text style={[styles.tableCell, { width: 70, textAlign: 'center' }]}>{item.quantity}</Text>
                       </View>
                     ))}
                   </View>

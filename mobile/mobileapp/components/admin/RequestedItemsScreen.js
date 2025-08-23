@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, FlatList, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Dimensions, ActivityIndicator } from "react-native";
 import { collection, query, where, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import CameraScreen from "./CameraScreen";
@@ -20,8 +20,10 @@ const RequestedItemsScreen = ({ route, navigation }) => {
   const [requestedItems, setRequestedItems] = useState([]);
   const [showScanner, setShowScanner] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+  setLoading(true);
   const todayDate = getTodayDate();
   const q = query(collection(db, "borrowcatalog"), where("dateRequired", "==", todayDate));
 
@@ -56,6 +58,10 @@ const RequestedItemsScreen = ({ route, navigation }) => {
     });
 
     setRequestedItems(itemsData);
+    setLoading(false);
+  }, (error) => {
+    console.error('Error fetching requested items:', error);
+    setLoading(false);
   });
 
   return () => unsubscribe(); // Cleanup
@@ -89,35 +95,54 @@ const RequestedItemsScreen = ({ route, navigation }) => {
           />
         ) : (
         <>
-              <View style={styles.inventoryStocksHeader} onLayout={handleHeaderLayout}>
-          <TouchableOpacity onPress={() => navigation.navigate('RequestorListScreen')} style={styles.backButton}>
-                          <Icon name="keyboard-backspace" size={28} color="black" />
-                        </TouchableOpacity>
+          <View 
+            style={[styles.inventoryStocksHeader, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]} 
+            onLayout={handleHeaderLayout}
+          >
+            <TouchableOpacity onPress={() => navigation.navigate('RequestorListScreen')} style={styles.backButton}>
+              <Icon name="keyboard-backspace" size={28} color="black" />
+            </TouchableOpacity>
 
-        <View>
-          <Text style={{textAlign: 'center', fontWeight: 800, fontSize: 18, color: '#395a7f'}}>Deploy/Return Items</Text>
-          <Text style={{ fontWeight: 300, fontSize: 13, textAlign: 'center'}}>Scan Item to Deploy/Return</Text>
-        </View>
+            <View style={{ flex: 1, alignItems: 'center' }}>
+              <Text style={{ textAlign: 'center', fontWeight: '800', fontSize: 18, color: '#395a7f' }}>
+                Deploy/Return Items
+              </Text>
+              <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
+                Scan Item to Deploy/Return
+              </Text>
+            </View>
 
-          <TouchableOpacity style={{padding: 2}}>
-            <Icon name="information-outline" size={24} color="#000" />
-          </TouchableOpacity>
-        </View>
+            {/* Placeholder to balance back button width */}
+            <View style={{ width: 28 }} />
+          </View>
+
           <Text style={styles.title}>Requested Items for {userName}</Text>
-          <FlatList
-            data={requestedItems}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.itemButton}
-                onPress={() => handleItemClick(item)}
-              >
-                <Text style={styles.itemText}>
-                  {item.itemName} {item.status ? `(${item.status})` : ""}
-                </Text>
-              </TouchableOpacity>
-            )}
-            keyExtractor={(item, index) => `${item.itemName}-${index}`}
-          />
+          
+          {loading ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+              <ActivityIndicator size="large" color="#395a7f" />
+              <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading requested items...</Text>
+            </View>
+          ) : requestedItems.length === 0 ? (
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+              <Text style={{ fontSize: 16, color: '#666' }}>No requested items found for today.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={requestedItems}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.itemButton}
+                  onPress={() => handleItemClick(item)}
+                >
+                  <Text style={styles.itemText}>
+                    {item.itemName} {item.status ? `(${item.status})` : ""}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              keyExtractor={(item, index) => `${item.itemName}-${index}`}
+            />
+          )}
         </>
       )}
     </View>

@@ -122,6 +122,10 @@
   text-align: right;
 }
 
+.capex-history-table {
+  padding-top: 20px;
+}
+
 .capex-history-table .ant-table-tbody > tr:nth-child(odd) > td {
   background-color: #fafafa; /* Light gray */
 }

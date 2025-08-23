@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {Layout,Input,Table,Button,Card,Modal, DatePicker,TimePicker,message,Select,Typography,Descriptions,Spin,} from "antd";
-import { PlusOutlined,DeleteOutlined,CalendarOutlined,CloseOutlined,SearchOutlined} from "@ant-design/icons";
+import { PlusOutlined,DeleteOutlined,CalendarOutlined,CloseOutlined, PlusSquareOutlined, PlusSquareFilled, FormOutlined} from "@ant-design/icons";
 import moment from "moment";
 import dayjs from 'dayjs';
 import { useLocation, useNavigate } from "react-router-dom";
@@ -96,6 +96,8 @@ const Requisition = () => {
   const [showPolicies, setShowPolicies] = useState(false)
   const [mergedData, setMergedData] = useState([]);
   const [volumeOptions, setVolumeOptions] = useState([]);
+  const [finalizeLoading, setFinalizeLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const auth = getAuth();
@@ -1006,6 +1008,7 @@ const Requisition = () => {
   // };  
 
   const finalizeRequest = async () => {
+    setFinalizeLoading(true);
     let isValid = true;
     let idsToRemove = [];
   
@@ -1316,6 +1319,8 @@ const Requisition = () => {
       } catch (error) {
 
         message.error("Failed to send requisition. Please try again.");
+      } finally {
+        setFinalizeLoading(false);
       }
     }
   };  
@@ -1561,6 +1566,75 @@ const Requisition = () => {
   };
 
   const columns = [
+    // {
+    //   title: "Item Name",
+    //   dataIndex: "selectedItemId",
+    //   key: "selectedItemId",
+    //   render: (value, record, index) => {
+    //     // Get all selected item IDs except the current row
+    //     const selectedIds = mergedData
+    //       .filter((_, i) => i !== index)
+    //       .map((row) => row.selectedItemId);
+  
+    //     return (
+    //       <Select
+    //         showSearch
+    //         placeholder="Select item"
+    //         style={{ width: 100 }}
+    //         dropdownStyle={{ width: 700 }}
+    //         optionFilterProp="label"
+    //         labelInValue
+    //         value={record.selectedItem || undefined}
+    //         onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
+    //         filterOption={(input, option) =>
+    //           option?.label?.toLowerCase().includes(input.toLowerCase())
+    //         }>
+    //         {/* Map through filtered items instead of the entire items list */}
+    //         {/* {filteredItems.map((item) => {
+    //           // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
+    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+    //           } | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
+    //           const isDisabled = selectedIds.includes(item.id);
+  
+    //           return (
+    //             <Select.Option
+    //               key={item.id}
+    //               value={item.id}
+    //               label={item.itemName}
+    //               disabled={isDisabled}
+    //             >
+    //               {label}
+    //             </Select.Option>
+    //           );
+    //         })} */}
+
+    //         {filteredItems
+    //         .filter((item) => item.status !== "out of stock" && item.status !== "in use")
+    //         .map((item) => {
+    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
+    //           } | ${item.status} | ${item.department}`;
+    //           const isDisabled = selectedIds.includes(item.id);
+
+    //           return (
+    //             <Select.Option
+    //               key={item.id}
+    //               value={item.id}
+    //               label={item.itemName}
+    //               disabled={isDisabled}
+    //             >
+    //               {label}
+    //             </Select.Option>
+    //           );
+    //         })}
+    //       </Select>
+    //     );
+    //   },
+    // },
     {
       title: "Item Name",
       dataIndex: "selectedItemId",
@@ -1570,7 +1644,7 @@ const Requisition = () => {
         const selectedIds = mergedData
           .filter((_, i) => i !== index)
           .map((row) => row.selectedItemId);
-  
+
         return (
           <Select
             showSearch
@@ -1580,52 +1654,39 @@ const Requisition = () => {
             optionFilterProp="label"
             labelInValue
             value={record.selectedItem || undefined}
-            onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
+            onChange={(selected) => handleItemSelect(selected, index)}
             filterOption={(input, option) =>
               option?.label?.toLowerCase().includes(input.toLowerCase())
-            }>
-            {/* Map through filtered items instead of the entire items list */}
-            {/* {filteredItems.map((item) => {
-              // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
-              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-              } | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-              const isDisabled = selectedIds.includes(item.id);
-  
-              return (
-                <Select.Option
-                  key={item.id}
-                  value={item.id}
-                  label={item.itemName}
-                  disabled={isDisabled}
-                >
-                  {label}
-                </Select.Option>
-              );
-            })} */}
-
+            }
+          >
             {filteredItems
-            .filter((item) => item.status !== "out of stock" && item.status !== "in use")
-            .map((item) => {
-              const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-                ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-              } | ${item.status} | ${item.department}`;
-              const isDisabled = selectedIds.includes(item.id);
+              .filter(
+                (item) => item.status !== "out of stock" && item.status !== "in use"
+              )
+              .sort((a, b) =>
+                a.itemName.localeCompare(b.itemName, undefined, { sensitivity: "base" })
+              )
+              .map((item) => {
+                const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
+                  ["Chemical", "Reagent"].includes(item.category) && item.unit
+                    ? ` ${item.unit}`
+                    : ""
+                } | ${item.status} | ${item.department}`;
+                // const isDisabled = selectedIds.includes(item.id);
 
-              return (
-                <Select.Option
-                  key={item.id}
-                  value={item.id}
-                  label={item.itemName}
-                  disabled={isDisabled}
-                >
-                  {label}
-                </Select.Option>
-              );
-            })}
+                const isDisabled = selectedIds.includes(item.id) || item.quantity === 0;
+
+                return (
+                  <Select.Option
+                    key={item.id}
+                    value={item.id}
+                    label={item.itemName}
+                    disabled={isDisabled}
+                  >
+                    {label}
+                  </Select.Option>
+                );
+              })}
           </Select>
         );
       },
@@ -1903,6 +1964,7 @@ const Requisition = () => {
     }, []);
   
     const handleCancelRequest = async () => {
+      setCancelLoading(true);
       try {
         const userId = localStorage.getItem("userId");
     
@@ -1952,10 +2014,12 @@ const Requisition = () => {
         setViewDetailsModalVisible(false);
         fetchRequests();
   
-      } catch (err) {
-  
+            } catch (err) {
+
         setNotificationMessage("Failed to cancel the request.");
         setNotificationVisible(true);
+      } finally {
+        setCancelLoading(false);
       }
     };
   
@@ -2137,12 +2201,24 @@ const Requisition = () => {
   return (
 
     
-    <Layout style={{ minHeight: "100vh" }}>
-      <Layout className="site-layout">
+    <Layout style={{ minHeight: "100vh", height: 'auto'}}>
+      <Layout className="site-layout-req" style={{minHeight: '120vh'}}>
         
     <div className="page-sections" style={{ display: "flex", flexDirection: "column", gap: "0", padding: "24px",height:"100vh" }}>
 
          <div className="section requisition-form">
+          <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
+          <PlusSquareFilled style={{fontSize: 25, color: '#1e7898'}}/>
+          <h1 style={{margin: 0, padding: 0, color: '#1e7898'}}>Add items to your list</h1>
+          </div>
+
+          <ul style={{marginTop: 10, fontSize: 16, fontWeight: 400, padding: 15, marginLeft: 20}}>
+            <li style={{margin: 5}}>Click the text field under the item name and search for the item you need.</li>
+            <li style={{margin: 5}}>In the quantity column, specify the amount you need.</li>
+            <li style={{margin: 5}}>Click "Add Item Row" to add another item.</li>
+            <li style={{margin: 5}}>Once all items are added, proceed to fill out the form below.</li>
+          </ul>
+
           <div className="request-details">
   <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>
                 {/* Category Dropdown */}
@@ -2202,7 +2278,7 @@ const Requisition = () => {
                   </select>
                 </div>
 
-                <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
+                <div style={{ overflow: "auto", marginBottom: 50}}>
                   <Table
                     className="requisition-table"
                     dataSource={mergedData}
@@ -2219,25 +2295,17 @@ const Requisition = () => {
                       Add Item Row
                     </Button>
 
-                    <Button 
-                      type="primary"
-                      className="finalize-btn"
-                      disabled={!isFormValid}
-                      onClick={async () => {
-                        const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
-
-                        if (hasConflict) {
-                          setNotificationMessage("This room is already booked for the selected date and time.");
-                          setIsNotificationVisible(true);
-                          return;
-                        }
-                        setIsFinalizeModalVisible(true);
-                        
-                      }}
-                    >
-                      Finalize
-                    </Button>
                 </div>
+
+         
+          <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 50}}>
+          <FormOutlined style={{fontSize: 25, color: '#1e7898'}}/>
+          <div style={{display: 'flex', flexDirection: 'column', gap: 5}}>
+          <h1 style={{margin: 0, padding: 0, color: '#1e7898'}}>Requsition Form</h1>
+          <p style={{padding: 0 , margin: 0, fontSize: 15}}>Kindly complete and submit the form to process the requisition.</p>
+          </div>
+          </div>
+          
             
             <div className="whole-section" >
               <div className="left-section">
@@ -2248,7 +2316,15 @@ const Requisition = () => {
                   <DatePicker
                     value={dateRequired ? dayjs(dateRequired, "YYYY-MM-DD") : null}
                     onChange={(date, dateString) => setDateRequired(dateString)}
-                    disabledDate={(current) => current && current < moment().startOf("day")}
+                    disabledDate={(current) => {
+                      const today = moment().startOf('day');
+                      const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
+                      return (
+                        current && (
+                          current < today || current > threeWeeksFromNow
+                        )
+                      );
+                    }}
                     style={{
                       width: "100%",
                       marginTop: "8px",
@@ -2262,7 +2338,7 @@ const Requisition = () => {
                   )}
                 </div>
 
-                                  <div className="program-container">
+                  <div className="program-container">
                     <strong>Program:</strong>
                     <select
                       value={program}
@@ -2296,8 +2372,8 @@ const Requisition = () => {
                     <strong>Time Needed:</strong>
                     <div style={{ display: "flex", gap: "10px", marginTop: "8px" }}>
                       <TimePicker
-                      minuteStep={10}
-                      value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
+                        minuteStep={10}
+                        value={timeFrom ? dayjs(timeFrom, "HH:mm") : null}
                         placeholder="From"
                         onChange={(time, timeString) => {
                           setTimeFrom(timeString);
@@ -2306,26 +2382,32 @@ const Requisition = () => {
                         format="HH:mm"
                         use12Hours={false}
                         style={{ width: "50%" }}
+                        hideDisabledOptions
+                        disabledHours={() => {
+                          // hide hours outside 7–21
+                          return [...Array(24).keys()].filter(h => h < 7 || h > 21);
+                        }}
                       />
 
                       <TimePicker
-                      minuteStep={10}
+                        minuteStep={10}
                         value={timeTo ? dayjs(timeTo, "HH:mm") : null}
                         placeholder="To"
                         onChange={(time, timeString) => setTimeTo(timeString)}
                         format="HH:mm"
                         use12Hours={false}
                         disabled={!timeFrom}
-                        style={{ width: "50%", padding: 8}}
+                        style={{ width: "50%", padding: 8 }}
+                        hideDisabledOptions
                         disabledHours={() => {
                           if (!timeFrom) return [];
                           const [startHour] = timeFrom.split(":").map(Number);
-                          return Array.from({ length: startHour }, (_, i) => i);
+                          // hide hours before startHour and outside 7–21
+                          return [...Array(24).keys()].filter(h => h < Math.max(7, startHour) || h > 21);
                         }}
                         disabledMinutes={(selectedHour) => {
                           if (!timeFrom) return [];
                           const [startHour, startMinute] = timeFrom.split(":").map(Number);
-
                           if (selectedHour === startHour) {
                             return Array.from({ length: startMinute }, (_, i) => i);
                           }
@@ -2471,6 +2553,7 @@ const Requisition = () => {
             </div>
             
               <div className="reason-container">
+                <div style={{display: 'flex', flexDirection: 'column', gap: 10}}>
                 <strong style={{marginBottom: '5px'}}>Note (Optional):</strong>
                 <Input.TextArea
                   rows={3}
@@ -2482,6 +2565,26 @@ const Requisition = () => {
                    onChange={(e) => setReason(sanitizeInput(e.target.value))}
                   placeholder="Leave a note for the custodian"
                 />
+                </div>
+
+                    <Button 
+                      type="primary"
+                      className="finalize-btn"
+                      disabled={!isFormValid}
+                      onClick={async () => {
+                        const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
+
+                        if (hasConflict) {
+                          setNotificationMessage("This room is already booked for the selected date and time.");
+                          setIsNotificationVisible(true);
+                          return;
+                        }
+                        setIsFinalizeModalVisible(true);
+                        
+                      }}
+                    >
+                      Finalize
+                    </Button>
               </div>
             </div>
           </div>
@@ -2534,6 +2637,8 @@ const Requisition = () => {
             setIsFinalizeModalVisible(false);
           }}
           onCancel={() => setIsFinalizeModalVisible(false)}
+          loading={finalizeLoading}
+          disabled={cancelLoading}
           dateRequired={dateRequired}
           timeFrom={timeFrom}
           timeTo={timeTo}
@@ -2620,6 +2725,7 @@ const Requisition = () => {
               onOk={handleCancelRequest}
               okText="Yes, Cancel"
               cancelText="No"
+              okButtonProps={{ loading: cancelLoading, disabled: finalizeLoading }}
             >
               <p>Are you sure you want to cancel this request?</p>
             </Modal>

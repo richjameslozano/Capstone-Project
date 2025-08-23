@@ -370,4 +370,30 @@ tableCell2: {
   color: '#333',
 },
 
+btnContainer:{
+  display:'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  borderRadius: 5,
+  backgroundColor: 'white'
+},
+
+timelineBtn:{
+  padding: 10,
+  backgroundColor: 'white',
+  width: '25%',
+  alignItems: 'center'
+},
+activeBtn: {
+    borderBottomWidth: 2,
+    borderBottomColor: '#165a72', // Change color for active button
+    backgroundColor: '#e9f5f9',
+  },
+
+timeText:{
+  fontSize: 13,
+  fontWeight: 400,
+  color: '#165a72'
+},
+  
 });

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler, Alert } from 'react-native';
+import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler, Alert, Modal } from 'react-native';
 import { Input, Text, Icon } from 'react-native-elements';
 import { TextInput, Card, HelperText, Menu, Provider, Button, Checkbox  } from 'react-native-paper';
 import { useAuth } from '../components/contexts/AuthContext';
@@ -15,6 +15,7 @@ import {Animated} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { registerForPushNotificationsAsync } from '../utils/RegisterPushToken';
+import { color } from 'react-native-elements/dist/helpers';
 
 export default function LoginScreen({navigation}) {
   const [showPassword, setShowPassword] = useState(false);
@@ -25,6 +26,7 @@ export default function LoginScreen({navigation}) {
   const [signUpPassword, setSignUpPassword] = useState('');
   const [name, setName] = useState('');
   const [error, setError] = useState('');
+  const [loginError, setLoginError] = useState('');
   const [loading, setLoading] = useState(false);
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const [isForgotPasswordVisible, setForgotPasswordVisible] = useState(false);
@@ -48,6 +50,8 @@ export default function LoginScreen({navigation}) {
   const employeeIDBorderAnim = useRef(new Animated.Value(0)).current;
   const passwordBorderAnim = useRef(new Animated.Value(0)).current;
   const confirmPasswordBorderAnim = useRef(new Animated.Value(0)).current;
+  const [jobTitleError, setJobTitleError] = useState('');
+  const [departmentError, setDepartmentError] = useState('');
 
   const [focusStates, setFocusStates] = useState({
   name: false,
@@ -74,27 +78,78 @@ useEffect(() => {
   return () => unsubscribe();
 }, []);
 
+// useEffect(() => {
+//   if (!jobTitle) {
+//     setDeptOptions([]);
+//     return;
+//   }
+
+//   if (jobTitle === "Faculty") {
+//     setDeptOptions(departmentsAll); 
+
+//   } else if (jobTitle === "Program Chair") {
+//     setDeptOptions(departmentsAll.filter((dept) => dept !== "SHS"));
+
+//   } else if (jobTitle === "Dean") {
+//     setDeptOptions(["SAH", "SAS", "SOO", "SOD"]); 
+    
+//   } else {
+//     setDeptOptions([]); // default
+//   }
+
+//   setDepartment(""); 
+// }, [jobTitle, departmentsAll]);
+
 useEffect(() => {
   if (!jobTitle) {
     setDeptOptions([]);
+    setDepartment("");
     return;
   }
 
   if (jobTitle === "Faculty") {
-    setDeptOptions(departmentsAll); 
-
+    setDeptOptions(departmentsAll);
+    setDepartment("");
+    
   } else if (jobTitle === "Program Chair") {
     setDeptOptions(departmentsAll.filter((dept) => dept !== "SHS"));
+    setDepartment("");
 
   } else if (jobTitle === "Dean") {
-    setDeptOptions(["SAH", "SAS", "SOO", "SOD"]); 
-    
+    setDeptOptions(["SAH", "SAS", "SOO", "SOD"]);
+    setDepartment("");
+
+  } else if (jobTitle === "Laboratory Custodian") {
+    setDeptOptions(["SAH"]);
+    setDepartment("SAH");
+
   } else {
-    setDeptOptions([]); // default
+    setDeptOptions([]);
+    setDepartment("");
+  }
+}, [jobTitle, departmentsAll]);
+
+const validateFields = () => {
+  let valid = true;
+
+  if (!jobTitle) {
+    setJobTitleError('Job Title is required.');
+    valid = false;
+
+  } else {
+    setJobTitleError('');
   }
 
-  setDepartment(""); 
-}, [jobTitle, departmentsAll]);
+  if (!department) {
+    setDepartmentError('Department is required.');
+    valid = false;
+
+  } else {
+    setDepartmentError('');
+  }
+
+  return valid;
+};
 
 const handleFocus = (field) => {
   setFocusStates((prev) => ({ ...prev, [field]: true }));
@@ -158,11 +213,11 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
   const handleLogin = async () => {
     
       if (!email || !password) {
-        setError('Please enter both email and password');
+        setLoginError('Please enter both email and password');
         return;
       }
     
-      setError('');
+      setLoginError('');
       setLoading(true);
     
       try {
@@ -191,13 +246,13 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         }
     
         if (!userData) {
-          setError("User not found. Please contact admin.");
+          setLoginError("User not found. Please contact admin.");
           setLoading(false);
           return;
         }
     
         if (userData.disabled) {
-          setError("Your account has been disabled.");
+          setLoginError("Your account has been disabled.");
           await signOut(auth);
           setLoading(false);
           return;
@@ -205,7 +260,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
     
         // If password not set yet (new user)
         if (!isSuperAdmin && !userData.uid) {
-          setError("Password not set. Please login through website first.");
+          setLoginError("Password not set. Please login through website first.");
           setLoading(false);
           return;
         }
@@ -257,7 +312,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
             // }
             
-            setError(`Invalid password.`);
+            setLoginError(`Invalid password.`);
             setLoading(false);
             return;
           }
@@ -289,7 +344,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
             if (!refreshedUser || !refreshedUser.emailVerified) {
               await signOut(auth);
-              setError("Please verify your email before logging in.");
+              setLoginError("Please verify your email before logging in.");
               setLoading(false);
               return;
             }
@@ -307,20 +362,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               timestamp: serverTimestamp(),
             });
 
-            // try {
-            //   const token = await registerForPushNotificationsAsync(userDoc.id);
-            //   if (token) {
-            //     console.log("✅ Push token registered and saved.");
 
-            //   } else {
-            //     console.log("⚠️ Push token registration failed or permission denied.");
-            //   }
-
-            // } catch (err) {
-            //   console.error("🔥 Push token registration crashed:", err.message);
-            // }
-
-            // ✅ Register for push notifications ONCE
             try {
               const token = await registerForPushNotificationsAsync(userDoc.id, role); // ⬅️ Pass role here
               if (token) {
@@ -369,7 +411,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 break;
   
               default:
-                setError("Unknown role. Contact admin.");
+                setLoginError("Unknown role. Contact admin.");
             }
     
           } catch (authError) {
@@ -391,7 +433,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
             // }
     
-            setError(`Invalid password.`);
+            setLoginError(`Invalid password.`);
             setLoading(false);
             return;
           }
@@ -399,7 +441,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
     
       } catch (error) {
         console.error("Login error:", error);
-        setError("Unexpected error. Try again.");
+        setLoginError("Unexpected error. Try again.");
   
       } finally {
         setLoading(false);
@@ -416,7 +458,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           body: JSON.stringify({
             to: email.trim().toLowerCase(),
             subject: 'Account Registration - Pending Approval',
-            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval from the ITSO.\n\nRegards,\nNU MOA NULS Team`,
+            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval.\n\nRegards,\nNU MOA NULS Team`,
             html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the NULS.</p><p>Regards,<br>NU MOA NULS Team</p>`,
           }),
         });
@@ -451,7 +493,20 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setLoading(false);
           return;
         }
-      
+
+        // Step 0: Validate required fields
+        if (!jobTitle) {
+          setError("Job Title is required.");
+          setLoading(false);
+          return;
+        }
+
+        if (!department) {
+          setError("Department is required.");
+          setLoading(false);
+          return;
+        }
+              
         // Step 2: Password match check
         // if (password !== confirmPassword) {
         //   setError("Passwords do not match.");
@@ -547,9 +602,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
           sendEmail(email, name);      
       
-          setModalMessage("Successfully Registered! Please check your email. Your account is pending ITSO approval.");
-          setIsModalVisible(true);
-      
           // Reset state variables
           setName("");
           setSignUpEmail("");
@@ -560,7 +612,10 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setDepartment("");
           setError("");
 
-          Alert.alert("Sign Up Succesfull!");
+          setModalMessage("Successfully Registered! Please check your junk email. Your account is pending approval.");
+          setIsModalVisible(true);
+
+          // Alert.alert("Sign Up Succesfull!");
       
         } catch (error) {
           console.error("Sign up error:", error.message);
@@ -589,27 +644,26 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
       {!isLoginSignup && (
         <View style={styles.inner}>
           <View style={styles.header}>
-            <Image source={require('./images/logo1.png')} style={{height: '45%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
+            <Image source={require('./images/NULS_LOGO.png')} style={{height: '45%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
             <Text style={styles.headerTitle}>Hello!</Text>
             <Text style={styles.subHeader}>Welcome to NU MOA Laboratory System</Text>
 
              <View style={styles.buttonContainer}>
               <Text style={{color: 'gray', marginTop: -30}}>Sign in to continue</Text>
-          <TouchableOpacity style={{width: '100%',backgroundColor: '#395a7f', justifyContent: 'center', borderRadius: 30, padding: 10, paddingVertical: 13}}
+          <TouchableOpacity style={{width: '100%',backgroundColor: '#134b5f', justifyContent: 'center', borderRadius: 30, padding: 10, paddingVertical: 13}}
             onPress={()=> setIsLoginSignup(true)}
             >
             <Text style={{textAlign: 'center', color: 'white', fontSize: 18, fontWeight: 700}}>Login</Text>
           </TouchableOpacity>
 
 
-          <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#395a7f'}}
+          <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#134b5f'}}
           onPress={() => {setIsLoginSignup(true), setIsSignup(true)}}
           >
-            <Text style={{textAlign: 'center', color: '#395a7f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
+            <Text style={{textAlign: 'center', color: '#134b5f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
           </TouchableOpacity>
         </View>
 
-          <Text style={{position: 'absolute', bottom: 10, color: 'gray'}}>Powered by OnePixel</Text>
           </View>
            
         </View>
@@ -636,22 +690,14 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             && (
               
               <View style={[styles.inner, {padding: 20}]}>
-                <View style={{alignItems: 'center', paddingTop: 30, paddingBottom: 25, borderBottomWidth: 2, marginBottom: 25, borderColor: '#395a7f'}}>
+                <View style={{alignItems: 'center', paddingTop: 30, paddingBottom: 20, borderBottomWidth: 2, marginBottom: 25, borderColor: '#e9ecee'}}>
                   <Text style={{textAlign: 'center', color: 'black', fontSize: 28, fontWeight: 700}}>Signing Up</Text>
+                  <Text style={{color: 'gray', marginTop: 5}}>Create your own account.</Text>
                 </View>
 
                 <Text style={styles.label}>Full Name:<Text style={{color:'red'}}>*</Text></Text>
               <Animated.View style={[styles.animatedInputContainer, { borderColor: nameBorderColor, width: '100%' }]}>
-                {/* <Input
-                  placeholder="Enter Full Name"
-                  value={name}
-                  onChangeText={setName}
-                  mode="outlined"
-                  onFocus={() => handleFocus('name')}
-                onBlur={() => handleBlur('name')}
-                inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
-                inputStyle={styles.inputText}
-                /> */}
+
 
                 <Input
                   placeholder="Enter Full Name"
@@ -674,29 +720,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 
                 <Text style={styles.label}>Email:<Text style={{color:'red'}}>*</Text></Text>
               <Animated.View style={[styles.animatedInputContainer, { borderColor: emailBorderColor, width: '100%' }]}>
-                {/* <Input
-                  placeholder="Enter Email Address (NU account)"
-                  value={signUpEmail}
-                  onChangeText={(text) => {
-                    setSignUpEmail(text);
 
-                    const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
-                    const parts = text.split("@");
-                    const domain = parts.length > 1 ? parts[1] : "";
-
-                    if (!validDomains.includes(domain)) {
-                      setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
-                    } else {
-                      setEmailError('');
-                    }
-                  }}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                   onFocus={() => handleFocus('email')}
-                onBlur={() => handleBlur('email')}
-                  inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
-                inputStyle={styles.inputText}
-                /> */}
 
                 <Input
                   placeholder="Enter Email Address (NU account)"
@@ -711,6 +735,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
                     if (!validDomains.includes(domain)) {
                       setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
+                      
                     } else {
                       setEmailError("");
                     }
@@ -733,7 +758,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     )}
               </Animated.View>
 
-
+                    {error ? <Text style={styles.error}>{error}</Text> : null}
                 <Text style={styles.label}>Employee ID:<Text style={{color:'red'}}>*</Text></Text>
 
                 <Animated.View style={[styles.animatedInputContainer, { borderColor: employeeIDBorderColor, width: '100%' }]}>
@@ -759,8 +784,8 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 </Animated.View>
 
                 {/* Job Title Menu */}
-              <Text style={styles.label}>Select Job Title/Department<Text style={{color:'red'}}>*</Text></Text>
-              <View style={styles.menucontainer}>
+              <Text style={styles.label}>Select Job Title<Text style={{color:'red'}}>*</Text></Text>
+              {/* <View style={styles.menucontainer}> */}
               <Menu
                 visible={jobMenuVisible}
                 onDismiss={() => setJobMenuVisible(false)}
@@ -771,14 +796,14 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   mode="outlined"
                   onPress={() => setJobMenuVisible(true)}
                     style={{
-                    borderWidth: 2,
-                    borderColor: '#395a7f',
+                    // borderWidth: 2,
+                    // borderColor: '#395a7f',
                     borderRadius: 8,
                     marginBottom: 10,
-                    height: 50,
+                    height: 45,
                     justifyContent: 'center',
-                    backgroundColor: '#6e9fc1',
-                    maxWidth: 140
+                    backgroundColor: '#1e7898',
+           
                   }}
                   labelStyle={{
                     fontSize: 14,
@@ -803,27 +828,56 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 ))}
               </Menu>
 
+            {/* {error !== "" && (
+              <Text style={{ color: "red", marginBottom: 10, textAlign: "center" }}>
+                {error}
+              </Text>
+            )} */}
+
+              <Text style={styles.label}>Select Department:<Text style={{color:'red'}}>*</Text></Text>
               <Menu
                 visible={deptMenuVisible}
                 onDismiss={() => setDeptMenuVisible(false)}
                 anchor={
-                  <Button mode="outlined" onPress={() => setDeptMenuVisible(true)} 
-                  style={{
-                    borderWidth: 2,
-                    borderColor: '#395a7f',
-                    borderRadius: 8,
-                    marginBottom: 10,
-                    height: 50,
-                    justifyContent: 'center',
-                    backgroundColor: '#6e9fc1',
-                    maxWidth: 140
-                  }}
-                  labelStyle={{
-                    fontSize: 14,
-                    color: '#fff', // Darker text
-                  }}>
+                  // <Button mode="outlined" onPress={() => setDeptMenuVisible(true)} 
+                  // style={{
+                  //   borderRadius: 8,
+                  //   marginBottom: 10,
+                  //   height: 45,
+                  //   justifyContent: 'center',
+                  //   backgroundColor: '#1e7898',
+                
+                  // }}
+                  // labelStyle={{
+                  //   fontSize: 14,
+                  //   color: '#fff',
+                  // }}>
+                  //   {department || 'Department'}
+                  // </Button>
+
+                  <Button
+                    mode="outlined"
+                    onPress={() => {
+                      if (jobTitle !== "Lab Tech") {
+                        setDeptMenuVisible(true);
+                      }
+                    }}
+                    disabled={jobTitle === "Lab Tech"}
+                    style={{
+                      borderRadius: 8,
+                      marginBottom: 10,
+                      height: 45,
+                      justifyContent: 'center',
+                      backgroundColor: jobTitle === "Lab Tech" ? '#ccc' : '#1e7898',
+                    }}
+                    labelStyle={{
+                      fontSize: 14,
+                      color: jobTitle === "Lab Tech" ? '#666' : '#fff',
+                    }}
+                  >
                     {department || 'Department'}
                   </Button>
+
                 }
               >
                 {/* {deptOptions.map(option => (
@@ -840,12 +894,22 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   />
                 ))}
               </Menu>
-              </View>
+
+              {error !== "" && (
+                <Text style={{ color: "red", marginBottom: 10, textAlign: "center" }}>
+                  {error}
+                </Text>
+              )}
+
+
+              
+              {/* </View> */}
                 
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
                   <Checkbox
                     status={agreedToTerms ? 'checked' : 'unchecked'}
                     onPress={() => setAgreedToTerms(!agreedToTerms)}
+                    color='#1e7898'
                   />
                   <TouchableOpacity onPress={() => setTermsModalVisible(true)}>
                     <Text style={{ color: '#007BFF', textDecorationLine: 'underline' }}>
@@ -863,13 +927,12 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 </View>
 
                 <CustomButton
-                    title={isSignup ? "Sign Up" : "Login"}
-                    onPress={isSignup ? handleSignup : handleLogin}
-                    icon={isSignup ? "account-plus" : "login"}
+                    title={"Sign Up"}
+                    onPress={handleSignup}
+                    icon={"account-plus"}
                     loading={loading}
                     disabled={isSignup && !agreedToTerms}
                     style={[
-                      styles.loginButton,
                       !agreedToTerms && { backgroundColor: '#ccc' }, // Grey out when disabled
                     ]}
                     labelStyle={styles.loginButtonText}
@@ -888,7 +951,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             {!isSignup && (
                 <View style={styles.inner}>
           <View style={styles.header}>
-            <Image source={require('./images/login_pic.png')} style={{height: '30%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
+            <Image source={require('./images/NULS_Favicon.png')} style={{height: '30%', width: '100%',marginBottom: 10}} resizeMode='contain'/>
             <Text style={styles.headerTitle}>Login</Text>
             <Text style={styles.subHeader}>Welcome to NU MOA Laboratory System</Text>
             {/* <Text style={{alignSelf: 'flex-start', marginLeft: 10, color: 'gray', marginBottom: 5}}>Login to your account</Text> */}
@@ -920,25 +983,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             </Animated.View>
 
             <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%'}]}>
-              {/* <Input
-                placeholder="Password"
-                value={password}
-                onChangeText={setPassword}
-                onFocus={() => handleFocus('password')}
-                onBlur={() => handleBlur('password')}
-                secureTextEntry={!showPassword}
-                inputContainerStyle={styles.inputContainer}
-                inputStyle={styles.inputText}
-                leftIcon={{ type: 'material', name: 'lock', color: '#9CA3AF' }}
-                rightIcon={
-                  <Icon
-                    type="material"
-                    name={showPassword ? 'visibility' : 'visibility-off'}
-                    color="#9CA3AF"
-                    onPress={() => setShowPassword(!showPassword)}
-                  />
-                }
-              /> */}
 
               <Input
                 placeholder="Password"
@@ -961,7 +1005,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               />
             </Animated.View>
 
-            {error ? <Text style={styles.error}>{error}</Text> : null}
+            {loginError ? <Text style={styles.error}>{loginError}</Text> : null}
 
                 <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
                 <Text style={styles.forgotPassword}>Forgot Password?</Text>
@@ -1001,6 +1045,21 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
             visible={isForgotPasswordVisible}
             onClose={() => setForgotPasswordVisible(false)}
           />
+
+          <Modal
+            visible={isModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setIsModalVisible(false)}
+          >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+              <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '80%' }}>
+                <Text>{modalMessage}</Text>
+                <Button onPress={() => setIsModalVisible(false)}>OK</Button>
+              </View>
+            </View>
+          </Modal>
+
           
         </KeyboardAwareScrollView>
         </KeyboardAvoidingView>
