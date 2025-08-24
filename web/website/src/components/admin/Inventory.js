@@ -1440,11 +1440,9 @@ const handleCategoryChange = (value) => {
       const flattenedData = filteredData.map((item) => ({
         ItemID: item.itemId || "",
         ItemName: item.itemName || "",
-        ItemDetails: item.itemDetails || "",
         Category: item.category || "",
         Department: item.department || "",
         Quantity: item.quantity?.toString() || "0", 
-        Status: item.status || "",
         Condition: item.condition
           ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
           : "",
