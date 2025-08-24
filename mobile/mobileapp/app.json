@@ -18,7 +18,9 @@
       "deploymentTarget": "15.1",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -31,11 +33,11 @@
     "web": {
       "favicon": "./components/images/NULS_Favicon.png"
     },
+    "owner": "blynsu",
     "extra": {
       "eas": {
-        "projectId": "6035ab36-a335-4e7e-81ab-0810d12ccfdd"
+        "projectId": "ab29db21-d917-4e43-89ae-1c8e875dea34"
       }
-    },
-    "owner": "bellrinsu"
+    }
   }
 }
