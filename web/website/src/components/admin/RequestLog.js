@@ -36,6 +36,7 @@ const RequestLog = () => {
         r.onerror = reject;
         r.readAsDataURL(blob);
       });
+
     } catch {
       return "";
     }
@@ -53,22 +54,26 @@ const RequestLog = () => {
 
 
 
-    //for name retrieval
 
-    useEffect(() => {
-  const auth = getAuth();
-  const user = auth.currentUser;
-  if (user) {
-    const userRef = doc(db, "accounts", user.uid);
-    getDoc(userRef).then((snap) => {
-      if (snap.exists()) {
-        setGeneratedBy(snap.data().name || "Unknown User");
-      } else {
-        setGeneratedBy(user.email || "Unknown User");
-      }
-    });
-  }
-}, []);
+  useEffect(() => {
+    const auth = getAuth();
+    const user = auth.currentUser;
+    const storedName = localStorage.getItem("userName");
+
+    if (user) {
+      const userRef = doc(db, "accounts", user.uid);
+      getDoc(userRef).then((snap) => {
+        if (snap.exists()) {
+          const data = snap.data();
+          setGeneratedBy(
+            storedName || data.username || user.email || "Unknown User");
+
+        } else {
+          setGeneratedBy(storedName || user.email || "Unknown User");
+        }
+      });
+    }
+  }, []);
 
   // -------- Fetch request logs --------
   useEffect(() => {
@@ -91,6 +96,7 @@ const RequestLog = () => {
                 parsedRawTimestamp = rawTimestamp.toDate().toLocaleString("en-PH", {
                   timeZone: "Asia/Manila",
                 });
+
               } catch {}
             }
 
@@ -99,6 +105,7 @@ const RequestLog = () => {
                 parsedTimestamp = timestamp.toDate().toLocaleString("en-PH", {
                   timeZone: "Asia/Manila",
                 });
+
               } catch {}
             }
 
@@ -136,6 +143,7 @@ const RequestLog = () => {
         });
 
         return () => unsubscribe();
+
       } catch {}
     };
 
