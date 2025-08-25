@@ -252,10 +252,10 @@ const CustomAdminDrawerContent = ({ navigation }) => {
         <Title style={styles.titleStyle}>Request Log</Title>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
+      {/* <TouchableOpacity onPress={() => navigation.navigate('BorrowCatalogScreen')} style={styles.drawerItem}>
         <Icon2 name="hand-extended-outline" size={25} style={styles.icon} />
         <Title style={styles.titleStyle}>Borrow Catalog</Title>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
       <TouchableOpacity onPress={() => navigation.navigate('CapexRequestListScreen')} style={styles.drawerItem}>
         <Icon2 name="cash-multiple" size={25} style={styles.icon} />
@@ -423,7 +423,7 @@ const AdminDrawer = () => {
       <Drawer.Screen name="OrdersScreen" component={OrdersScreen} />
       <Drawer.Screen name="ActivityLogScreen" component={ActivityLogScreen} />
       <Drawer.Screen name="CalendarScreen" component={CalendarScreen} />
-      <Drawer.Screen name="BorrowCatalogScreen" component={BorrowCatalogScreen} />
+      {/* <Drawer.Screen name="BorrowCatalogScreen" component={BorrowCatalogScreen} /> */}
       <Drawer.Screen name="CapexRequestListScreen" component={CapexRequestList} />
       <Drawer.Screen name="ProfileScreen" component={ProfileScreen} />
       <Drawer.Screen name="RequestorListScreen" component={RequestorListScreen} />
