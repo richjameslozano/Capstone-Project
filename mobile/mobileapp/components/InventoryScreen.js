@@ -10,6 +10,7 @@ import { useRequestList } from '../components/contexts/RequestListContext';
 import { Calendar } from 'react-native-calendars';
 import { useRequestMetadata } from './contexts/RequestMetadataContext';
 import Header from './Header';
+import IOSCompatibleDropdown from './customs/IOSCompatibleDropdown';
 
 import Icon2 from 'react-native-vector-icons/Ionicons'; 
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
@@ -57,6 +58,11 @@ export default function InventoryScreen({ navigation }) {
   const [selectedDepartment, setSelectedDepartment] = useState('All Departments');
   const [addToListLoading, setAddToListLoading] = useState({});
   const [handleNextLoading, setHandleNextLoading] = useState(false);
+  const [isProgramModalVisible, setIsProgramModalVisible] = useState(false);
+  const programOptions = ['SAH - BSMT', 'SAH - BSN', 'SHS'];
+  const [isCourseModalVisible, setIsCourseModalVisible] = useState(false);
+  const [isUsageTypeModalVisible, setIsUsageTypeModalVisible] = useState(false);
+  const usageTypeOptions = ['Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
 
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
@@ -783,75 +789,47 @@ export default function InventoryScreen({ navigation }) {
 
           <View style={styles.programSection}>
             <Text style={styles.label}>Select Program:</Text>
-            <View
-                style={[
-                  styles.programPicker,
-                  errors.program && { borderColor: 'red', borderWidth: 1 }
-                ]}
-              >
-                  <Picker
-                    selectedValue={program}
-                    onValueChange={(itemValue) => {
-                      setProgram(itemValue);
-                      setMetadata((prevMetadata) => ({ ...prevMetadata, program: itemValue }));
-                    }}
-                    style={styles.programItem}
-                    dropdownIconColor= "#6e9fc1"
-                    dropdownIconRippleColor='white'
-                  >
-                    <Picker.Item label="Program" value=""  style={{fontSize: 15}}/>
-                    <Picker.Item label="SAH - BSMT" value="SAH - BSMT" style={{fontSize: 15}} />
-                    <Picker.Item label="SAH - BSN" value="SAH - BSN"  style={{fontSize: 15}}/>
-                    <Picker.Item label="SHS" value="SHS"  style={{fontSize: 15}}/>
-                  </Picker>
-
-                  <Icon2
-                    name="chevron-down"
-                    size={20}
-                    color="white"
-                    style={styles.arrowIcon}
-                    pointerEvents="none"
-                  />
-                </View>
-          </View>
-
-          <View style={styles.programSection}>
-            <Text style={styles.label}>Course Code:</Text>
-            <View
-                style={[
-                  styles.programPicker,
-                  errors.course && { borderColor: 'red', borderWidth: 1 }
-                ]}
-              >
-            <Picker
-              selectedValue={course}
-              onValueChange={(itemValue) => {
-                setCourse(itemValue);
-                setMetadata((prevMetadata) => ({ ...prevMetadata, course: itemValue }));
-                // setDescription(courseMap[itemValue]);
-                setCourseDescription(courseMap[itemValue]); 
-              }}
-              style={{
-                color: 'white', // White when selected, black when placeholder
-              }}
+            <TouchableOpacity
+              style={[
+                styles.programPicker,
+                errors.program && { borderColor: 'red', borderWidth: 1 }
+              ]}
+              onPress={() => setIsProgramModalVisible(true)}
             >
-              <Picker.Item label="Select Course Code" value="" color="white" />
-
-              {Object.entries(courseMap).map(([code, desc]) => (
-                <Picker.Item key={code} label={code} value={code} />
-              ))}
-            </Picker>
-
-
-                  <Icon2
-                    name="chevron-down"
-                    size={20}
-                    color="white"
-                    style={styles.arrowIcon}
-                    pointerEvents="none"
-                  />
-                </View>
+              <Text style={styles.programItem}>
+                {program || 'Program'}
+              </Text>
+              <Icon2
+                name="chevron-down"
+                size={20}
+                color="white"
+                style={styles.arrowIcon}
+                pointerEvents="none"
+              />
+            </TouchableOpacity>
           </View>
+
+                     <View style={styles.programSection}>
+             <Text style={styles.label}>Course Code:</Text>
+             <TouchableOpacity
+               style={[
+                 styles.programPicker,
+                 errors.course && { borderColor: 'red', borderWidth: 1 }
+               ]}
+               onPress={() => setIsCourseModalVisible(true)}
+             >
+               <Text style={styles.programItem}>
+                 {course || 'Select Course Code'}
+               </Text>
+               <Icon2
+                 name="chevron-down"
+                 size={20}
+                 color="white"
+                 style={styles.arrowIcon}
+                 pointerEvents="none"
+               />
+             </TouchableOpacity>
+           </View>
 
           <View style={styles.programSection}>
               <Text style={styles.label}>Course Description:</Text>
@@ -997,59 +975,42 @@ export default function InventoryScreen({ navigation }) {
                 />
           </View>
 
-          <View style={styles.usageSection}>
-                <Text style={styles.label}>Usage Type</Text>
-                <View
-                style={[
-                  styles.usagePicker,
-                  errors.usageType && { borderColor: 'red', borderWidth: 1 }
-                ]}
-              >
-              <Picker
-                selectedValue={selectedUsageTypeInput}
-                onValueChange={(itemValue) => {
-                  setSelectedUsageTypeInput(itemValue);
-                  setMetadata((prevMetadata) => ({
-                    ...prevMetadata,
-                    usageType: itemValue === 'Others' ? '' : itemValue, // only save if not Others
-                    usageTypeOther: '',
-                  }));
-                }}
-                dropdownIconColor="#6e9fc1"
-                dropdownIconRippleColor="white"
-                style={styles.programItem}
-              >
-                <Picker.Item label="Select" value="" style={{ fontSize: 15 }} />
-                <Picker.Item label="Laboratory Experiment" value="Laboratory Experiment" style={{ fontSize: 15 }} />
-                <Picker.Item label="Research" value="Research" />
-                <Picker.Item label="Community Extension" value="Community Extension" style={{ fontSize: 15 }} />
-                <Picker.Item label="Others" value="Others" style={{ fontSize: 15 }} />
-              </Picker>
+                     <View style={styles.usageSection}>
+                 <Text style={styles.label}>Usage Type</Text>
+                 <TouchableOpacity
+                   style={[
+                     styles.usagePicker,
+                     errors.usageType && { borderColor: 'red', borderWidth: 1 }
+                   ]}
+                   onPress={() => setIsUsageTypeModalVisible(true)}
+                 >
+                   <Text style={styles.programItem}>
+                     {selectedUsageTypeInput || 'Select'}
+                   </Text>
+                   <Icon2
+                     name="chevron-down"
+                     size={20}
+                     color="white"
+                     style={styles.arrowIcon}
+                     pointerEvents="none"
+                   />
+                 </TouchableOpacity>
 
-              {selectedUsageTypeInput === 'Others' && (
-                <TextInput
-                  placeholder="Please specify"
-                  style={[styles.otherInput, errors.usageType && { borderColor: 'red', borderWidth: 1 }]}
-                  value={metadata?.usageTypeOther || ''}
-                  onChangeText={(text) => {
-                    console.log('Updating usageTypeOther:', text);
-                    setMetadata((prevMetadata) => ({
-                      ...prevMetadata,
-                      usageTypeOther: text, 
-                    }));
-                  }}
-                />
-              )}
-
-          <Icon2
-                    name="chevron-down"
-                    size={20}
-                    color="white"
-                    style={styles.arrowIcon}
-                    pointerEvents="none"
-                  />
-        </View>
-          </View>
+                 {selectedUsageTypeInput === 'Others' && (
+                   <TextInput
+                     placeholder="Please specify"
+                     style={[styles.otherInput, errors.usageType && { borderColor: 'red', borderWidth: 1 }]}
+                     value={metadata?.usageTypeOther || ''}
+                     onChangeText={(text) => {
+                       console.log('Updating usageTypeOther:', text);
+                       setMetadata((prevMetadata) => ({
+                         ...prevMetadata,
+                         usageTypeOther: text, 
+                       }));
+                     }}
+                   />
+                 )}
+           </View>
       </View>
 
         <View style={styles.noteSection}>
@@ -1146,7 +1107,7 @@ export default function InventoryScreen({ navigation }) {
                   >
                     <Icon name="office-building" size={20} color="#515151" />
                     <Text style={{ fontWeight: 'bold', color: '#515151' }}>
-                      {selectedDepartment || 'All Departments'}
+                      {selectedDepartment || 'All Department'}
                     </Text>
                   </TouchableOpacity>
 
@@ -1245,32 +1206,79 @@ export default function InventoryScreen({ navigation }) {
         )}
 </KeyboardAvoidingView>
 
-      <Modal visible={isDepartmentModalVisible} transparent animationType="slide">
-        <TouchableWithoutFeedback onPress={() => setIsDepartmentModalVisible(false)}>
-          <View style={{ flex: 1, backgroundColor: '#000000aa', justifyContent: 'center' }}>
-            {/* Prevent closing modal when tapping inside this View */}
-            <TouchableWithoutFeedback onPress={() => {}}>
-              <View style={{ backgroundColor: '#fff', margin: 20, borderRadius: 10, padding: 20 }}>
-                <FlatList
-                  data={departmentsAll}
-                  keyExtractor={(item) => item.id}
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={{ padding: 10 }}
-                      onPress={() => {
-                        setSelectedDepartment(item.name);
-                        setIsDepartmentModalVisible(false);
-                      }}
-                    >
-                      <Text>{item.name}</Text>
-                    </TouchableOpacity>
-                  )}
-                />
-              </View>
-            </TouchableWithoutFeedback>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
+             <Modal visible={isDepartmentModalVisible} transparent animationType="slide">
+         <TouchableWithoutFeedback onPress={() => setIsDepartmentModalVisible(false)}>
+           <View style={{ flex: 1, backgroundColor: '#000000aa', justifyContent: 'center' }}>
+             {/* Prevent closing modal when tapping inside this View */}
+             <TouchableWithoutFeedback onPress={() => {}}>
+               <View style={{ backgroundColor: '#fff', margin: 20, borderRadius: 10, padding: 20 }}>
+                 <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+                   Select Department
+                 </Text>
+                 
+                 {/* All option */}
+                 <TouchableOpacity
+                   style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                   onPress={() => {
+                     setSelectedDepartment('All Departments');
+                     setIsDepartmentModalVisible(false);
+                   }}
+                 >
+                   <Text style={{ fontSize: 16 }}>All Departments</Text>
+                 </TouchableOpacity>
+                 
+                 {/* Department options */}
+                 {departmentsAll.map((item) => (
+                   <TouchableOpacity
+                     key={item.id}
+                     style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                     onPress={() => {
+                       setSelectedDepartment(item.name);
+                       setIsDepartmentModalVisible(false);
+                     }}
+                   >
+                     <Text style={{ fontSize: 16 }}>{item.name}</Text>
+                   </TouchableOpacity>
+                 ))}
+                 
+                 <TouchableOpacity
+                   onPress={() => setIsDepartmentModalVisible(false)}
+                   style={{ marginTop: 15, paddingVertical: 10 }}
+                 >
+                   <Text style={{ textAlign: 'center', color: 'red', fontSize: 16 }}>Cancel</Text>
+                 </TouchableOpacity>
+               </View>
+             </TouchableWithoutFeedback>
+           </View>
+         </TouchableWithoutFeedback>
+       </Modal>
+
+       <Modal
+         visible={isProgramModalVisible}
+         transparent={true}
+         animationType="slide"
+       >
+         <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+           <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+             {programOptions.map((option) => (
+               <TouchableOpacity
+                 key={option}
+                 style={{ paddingVertical: 10 }}
+                 onPress={() => {
+                   setProgram(option);
+                   setMetadata((prevMetadata) => ({ ...prevMetadata, program: option }));
+                   setIsProgramModalVisible(false);
+                 }}
+               >
+                 <Text style={{ fontSize: 16 }}>{option}</Text>
+               </TouchableOpacity>
+             ))}
+             <TouchableOpacity onPress={() => setIsProgramModalVisible(false)} style={{ marginTop: 10 }}>
+               <Text style={{ textAlign: 'center', color: 'red' }}>Cancel</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
+       </Modal>
 
       <Modal visible={modalVisible} transparent animationType="fade">
         <TouchableWithoutFeedback onPress={closeModal}>
@@ -1453,6 +1461,79 @@ export default function InventoryScreen({ navigation }) {
             </TouchableWithoutFeedback>
           </View>
         </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Course Selection Modal */}
+      <Modal
+        visible={isCourseModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+          <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+              Select Course Code
+            </Text>
+            {Object.entries(courseMap).map(([code, desc]) => (
+              <TouchableOpacity
+                key={code}
+                style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                onPress={() => {
+                  setCourse(code);
+                  setMetadata((prevMetadata) => ({ ...prevMetadata, course: code }));
+                  setCourseDescription(desc);
+                  setIsCourseModalVisible(false);
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>{code}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity 
+              onPress={() => setIsCourseModalVisible(false)} 
+              style={{ marginTop: 15, paddingVertical: 10 }}
+            >
+              <Text style={{ textAlign: 'center', color: 'red', fontSize: 16 }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Usage Type Selection Modal */}
+      <Modal
+        visible={isUsageTypeModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+          <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+              Select Usage Type
+            </Text>
+            {usageTypeOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                onPress={() => {
+                  setSelectedUsageTypeInput(option);
+                  setMetadata((prevMetadata) => ({
+                    ...prevMetadata,
+                    usageType: option === 'Others' ? '' : option,
+                    usageTypeOther: '',
+                  }));
+                  setIsUsageTypeModalVisible(false);
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity 
+              onPress={() => setIsUsageTypeModalVisible(false)} 
+              style={{ marginTop: 15, paddingVertical: 10 }}
+            >
+              <Text style={{ textAlign: 'center', color: 'red', fontSize: 16 }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </Modal>
     </View>
   );

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
+import Icon2 from 'react-native-vector-icons/Ionicons';
 import {
   View, Text, TouchableOpacity, Modal,
   Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, 
@@ -33,6 +34,9 @@ const ReturnItems = () => {
   const [glasswareIssues, setGlasswareIssues] = useState({});
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [isConditionModalVisible, setIsConditionModalVisible] = useState(false);
+  const [currentConditionItem, setCurrentConditionItem] = useState(null);
+  const conditionOptions = ['Good', 'Defect', 'Damage', 'Lost'];
 
   const screenHeight = Dimensions.get("window").height;
   const modalMaxHeight = screenHeight * 0.8; 
@@ -838,21 +842,22 @@ const ReturnItems = () => {
                               </View>
 
                               <View style={{ flex: 1, paddingHorizontal: 6 }}>
-                                <Picker
-                                  selectedValue={itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
-                                  style={styles.picker}
-                                  onValueChange={(value) => {
-                                    setItemConditions((prev) => ({
-                                      ...prev,
-                                      [`${item.itemIdFromInventory}-${i}`]: value,
-                                    }));
+                                <TouchableOpacity
+                                  style={[styles.picker, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 }]}
+                                  onPress={() => {
+                                    setCurrentConditionItem(`${item.itemIdFromInventory}-${i}`);
+                                    setIsConditionModalVisible(true);
                                   }}
                                 >
-                                  <Picker.Item label="Good" value="Good" />
-                                  <Picker.Item label="Defect" value="Defect" />
-                                  <Picker.Item label="Damage" value="Damage" />
-                                  <Picker.Item label="Lost" value="Lost" />
-                                </Picker>
+                                  <Text style={{ color: '#333' }}>
+                                    {itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
+                                  </Text>
+                                  <Icon2
+                                    name="chevron-down"
+                                    size={16}
+                                    color="#666"
+                                  />
+                                </TouchableOpacity>
                               </View>
                             </View>
                           ));
@@ -986,22 +991,22 @@ const ReturnItems = () => {
                                     <Text style={styles.cell}>1</Text>
 
                                     <View style={{ flex: 1, paddingHorizontal: 6 }}>
-                                      <Picker
-                                        selectedValue={itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
-                                        style={styles.picker}
-                                        onValueChange={(value) => {
-                                          setItemConditions(prev => ({
-                                            ...prev,
-                                            [`${item.itemIdFromInventory}-${i}`]: value,
-                                          }));
+                                      <TouchableOpacity
+                                        style={[styles.picker, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 }]}
+                                        onPress={() => {
+                                          setCurrentConditionItem(`${item.itemIdFromInventory}-${i}`);
+                                          setIsConditionModalVisible(true);
                                         }}
-                                        enabled={selectedRequest.status !== "Approved"} // Disable if status is Approved
                                       >
-                                        <Picker.Item label="Good" value="Good" />
-                                        <Picker.Item label="Defect" value="Defect" />
-                                        <Picker.Item label="Damage" value="Damage" />
-                                        <Picker.Item label="Lost" value="Lost" />
-                                      </Picker>
+                                        <Text style={{ color: '#333' }}>
+                                          {itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
+                                        </Text>
+                                        <Icon2
+                                          name="chevron-down"
+                                          size={16}
+                                          color="#666"
+                                        />
+                                      </TouchableOpacity>
                                     </View>
                                   </View>
                                 ));
@@ -1131,6 +1136,44 @@ const ReturnItems = () => {
                 title="Close"
                 onPress={() => setSuccessModalVisible(false)}
               />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Condition Selection Modal */}
+        <Modal
+          visible={isConditionModalVisible}
+          transparent={true}
+          animationType="slide"
+        >
+          <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+            <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+                Select Condition
+              </Text>
+              {conditionOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                  onPress={() => {
+                    if (currentConditionItem) {
+                      setItemConditions(prev => ({
+                        ...prev,
+                        [currentConditionItem]: option,
+                      }));
+                    }
+                    setIsConditionModalVisible(false);
+                  }}
+                >
+                  <Text style={{ fontSize: 16 }}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity 
+                onPress={() => setIsConditionModalVisible(false)} 
+                style={{ marginTop: 15, paddingVertical: 10 }}
+              >
+                <Text style={{ textAlign: 'center', color: 'red', fontSize: 16 }}>Cancel</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>
