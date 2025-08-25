@@ -19,6 +19,7 @@ import 'jspdf-autotable';
 import dayjs from 'dayjs';
 import StockLog from '../customs/StockLog.js'
 import axios from "axios";
+import autoTable from "jspdf-autotable";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -1439,11 +1440,9 @@ const handleCategoryChange = (value) => {
       const flattenedData = filteredData.map((item) => ({
         ItemID: item.itemId || "",
         ItemName: item.itemName || "",
-        ItemDetails: item.itemDetails || "",
         Category: item.category || "",
         Department: item.department || "",
         Quantity: item.quantity?.toString() || "0", 
-        Status: item.status || "",
         Condition: item.condition
           ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
           : "",
@@ -1469,374 +1468,220 @@ const handleCategoryChange = (value) => {
     }
   };
 
-  const generatePdfFromFilteredData = () => {
-  const doc = new jsPDF("p", "pt", "a4");
-  const margin = 40;
-  let y = margin;
-
-  // Header
-  doc.setFontSize(18);
-  doc.text("Inventory List", margin, y);
-  y += 30;
-
-  // Filter Information
-  doc.setFontSize(12);
-  doc.setFont(undefined, "bold");
-  doc.text("Filters:", margin, y);
-  doc.setFont(undefined, "normal");
-  y += 20;
-
-  // Add filter information
-  if (filterCategory) {
-    doc.text(`Category: ${filterCategory}`, margin + 20, y);
-    y += 20;
+  const loadImageAsDataURL = async (url) => {
+  try {
+    const res = await fetch(url, { cache: "force-cache" });
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return "";
   }
-  if (filterItemType) {
-    doc.text(`Item Type: ${filterItemType}`, margin + 20, y);
-    y += 20;
-  }
-  if (searchText) {
-    doc.text(`Search: ${searchText}`, margin + 20, y);
-    y += 20;
-  }
+};
 
-  // Summary Information
-  doc.setFont(undefined, "bold");
-  doc.text("Total Items:", margin, y);
-  doc.setFont(undefined, "normal");
-  doc.text(filteredData.length.toString(), margin + 80, y);
-  y += 30;
+const formatDateTimePH = (d = new Date()) =>
+  new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
 
-  // Main Table
-  const headers = [["Item ID", "Item Name", "Item Description", "Category", "Department", "Quantity", "Status", "Condition"]];
-  const data = filteredData.map(item => [
-    item.itemId || "",
-    item.itemName || "",
-    item.itemDetails || "",
-    item.category || "",
-    item.department || "",
-    item.quantity?.toString() || "0",
-    item.status || "",
-    item.condition
-      ? Object.entries(item.condition).map(([key, val]) => `${key}: ${val}`).join(", ")
-      : "",
-    item.unit || "",
-  ]);
+/**
+ * Formal, branded inventory PDF.
+ * Uses component state: filteredData, filterCategory, filterItemType, searchText
+ */
+// Landscape, auto-fit columns, no Description/Status
+// Landscape inventory PDF with per-category summary (no filter texts)
+const generatePdfFromFilteredData = async () => {
+  const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "landscape" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
 
-  doc.autoTable({
-    head: headers,
-    body: data,
+  // Layout constants
+  const marginX = 12;
+  const headerTopY = 8;       // logo y
+  const headerBottomY = 19;   // underline y (bottom of header)
+  const contentTop = headerBottomY + 5;      // safe top for content on every page
+  const footerTopY = pageHeight - 10;        // footer line y
+  const contentBottom = footerTopY - 5;      // safe bottom for content on every page
+
+  const logoDataURL = await loadImageAsDataURL("/NULS_Favicon.png");
+  const printedOn = formatDateTimePH();
+
+  const drawHeader = () => {
+    if (logoDataURL) {
+      doc.addImage(logoDataURL, "PNG", marginX, headerTopY, 10, 10);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("NULS", marginX + 14, headerTopY + 7);
+    }
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text("INVENTORY LIST", pageWidth / 2, headerTopY + 7, { align: "center" });
+
+    doc.setDrawColor(180);
+    doc.setLineWidth(0.2);
+    doc.line(marginX, headerBottomY, pageWidth - marginX, headerBottomY);
+  };
+
+// Declare once near the top of your generator (outside drawFooter)
+const totalPagesExp = "{total_pages_count_string}";
+
+// Footer (called once per page, e.g. from didDrawPage)
+const drawFooter = () => {
+  const pageCurrent = doc.internal.getCurrentPageInfo().pageNumber;
+
+  doc.setDrawColor(200);
+  doc.setLineWidth(0.2);
+  doc.line(marginX, footerTopY, pageWidth - marginX, footerTopY);
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(9);
+  doc.text(`Printed on: ${printedOn}`, marginX, pageHeight - 5);
+
+  // Use the placeholder so we don’t have to redraw later
+  doc.text(
+    `Page ${pageCurrent} of ${totalPagesExp}`,
+    pageWidth - marginX,
+    pageHeight - 5,
+    { align: "right" }
+  );
+};
+
+  drawHeader();
+
+ // ---------- SUMMARY (inline) ----------
+const dataArr = Array.isArray(filteredData) ? filteredData : [];
+const totalItems = dataArr.length;
+
+// Build category counts
+const catCounts = dataArr.reduce((acc, it) => {
+  const cat = (it.category || "Uncategorized").toString();
+  acc[cat] = (acc[cat] || 0) + 1;
+  return acc;
+}, {});
+
+let y = contentTop;
+doc.setFont("helvetica", "bold");
+doc.setFontSize(12);
+doc.text("Summary", marginX, y);
+y += 5;
+
+doc.setFont("helvetica", "normal");
+doc.setFontSize(10.5);
+doc.text(`Total Items: ${totalItems}`, marginX, y);
+y += 5;
+
+// Print category counts inline
+const catSummary = Object.entries(catCounts)
+  .sort(([a], [b]) => a.localeCompare(b))
+  .map(([cat, count]) => `${cat}: ${count}`)
+  .join("   "); // spaces between categories
+
+if (catSummary) {
+  doc.text(catSummary, marginX, y);
+  y += 8;
+}
+
+  // ---------- MAIN TABLE (no Description/Status) ----------
+  const head = [["Item ID", "Item Name", "Category", "Department", "Quantity", "Unit", "Condition"]];
+  const body = dataArr.map((item) => {
+    const conditionText = item?.condition
+      ? Object.entries(item.condition).map(([k, v]) => `${k}: ${v}`).join(", ")
+      : "";
+    return [
+      item.itemId || "",
+      item.itemName || "",
+      item.category || "",
+      item.department || "",
+      item.quantity?.toString?.() || "0",
+      item.unit || "",
+      conditionText,
+    ];
+  });
+
+  autoTable(doc, {
     startY: y,
-    margin: { left: margin, right: margin },
+    head,
+    body,
+    margin: { left: marginX, right: marginX, top: contentTop, bottom: pageHeight - contentBottom }, // reserve header/footer on all pages
     theme: "grid",
+    tableWidth: "auto",
+    styles: {
+      font: "helvetica",
+      fontSize: 9.8,
+      lineColor: 200,
+      lineWidth: 0.2,
+      cellPadding: 3,
+      overflow: "linebreak",   // wrap long text
+      cellWidth: "auto",       // auto-size columns to text
+      valign: "top",
+    },
     headStyles: {
       fillColor: [44, 62, 146],
-      textColor: [255, 255, 255],
+      textColor: 255,
       fontStyle: "bold",
       halign: "center",
-      fontSize: 12,
-      cellPadding: 6,
-    },
-    bodyStyles: {
-      fontSize: 11,
-      cellPadding: 5,
-    },
-    styles: {
-      lineWidth: 0.1,
-      lineColor: [200, 200, 200],
-      cellPadding: 5,
+      fontSize: 10.5,
     },
     alternateRowStyles: { fillColor: [245, 245, 245] },
+    columnStyles: {
+      0: { minCellWidth: 20 },               // Item ID
+      1: { minCellWidth: 40 },               // Item Name
+      2: { minCellWidth: 24 },               // Category
+      3: { minCellWidth: 26 },               // Department
+      4: { minCellWidth: 18, halign: "right" }, // Quantity
+      5: { minCellWidth: 18 },               // Unit
+      6: { minCellWidth: 40 },               // Condition
+    },
+    pageBreak: "auto",
+    rowPageBreak: "auto",
+    didDrawPage: () => { drawHeader(); drawFooter(); },
   });
+// Finalize total pages once, no loops, no overlapping
+if (typeof doc.putTotalPages === "function") {
+  doc.putTotalPages(totalPagesExp);
+}
 
   return doc;
 };
 
-// Save PDF
-const saveAsPdf = () => {
+
+
+const saveAsPdf = async () => {
   setPdfLoading(true);
   try {
-    const doc = generatePdfFromFilteredData();
-    if (doc) {
-      const fileName = `Inventory_List_${new Date().toISOString().split('T')[0]}.pdf`;
-      doc.save(fileName);
-    }
-  } catch (error) {
-    console.error("Error saving PDF:", error);
+    const doc = await generatePdfFromFilteredData();
+    const fileName = `Inventory_List_${new Date().toISOString().slice(0,10)}.pdf`;
+    doc.save(fileName);
+  } catch (e) {
+    console.error("Error saving PDF:", e);
   } finally {
     setPdfLoading(false);
   }
 };
 
-// Print PDF
-const printPdf = () => {
+const printPdf = async () => {
   setPrintLoading(true);
   try {
-    const doc = generatePdfFromFilteredData();
-    if (doc) {
-      doc.autoPrint();
-      window.open(doc.output("bloburl"), "_blank");
-    }
-  } catch (error) {
-    console.error("Error printing PDF:", error);
+    const doc = await generatePdfFromFilteredData();
+    doc.autoPrint();
+    window.open(doc.output("bloburl"), "_blank");
+  } catch (e) {
+    console.error("Error printing PDF:", e);
   } finally {
     setPrintLoading(false);
   }
 };
 
-  // FRONTEND
-  //  const handleAdd = async (values) => {
-  // if (!itemName || !values.department || !itemDetails) {
-  //   alert("Please fill up the form!");
-  //   return;
-  // }
 
-  // const trimmedName = itemName.trim();
-  // const normalizedInputName = trimmedName.toLowerCase();
-  // const normalizedInputDetails = itemDetails.trim().toLowerCase();
-  // const normalizedDepartment = values.department.trim().toLowerCase();
-
-  // // Find items with the same name (case-insensitive)
-  // const sameNameItems = dataSource.filter(
-  //   (item) => item.item.toLowerCase().startsWith(normalizedInputName)
-  // );
-
-  // // Check if same name AND same details AND same department already exists
-  // const exactMatch = sameNameItems.find((item) => {
-  //   const itemDetailsSafe = item.itemDetails ? item.itemDetails.trim().toLowerCase() : "";
-  //   const itemNameSafe = item.item ? item.item.toLowerCase() : "";
-  //   const itemDepartmentSafe = item.department ? item.department.trim().toLowerCase() : "";
-  //   return (
-  //     itemDetailsSafe === normalizedInputDetails &&
-  //     itemNameSafe === normalizedInputName &&
-  //     itemDepartmentSafe === normalizedDepartment
-  //   );
-  // });
-
-  // if (exactMatch) {
-  //   setNotificationMessage(
-  //     "An item with the same name, details, and department already exists in the inventory."
-  //   );
-  //   setIsNotificationVisible(true);
-  //   return;
-  // }
-
-  // const itemCategoryPrefixMap = {
-  //   Chemical: "CHEM",
-  //   Equipment: "EQP",
-  //   Reagent: "RGT",
-  //   Glasswares: "GLS",
-  //   Materials: "MAT",
-  // };
-
-  // const baseName = trimmedName.replace(/\d+$/, ''); // Remove trailing digits if any
-  // const formattedItemName = `${baseName}`;
-  // const finalItemName = sameNameItems.length > 0 ? formattedItemName : trimmedName;
-
-  // const itemCategoryPrefix = itemCategoryPrefixMap[values.category] || "UNK01";
-  // const inventoryRef = collection(db, "inventory");
-  // const itemIdQuerySnapshot = await getDocs(query(inventoryRef, where("category", "==", values.category)));
-  // const defaultCriticalDays = 7;
-  // let averageDailyUsage = 0;
-
-  // const criticalLevel = Math.ceil(averageDailyUsage * defaultCriticalDays) || 1;
-
-  // let ItemCategoryCount = itemIdQuerySnapshot.size + 1;
-  // let generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-  // let idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-
-  // // 🔁 Keep trying until we find a unique ID
-  // while (!idQuerySnapshot.empty) {
-  //   ItemCategoryCount++;
-  //   generatedItemId = `${itemCategoryPrefix}${ItemCategoryCount.toString().padStart(2, "0")}`;
-  //   idQuerySnapshot = await getDocs(query(inventoryRef, where("itemId", "==", generatedItemId)));
-  // }
-
-  // setItemId(generatedItemId);
-
- 
- 
-  //   const entryDate = values.entryDate ? values.entryDate.format("YYYY-MM-DD") : null;
-  //   const expiryDate = values.type === "Fixed"
-  //     ? null
-  //     : values.expiryDate
-  //     ? values.expiryDate.format("YYYY-MM-DD")
-  //     : null;
- 
-  //   const entryCurrentDate = new Date().toISOString().split("T")[0]; // "YYYY-MM-DD"
-  //   const timestamp = new Date();
- 
-  //   const quantityNumber = Number(values.quantity);
- 
-  //   const inventoryItem = {
-  //     itemId: generatedItemId,
-  //     // itemName,
-  //     itemName: finalItemName,
-  //     itemDetails,
-  //     entryCurrentDate,
-  //     expiryDate,
-  //     timestamp,
-  //     criticalLevel,
-  //     category: values.category,
-  //     labRoom: values.labRoom,
-  //     quantity: Number(values.quantity),
-  //     department: values.department,
-  //     type: values.type,
-  //     status: "Available",
-  //     ...(values.category === "Chemical" || values.category === "Reagent" ? { unit: values.unit } : {}),
-  //     rawTimestamp: new Date(),
- 
-  //     ...(values.category !== "Chemical" && values.category !== "Reagent" && {
-  //       condition: {
-  //         Good: quantityNumber,
-  //         Defect: 0,
-  //         Damage: 0,
-  //         Lost: 0,
-  //       },
-  //     }),
-  //   };
- 
-  //   const encryptedData = CryptoJS.AES.encrypt(
-  //     JSON.stringify(inventoryItem),
-  //     SECRET_KEY
-  //   ).toString();
-   
-  //   const newItem = {
-  //     id: count + 1,
-  //     itemId: generatedItemId,
-  //     // item: itemName,
-  //     item: finalItemName,
-  //     itemDetails: itemDetails,
-  //     entryDate: entryCurrentDate,
-  //     expiryDate: expiryDate,
-  //     qrCode: encryptedData,
-  //     ...inventoryItem,
-  //   };
- 
-  //    try {
- 
-  //     const inventoryDocRef = await addDoc(collection(db, "inventory"), {
-  //       ...inventoryItem,
-  //       qrCode: encryptedData,
-  //     });
- 
-  //     const userId = localStorage.getItem("userId");
-  //     const userName = localStorage.getItem("userName") || "User";
- 
-  //     await addDoc(collection(db, `accounts/${userId}/activitylog`), {
-  //       action: `Added new item (${finalItemName}) to inventory`,
-  //       userName: userName || "User",
-  //       timestamp: serverTimestamp(),
-  //     });
-
-  //     await db.collection("allactivitylog").add({
-  //       action: `Added new item (${finalItemName}) to inventory`,
-  //       userName: userName || "User",
-  //       timestamp: serverTimestamp(),
-  //     });
-
-  //     setNotificationMessage("Item successfully added!");
-  //     setIsNotificationVisible(true);
-
-  //     await addDoc(collection(inventoryDocRef, "stockLog"), {
-  //       date: new Date().toISOString().split("T")[0], // "YYYY-MM-DD"
-  //       noOfItems: quantityNumber,
-  //       deliveryNumber: "DLV-00001",
-  //       createdAt: serverTimestamp(),
-  //       ...(expiryDate && { expiryDate }),
-  //     });
- 
-  //     // 🔽 Check if labRoom with the given room number already exists
-  //     const labRoomQuery = query(
-  //       collection(db, "labRoom"),
-  //       where("roomNumber", "==", values.labRoom)
-  //     );
-  //     const labRoomSnapshot = await getDocs(labRoomQuery);
- 
-  //     let labRoomRef;
- 
-  //     if (labRoomSnapshot.empty) {
-  //       // 🔽 Create new labRoom document with generated ID
-  //       labRoomRef = await addDoc(collection(db, "labRoom"), {
-  //         roomNumber: values.labRoom,
-  //         createdAt: new Date(),
-  //       });
- 
-  //     } else {
-  //       // 🔽 Use existing labRoom document
-  //       labRoomRef = labRoomSnapshot.docs[0].ref;
-  //     }
- 
-  //     // 🔽 Add item to the labRoom's subcollection
-  //     await setDoc(doc(collection(labRoomRef, "items"), generatedItemId), {
-  //       ...inventoryItem,
-  //       qrCode: encryptedData,
-  //       roomNumber: values.labRoom,
-  //     });
- 
-  //     // 🔽 Fetch all items under this labRoom
-  //     const labRoomItemsSnap = await getDocs(collection(labRoomRef, "items"));
- 
-  //     // 🔽 Generate encrypted QR code with labRoom ID only
-  //     const labRoomQRData = CryptoJS.AES.encrypt(
-  //       JSON.stringify({
-  //         labRoomId: labRoomRef.id,
-  //       }),
-  //       SECRET_KEY
-  //     ).toString();
- 
-  //     // 🔽 Update labRoom document with the generated QR code
-  //     await updateDoc(labRoomRef, {
-  //       qrCode: labRoomQRData,
-  //       updatedAt: new Date(),
-  //     });
- 
-  //     setDataSource([...dataSource, newItem]);
-  //     setLogRefreshKey(prev => prev + 1);
-  //     setCount(count + 1);
-  //     form.resetFields();
-  //     setItemName("");
-  //     setItemDetails("")
-  //     setItemId("");
-  //     setIsModalVisible(false);
- 
-  //   } catch (error) {
-  //     console.error("Error adding document to Firestore:", error);
-  //   }
-  // };
-
-  // BACKEND
-  // const handleAdd = async (values) => {
-  //   try {
-  //     const response = await fetch("https://webnuls.onrender.com/add-inventory", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         ...values,
-  //         itemName,
-  //         itemDetails,
-  //         userId: localStorage.getItem("userId"),
-  //         userName: localStorage.getItem("userName"),
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (response.ok) {
-  //       setNotificationMessage("Item successfully added!");
-  //       setIsNotificationVisible(true);
-  //       setIsModalVisible(false);
-  //       setItemName("");
-  //       setItemDetails("");
-  //       form.resetFields();
-        
-  //     } else {
-  //       alert(data.error || "Failed to add item.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Error calling API:", error);
-  //   }
-  // };
 
   // BACKEND WITH CRITICAL LEVEL
   const handleAdd = async (values) => {
