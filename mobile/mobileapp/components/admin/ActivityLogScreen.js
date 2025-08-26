@@ -13,7 +13,7 @@ import {
 import { collection, getDocs, onSnapshot } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
-import styles from '../styles/adminStyle/ActivityLogStyle';
+import styles from '../styles/userStyle/ActivityLogStyle';
 import Header from '../Header';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
