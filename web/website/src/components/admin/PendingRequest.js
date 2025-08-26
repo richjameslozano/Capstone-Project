@@ -1450,6 +1450,7 @@ try {
       setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
       setRejectLoading(false);
+      setApproveLoading(false);
       return;
     }
   
@@ -4032,25 +4033,25 @@ try {
       title: "Quantity",
       dataIndex: "quantity",
       key: "quantity",
-      // render: (text, record) => (
-      //   <Input
-      //     type="number"
-      //     min={1}
-      //     value={editableItems?.[record.selectedItemId]?.quantity ?? text}
-      //     onChange={(e) => {
-      //       const value = e.target.value;
-      //       const updatedValue = value === "" ? "" : Math.max(1, parseInt(value));
+      render: (text, record) => (
+        <Input
+          type="number"
+          min={1}
+          value={editableItems?.[record.selectedItemId]?.quantity ?? text}
+          onChange={(e) => {
+            const value = e.target.value;
+            const updatedValue = value === "" ? "" : Math.max(1, parseInt(value));
 
-      //       setEditableItems((prev) => ({
-      //         ...prev,
-      //         [record.selectedItemId]: {
-      //           ...record,
-      //           quantity: updatedValue,
-      //         },
-      //       }));
-      //     }}
-      //   />
-      // )
+            setEditableItems((prev) => ({
+              ...prev,
+              [record.selectedItemId]: {
+                ...record,
+                quantity: updatedValue,
+              },
+            }));
+          }}
+        />
+      )
     },
     {
       title: "Reason for Rejection",
