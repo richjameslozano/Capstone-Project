@@ -36,6 +36,7 @@ const ReturnItems = () => {
   const [loading, setLoading] = useState(true);
   const [isConditionModalVisible, setIsConditionModalVisible] = useState(false);
   const [currentConditionItem, setCurrentConditionItem] = useState(null);
+  const [returnLoading, setReturnLoading] = useState(false);
   const conditionOptions = ['Good', 'Defect', 'Damage', 'Lost'];
 
   const screenHeight = Dimensions.get("window").height;
@@ -426,6 +427,7 @@ const ReturnItems = () => {
   // };
 
   const handleReturn = async () => {
+    setReturnLoading(true);
     try {
       const currentDate = new Date().toISOString();
       const timestamp = serverTimestamp();
@@ -576,6 +578,9 @@ const ReturnItems = () => {
 
     } catch (error) {
       console.error("❌ Error processing return:", error);
+      
+    } finally {
+      setReturnLoading(false);
     }
   };
 
@@ -1022,7 +1027,18 @@ const ReturnItems = () => {
                       </View>
                       {selectedRequest?.status === 'Deployed' && (
                         <View style={styles.modalButton}>
-                          <Button title="Return" onPress={handleReturn} />
+                          <Button 
+                            title={returnLoading ? "Returning..." : "Return"} 
+                            onPress={handleReturn}
+                            disabled={returnLoading}
+                          />
+                          {returnLoading && (
+                            <ActivityIndicator 
+                              size="small" 
+                              color="#395a7f" 
+                              style={{ marginTop: 5 }}
+                            />
+                          )}
                         </View>
                       )}
                     </View>
