@@ -310,6 +310,11 @@ const getCollegeByDepartment = async (departmentName) => {
     setCheckedItems({});
     setIsModalVisible(false);
     setSelectedRequest(null);
+    setApproveLoading(false);
+    setRejectLoading(false);
+    setMultiRejectLoading(false);
+    setIsMultiRejectModalVisible(false);
+    setIsFinalizeModalVisible(false);
   };
 
   const handleOpenFinalizeModal = () => {
@@ -336,6 +341,7 @@ const getCollegeByDepartment = async (departmentName) => {
         if (isDisabled) {
           setNotificationMessage("Cannot approve: The user's account is disabled.");
           setIsNotificationVisible(true);
+          setMultiRejectLoading(false);
           return;
         }
         
@@ -347,6 +353,7 @@ const getCollegeByDepartment = async (departmentName) => {
 
       setNotificationMessage("Error verifying account status. Please try again.");
       setIsNotificationVisible(true);
+      setMultiRejectLoading(false);
       return;
     }
 
@@ -405,6 +412,7 @@ const getCollegeByDepartment = async (departmentName) => {
       
       setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
+      setMultiRejectLoading(false);
       return;
     }
   
@@ -1365,6 +1373,7 @@ try {
         if (isDisabled) {
           setNotificationMessage("Cannot approve: The user's account is disabled.");
           setIsNotificationVisible(true);
+          setRejectLoading(false);
           return;
         }
         
@@ -1376,6 +1385,7 @@ try {
      
       setNotificationMessage("Error verifying account status. Please try again.");
       setIsNotificationVisible(true);
+      setRejectLoading(false);
       return;
     }
 
@@ -1439,6 +1449,7 @@ try {
       
       setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
+      setRejectLoading(false);
       return;
     }
   
@@ -4592,9 +4603,15 @@ useEffect(() => {
             open={isMultiRejectModalVisible}
             zIndex={1023}
             width={'40%'}
-            onCancel={() => setIsMultiRejectModalVisible(false)}
+            onCancel={() => {
+              setIsMultiRejectModalVisible(false);
+              setApproveLoading(false);
+            }}
             footer={[
-              <Button key="cancel" onClick={() => setIsMultiRejectModalVisible(false)} disabled={multiRejectLoading}>
+              <Button key="cancel" onClick={() => {
+                setIsMultiRejectModalVisible(false);
+                setApproveLoading(false);
+              }} disabled={multiRejectLoading}>
                 Cancel
               </Button>,
 
@@ -4618,9 +4635,15 @@ useEffect(() => {
             open={isFinalizeModalVisible}
             zIndex={1024}
             width={'50%'}
-            onCancel={() => setIsFinalizeModalVisible(false)}
+            onCancel={() => {
+              setIsFinalizeModalVisible(false);
+              setApproveLoading(false);
+            }}
             footer={[
-              <Button key="back" onClick={() => setIsFinalizeModalVisible(false)} disabled={rejectLoading}>
+              <Button key="back" onClick={() => {
+                setIsFinalizeModalVisible(false);
+                setApproveLoading(false);
+              }} disabled={rejectLoading}>
                 Cancel
               </Button>,
               <Button key="submit" type="primary" onClick={handleRejectConfirm} loading={rejectLoading}>
