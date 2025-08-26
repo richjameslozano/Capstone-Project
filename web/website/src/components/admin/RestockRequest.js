@@ -10,6 +10,8 @@ import {
   Select,
   Spin,
   Tag,
+  Input,
+  InputNumber,
 } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot, query, where, doc, updateDoc, addDoc, serverTimestamp } from "firebase/firestore";
@@ -33,6 +35,7 @@ const RestockRequest = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [userRole, setUserRole] = useState(null);
+  const [userJobTitle, setUserJobTitle] = useState(null);
   const [comment, setComment] = useState("");
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
@@ -40,6 +43,9 @@ const RestockRequest = () => {
   const [denyLoading, setDenyLoading] = useState(false);
   const [exportLoading, setExportLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [editingQuantity, setEditingQuantity] = useState(false);
+  const [editedQuantity, setEditedQuantity] = useState(null);
+  const [saveQuantityLoading, setSaveQuantityLoading] = useState(false);
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, "restock_requests"), (snapshot) => {
@@ -85,8 +91,13 @@ const RestockRequest = () => {
 
   useEffect(() => {
     const storedRole = localStorage.getItem("userPosition");
+    const storedJobTitle = localStorage.getItem("userJobTitle");
     setUserRole(storedRole);
+    setUserJobTitle(storedJobTitle);
   }, []);
+
+  // Check if user can edit quantity
+  const canEditQuantity = userRole === "super-user" || userJobTitle === "Laboratory Custodian";
 
   const filteredData = restockRequests.filter((item) => {
     const matchesStatus = filterStatus ? item.status === filterStatus : true;
@@ -104,8 +115,10 @@ const RestockRequest = () => {
       const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
       const data = new Blob([excelBuffer], { type: "application/octet-stream" });
       saveAs(data, "Restock_Requests.xlsx");
+
     } catch (error) {
       console.error("Error exporting to Excel:", error);
+
     } finally {
       setExportLoading(false);
     }
@@ -131,8 +144,10 @@ const RestockRequest = () => {
         theme: "grid",
       });
       doc.save("Restock_Requests.pdf");
+
     } catch (error) {
       console.error("Error generating PDF:", error);
+
     } finally {
       setPdfLoading(false);
     }
@@ -143,6 +158,7 @@ const RestockRequest = () => {
 
     if (newStatus === "approved") {
       setApproveLoading(true);
+
     } else {
       setDenyLoading(true);
     }
@@ -193,13 +209,55 @@ const RestockRequest = () => {
 
     } catch (error) {
       console.error("Error updating status:", error);
+
     } finally {
       if (newStatus === "approved") {
         setApproveLoading(false);
+
       } else {
         setDenyLoading(false);
       }
     }
+  };
+
+  const handleSaveQuantity = async () => {
+    if (!selectedRequest || editedQuantity === null) return;
+
+    setSaveQuantityLoading(true);
+    try {
+      const requestRef = doc(db, "restock_requests", selectedRequest.id);
+      await updateDoc(requestRef, {
+        quantity_needed: editedQuantity,
+        updated_at: serverTimestamp()
+      });
+
+      // Update local state
+      setRestockRequests(prev => 
+        prev.map(req => 
+          req.id === selectedRequest.id 
+            ? { ...req, quantity_needed: editedQuantity }
+            : req
+        )
+      );
+
+      setNotificationMessage("Quantity updated successfully!");
+      setIsNotificationVisible(true);
+      setEditingQuantity(false);
+      setEditedQuantity(null);
+
+    } catch (error) {
+      console.error("Error updating quantity:", error);
+      setNotificationMessage("Error updating quantity. Please try again.");
+      setIsNotificationVisible(true);
+      
+    } finally {
+      setSaveQuantityLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingQuantity(false);
+    setEditedQuantity(null);
   };
 
   const columns = [
@@ -335,6 +393,8 @@ const RestockRequest = () => {
             setIsModalVisible(false);
             setComment("");
             setSelectedRequest(null);
+            setEditingQuantity(false);
+            setEditedQuantity(null);
           }}
           zIndex={1030}
           footer={
@@ -352,7 +412,53 @@ const RestockRequest = () => {
           {selectedRequest ? (
             <div>
               <p><strong>Item:</strong> {selectedRequest.item_name}</p>
-              <p><strong>Quantity:</strong> {selectedRequest.quantity_needed}</p>
+              
+              <p>
+                <strong>Quantity:</strong> 
+                {canEditQuantity && !editingQuantity ? (
+                  <span>
+                    {selectedRequest.quantity_needed}
+                    <Button 
+                      type="link" 
+                      size="small"
+                      onClick={() => {
+                        setEditingQuantity(true);
+                        setEditedQuantity(selectedRequest.quantity_needed);
+                      }}
+                      style={{ marginLeft: '8px' }}
+                    >
+                      Edit
+                    </Button>
+                  </span>
+                ) : canEditQuantity && editingQuantity ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
+                    <InputNumber
+                      min={1}
+                      value={editedQuantity}
+                      onChange={(value) => setEditedQuantity(value)}
+                      style={{ width: '120px' }}
+                    />
+                    <Button 
+                      size="small" 
+                      type="primary" 
+                      onClick={handleSaveQuantity}
+                      loading={saveQuantityLoading}
+                    >
+                      Save
+                    </Button>
+                    <Button 
+                      size="small" 
+                      onClick={handleCancelEdit}
+                      disabled={saveQuantityLoading}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                ) : (
+                  selectedRequest.quantity_needed
+                )}
+              </p>
+              
               <p><strong>Department:</strong> {selectedRequest.department}</p>
               <p><strong>Status:</strong> {selectedRequest.status}</p>
               <p><strong>Date:</strong> {selectedRequest.created_at?.toDate().toLocaleDateString()}</p>

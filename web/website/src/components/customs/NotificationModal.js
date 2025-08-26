@@ -8,7 +8,7 @@ const NotificationModal = ({ isVisible, onClose, message }) => {
       open={isVisible}
       onCancel={onClose}
       footer={null}
-      zIndex={1029}
+      zIndex={1031}
       centered
       className="notification-modal"
     >
