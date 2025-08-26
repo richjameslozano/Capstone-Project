@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { View, Text, FlatList, TouchableOpacity, Alert, StatusBar, Dimensions } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Alert, StatusBar, Dimensions, ActivityIndicator } from "react-native";
 import { collection, query, where, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import styles from "../styles/adminStyle/RequestorListStyle";
@@ -18,8 +18,10 @@ const getTodayDate = () => {
 
 const RequestorListScreen = ({ navigation }) => {
   const [requestors, setRequestors] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    setLoading(true);
     const todayDate = getTodayDate();
     console.log("Today is:", todayDate);
     Alert.alert("Today's Date", todayDate);
@@ -45,10 +47,12 @@ const RequestorListScreen = ({ navigation }) => {
         }
 
         setRequestors(requestorsData);
+        setLoading(false);
       },
       (error) => {
         console.error("onSnapshot error:", error);
         Alert.alert("Error", "There was an issue listening to requestors.");
+        setLoading(false);
       }
     );
 
@@ -97,7 +101,17 @@ const RequestorListScreen = ({ navigation }) => {
         
       <Text style={styles.title}>Requestors for Today</Text>
 
-      <FlatList
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading requestors...</Text>
+        </View>
+      ) : requestors.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 16, color: '#666' }}>No requestors found for today.</Text>
+        </View>
+      ) : (
+        <FlatList
         data={requestors}
         renderItem={({ item }) => (
           <TouchableOpacity
@@ -112,6 +126,7 @@ const RequestorListScreen = ({ navigation }) => {
           <Text style={styles.emptyText}>No requestors found.</Text>
         }
       />
+      )}
 
       {/* <Text style={styles.debugText}>Component is rendering</Text> */}
     </View>

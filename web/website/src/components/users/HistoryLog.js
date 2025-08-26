@@ -95,6 +95,7 @@ const HistoryLog = () => {
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [selectedActivityLog, setSelectedActivityLog] = useState(null);
+  const [cancelLoading, setCancelLoading] = useState(false);
 
 const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
@@ -202,6 +203,7 @@ const sanitizeInput = (input) =>
   }, []);
 
   const handleCancelRequest = async () => {
+    setCancelLoading(true);
     try {
       const userId = localStorage.getItem("userId");
   
@@ -255,6 +257,8 @@ const sanitizeInput = (input) =>
     
       setNotificationMessage("Failed to cancel the request.");
       setNotificationVisible(true);
+    } finally {
+      setCancelLoading(false);
     }
   };
 
@@ -848,6 +852,7 @@ const renderPendingTab = () => (
       zIndex={1009}
       okText="Yes, Cancel"
       cancelText="No"
+      okButtonProps={{ loading: cancelLoading }}
     >
       <p>Are you sure you want to cancel this request?</p>
     </Modal>
@@ -1441,112 +1446,377 @@ console.log(returnedData);
 //   );
 // };
 
-  const handleGeneratePDF = () => {
-    if (!selectedLog) {
-      alert("No data to export.");
-      return;
-    }
+  const loadImageAsDataURL = async (url) => {
+  try {
+    const res = await fetch(url, { cache: "force-cache" });
+    const blob = await res.blob();
+    return await new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(blob);
+    });
+  } catch (e) {
+    return ""; // skip logo if it can't be loaded
+  }
+};
 
-    const doc = new jsPDF();
+const formatDateTimePH = (d = new Date()) => {
+  return new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+};
 
-    // Title
-    doc.setFontSize(18);
-    doc.text("Activity Details", 14, 20);
+// Call this from your component: handleGeneratePDF(selectedLog)
+// Put NULS_Favicon.png in /public/images/NULS_Favicon.png
 
-    // Details list
+const handleGeneratePDF = async () => {
+  if (!selectedLog) {
+    alert("No data to export.");
+    return;
+  }
+
+  // unify items the same way your modal does
+  const rawItems =
+    (selectedLog.filteredMergedData && selectedLog.filteredMergedData.length > 0
+      ? selectedLog.filteredMergedData
+      : selectedLog.requestList) || [];
+
+  // normalize item fields for the PDF table
+  const items = rawItems.map((it) => {
+    const unitOrVol =
+      (["Chemical", "Reagent"].includes(it.category) && it.unit) ? `Unit: ${it.unit}` :
+      (it.category === "Glasswares" && it.volume) ? `Volume: ${it.volume}` : "";
+    return {
+      itemId: it.itemIdFromInventory || "N/A",
+      name: it.itemName || "",
+      qty: it.quantity ?? "",
+      category: it.category || "",
+      unitOrVol,
+      department: it.department || ""
+    };
+  });
+
+  const doc = new jsPDF({ unit: "mm", format: "a4", orientation: "portrait" });
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const marginX = 14;
+
+  // logo from /public/images
+  const logoDataURL = await loadImageAsDataURL("/NULS_Favicon.png");
+  const printedOn = formatDateTimePH();
+
+  const drawHeader = () => {
+  // logo
+  if (logoDataURL) {
+    doc.addImage(logoDataURL, "PNG", marginX, 10, 12, 12);
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
-    const details = [
-      ["Action", selectedLog.action || "N/A"],
-      ["By", selectedLog.userName || "N/A"],
-      ["Program", selectedLog.program || "N/A"],
-      ["Room", selectedLog.room || "N/A"],
-      ["Time", selectedLog.timeFrom && selectedLog.timeTo ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}` : "N/A"],
-      ["Date Required", selectedLog.dateRequired || "N/A"],
-    ];
-    details.forEach(([label, value], idx) => {
-      doc.text(`${label}: ${value}`, 14, 30 + idx * 6);
-    });
+    doc.text("NULS", marginX + 16, 18); // just right of the logo
+  }
 
-    // Items table
-    const items = selectedLog.requestList || selectedLog.filteredMergedData || [];
-    autoTable(doc, {
-      startY: 30 + details.length * 6 + 5,
-      head: [["Item Name", "Quantity", "Category", "Department"]],
-      body: items.map(item => [
-        item.itemName || "",
-        item.quantity || "",
-        item.category || "",
-        item.department || "",
-      ]),
-    });
+  // title centered
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(16);
+  doc.text("REQUEST SLIP", pageWidth / 2, 18, { align: "center" });
 
-    doc.save("activity-details.pdf");
+  // underline separator
+  doc.setDrawColor(180);
+  doc.setLineWidth(0.2);
+  doc.line(marginX, 22, pageWidth - marginX, 22);
+};
+
+  const drawFooter = () => {
+    const pageCount = doc.internal.getNumberOfPages();
+    const pageCurrent = doc.internal.getCurrentPageInfo().pageNumber;
+
+    doc.setDrawColor(200);
+    doc.setLineWidth(0.2);
+    doc.line(marginX, pageHeight - 12, pageWidth - marginX, pageHeight - 12);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(`Printed on: ${printedOn}`, marginX, pageHeight - 7);
+    doc.text(`Page ${pageCurrent} of ${pageCount}`, pageWidth - marginX, pageHeight - 7, { align: "right" });
   };
 
-  const handlePrint = () => {
-    if (!selectedLog) {
-      alert("No data to print.");
-      return;
-    }
+  drawHeader();
 
-    const items = selectedLog.requestList || selectedLog.filteredMergedData || [];
+  // DETAILS (align with your modal fields)
+  const timeText =
+    selectedLog.timeFrom && selectedLog.timeTo
+      ? `${selectedLog.timeFrom} – ${selectedLog.timeTo}`
+      : "N/A";
 
-    // Build HTML from data
-    const htmlContent = `
-      <html>
-        <head>
-          <title>Activity Details</title>
-          <style>
-            body { font-family: Arial, sans-serif; }
-            h2 { margin-bottom: 10px; }
-            ul { list-style: none; padding: 0; }
-            ul li { margin-bottom: 5px; }
-            table { border-collapse: collapse; width: 100%; margin-top: 10px; }
-            table, th, td { border: 1px solid #000; }
-            th, td { padding: 8px; text-align: left; }
-          </style>
-        </head>
-        <body>
-          <h2>Activity Details</h2>
-          <ul>
-            <li><strong>Action:</strong> ${selectedLog.action || "N/A"}</li>
-            <li><strong>By:</strong> ${selectedLog.userName || "N/A"}</li>
-            <li><strong>Program:</strong> ${selectedLog.program || "N/A"}</li>
-            <li><strong>Room:</strong> ${selectedLog.room || "N/A"}</li>
-            <li><strong>Time:</strong> ${selectedLog.timeFrom && selectedLog.timeTo ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}` : "N/A"}</li>
-            <li><strong>Date Required:</strong> ${selectedLog.dateRequired || "N/A"}</li>
-          </ul>
-          <h3>Items Requested</h3>
-          <table>
-            <thead>
-              <tr>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Category</th>
-                <th>Department</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${items.map(item => `
+  const details = [
+    ["Approved By", selectedLog.approvedBy || (selectedLog.status === "CANCELLED" ? "Cancelled a request" : "Modified a request") || "N/A"],
+    ["Program", selectedLog.program || "N/A"],
+    ["Room", selectedLog.room || "N/A"],
+    ["Requester", selectedLog.userName || "Unknown User"],
+    ["Time", timeText],
+    ["Date Required", selectedLog.dateRequired || "N/A"],
+    // Only show note if not a rejection, like in your modal
+    ...(selectedLog.action !== "Request Rejected"
+      ? [["Note", selectedLog.reason || "N/A"]]
+      : []),
+  ];
+
+  autoTable(doc, {
+    startY: 26,
+    theme: "plain",
+    styles: { font: "helvetica", fontSize: 11, cellPadding: { top: 1.5, bottom: 1.5, left: 0, right: 0 } },
+    columnStyles: {
+      0: { cellWidth: (pageWidth - marginX * 2) * 0.28, fontStyle: "bold" },
+      1: { cellWidth: (pageWidth - marginX * 2) * 0.72 },
+    },
+    margin: { left: marginX, right: marginX },
+    head: [],
+    body: details,
+    didDrawPage: () => {
+      drawHeader();
+      drawFooter();
+    },
+  });
+
+  // Section title
+  let yAfterDetails = doc.lastAutoTable.finalY + 6;
+  if (yAfterDetails + 10 > pageHeight - 20) {
+    doc.addPage();
+    drawHeader();
+    yAfterDetails = 26;
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(12);
+  doc.text("Items Requested", marginX, yAfterDetails);
+
+  // ITEMS TABLE (includes Item ID + Unit/Volume + Department like your modal)
+  autoTable(doc, {
+    startY: yAfterDetails + 3,
+    head: [["Item ID", "Item Name", "Quantity", "Category", "Unit / Volume", "Department"]],
+    body: items.map((it) => [it.itemId, it.name, it.qty, it.category, it.unitOrVol, it.department]),
+    theme: "grid",
+    styles: { font: "helvetica", fontSize: 10, lineColor: 200, lineWidth: 0.2 },
+    headStyles: { fillColor: [245, 245, 245], textColor: 0, fontStyle: "bold" },
+    columnStyles: {
+      0: { cellWidth: (pageWidth - marginX * 2) * 0.14 }, // Item ID
+      1: { cellWidth: (pageWidth - marginX * 2) * 0.30 }, // Name
+      2: { cellWidth: (pageWidth - marginX * 2) * 0.10, halign: "right" }, // Qty
+      3: { cellWidth: (pageWidth - marginX * 2) * 0.14 }, // Category
+      4: { cellWidth: (pageWidth - marginX * 2) * 0.16 }, // Unit / Volume
+      5: { cellWidth: (pageWidth - marginX * 2) * 0.16 }, // Department
+    },
+    margin: { left: marginX, right: marginX },
+    didDrawPage: () => {
+      drawHeader();
+      drawFooter();
+    },
+  });
+
+  // Signature block
+  let y = doc.lastAutoTable.finalY + 12;
+  if (y + 30 > pageHeight - 20) {
+    doc.addPage();
+    drawHeader();
+    y = 30;
+  }
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.text("Requested by:", marginX, y);
+  doc.text("Approved by:", pageWidth / 2, y);
+
+  doc.line(marginX, y + 14, marginX + 70, y + 14);
+  doc.line(pageWidth / 2, y + 14, pageWidth / 2 + 70, y + 14);
+
+  doc.setFontSize(9);
+  doc.text("(Signature over printed name & date)", marginX, y + 19);
+  doc.text("(Signature over printed name & date)", pageWidth / 2, y + 19);
+
+  const safeDate = new Date().toISOString().slice(0, 10);
+  doc.save(`request-slip_${safeDate}.pdf`);
+};
+
+// Put NULS_Favicon.png in /public/images/NULS_Favicon.png
+
+const handlePrint = () => {
+  if (!selectedLog) {
+    alert("No data to print.");
+    return;
+  }
+
+  const esc = (v) =>
+    String(v ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+
+  const rawItems =
+    (selectedLog.filteredMergedData && selectedLog.filteredMergedData.length > 0
+      ? selectedLog.filteredMergedData
+      : selectedLog.requestList) || [];
+
+  const items = rawItems.map((it) => {
+    const unitOrVol =
+      (["Chemical", "Reagent"].includes(it.category) && it.unit) ? `Unit: ${it.unit}` :
+      (it.category === "Glasswares" && it.volume) ? `Volume: ${it.volume}` : "";
+    return {
+      itemId: it.itemIdFromInventory || "N/A",
+      name: it.itemName || "",
+      qty: it.quantity ?? "",
+      category: it.category || "",
+      unitOrVol,
+      department: it.department || ""
+    };
+  });
+
+  const timeText =
+    selectedLog.timeFrom && selectedLog.timeTo
+      ? `${esc(selectedLog.timeFrom)} – ${esc(selectedLog.timeTo)}`
+      : "N/A";
+
+  const printedOn = new Intl.DateTimeFormat("en-PH", {
+    timeZone: "Asia/Manila",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date());
+
+  const htmlContent = `
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Request Slip</title>
+  <style>
+    :root { --text:#111; --muted:#555; --line:#ddd; --accent:#0f172a; }
+    @page { size:A4; margin:18mm 14mm 18mm 14mm; }
+    *{box-sizing:border-box} html,body{height:100%}
+    body{font-family:Arial,Helvetica,sans-serif;color:var(--text);line-height:1.35;-webkit-print-color-adjust:exact;print-color-adjust:exact;margin:0}
+    .header{position:fixed;top:0;left:0;right:0;padding:8mm 14mm 4mm;border-bottom:1px solid var(--line)}
+    .footer{position:fixed;bottom:0;left:0;right:0;padding:4mm 14mm 8mm;border-top:1px solid var(--line);font-size:10px;color:var(--muted);display:flex;justify-content:space-between;align-items:center}
+    .pagenum:after{content:counter(page)} .pagecount:after{content:counter(pages)}
+    .brand{display:flex;align-items:center;gap:10px} .brand img{width:28px;height:28px;object-fit:contain} .brand .title{font-weight:bold;letter-spacing:.4px}
+    .doc-title{text-align:center;font-weight:bold;font-size:16px;margin:0;color:var(--accent)}
+    .content{padding:28mm 14mm 22mm}
+    .details{display:grid;grid-template-columns:28% 72%;column-gap:12px;row-gap:6px;font-size:12px;margin:8px 0 14px}
+    .label{font-weight:bold;color:var(--muted)} .value{color:var(--text);word-break:break-word}
+    .section-title{font-weight:bold;font-size:13px;margin:14px 0 6px}
+    table{width:100%;border-collapse:collapse;font-size:11px;page-break-inside:auto}
+    thead{display:table-header-group} tr{page-break-inside:avoid;page-break-after:auto}
+    th,td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+    thead th{background:#f4f6f8;font-weight:bold} td.qty{text-align:right}
+    .sig-row{display:grid;grid-template-columns:1fr 1fr;column-gap:18mm;margin-top:16px}
+    .sig{margin-top:18px;font-size:11px} .sig .line{height:1px;background:var(--line);margin:28px 0 4px} .sig small{color:var(--muted)}
+    @media screen{body{background:#f2f2f2}.sheet{background:#fff;width:210mm;min-height:297mm;margin:0 auto;box-shadow:0 2px 10px rgba(0,0,0,.1)}}
+  </style>
+</head>
+<body>
+    <div class="header">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div class="brand" style="display:flex; align-items:center; gap:8px;">
+        <img src="/NULS_Favicon.png" alt="Logo" style="width:28px; height:28px; object-fit:contain;" />
+        <div class="title" style="font-weight:bold; font-size:13px;">NULS</div>
+      </div>
+      <h1 class="doc-title" style="margin:0; font-size:16px; font-weight:bold; color:#0f172a; text-align:center;">
+        REQUEST SLIP
+      </h1>
+      <div style="width:28px;"></div> <!-- keeps spacing symmetric -->
+    </div>
+  </div>
+
+
+  <div class="footer">
+    <div>Printed on: ${esc(printedOn)}</div>
+    
+  </div>
+
+  <div class="sheet">
+    <div class="content">
+      <div class="details">
+        <div class="label">Approved By</div><div class="value">${esc(selectedLog.approvedBy || (selectedLog.status === "CANCELLED" ? "Cancelled a request" : "Modified a request") || "N/A")}</div>
+        <div class="label">Program</div><div class="value">${esc(selectedLog.program || "N/A")}</div>
+        <div class="label">Room</div><div class="value">${esc(selectedLog.room || "N/A")}</div>
+        <div class="label">Requester</div><div class="value">${esc(selectedLog.userName || "Unknown User")}</div>
+        <div class="label">Time</div><div class="value">${timeText}</div>
+        <div class="label">Date Required</div><div class="value">${esc(selectedLog.dateRequired || "N/A")}</div>
+        ${
+          selectedLog.action !== "Request Rejected"
+            ? `<div class="label">Note</div><div class="value">${esc(selectedLog.reason || "N/A")}</div>`
+            : ""
+        }
+      </div>
+
+      <div class="section-title">Items Requested</div>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:14%;">Item ID</th>
+            <th style="width:30%;">Item Name</th>
+            <th style="width:10%;">Quantity</th>
+            <th style="width:14%;">Category</th>
+            <th style="width:16%;">Unit / Volume</th>
+            <th style="width:16%;">Department</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${
+            items.length === 0
+              ? `<tr><td colspan="6" style="text-align:center;color:#888;">No items</td></tr>`
+              : items.map((it) => `
                 <tr>
-                  <td>${item.itemName || ""}</td>
-                  <td>${item.quantity || ""}</td>
-                  <td>${item.category || ""}</td>
-                  <td>${item.department || ""}</td>
+                  <td>${esc(it.itemId)}</td>
+                  <td>${esc(it.name)}</td>
+                  <td class="qty">${esc(it.qty)}</td>
+                   <td>${esc(it.unitOrVol)}</td>
+                  <td>${esc(it.category)}</td>
+                  <td>${esc(it.department)}</td>
                 </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
+              `).join("")
+          }
+        </tbody>
+      </table>
 
-    // Open and print
-    const printWindow = window.open("", "_blank");
-    printWindow.document.write(htmlContent);
-    printWindow.document.close();
-    printWindow.print();
-  };
+      <div class="sig-row">
+        <div class="sig">
+          <div>Requested by:</div>
+          <div class="line"></div>
+          <small>(Signature over printed name & date)</small>
+        </div>
+        <div class="sig">
+          <div>Approved by:</div>
+          <div class="line"></div>
+          <small>(Signature over printed name & date)</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    window.onload = function(){ window.print(); };
+  </script>
+</body>
+</html>
+  `;
+
+  const w = window.open("", "_blank");
+  if (!w) {
+    alert("Popup blocked. Please allow popups to print.");
+    return;
+  }
+  w.document.open();
+  w.document.write(htmlContent);
+  w.document.close();
+};
+
 
   return (
     <Layout style={{ minHeight: "100vh"}}>

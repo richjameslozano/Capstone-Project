@@ -26,6 +26,8 @@ const ActivityLogScreen = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage] = useState(10);
 
   const [headerHeight, setHeaderHeight] = useState(0);
 
@@ -105,7 +107,18 @@ const handleHeaderLayout = (event) => {
     );
 
     setFilteredLogs(filtered);
+    setCurrentPage(1); // Reset to first page when search changes
   }, [searchQuery]);
+
+  // Calculate pagination
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredLogs.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(filteredLogs.length / itemsPerPage);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   const renderItem = ({ item, index }) => (
     <Pressable
@@ -159,7 +172,7 @@ const handleHeaderLayout = (event) => {
           </View>
 
           <FlatList
-            data={filteredLogs}
+            data={currentItems}
             keyExtractor={(item) => item.key}
             renderItem={renderItem}
             ListEmptyComponent={
@@ -168,6 +181,35 @@ const handleHeaderLayout = (event) => {
             contentContainerStyle={{paddingBottom: 30}}
             style={{paddingBottom: 20}}
           />
+
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <View style={styles.paginationContainer}>
+              <TouchableOpacity
+                style={[styles.paginationButton, currentPage === 1 && styles.paginationButtonDisabled]}
+                onPress={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage === 1}
+              >
+                <Text style={[styles.paginationButtonText, currentPage === 1 && styles.paginationButtonTextDisabled]}>
+                  Previous
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.paginationText}>
+                Page {currentPage} of {totalPages}
+              </Text>
+
+              <TouchableOpacity
+                style={[styles.paginationButton, currentPage === totalPages && styles.paginationButtonDisabled]}
+                onPress={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage === totalPages}
+              >
+                <Text style={[styles.paginationButtonText, currentPage === totalPages && styles.paginationButtonTextDisabled]}>
+                  Next
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
     </View>

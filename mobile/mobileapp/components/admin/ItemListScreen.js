@@ -110,8 +110,10 @@ import {
   ActivityIndicator,
   StatusBar,
   TextInput,
+  Modal,
 } from "react-native";
 import { Picker } from '@react-native-picker/picker';
+import Icon2 from 'react-native-vector-icons/Ionicons';
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -128,6 +130,8 @@ const ItemListScreen = () => {
   const [headerHeight, setHeaderHeight] = useState(0);
   const [searchText, setSearchText] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isCategoryModalVisible, setIsCategoryModalVisible] = useState(false);
+  const categoryOptions = ['All', 'Equipment', 'Chemical', 'Materials', 'Reagent', 'Glasswares'];
 
   const handleHeaderLayout = (event) => {
     const { height } = event.nativeEvent.layout;
@@ -262,25 +266,29 @@ const ItemListScreen = () => {
           autoCapitalize="none"
         />
 
-        {/* Category dropdown picker */}
-        <View
+        {/* Category dropdown */}
+        <TouchableOpacity
           style={{
             borderWidth: 1,
             borderColor: "#ccc",
             borderRadius: 8,
             marginBottom: 15,
-            overflow: 'hidden',
+            padding: 12,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center',
           }}
+          onPress={() => setIsCategoryModalVisible(true)}
         >
-          <Picker
-            selectedValue={selectedCategory}
-            onValueChange={(itemValue) => setSelectedCategory(itemValue)}
-          >
-            {categories.map((cat) => (
-              <Picker.Item label={cat} value={cat} key={cat} />
-            ))}
-          </Picker>
-        </View>
+          <Text style={{ color: '#333', fontSize: 16 }}>
+            {selectedCategory}
+          </Text>
+          <Icon2
+            name="chevron-down"
+            size={20}
+            color="#666"
+          />
+        </TouchableOpacity>
 
         <FlatList
           data={filteredItemsSorted}
@@ -297,6 +305,39 @@ const ItemListScreen = () => {
           }
         />
       </View>
+
+      {/* Category Selection Modal */}
+      <Modal
+        visible={isCategoryModalVisible}
+        transparent={true}
+        animationType="slide"
+      >
+        <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+          <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+            <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+              Select Category
+            </Text>
+            {categoryOptions.map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                onPress={() => {
+                  setSelectedCategory(option);
+                  setIsCategoryModalVisible(false);
+                }}
+              >
+                <Text style={{ fontSize: 16 }}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+            <TouchableOpacity 
+              onPress={() => setIsCategoryModalVisible(false)} 
+              style={{ marginTop: 15, paddingVertical: 10 }}
+            >
+              <Text style={{ textAlign: 'center', color: 'red', fontSize: 16 }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };

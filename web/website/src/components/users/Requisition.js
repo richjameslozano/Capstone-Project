@@ -96,6 +96,8 @@ const Requisition = () => {
   const [showPolicies, setShowPolicies] = useState(false)
   const [mergedData, setMergedData] = useState([]);
   const [volumeOptions, setVolumeOptions] = useState([]);
+  const [finalizeLoading, setFinalizeLoading] = useState(false);
+  const [cancelLoading, setCancelLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const auth = getAuth();
@@ -1006,6 +1008,7 @@ const Requisition = () => {
   // };  
 
   const finalizeRequest = async () => {
+    setFinalizeLoading(true);
     let isValid = true;
     let idsToRemove = [];
   
@@ -1316,6 +1319,8 @@ const Requisition = () => {
       } catch (error) {
 
         message.error("Failed to send requisition. Please try again.");
+      } finally {
+        setFinalizeLoading(false);
       }
     }
   };  
@@ -1959,6 +1964,7 @@ const Requisition = () => {
     }, []);
   
     const handleCancelRequest = async () => {
+      setCancelLoading(true);
       try {
         const userId = localStorage.getItem("userId");
     
@@ -2008,10 +2014,12 @@ const Requisition = () => {
         setViewDetailsModalVisible(false);
         fetchRequests();
   
-      } catch (err) {
-  
+            } catch (err) {
+
         setNotificationMessage("Failed to cancel the request.");
         setNotificationVisible(true);
+      } finally {
+        setCancelLoading(false);
       }
     };
   
@@ -2629,6 +2637,8 @@ const Requisition = () => {
             setIsFinalizeModalVisible(false);
           }}
           onCancel={() => setIsFinalizeModalVisible(false)}
+          loading={finalizeLoading}
+          disabled={cancelLoading}
           dateRequired={dateRequired}
           timeFrom={timeFrom}
           timeTo={timeTo}
@@ -2715,6 +2725,7 @@ const Requisition = () => {
               onOk={handleCancelRequest}
               okText="Yes, Cancel"
               cancelText="No"
+              okButtonProps={{ loading: cancelLoading, disabled: finalizeLoading }}
             >
               <p>Are you sure you want to cancel this request?</p>
             </Modal>

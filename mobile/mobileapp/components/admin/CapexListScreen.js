@@ -7,6 +7,7 @@ import {
   Modal,
   TouchableOpacity,
   StatusBar,
+  ActivityIndicator,
 } from "react-native";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
@@ -21,6 +22,7 @@ const CapexRequestList = () => {
   const [requests, setRequests] = useState([]);
   const [viewModalVisible, setViewModalVisible] = useState(false);
   const [selectedRowDetails, setSelectedRowDetails] = useState(null);
+  const [loading, setLoading] = useState(true);
   const { user } = useAuth();
 
     const navigation = useNavigation()
@@ -35,6 +37,7 @@ const CapexRequestList = () => {
   useEffect(() => {
     if (!user?.id) return; // Ensure user is logged in before fetching requests
 
+    setLoading(true);
     const userRequestRef = collection(db, "capexrequestlist");
 
     const unsubscribe = onSnapshot(userRequestRef, (querySnapshot) => {
@@ -49,8 +52,10 @@ const CapexRequestList = () => {
       });
 
       setRequests(fetched);
+      setLoading(false);
     }, (error) => {
       console.error("Error fetching requests in real-time: ", error);
+      setLoading(false);
     });
 
     return () => unsubscribe(); // Clean up listener on component unmount
@@ -126,7 +131,17 @@ const CapexRequestList = () => {
 
       <Text style={styles.title}>List of Requests</Text>
 
-      <FlatList
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading CAPEX requests...</Text>
+        </View>
+      ) : requests.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 16, color: '#666' }}>No CAPEX requests found.</Text>
+        </View>
+      ) : (
+        <FlatList
         data={requests}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => item.id} 
@@ -150,6 +165,7 @@ const CapexRequestList = () => {
           </View>
         )}
       />
+      )}
 
       <Modal
         visible={viewModalVisible}

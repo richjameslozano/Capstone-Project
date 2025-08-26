@@ -645,7 +645,7 @@ const renderDeployed = ({ item }) => {
 
         <View style={{ flex: 1, alignItems: 'center' }}>
           <Text style={{ fontWeight: '800', fontSize: 18, color: '#395a7f', textAlign: 'center' }}>
-            My Orders
+            Submitted Requisitions
           </Text>
           <Text style={{ fontWeight: '300', fontSize: 13, textAlign: 'center' }}>
             Monitor Your Orders

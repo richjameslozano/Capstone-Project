@@ -14,6 +14,8 @@ const PendingAccounts = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
 
   useEffect(() => {
     const userRequestRef = collection(db, "pendingaccounts");
@@ -149,6 +151,7 @@ const PendingAccounts = () => {
 
   // BACKEND
    const handleApprove = async () => {
+    setApproveLoading(true);
     try {
       const userId = localStorage.getItem("userId");
       const userName = localStorage.getItem("userName") || "Admin";
@@ -191,10 +194,13 @@ const PendingAccounts = () => {
         message: "Network Error",
         description: "Could not connect to the approval server.",
       });
+    } finally {
+      setApproveLoading(false);
     }
   };
   
   const handleReject = async () => {
+    setRejectLoading(true);
     try {
       await Promise.all(
         selectedRequests.map(async (requestId) => {
@@ -232,6 +238,8 @@ const PendingAccounts = () => {
         message: "Error",
         description: "Failed to reject the selected requests.",
       });
+    } finally {
+      setRejectLoading(false);
     }
   };  
 
@@ -289,8 +297,8 @@ const PendingAccounts = () => {
                 <Button
                   type="primary"
                   onClick={handleApprove}
-                  
-                  disabled={selectedRequests.length === 0}
+                  loading={approveLoading}
+                  disabled={selectedRequests.length === 0 || rejectLoading}
                     style={{
                         backgroundColor: selectedRequests.length > 0 ? '#45a049' : '', // green when enabled
                         borderColor: selectedRequests.length > 0 ? '#45a049' : '',
@@ -310,7 +318,8 @@ const PendingAccounts = () => {
                   <Button
                     type="primary"
                     danger
-                    disabled={selectedRequests.length === 0}
+                    loading={rejectLoading}
+                    disabled={selectedRequests.length === 0 || approveLoading}
                   >
                     Reject Selected
                   </Button>

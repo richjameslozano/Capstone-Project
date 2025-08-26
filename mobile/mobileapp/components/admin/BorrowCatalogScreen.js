@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   Modal,
   Button,
-  ScrollView
+  ScrollView,
+  ActivityIndicator
 } from "react-native";
 import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
@@ -24,6 +25,7 @@ const BorrowCatalogScreen = () => {
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
   const [headerHeight, setHeaderHeight] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   const navigation = useNavigation()
   const handleHeaderLayout = (event) => {
@@ -32,6 +34,7 @@ const BorrowCatalogScreen = () => {
 };
 
   useEffect(() => {
+    setLoading(true);
     const fetchCatalogData = () => {
       try {
         // Set up the real-time listener using onSnapshot
@@ -86,6 +89,10 @@ const BorrowCatalogScreen = () => {
   
           // Update state
           setCatalog(sortedData);
+          setLoading(false);
+        }, (error) => {
+          console.error('Error fetching borrow catalog:', error);
+          setLoading(false);
         });
   
         // Cleanup listener when the component unmounts
@@ -93,6 +100,7 @@ const BorrowCatalogScreen = () => {
         
       } catch (err) {
         console.error("Error fetching borrow catalog:", err);
+        setLoading(false);
       }
     };
   
@@ -247,14 +255,25 @@ const BorrowCatalogScreen = () => {
       </View>
     </View>
 
-      <FlatList
-        data={filteredCatalog}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id}
-        style={styles.list}
-        initialNumToRender={50}
-        contentContainerStyle={{gap: 5}}
-      />
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading borrow catalog...</Text>
+        </View>
+      ) : filteredCatalog.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 16, color: '#666' }}>No borrow catalog items found.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredCatalog}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id}
+          style={styles.list}
+          initialNumToRender={50}
+          contentContainerStyle={{gap: 5}}
+        />
+      )}
       </View>
 
       {modalVisible && (

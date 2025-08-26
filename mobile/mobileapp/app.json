@@ -1,19 +1,27 @@
 {
   "expo": {
     "name": "NULS MOA",
-    "slug": "NULS",
+    "slug": "NULS-MOA",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./components/images/NULS_Favicon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "splash": {
       "image": "./components/images/NULS_Favicon.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.nuls.numoa",
+      "deploymentTarget": "15.1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -25,9 +33,10 @@
     "web": {
       "favicon": "./components/images/NULS_Favicon.png"
     },
+    "owner": "blynsu",
     "extra": {
       "eas": {
-        "projectId": "6035ab36-a335-4e7e-81ab-0810d12ccfdd"
+        "projectId": "ab29db21-d917-4e43-89ae-1c8e875dea34"
       }
     }
   }

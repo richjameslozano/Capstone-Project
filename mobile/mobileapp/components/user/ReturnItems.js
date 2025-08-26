@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Picker } from '@react-native-picker/picker';
+import Icon2 from 'react-native-vector-icons/Ionicons';
 import {
   View, Text, TouchableOpacity, Modal,
   Button, TextInput, StyleSheet, ScrollView, Platform, KeyboardAvoidingView, TouchableWithoutFeedback, 
-  StatusBar, Dimensions } from 'react-native';
+  StatusBar, Dimensions, ActivityIndicator } from 'react-native';
 import {
   collection, getDocs, doc, updateDoc, getDoc, deleteDoc,
   setDoc, addDoc, serverTimestamp, onSnapshot, query, where
@@ -32,6 +33,10 @@ const ReturnItems = () => {
   const [issueQuantities, setIssueQuantities] = useState({});
   const [glasswareIssues, setGlasswareIssues] = useState({});
   const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [isConditionModalVisible, setIsConditionModalVisible] = useState(false);
+  const [currentConditionItem, setCurrentConditionItem] = useState(null);
+  const conditionOptions = ['Good', 'Defect', 'Damage', 'Lost'];
 
   const screenHeight = Dimensions.get("window").height;
   const modalMaxHeight = screenHeight * 0.8; 
@@ -44,6 +49,7 @@ const ReturnItems = () => {
 
 
   useEffect(() => {
+    setLoading(true);
     const unsubscribe = () => {
       if (user?.id) {
         const requestLogRef = collection(db, `accounts/${user.id}/userrequestlog`);
@@ -102,6 +108,10 @@ const ReturnItems = () => {
           });
   
           setHistoryData(sortedLogs); // Update the state with the sorted logs
+          setLoading(false);
+        }, (error) => {
+          console.error('Error fetching history data:', error);
+          setLoading(false);
         });
       }
     };
@@ -663,29 +673,40 @@ const ReturnItems = () => {
         ))}
       </View>
 
-      <View style={styles.returnTableContainer}>
-        <ScrollView style={{ maxHeight: 650, padding: 5 }}>
-          {/* Header */}
-          <View style={[styles.returnTableRow, styles.returnTableHeader]}>
-            <Text style={[styles.returnHeaderCell, styles.returnColDate]}>Date</Text>
-            <Text style={[styles.returnHeaderCell, styles.returnColStatus]}>Status</Text>
-            <Text style={[styles.returnHeaderCell, styles.returnColAction]}>Action</Text>
-          </View>
-
-          {/* Data Rows */}
-          {filteredData.map((item) => (
-            <View key={item.id} style={styles.returnTableRow}>
-              <Text style={[styles.returnCell, styles.returnColDate]}>
-                {item.rawTimestamp?.split(',')[0] || 'N/A'}
-              </Text>
-              <Text style={[styles.returnCell, styles.returnColStatus]}>{item.status}</Text>
-              <TouchableOpacity style={styles.returnColAction} onPress={() => handleViewDetails(item)}>
-                <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
-              </TouchableOpacity>
+      {loading ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <ActivityIndicator size="large" color="#395a7f" />
+          <Text style={{ marginTop: 10, fontSize: 16, color: '#395a7f' }}>Loading return history...</Text>
+        </View>
+      ) : filteredData.length === 0 ? (
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+          <Text style={{ fontSize: 16, color: '#666' }}>No return history found.</Text>
+        </View>
+      ) : (
+        <View style={styles.returnTableContainer}>
+          <ScrollView style={{ maxHeight: 650, padding: 5 }}>
+            {/* Header */}
+            <View style={[styles.returnTableRow, styles.returnTableHeader]}>
+              <Text style={[styles.returnHeaderCell, styles.returnColDate]}>Date</Text>
+              <Text style={[styles.returnHeaderCell, styles.returnColStatus]}>Status</Text>
+              <Text style={[styles.returnHeaderCell, styles.returnColAction]}>Action</Text>
             </View>
-          ))}
-        </ScrollView>
-      </View>
+
+            {/* Data Rows */}
+            {filteredData.map((item) => (
+              <View key={item.id} style={styles.returnTableRow}>
+                <Text style={[styles.returnCell, styles.returnColDate]}>
+                  {item.rawTimestamp?.split(',')[0] || 'N/A'}
+                </Text>
+                <Text style={[styles.returnCell, styles.returnColStatus]}>{item.status}</Text>
+                <TouchableOpacity style={styles.returnColAction} onPress={() => handleViewDetails(item)}>
+                  <Text style={[styles.linkText, { textAlign: 'center' }]}>View</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
 
         <Modal
           visible={modalVisible}
@@ -821,21 +842,22 @@ const ReturnItems = () => {
                               </View>
 
                               <View style={{ flex: 1, paddingHorizontal: 6 }}>
-                                <Picker
-                                  selectedValue={itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
-                                  style={styles.picker}
-                                  onValueChange={(value) => {
-                                    setItemConditions((prev) => ({
-                                      ...prev,
-                                      [`${item.itemIdFromInventory}-${i}`]: value,
-                                    }));
+                                <TouchableOpacity
+                                  style={[styles.picker, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 }]}
+                                  onPress={() => {
+                                    setCurrentConditionItem(`${item.itemIdFromInventory}-${i}`);
+                                    setIsConditionModalVisible(true);
                                   }}
                                 >
-                                  <Picker.Item label="Good" value="Good" />
-                                  <Picker.Item label="Defect" value="Defect" />
-                                  <Picker.Item label="Damage" value="Damage" />
-                                  <Picker.Item label="Lost" value="Lost" />
-                                </Picker>
+                                  <Text style={{ color: '#333' }}>
+                                    {itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
+                                  </Text>
+                                  <Icon2
+                                    name="chevron-down"
+                                    size={16}
+                                    color="#666"
+                                  />
+                                </TouchableOpacity>
                               </View>
                             </View>
                           ));
@@ -969,22 +991,22 @@ const ReturnItems = () => {
                                     <Text style={styles.cell}>1</Text>
 
                                     <View style={{ flex: 1, paddingHorizontal: 6 }}>
-                                      <Picker
-                                        selectedValue={itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
-                                        style={styles.picker}
-                                        onValueChange={(value) => {
-                                          setItemConditions(prev => ({
-                                            ...prev,
-                                            [`${item.itemIdFromInventory}-${i}`]: value,
-                                          }));
+                                      <TouchableOpacity
+                                        style={[styles.picker, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 }]}
+                                        onPress={() => {
+                                          setCurrentConditionItem(`${item.itemIdFromInventory}-${i}`);
+                                          setIsConditionModalVisible(true);
                                         }}
-                                        enabled={selectedRequest.status !== "Approved"} // Disable if status is Approved
                                       >
-                                        <Picker.Item label="Good" value="Good" />
-                                        <Picker.Item label="Defect" value="Defect" />
-                                        <Picker.Item label="Damage" value="Damage" />
-                                        <Picker.Item label="Lost" value="Lost" />
-                                      </Picker>
+                                        <Text style={{ color: '#333' }}>
+                                          {itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
+                                        </Text>
+                                        <Icon2
+                                          name="chevron-down"
+                                          size={16}
+                                          color="#666"
+                                        />
+                                      </TouchableOpacity>
                                     </View>
                                   </View>
                                 ));
@@ -1114,6 +1136,44 @@ const ReturnItems = () => {
                 title="Close"
                 onPress={() => setSuccessModalVisible(false)}
               />
+            </View>
+          </View>
+        </Modal>
+
+        {/* Condition Selection Modal */}
+        <Modal
+          visible={isConditionModalVisible}
+          transparent={true}
+          animationType="slide"
+        >
+          <View style={{ flex: 1, justifyContent: 'center', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+            <View style={{ margin: 20, backgroundColor: 'white', borderRadius: 10, padding: 20 }}>
+              <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 15, textAlign: 'center' }}>
+                Select Condition
+              </Text>
+              {conditionOptions.map((option) => (
+                <TouchableOpacity
+                  key={option}
+                  style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
+                  onPress={() => {
+                    if (currentConditionItem) {
+                      setItemConditions(prev => ({
+                        ...prev,
+                        [currentConditionItem]: option,
+                      }));
+                    }
+                    setIsConditionModalVisible(false);
+                  }}
+                >
+                  <Text style={{ fontSize: 16 }}>{option}</Text>
+                </TouchableOpacity>
+              ))}
+              <TouchableOpacity 
+                onPress={() => setIsConditionModalVisible(false)} 
+                style={{ marginTop: 15, paddingVertical: 10 }}
+              >
+                <Text style={{ textAlign: 'center', color: 'red', fontSize: 16 }}>Cancel</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </Modal>

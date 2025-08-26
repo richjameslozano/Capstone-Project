@@ -17,6 +17,8 @@ const RequisitionReqestModal = ({
   formatDate,
   allItemsChecked,
   college,
+  approveLoading = false,
+  rejectLoading = false,
 }) => {
 
     const [checkedItemIds, setCheckedItemIds] = useState([]);
@@ -123,8 +125,8 @@ const RequisitionReqestModal = ({
         zIndex={1022}
 
         footer={[
-          <Button key="cancel" onClick={handleCancel}>Cancel</Button>,
-          <Button key="reject" type="default" onClick={handleReturn}>Reject</Button>,
+          <Button key="cancel" onClick={handleCancel} disabled={approveLoading || rejectLoading}>Cancel</Button>,
+          <Button key="reject" type="default" onClick={handleReturn} loading={rejectLoading} disabled={approveLoading}>Reject</Button>,
 
           requestCollege !== null && shouldShowAskApproval && (
             <Button
@@ -141,7 +143,9 @@ const RequisitionReqestModal = ({
             key="approve"
             type="primary"
             onClick={handleApprove}
+            loading={approveLoading}
             disabled={
+              rejectLoading ||
               // If approvalRequested exists...
               typeof selectedRequest?.approvalRequested !== "undefined"
                 ? selectedRequest.approvalRequested || selectedRequest.deanStatus !== "Approved by Dean"
