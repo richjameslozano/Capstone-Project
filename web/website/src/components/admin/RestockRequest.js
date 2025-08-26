@@ -223,6 +223,22 @@ const RestockRequest = () => {
   const handleSaveQuantity = async () => {
     if (!selectedRequest || editedQuantity === null) return;
 
+    // Validation: Check for negative values
+    if (editedQuantity <= 0) {
+      setNotificationMessage("Quantity must be greater than 0.");
+      setIsNotificationVisible(true);
+      return;
+    }
+
+    // Validation: Check if quantity is the same as original
+    if (editedQuantity === selectedRequest.quantity_needed) {
+      setNotificationMessage("No changes detected. Quantity remains the same.");
+      setIsNotificationVisible(true);
+      setEditingQuantity(false);
+      setEditedQuantity(null);
+      return;
+    }
+
     setSaveQuantityLoading(true);
     try {
       const requestRef = doc(db, "restock_requests", selectedRequest.id);
@@ -435,7 +451,20 @@ const RestockRequest = () => {
                     <InputNumber
                       min={1}
                       value={editedQuantity}
-                      onChange={(value) => setEditedQuantity(value)}
+                      onChange={(value) => {
+                        // Prevent negative values and null values
+                        if (value === null || value <= 0) {
+                          setEditedQuantity(1);
+                        } else {
+                          setEditedQuantity(value);
+                        }
+                      }}
+                      onBlur={(e) => {
+                        // Ensure value is at least 1 when user leaves the field
+                        if (editedQuantity === null || editedQuantity <= 0) {
+                          setEditedQuantity(1);
+                        }
+                      }}
                       style={{ width: '120px' }}
                     />
                     <Button 
