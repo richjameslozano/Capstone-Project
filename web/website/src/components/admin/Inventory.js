@@ -456,17 +456,18 @@ function getDurableAvailabilityFields(itemDocData) {
             }
 
             // ===== Triggers =====
-            if (isConsumable(category) && quantity <= finalCriticalLevel) {
-              const shortfall = Math.max(
-                finalCriticalLevel - quantity,
-                Number(data.minOrderQty) || 1
-              );
-              await createRestockRequest({
-                ...data,
-                criticalLevel: finalCriticalLevel,
-                shortfall,
-              });
-            }
+            // if (isConsumable(category) && quantity <= finalCriticalLevel) {
+            //   const shortfall = Math.max(
+            //     finalCriticalLevel - quantity,
+            //     Number(data.minOrderQty) || 1
+            //   );
+
+            //   await createRestockRequest({
+            //     ...data,
+            //     criticalLevel: finalCriticalLevel,
+            //     shortfall,
+            //   });
+            // }
 
             // ===== SYNC TO LABROOM ITEMS (your original logic) =====
             const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
@@ -566,9 +567,9 @@ function getDurableAvailabilityFields(itemDocData) {
             const category = (data.category || "").toLowerCase();
 
             // Check if item needs restocking
-            if (quantity <= criticalLevel) {
-              await createRestockRequest(data);
-            }
+            // if (quantity <= criticalLevel) {
+            //   await createRestockRequest(data);
+            // }
 
             return {
               docId,
@@ -864,9 +865,9 @@ useEffect(() => {
               let newStatus = status;
 
               // Check if item needs restocking (critical level or out of stock)
-              if (quantity <= criticalLevel) {
-                await createRestockRequest(data);
-              }
+              // if (quantity <= criticalLevel) {
+              //   await createRestockRequest(data);
+              // }
 
               return {
                 docId,
@@ -939,44 +940,45 @@ useEffect(() => {
 // };
 
 //VERSION 2
-const createRestockRequest = async (item) => {
-  try {
-    const restockCollection = collection(db, "restock_requests");
-    const q = query(
-      restockCollection,
-      where("item_name", "==", item.itemName),
-      where("status", "==", "pending")
-    );
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
-      console.log(`${item.itemName} is already in the restock request list.`);
-      return;
-    }
+// const createRestockRequest = async (item) => {
+//   try {
+//     const restockCollection = collection(db, "restock_requests");
+//     const q = query(
+//       restockCollection,
+//       where("item_name", "==", item.itemName),
+//       where("status", "==", "pending")
+//     );
+//     const querySnapshot = await getDocs(q);
+//     if (!querySnapshot.empty) {
+//       console.log(`${item.itemName} is already in the restock request list.`);
+//       return;
+//     }
 
-    const qtyNeeded = Math.max(
-      Number(item.shortfall) || 0,
-      Number(item.minOrderQty) || 1
-    );
+//     const qtyNeeded = Math.max(
+//       Number(item.shortfall) || 0,
+//       Number(item.minOrderQty) || 1
+//     );
 
-    await addDoc(restockCollection, {
-      item_name: item.itemName,
-      quantity_needed: qtyNeeded,
-      department: item.department,
-      status: "pending",
-      created_at: serverTimestamp(),
-      updated_at: serverTimestamp(),
-    });
+//     await addDoc(restockCollection, {
+//       item_name: item.itemName,
+//       quantity_needed: qtyNeeded,
+//       department: item.department,
+//       status: "pending",
+//       created_at: serverTimestamp(),
+//       updated_at: serverTimestamp(),
+//     });
 
-    setNotificationMessage(
-      `${item.itemName} needs restocking. A request was generated for ${item.itemName}.`
-    );
-    setIsNotificationVisible(true);
-  } catch (error) {
-    console.error("Error creating restock request: ", error);
-    setNotificationMessage("Failed to create restock request.");
-    setIsNotificationVisible(true);
-  }
-};
+//     setNotificationMessage(
+//       `${item.itemName} needs restocking. A request was generated for ${item.itemName}.`
+//     );
+//     setIsNotificationVisible(true);
+
+//   } catch (error) {
+//     console.error("Error creating restock request: ", error);
+//     setNotificationMessage("Failed to create restock request.");
+//     setIsNotificationVisible(true);
+//   }
+// };
 
 // Decide the next restock date WITHOUT a settings doc
 function resolveNextRestockDate(data) {
