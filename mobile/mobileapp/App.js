@@ -149,7 +149,7 @@ const CustomDrawerContent = ({ navigation }) => {
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('OrdersScreen')}>
         <Icon2 name="history" size={25} style={styles.icon} />
-        <Title style={styles.titleStyle}>Orders</Title>
+        <Title style={styles.titleStyle}>Submitted Requisitions</Title>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.drawerItem} onPress={() => navigation.navigate('UserActivityLogScreen')}>
