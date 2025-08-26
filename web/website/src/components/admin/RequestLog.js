@@ -55,7 +55,7 @@ const RequestLog = () => {
 
 
 
-  useEffect(() => {
+ useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;
     const storedName = localStorage.getItem("userName");
