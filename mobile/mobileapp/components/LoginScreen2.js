@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler, Alert, Modal } from 'react-native';
 import { Input, Text, Icon } from 'react-native-elements';
-import { TextInput, Card, HelperText, Menu, Provider, Button, Checkbox  } from 'react-native-paper';
+import { TextInput, Card, HelperText, Menu, Provider, Button } from 'react-native-paper';
 import { useAuth } from '../components/contexts/AuthContext';
 import { db, auth } from '../backend/firebase/FirebaseConfig';
 import { collection, query, where, getDocs, updateDoc, addDoc, serverTimestamp, Timestamp, setDoc, doc, onSnapshot } from 'firebase/firestore';
@@ -489,7 +489,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         const emailDomain = email.split("@")[1];
       
         if (!validDomains.includes(emailDomain)) {
-          setError("Invalid email domain. Only @nu-moa.edu.ph and @students.nu-moa.edu.ph are allowed.");
+          setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
           setLoading(false);
           return;
         }
@@ -906,19 +906,40 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               {/* </View> */}
                 
                 <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 10 }}>
-                  <Checkbox
-                    status={agreedToTerms ? 'checked' : 'unchecked'}
+                  <TouchableOpacity 
+                    style={{ 
+                      flexDirection: 'row', 
+                      alignItems: 'center',
+                      marginRight: 8
+                    }}
                     onPress={() => setAgreedToTerms(!agreedToTerms)}
-                    color='#1e7898'
-                  />
+                    activeOpacity={0.7}
+                  >
+                    <View style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 4,
+                      borderWidth: 2,
+                      borderColor: agreedToTerms ? '#1e7898' : '#ccc',
+                      backgroundColor: agreedToTerms ? '#1e7898' : 'transparent',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 8
+                    }}>
+                      {agreedToTerms && (
+                        <MaterialCommunityIcons 
+                          name="check" 
+                          size={14} 
+                          color="white" 
+                        />
+                      )}
+                    </View>
+                  </TouchableOpacity>
                   <TouchableOpacity onPress={() => setTermsModalVisible(true)}>
                     <Text style={{ color: '#007BFF', textDecorationLine: 'underline' }}>
                       View Terms and Conditions
                     </Text>
                   </TouchableOpacity>
-
-                    
-                  
 
                   <TermsModal
                     visible={isTermsModalVisible}

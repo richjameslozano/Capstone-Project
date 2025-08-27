@@ -15,7 +15,7 @@ import styles from '../styles/userStyle/ReturnItemsStyle';
 import Header from '../Header';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
-import { Checkbox, Dialog, Portal } from 'react-native-paper';
+import { Dialog, Portal } from 'react-native-paper';
 
 const ReturnItems = () => {
   const { user } = useAuth();
@@ -942,8 +942,11 @@ const ReturnItems = () => {
                                     {/* Issue Checkbox */}
                                     <View style={{ flex: 1, alignItems: 'center' }}>
                                       {selectedRequest.status === "Deployed" && (
-                                        <Checkbox
-                                          status={issuedStatus[returnKey] ? 'checked' : 'unchecked'}
+                                        <TouchableOpacity
+                                          style={{ 
+                                            alignItems: 'center',
+                                            justifyContent: 'center'
+                                          }}
                                           onPress={() => {
                                             setIssuedStatus(prev => {
                                               const newStatus = { ...prev, [returnKey]: !prev[returnKey] };
@@ -959,8 +962,27 @@ const ReturnItems = () => {
                                               return newStatus;
                                             });
                                           }}
-                                          color="#1e7898"
-                                        />
+                                          activeOpacity={0.7}
+                                        >
+                                          <View style={{
+                                            width: 20,
+                                            height: 20,
+                                            borderRadius: 4,
+                                            borderWidth: 2,
+                                            borderColor: issuedStatus[returnKey] ? '#1e7898' : '#ccc',
+                                            backgroundColor: issuedStatus[returnKey] ? '#1e7898' : 'transparent',
+                                            justifyContent: 'center',
+                                            alignItems: 'center'
+                                          }}>
+                                            {issuedStatus[returnKey] && (
+                                              <Icon 
+                                                name="check" 
+                                                size={14} 
+                                                color="white" 
+                                              />
+                                            )}
+                                          </View>
+                                        </TouchableOpacity>
                                       )}
                                     </View>
                                   </View>
@@ -997,19 +1019,35 @@ const ReturnItems = () => {
 
                                     <View style={{ flex: 1, paddingHorizontal: 6 }}>
                                       <TouchableOpacity
-                                        style={[styles.picker, { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 10 }]}
+                                        style={[
+                                          styles.picker, 
+                                          { 
+                                            flexDirection: 'row', 
+                                            justifyContent: 'space-between', 
+                                            alignItems: 'center', 
+                                            paddingHorizontal: 10,
+                                            backgroundColor: selectedRequest.status === "Approved" ? "#e0e0e0" : "white",
+                                            opacity: selectedRequest.status === "Approved" ? 0.6 : 1
+                                          }
+                                        ]}
                                         onPress={() => {
-                                          setCurrentConditionItem(`${item.itemIdFromInventory}-${i}`);
-                                          setIsConditionModalVisible(true);
+                                          if (selectedRequest.status !== "Approved") {
+                                            setCurrentConditionItem(`${item.itemIdFromInventory}-${i}`);
+                                            setIsConditionModalVisible(true);
+                                          }
                                         }}
+                                        disabled={selectedRequest.status === "Approved"}
+                                        activeOpacity={selectedRequest.status === "Approved" ? 1 : 0.7}
                                       >
-                                        <Text style={{ color: '#333' }}>
+                                        <Text style={{ 
+                                          color: selectedRequest.status === "Approved" ? '#888' : '#333' 
+                                        }}>
                                           {itemConditions[`${item.itemIdFromInventory}-${i}`] || 'Good'}
                                         </Text>
                                         <Icon2
                                           name="chevron-down"
                                           size={16}
-                                          color="#666"
+                                          color={selectedRequest.status === "Approved" ? "#999" : "#666"}
                                         />
                                       </TouchableOpacity>
                                     </View>
