@@ -825,7 +825,7 @@ try {
             const data = doc.data();
             if (
               data?.expoPushToken &&
-              data.userId === selectedRequest.userId // 👈 This should match the request sender
+              (data.userId === selectedRequest.accountId || data.userDocId === selectedRequest.accountId) // 👈 This should match the request sender
             ) {
               tokensToNotify.push(data.expoPushToken);
             }

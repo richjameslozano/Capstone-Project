@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./components/images/NULS_Favicon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./components/images/NULS_Favicon.png",
       "resizeMode": "contain",
@@ -28,7 +28,12 @@
         "foregroundImage": "./components/images/NULS_Favicon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.nuls.numoa"
+      "package": "com.nuls.numoa",
+      "permissions": [
+        "NOTIFICATIONS",
+        "VIBRATE",
+        "WAKE_LOCK"
+      ]
     },
     "web": {
       "favicon": "./components/images/NULS_Favicon.png"
@@ -38,6 +43,23 @@
       "eas": {
         "projectId": "ab29db21-d917-4e43-89ae-1c8e875dea34"
       }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./components/images/NULS_Favicon.png",
+          "color": "#ffffff",
+          "mode": "production"
+        }
+      ]
+    ],
+    "notification": {
+      "icon": "./components/images/NULS_Favicon.png",
+      "color": "#ffffff",
+      "iosDisplayInForeground": true,
+      "androidMode": "default",
+      "androidCollapsedTitle": "NULS MOA"
     }
   }
 }

@@ -13,7 +13,16 @@ import { collection, addDoc, serverTimestamp, getDocs } from "firebase/firestore
 import Icon from 'react-native-vector-icons/Ionicons'; 
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons'
 import { LogBox } from 'react-native';
+import * as ExpoNotifications from 'expo-notifications';
 
+// Configure notification handler
+ExpoNotifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: false,
+  }),
+});
 
 
 import ActivityLogScreen from './components/admin/ActivityLogScreen';
@@ -469,6 +478,25 @@ const SuperUserDrawer = () => {
 };
 
 export default function App() {
+  const [expoPushToken, setExpoPushToken] = useState('');
+  const [notification, setNotification] = useState(false);
+
+  useEffect(() => {
+    // Set up notification listeners
+    const notificationListener = ExpoNotifications.addNotificationReceivedListener(notification => {
+      setNotification(notification);
+    });
+
+    const responseListener = ExpoNotifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification response received:', response);
+    });
+
+    return () => {
+      ExpoNotifications.removeNotificationSubscription(notificationListener);
+      ExpoNotifications.removeNotificationSubscription(responseListener);
+    };
+  }, []);
+
   return (
     <RequestMetadataProvider>
       <RequestListProvider>

@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SafeAreaView, View, StyleSheet, KeyboardAvoidingView, Platform, TouchableWithoutFeedback, Keyboard, ImageBackground, TouchableOpacity, UIManager, LayoutAnimation, StatusBar, Image, BackHandler, Alert, Modal } from 'react-native';
-import { Input, Text, Icon } from 'react-native-elements';
+import { Input, Icon } from 'react-native-elements';
+import { Text } from 'react-native';
 import { TextInput, Card, HelperText, Menu, Provider, Button } from 'react-native-paper';
 import { useAuth } from '../components/contexts/AuthContext';
 import { db, auth } from '../backend/firebase/FirebaseConfig';
