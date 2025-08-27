@@ -14,9 +14,16 @@ export const registerForPushNotificationsAsync = async (userDocId, role) => {
       return null;
     }
 
-    // Check if running in Expo Go vs production build
-    const isExpoGo = Constants.appOwnership === 'expo';
-    console.log("[PushToken] Running in Expo Go:", isExpoGo);
+    // Better detection for Expo Go vs production build
+    const isExpoGo = Constants.appOwnership === 'expo' || Constants.appOwnership === 'standalone';
+    const isProductionBuild = Constants.appOwnership === 'standalone' || Constants.appOwnership === 'expo';
+    
+    // For production builds, we want to treat them as non-Expo Go
+    const shouldUseProductionTokens = Constants.appOwnership === 'standalone' || 
+                                    (Constants.appOwnership === 'expo' && !Constants.expoGoConfig);
+    
+    console.log("[PushToken] App ownership:", Constants.appOwnership);
+    console.log("[PushToken] Should use production tokens:", shouldUseProductionTokens);
 
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
@@ -33,19 +40,10 @@ export const registerForPushNotificationsAsync = async (userDocId, role) => {
       return null;
     }
 
-    // Get the push token
-    let token;
-    if (isExpoGo) {
-      // Use Expo push token for Expo Go
-      token = (await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId,
-      })).data;
-    } else {
-      // Use Expo push token for production builds
-      token = (await Notifications.getExpoPushTokenAsync({
-        projectId: Constants.expoConfig?.extra?.eas?.projectId,
-      })).data;
-    }
+    // Get the push token - always use the same method for both
+    const token = (await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig?.extra?.eas?.projectId,
+    })).data;
 
     console.log("[PushToken] Retrieved token:", token);
 
@@ -59,7 +57,8 @@ export const registerForPushNotificationsAsync = async (userDocId, role) => {
         userDocId,
         userId: userDocId, // Add this for web component compatibility
         role: role || "User",
-        isExpoGo: isExpoGo,
+        isExpoGo: !shouldUseProductionTokens,
+        isProductionBuild: shouldUseProductionTokens,
         deviceType: Device.osName,
         lastUpdated: new Date(),
       });
@@ -70,12 +69,14 @@ export const registerForPushNotificationsAsync = async (userDocId, role) => {
         userDocId,
         userId: userDocId,
         role: role || "User",
-        isExpoGo: isExpoGo,
+        isExpoGo: !shouldUseProductionTokens,
+        isProductionBuild: shouldUseProductionTokens,
         deviceType: Device.osName,
         lastUpdated: new Date(),
       });
       
       console.log("[PushToken] Saved to Firestore under UID:", currentUser.uid, "and userDocId:", userDocId);
+      console.log("[PushToken] Token type:", shouldUseProductionTokens ? "PRODUCTION" : "EXPO_GO");
 
     } else {
       console.log("[PushToken] Missing user or token");
