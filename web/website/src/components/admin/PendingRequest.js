@@ -308,6 +308,7 @@ const getCollegeByDepartment = async (departmentName) => {
 
   const handleCancel = () => {
     setCheckedItems({});
+    setEditableItems([]);
     setIsModalVisible(false);
     setSelectedRequest(null);
     setApproveLoading(false);
@@ -1358,7 +1359,7 @@ try {
 
     // 🔄 Rebuild merged list using the latest quantity edits
     const mergedRequestList = selectedRequest.requestList.map((item, index) => {
-      const editedItem = editableItems?.[index]; // or editableItems?.[item.selectedItemId] if keyed that way
+      const editedItem = editableItems?.[index]; // Use index as key
       return editedItem ? { ...item, quantity: editedItem.quantity } : item;
     });
 
@@ -2684,8 +2685,7 @@ try {
 const mergedRequestList = selectedRequest.requestList.map((item, index) => {
   const key = `${selectedRequest.id}-${index}`;
   const isChecked = checkedItems[key];
-  // const editedItem = editableItems?.[index];
-  const editedItem = editableItems?.[item.selectedItemId];
+  const editedItem = editableItems?.[index];
 
   // Only update quantity for checked items
   if (isChecked && editedItem?.quantity !== undefined) {
@@ -3567,12 +3567,18 @@ try {
   const handleReject = () => { 
     if (!selectedRequest) return;
 
-    const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
+    // 🔄 Use edited quantities from editableItems
+    const mergedRequestList = selectedRequest.requestList.map((item, index) => {
+      const editedItem = editableItems?.[index];
+      return editedItem ? { ...item, quantity: editedItem.quantity } : item;
+    });
+
+    const uncheckedItems = mergedRequestList.filter((item, index) => {
       const key = `${selectedRequest.id}-${index}`;
       return !checkedItems[key]; // Get items that are NOT checked
     });
 
-    const enrichedItems = selectedRequest.requestList.filter((item, index) => {
+    const enrichedItems = mergedRequestList.filter((item, index) => {
       const key = `${selectedRequest.id}-${index}`;
       return checkedItems[key]; // Get items that ARE checked
     });
@@ -4114,6 +4120,27 @@ try {
     {
       title: "Quantity",
       dataIndex: "quantity",
+      key: "quantity",
+      render: (text, record, index) => (
+        <Input
+          type="number"
+          min={1}
+          value={editableItems?.[index]?.quantity ?? text}
+          onChange={(e) => {
+            const value = e.target.value;
+            const updatedValue = value === "" ? "" : Math.max(1, parseInt(value));
+
+            setEditableItems((prev) => {
+              const newItems = [...(prev || [])];
+              newItems[index] = {
+                ...record,
+                quantity: updatedValue,
+              };
+              return newItems;
+            });
+          }}
+        />
+      )
     },
      {
       title: "Unit",
@@ -4624,7 +4651,7 @@ useEffect(() => {
             <Table
               dataSource={pendingApprovalData?.uncheckedItems || []}
               columns={columnsRejection1}
-              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
+              rowKey={(record, index) => `multi-reject-${index}`}
               pagination={false}
             />
           </Modal>
@@ -4678,13 +4705,15 @@ useEffect(() => {
                   dataIndex: 'quantity',
                   key: 'quantity',
                   render: (text, record, index) => {
-                    const valueFromEditable = editableItems?.[index]?.quantity;
+                    // Find the corresponding item in editableItems by selectedItemId
+                    const editedItem = editableItems?.find(item => item?.selectedItemId === record.selectedItemId);
+                    const valueFromEditable = editedItem?.quantity;
                     return <span>{valueFromEditable ?? text}</span>;
                   },
                 }
                 
               ]}
-              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
+              rowKey={(record, index) => `approved-${index}`}
               pagination={false}
             />
 
@@ -4692,7 +4721,7 @@ useEffect(() => {
             <Table
               dataSource={pendingApprovalData?.uncheckedItems || []}
               columns={columnsRejection1} 
-              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
+              rowKey={(record, index) => `rejected-${index}`}
               pagination={false}
             />
           </Modal>
@@ -4710,6 +4739,8 @@ useEffect(() => {
           college={selectedCollege} 
           approveLoading={approveLoading}
           rejectLoading={rejectLoading}
+          editableItems={editableItems}
+          setEditableItems={setEditableItems}
         />
 
         <ApprovedRequestModal

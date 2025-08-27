@@ -1,13 +1,13 @@
-import React, { useEffect, useState, useRef } from "react";
-import { Modal, Button, Row, Col, Typography, Table } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, Button, Typography, Table } from "antd";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/PendingRequest.css";
 import NotificationModal from "./NotificationModal";
 
-const { Text, Title } = Typography;
+const { Title } = Typography;
 
-const RequisitionReqestModal = ({
+const RequisitionRequestModal = ({
   isModalVisible,
   handleCancel,
   handleApprove,
@@ -19,25 +19,26 @@ const RequisitionReqestModal = ({
   college,
   approveLoading = false,
   rejectLoading = false,
+  editableItems,
+  setEditableItems,
 }) => {
-
-    const [checkedItemIds, setCheckedItemIds] = useState([]);
-    const [isNotificationVisible, setIsNotificationVisible] = useState(false);
-    const [notificationMessage, setNotificationMessage] = useState("");
-    const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
-    const [requestCollege, setRequestCollege] = useState(null);
-    const userDepartment = (localStorage.getItem("userDepartment") || "").trim().toUpperCase();
-    const userJobTitle = (localStorage.getItem("userJobTitle") || "").trim().toLowerCase();
-    const [editableItems, setEditableItems] = useState([]);
+  const [checkedItemIds, setCheckedItemIds] = useState([]);
+  const [isNotificationVisible, setIsNotificationVisible] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState("");
+  const [approvalRequestedIds, setApprovalRequestedIds] = useState([]);
+  const [requestCollege, setRequestCollege] = useState(null);
+  const userDepartment = (localStorage.getItem("userDepartment") || "").trim().toUpperCase();
+  const userJobTitle = (localStorage.getItem("userJobTitle") || "").trim().toLowerCase();
 
   useEffect(() => {
     if (selectedRequest) {
       setCheckedItemIds([]); // reset when modal opens
+      setEditableItems([]); // reset editable items
     }
-  }, [selectedRequest]);
+  }, [selectedRequest, setEditableItems]);
 
   useEffect(() => {
-    if (selectedRequest?.requestList) {
+    if (selectedRequest?.requestList && setEditableItems) {
       const itemsWithMax = selectedRequest.requestList.map((item) => ({
         ...item,
         quantity: item.quantity,            // Editable
@@ -45,7 +46,7 @@ const RequisitionReqestModal = ({
       }));
       setEditableItems(itemsWithMax);
     }
-  }, [selectedRequest]);
+  }, [selectedRequest, setEditableItems]);
 
   useEffect(() => {
     const fetchCollegeFromDepartment = async () => {
@@ -72,7 +73,6 @@ const RequisitionReqestModal = ({
     fetchCollegeFromDepartment();
   }, [selectedRequest]);
 
-
   const handleAskApproval = async () => {
     if (!selectedRequest) return;
 
@@ -91,7 +91,6 @@ const RequisitionReqestModal = ({
         approvalRequested: true,
       });
 
-      
       console.log("Successfully updated userRequests");
       setApprovalRequestedIds(prev => [...prev, selectedRequest.id]);
       setNotificationMessage("Request successfully forwarded for approval.");
@@ -108,14 +107,6 @@ const RequisitionReqestModal = ({
   const isDeanOfSAH = userDepartment === "SAH" && userJobTitle === "dean";
   const shouldShowAskApproval = requestCollege !== "SAH" && !isDeanOfSAH;
 
-  console.log("Dean of SAH:", isDeanOfSAH);
-
-  console.log("Selected Request Department:", selectedRequest?.department);
-  console.log("Resolved College from Firestore:", requestCollege);
-  console.log("User Department:", userDepartment);
-  console.log("User Job Title:", userJobTitle);
-  console.log("Should show Ask Approval button?", shouldShowAskApproval);
-
   return (
     <>
       <Modal
@@ -123,7 +114,6 @@ const RequisitionReqestModal = ({
         onCancel={handleCancel}
         width={800}
         zIndex={1022}
-
         footer={[
           <Button key="cancel" onClick={handleCancel} disabled={approveLoading || rejectLoading}>Cancel</Button>,
           <Button key="reject" type="default" onClick={handleReturn} loading={rejectLoading} disabled={approveLoading}>Reject</Button>,
@@ -158,40 +148,32 @@ const RequisitionReqestModal = ({
       >
         {selectedRequest && (
           <>
-          <div className="requisition-slip-title">
-            <strong>Requisition Slip</strong>
-          </div>
-              <div className="whole-slip">
-                <div className="left-slip">
-                  <div> <strong>Requestor:</strong><p> {selectedRequest.userName}</p></div>
-                <div>< strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p> </div>
-                <div>< strong>Date Needed:</strong> <p>{selectedRequest.dateRequired}</p></div>
-                <div>< strong>Time Needed:</strong> <p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p> </div>
-                </div>
-                
-
-                <div className="right-slip">
-                  <div><strong>Room:</strong> <p>{selectedRequest.room}</p></div>
-                  <div><strong>Course Code:</strong> <p>{selectedRequest.course}</p></div>
-                  <div><strong>Course Description:</strong> <p>{selectedRequest.courseDescription}</p></div>
-                  <div><strong>Program:</strong> <p>{selectedRequest.program}</p></div>
-                  <div><strong>Usage Type:</strong> <p>{selectedRequest.usageType}</p></div>
-                </div>
+            <div className="requisition-slip-title">
+              <strong>Requisition Slip</strong>
+            </div>
+            <div className="whole-slip">
+              <div className="left-slip">
+                <div><strong>Requestor:</strong><p>{selectedRequest.userName}</p></div>
+                <div><strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p></div>
+                <div><strong>Date Needed:</strong><p>{selectedRequest.dateRequired}</p></div>
+                <div><strong>Time Needed:</strong><p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p></div>
               </div>
 
+              <div className="right-slip">
+                <div><strong>Room:</strong><p>{selectedRequest.room}</p></div>
+                <div><strong>Course Code:</strong><p>{selectedRequest.course}</p></div>
+                <div><strong>Course Description:</strong><p>{selectedRequest.courseDescription}</p></div>
+                <div><strong>Program:</strong><p>{selectedRequest.program}</p></div>
+                <div><strong>Usage Type:</strong><p>{selectedRequest.usageType}</p></div>
+              </div>
+            </div>
+
             <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
-            {/* <Table
-              dataSource={selectedRequest.requestList}
-              columns={columns}
-              rowKey="id"
-              pagination={false}
-              bordered
-            /> */}
 
             <Table
-              dataSource={editableItems}
+              dataSource={selectedRequest.requestList}
               columns={columns}
-              rowKey={(record, index) => `${record.selectedItemId}-${index}`}
+              rowKey={(record, index) => `row-${index}`}
               pagination={false}
               bordered
             />
@@ -207,7 +189,6 @@ const RequisitionReqestModal = ({
                 </p>
               </div>
             )}
-
           </>
         )}
       </Modal>
@@ -221,5 +202,5 @@ const RequisitionReqestModal = ({
   );
 };
 
-export default RequisitionReqestModal;
+export default RequisitionRequestModal;
 
