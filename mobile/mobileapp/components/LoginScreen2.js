@@ -15,7 +15,7 @@ import TermsModal from './customs/TermsModal';
 import {Animated} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { registerForPushNotificationsAsync } from '../utils/RegisterPushToken';
+import { registerForPushNotificationsAsync, testPushTokenRegistration } from '../utils/RegisterPushToken';
 import { color } from 'react-native-elements/dist/helpers';
 
 export default function LoginScreen({navigation}) {
@@ -1031,6 +1031,18 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
                 <TouchableOpacity onPress={() => setForgotPasswordVisible(true)}>
                 <Text style={styles.forgotPassword}>Forgot Password?</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={async () => {
+                    console.log("Testing push token registration...");
+                    const result = await testPushTokenRegistration();
+                    console.log("Test result:", result);
+                    Alert.alert("Test Result", result ? "Test passed! Check Firebase logs." : "Test failed! Check Firebase logs.");
+                  }}
+                  style={{marginTop: 10, padding: 10, backgroundColor: '#ff6b6b', borderRadius: 5}}
+                >
+                  <Text style={{color: 'white', textAlign: 'center'}}>Test Push Token Registration</Text>
                 </TouchableOpacity>
 
                   <CustomButton
