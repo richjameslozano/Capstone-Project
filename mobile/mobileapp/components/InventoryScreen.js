@@ -44,7 +44,7 @@ export default function InventoryScreen({ navigation }) {
   const [course, setCourse] = useState('');
   const [courseDescription, setCourseDescription] = useState('');
   const [room, setRoom] = useState('');
-  const [selectedUsageTypeInput, setSelectedUsageTypeInput] = useState(''); 
+  // Removed selectedUsageTypeInput state since we're using metadata now 
   const [usageTypeOtherInput, setUsageTypeOtherInput] = useState('')
   const today = new Date().toISOString().split('T')[0];
   const { metadata, setMetadata } = useRequestMetadata();
@@ -94,7 +94,7 @@ export default function InventoryScreen({ navigation }) {
       setRoom('')
       setReason('')
       setDescription('')
-      setSelectedUsageTypeInput(null)
+      // Removed selectedUsageTypeInput reset since we're using metadata now
 
           StatusBar.setBarStyle('light-content');
           StatusBar.setBackgroundColor('transparent');
@@ -311,7 +311,6 @@ export default function InventoryScreen({ navigation }) {
     setSelectedItem(null);
     setQuantity('');
     setReason('');
-    setSelectedUsageTypeInput(''); 
   };
 
   const handleInputToggle = (itemId) => {
@@ -340,19 +339,20 @@ export default function InventoryScreen({ navigation }) {
         return;
       }
 
-      if (!selectedUsageTypeInput) {
+      // Check if usage type is selected in metadata instead of local state
+      if (!metadata?.usageType && !metadata?.usageTypeOther) {
         alert('Please select a usage type.');
         return;
       }
 
       console.log('metadata.usageTypeOther:', metadata.usageTypeOther);
-      console.log('selectedUsageTypeInput:', selectedUsageTypeInput);
+      console.log('metadata.usageType:', metadata.usageType);
 
 
       const finalUsageType =
-        selectedUsageTypeInput === 'Others'
+        metadata?.usageType === 'Others'
           ? metadata?.usageTypeOther || ''
-          : selectedUsageTypeInput;
+          : metadata?.usageType || '';
 
       const requestedQty = parseInt(quantity);
       const availableQty = parseInt(item.quantity);
@@ -375,7 +375,7 @@ export default function InventoryScreen({ navigation }) {
         finalUsageType
       });
 
-      if (selectedUsageTypeInput === 'Others' && !finalUsageType) {
+      if (metadata?.usageType === 'Others' && !finalUsageType) {
         alert('Please specify the usage type in the text field.');
         return;
       }
@@ -646,7 +646,7 @@ export default function InventoryScreen({ navigation }) {
         program: !program,
         course: !course,
         room: !room,
-        usageType: !selectedUsageTypeInput,
+        usageType: !metadata?.usageType && !metadata?.usageTypeOther,
       };
 
       setErrors(newErrors);
@@ -668,9 +668,9 @@ export default function InventoryScreen({ navigation }) {
       }
 
       const finalUsageType =
-        selectedUsageTypeInput === 'Others'
+        metadata?.usageType === 'Others'
           ? metadata?.usageTypeOther || ''
-          : selectedUsageTypeInput;
+          : metadata?.usageType || '';
 
       setMetadata((prev) => ({
         ...prev,
@@ -985,7 +985,7 @@ export default function InventoryScreen({ navigation }) {
                    onPress={() => setIsUsageTypeModalVisible(true)}
                  >
                    <Text style={styles.programItem}>
-                     {selectedUsageTypeInput || 'Select'}
+                     {metadata?.usageType || 'Select'}
                    </Text>
                    <Icon2
                      name="chevron-down"
@@ -996,7 +996,7 @@ export default function InventoryScreen({ navigation }) {
                    />
                  </TouchableOpacity>
 
-                 {selectedUsageTypeInput === 'Others' && (
+                 {metadata?.usageType === 'Others' && (
                    <TextInput
                      placeholder="Please specify"
                      style={[styles.otherInput, errors.usageType && { borderColor: 'red', borderWidth: 1 }]}
@@ -1091,7 +1091,7 @@ export default function InventoryScreen({ navigation }) {
                     <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
                   </TouchableOpacity> */}
 
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={{
                       backgroundColor: '#efefef',
                       flex: 1,
@@ -1109,7 +1109,7 @@ export default function InventoryScreen({ navigation }) {
                     <Text style={{ fontWeight: 'bold', color: '#515151' }}>
                       {selectedDepartment || 'All Department'}
                     </Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
 
                 </View>
 
@@ -1514,7 +1514,6 @@ export default function InventoryScreen({ navigation }) {
                 key={option}
                 style={{ paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#eee' }}
                 onPress={() => {
-                  setSelectedUsageTypeInput(option);
                   setMetadata((prevMetadata) => ({
                     ...prevMetadata,
                     usageType: option === 'Others' ? '' : option,

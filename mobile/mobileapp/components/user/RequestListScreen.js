@@ -599,93 +599,119 @@ const boldLabel = {
 >
   <TouchableWithoutFeedback onPress={() => setShowConfirmationModal(false)}>
     <View style={styles.modalBackground}>
-      <TouchableWithoutFeedback>
-        <View style={styles.confirmationModalContainer}>
-          <Text style={styles.confirmationModalTitle}>Confirm Request</Text>
+             <TouchableWithoutFeedback>
+         <View style={styles.confirmationModalContainer}>
+           <ScrollView 
+             showsVerticalScrollIndicator={true}
+             contentContainerStyle={{ flexGrow: 1 }}
+             style={{ maxHeight: '85%' }}
+           >
+             <Text style={styles.confirmationModalTitle}>Confirm Request</Text>
 
-          <View style={styles.confirmationInfoSection}>
-            <Text style={styles.confirmationLabel}>Date Required:</Text>
-            <Text style={styles.confirmationValue}>{confirmationData?.dateRequired || 'N/A'}</Text>
+                           <View style={styles.confirmationInfoSection}>
+                {/* Date Required and Time */}
+                <View style={styles.confirmationRow}>
+                  <View style={styles.confirmationField}>
+                    <Text style={styles.confirmationLabel}>Date Required:</Text>
+                    <Text style={styles.confirmationValue}>{confirmationData?.dateRequired || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.confirmationField}>
+                    <Text style={styles.confirmationLabel}>Time:</Text>
+                    <Text style={styles.confirmationValue}>
+                      {metadata.timeFrom || 'N/A'} - {metadata.timeTo || 'N/A'}
+                    </Text>
+                  </View>
+                </View>
 
-            <Text style={styles.confirmationLabel}>Time:</Text>
-            <Text style={styles.confirmationValue}>
-              {metadata.timeFrom || 'N/A'} - {metadata.timeTo || 'N/A'}
-            </Text>
+                {/* Program and Course */}
+                <View style={styles.confirmationRow}>
+                  <View style={styles.confirmationField}>
+                    <Text style={styles.confirmationLabel}>Program:</Text>
+                    <Text style={styles.confirmationValue}>{confirmationData?.program || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.confirmationField}>
+                    <Text style={styles.confirmationLabel}>Course:</Text>
+                    <Text style={styles.confirmationValue}>{confirmationData?.course || 'N/A'}</Text>
+                  </View>
+                </View>
 
-            <Text style={styles.confirmationLabel}>Program:</Text>
-            <Text style={styles.confirmationValue}>{confirmationData?.program || 'N/A'}</Text>
+                {/* Room and Reason */}
+                <View style={styles.confirmationRow}>
+                  <View style={styles.confirmationField}>
+                    <Text style={styles.confirmationLabel}>Room:</Text>
+                    <Text style={styles.confirmationValue}>{confirmationData?.room || 'N/A'}</Text>
+                  </View>
+                  <View style={styles.confirmationField}>
+                    <Text style={styles.confirmationLabel}>Reason:</Text>
+                    <Text style={styles.confirmationValue}>{confirmationData?.reason || 'N/A'}</Text>
+                  </View>
+                </View>
+              </View>
 
-            <Text style={styles.confirmationLabel}>Course:</Text>
-            <Text style={styles.confirmationValue}>{confirmationData?.course || 'N/A'}</Text>
+             <Text style={styles.confirmationSubtitle}>Items</Text>
 
-            <Text style={styles.confirmationLabel}>Room:</Text>
-            <Text style={styles.confirmationValue}>{confirmationData?.room || 'N/A'}</Text>
-
-            <Text style={styles.confirmationLabel}>Reason:</Text>
-            <Text style={styles.confirmationValue}>{confirmationData?.reason || 'N/A'}</Text>
-          </View>
-
-          <Text style={styles.confirmationSubtitle}>Items</Text>
-
-
-          <View >
+                           <View style={{ maxHeight: 200, marginBottom: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, overflow: 'hidden' }}>
+                <ScrollView
+                  horizontal={true}
+                  showsHorizontalScrollIndicator={true}
+                  contentContainerStyle={{ minWidth: 400 }}
+                >
                   <ScrollView
-                    horizontal={true}
-                    contentContainerStyle={{ minWidth: 600, flexGrow: 1}}
-                    showsHorizontalScrollIndicator={true}
+                    showsVerticalScrollIndicator={true}
+                    nestedScrollEnabled={true}
                   >
-                    <View style={{flex: 1}}>
+                    <View>
                       {/* Header */}
                       <View style={styles.tableRowHeader}>
-                        <Text style={[styles.tableCellHeader,]}>Name</Text>
-                        <Text style={[styles.tableCellHeader, ]}>Details</Text>
-                        <Text style={[styles.tableCellHeader,]}>Qty</Text>
-                        <Text style={[styles.tableCellHeader,]}>Unit</Text>
+                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Name</Text>
+                        <Text style={[styles.tableCellHeader, { width: 150 }]}>Details</Text>
+                        <Text style={[styles.tableCellHeader, { width: 60 }]}>Qty</Text>
+                        <Text style={[styles.tableCellHeader, { width: 80 }]}>Unit</Text>
                       </View>
 
                       {/* Rows */}
                       {requestList.map((item, index) => (
                         <View key={index} style={styles.tableRow}>
-                          <Text style={[styles.tableCell,]}>{item.selectedItem?.label}</Text>
-                          <Text style={[styles.tableCell, ]}>{item.itemDetails}</Text>
-                          <Text style={[styles.tableCell,]}>{item.quantity}</Text>
-                          <Text style={[styles.tableCell, ]}>{item.unit}</Text>
+                          <Text style={[styles.tableCell, { width: 120 }]} numberOfLines={2}>{item.selectedItem?.label}</Text>
+                          <Text style={[styles.tableCell, { width: 150 }]} numberOfLines={2}>{item.itemDetails}</Text>
+                          <Text style={[styles.tableCell, { width: 60 }]}>{item.quantity}</Text>
+                          <Text style={[styles.tableCell, { width: 80 }]}>{item.unit}</Text>
                         </View>
                       ))}
                     </View>
                   </ScrollView>
-                </View>
+                </ScrollView>
+              </View>
+           </ScrollView>
 
+           <View style={styles.modalActions}>
+             <TouchableOpacity
+               style={styles.cancelButton}
+               onPress={() => setShowConfirmationModal(false)}
+             >
+               <Text style={styles.cancelButtonText}>Cancel</Text>
+             </TouchableOpacity>
 
-
-          <View style={styles.modalActions}>
-            <TouchableOpacity
-              style={styles.cancelButton}
-              onPress={() => setShowConfirmationModal(false)}
-            >
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.confirmButton, submitLoading && styles.disabledButton]}
-              onPress={async () => {
-                const requestSuccess = await submitRequest();
-                if (requestSuccess) {
-                  alert('Request Submitted Successfully!');
-                  setShowConfirmationModal(false);
-                  navigation.goBack();
-                } else {
-                  alert('There was a problem processing your request. Try again later.');
-                }
-              }}
-              disabled={submitLoading}
-            >
-              <Text style={styles.confirmButtonText}>
-                {submitLoading ? 'Submitting...' : 'Confirm'}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+             <TouchableOpacity
+               style={[styles.confirmButton, submitLoading && styles.disabledButton]}
+               onPress={async () => {
+                 const requestSuccess = await submitRequest();
+                 if (requestSuccess) {
+                   alert('Request Submitted Successfully!');
+                   setShowConfirmationModal(false);
+                   navigation.goBack();
+                 } else {
+                   alert('There was a problem processing your request. Try again later.');
+                 }
+               }}
+               disabled={submitLoading}
+             >
+               <Text style={styles.confirmButtonText}>
+                 {submitLoading ? 'Submitting...' : 'Confirm'}
+               </Text>
+             </TouchableOpacity>
+           </View>
+         </View>
       </TouchableWithoutFeedback>
     </View>
   </TouchableWithoutFeedback>

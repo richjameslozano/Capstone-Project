@@ -236,27 +236,27 @@ export default StyleSheet.create({
 
   tableRowHeader: {
     flexDirection: 'row',
-    backgroundColor: '#ddd',
+    backgroundColor: '#7cc0d8',
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderColor: '#ccc',
   },
   
   tableRow: {
-    width: '100%',
     flexDirection: 'row',
     paddingVertical: 8,
     borderBottomWidth: 1,
     borderColor: '#eee',
-    gap: 10,
+    backgroundColor: 'white',
   },
   
   tableCellHeader: {
     fontWeight: 'bold',
     paddingHorizontal: 8,
     fontSize: 14,
-    width: 65,
-    textAlign: 'center'
+    textAlign: 'center',
+    flexShrink: 0,
+    color: '#ffffff'
   },
   
   tableCell: {
@@ -264,7 +264,7 @@ export default StyleSheet.create({
     fontSize: 14,
     textAlign:'center',
     backgroundColor: 'white',
-    width: 65
+    flexShrink: 0
   },
 
   bottomNav:{
@@ -300,6 +300,7 @@ confirmationModalContainer: {
   shadowOffset: { width: 0, height: 2 },
   shadowOpacity: 0.25,
   shadowRadius: 4,
+  justifyContent: 'space-between',
 },
 
 confirmationModalTitle: {
@@ -310,20 +311,33 @@ confirmationModalTitle: {
   textAlign: 'center',
 },
 
-confirmationInfoSection: {
-  marginBottom: 16,
-},
+ confirmationInfoSection: {
+   marginBottom: 16,
+ },
 
-confirmationLabel: {
-  fontWeight: '600',
-  color: '#1e7898',
-  marginTop: 8,
-},
+ confirmationRow: {
+   flexDirection: 'row',
+   justifyContent: 'space-between',
+   marginBottom: 12,
+ },
 
-confirmationValue: {
-  color: '#000',
-  marginBottom: 4,
-},
+ confirmationField: {
+   flex: 1,
+   marginRight: 8,
+ },
+
+ confirmationLabel: {
+   fontWeight: '600',
+   color: '#1e7898',
+   marginTop: 8,
+   fontSize: 14,
+ },
+
+ confirmationValue: {
+   color: '#000',
+   marginBottom: 4,
+   fontSize: 14,
+ },
 
 confirmationSubtitle: {
   fontSize: 16,
