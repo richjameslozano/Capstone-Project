@@ -21,7 +21,6 @@ import SessionTimeout from './SessionTimeout';
 import HistoryLog from './users/HistoryLog';
 import RequestLog from './admin/RequestLog';
 import AdminActivityLog from './admin/AdminActivityLog';
-import { TimeoutProvider } from './TimeoutProvider';
 import PrivacyPolicy from './PrivacyPolicy';
 import RestockRequest from './admin/RestockRequest';
 
@@ -30,11 +29,14 @@ const AppWrapper = () => {
   const location = useLocation();
 
   const handleSignOut = () => {
-    localStorage.removeItem("userId");  
-    localStorage.removeItem("userEmail");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("userDepartment");
-    localStorage.removeItem("userPosition");
+    // Clear all session data including session timeout
+    localStorage.clear();
+
+    // localStorage.removeItem("userId");  
+    // localStorage.removeItem("userEmail");
+    // localStorage.removeItem("userName");
+    // localStorage.removeItem("userDepartment");
+    // localStorage.removeItem("userPosition");
   };
 
   const shouldShowTimeout = location.pathname !== '/';
@@ -42,7 +44,15 @@ const AppWrapper = () => {
   return (
     <>
       {shouldShowTimeout && <SessionTimeout onLogout={handleSignOut} />}
-      <TimeoutProvider>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="privacy-policy" element={<PrivacyPolicy />} />
+        <Route element={<ProtectedRoute />}>
+          <Route path="/main/*" element={<LayoutMain />} />
+        </Route>
+      </Routes>
+
+       {/* <TimeoutProvider>
           <Routes>
             <Route path="/" element={<Login />} />
             <Route path="privacy-policy" element={<PrivacyPolicy />} />
@@ -51,7 +61,7 @@ const AppWrapper = () => {
               
             </Route>
           </Routes>
-      </TimeoutProvider>
+      </TimeoutProvider> */}
     </>
   );
 };
