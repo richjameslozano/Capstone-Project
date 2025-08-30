@@ -216,7 +216,19 @@ const SearchItems = () => {
     <Layout style={{ minHeight: "100vh" }}>
       <Layout className="site-layout">
         <Content className="search-content">
-          <div className="search-container">
+
+            
+            <div style={{display: 'flex', width: '50%', flexDirection: 'column'}}>
+            <div style={{display: 'flex', marginBottom: 10, gap: 10}}>
+            <SearchOutlined style={{fontSize: 25}}/>
+            <h1 style={{margin: 0}}>Inventory Search</h1>
+            </div>
+            <p style={{ fontSize: 15}}>Use the <b>search feature</b> below to quickly find and access medical technology supplies available in the school’s inventory. Filter by item name, category, or availability to locate the equipment or materials you need for classes, labs, or training sessions. Each item includes key details such as quantity in stock, condition, and storage location to help you manage resources efficiently.</p>
+            </div>
+     
+
+
+            <div style={{display: 'flex', width: '50%', gap: 20}}>
             <Input
               placeholder="Search by item description..."
               value={searchText}
@@ -226,7 +238,7 @@ const SearchItems = () => {
               className="search-input"
             />
 
-            <Space style={{ marginTop: 10 }} wrap>
+            <Space style={{}} wrap>
               <Select
                 placeholder="Filter by Status"
                 allowClear
@@ -253,8 +265,7 @@ const SearchItems = () => {
                 <Option value="Glasswares">Glasswares</Option>
               </Select>
             </Space>
-          </div>
-
+            </div>
           <div className="pending-main">
             <Table
               columns={columns}
