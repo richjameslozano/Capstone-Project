@@ -19,6 +19,10 @@ expo-env.d.ts
 android/
 ios/.xcode.env
 
+# Firebase
+google-services.json
+GoogleService-Info.plist
+
 # Metro
 .metro-health-check*
 
