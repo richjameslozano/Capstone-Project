@@ -3,6 +3,7 @@ import { getFirestore, doc, setDoc, addDoc, collection } from 'firebase/firestor
 import Constants from 'expo-constants';
 import { getAuth } from 'firebase/auth';
 import * as Device from 'expo-device';
+import { Alert } from 'react-native';
 
 // Add logging function
 const logToFirebase = async (message, data = {}) => {
@@ -41,7 +42,18 @@ export const testPushTokenRegistration = async () => {
     const { status } = await Notifications.getPermissionsAsync();
     await logToFirebase("Permission test", { status });
     
-    return true;
+    if (status === 'denied') {
+      Alert.alert(
+        "Notification Permission Required",
+        "To receive notifications about your requests, please enable notification permissions in your device settings.",
+        [
+          { text: "OK", style: "default" },
+          { text: "Open Settings", onPress: () => Notifications.openSettingsAsync() }
+        ]
+      );
+    }
+    
+    return status === 'granted';
   } catch (error) {
     await logToFirebase("Test function error", { error: error.message });
     return false;
@@ -76,7 +88,9 @@ export const registerForPushNotificationsAsync = async (userDocId, role) => {
     
     await logToFirebase("App ownership detected", { 
       appOwnership: Constants.appOwnership, 
-      shouldUseProductionTokens 
+      shouldUseProductionTokens,
+      isExpoGo,
+      isProductionBuild
     });
     
     console.log("[PushToken] App ownership:", Constants.appOwnership);
@@ -92,13 +106,28 @@ export const registerForPushNotificationsAsync = async (userDocId, role) => {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
       console.log("[PushToken] Permission request result:", status);
+      
+      // If still denied after request, show user guidance
+      if (status === 'denied') {
+        Alert.alert(
+          "Notification Permission Required",
+          "To receive notifications about your requests, please enable notification permissions in your device settings.",
+          [
+            { text: "OK", style: "default" },
+            { text: "Open Settings", onPress: () => Notifications.openSettingsAsync() }
+          ]
+        );
+      }
     }
 
     await logToFirebase("Permission status", { finalStatus });
     console.log("[PushToken] Final permission status:", finalStatus);
 
     if (finalStatus !== "granted") {
-      await logToFirebase("Permission not granted");
+      await logToFirebase("Permission not granted", { 
+        reason: "User denied or permission not available",
+        canRequestAgain: existingStatus === 'undetermined'
+      });
       console.log("[PushToken] Permission not granted");
       return null;
     }

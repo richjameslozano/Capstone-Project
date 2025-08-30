@@ -16,6 +16,7 @@ import {Animated} from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { registerForPushNotificationsAsync, testPushTokenRegistration } from '../utils/RegisterPushToken';
+import * as Notifications from 'expo-notifications';
 import { color } from 'react-native-elements/dist/helpers';
 
 export default function LoginScreen({navigation}) {
@@ -1043,6 +1044,27 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   style={{marginTop: 10, padding: 10, backgroundColor: '#ff6b6b', borderRadius: 5}}
                 >
                   <Text style={{color: 'white', textAlign: 'center'}}>Test Push Token Registration</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity 
+                  onPress={async () => {
+                    try {
+                      const { status } = await Notifications.requestPermissionsAsync();
+                      Alert.alert(
+                        "Permission Status", 
+                        `Current status: ${status}\n\nIf denied, please enable notifications in your device settings.`,
+                        [
+                          { text: "OK" },
+                          { text: "Open Settings", onPress: () => Notifications.openSettingsAsync() }
+                        ]
+                      );
+                    } catch (error) {
+                      Alert.alert("Error", "Failed to request permissions: " + error.message);
+                    }
+                  }}
+                  style={{marginTop: 10, padding: 10, backgroundColor: '#4CAF50', borderRadius: 5}}
+                >
+                  <Text style={{color: 'white', textAlign: 'center'}}>Request Notification Permission</Text>
                 </TouchableOpacity>
 
                   <CustomButton
