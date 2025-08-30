@@ -113,6 +113,30 @@ const Login = () => {
     }
   }, [formData.password, confirmPassword, isNewUser]);
 
+  // Check if user is already logged in and redirect accordingly
+  useEffect(() => {
+    const userEmail = localStorage.getItem("userEmail");
+    const userRole = localStorage.getItem("userPosition");
+    const userId = localStorage.getItem("userId");
+
+    if (userEmail && userRole && userId) {
+      // User is already logged in, redirect to appropriate dashboard
+      switch (userRole.toLowerCase()) {
+        case "admin":
+        case "super-user":
+          navigate("/main/dashboard", { replace: true });
+          break;
+        case "user":
+          navigate("/main/requisition", { replace: true });
+          break;
+        default:
+          // If role is unknown, clear localStorage and stay on login page
+          localStorage.clear();
+          break;
+      }
+    }
+  }, [navigate]);
+
   // const handleChange = (e) => {
   //   const { name, value } = e.target;
   //   setFormData({ ...formData, [name]: value });
