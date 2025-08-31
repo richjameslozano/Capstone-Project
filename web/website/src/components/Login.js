@@ -952,6 +952,9 @@ const Login = () => {
           localStorage.setItem("userPosition", user.role?.toLowerCase());
           localStorage.setItem("userJobTitle", user.jobTitle || "User");
 
+          // Clear any existing session timeout to start fresh
+          localStorage.removeItem("sessionTimeout");
+
           console.log("User role from backend:", user.role);
 
           // Navigate based on role
@@ -980,6 +983,9 @@ const Login = () => {
         localStorage.setItem("userDepartment", user.department || "Admin");
         localStorage.setItem("userPosition", "super-admin");
         localStorage.setItem("userJobTitle", user.jobTitle || "User");
+
+         // Clear any existing session timeout to start fresh
+        localStorage.removeItem("sessionTimeout");
 
         navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
       } else {
