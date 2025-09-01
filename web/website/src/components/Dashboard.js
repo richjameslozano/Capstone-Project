@@ -726,9 +726,9 @@
 // VERSION 2 (UPDATED)
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Layout, Card, Col, Row, Table, List, Typography, Tag, Tabs } from "antd";
+import { Layout, Card, Col, Row, List, Typography, Tag, Tabs } from "antd";
 import { db } from "../backend/firebase/FirebaseConfig";
-import { collectionGroup, query, where, getDocs, onSnapshot, collection, orderBy, limit } from "firebase/firestore";
+import { collectionGroup, query, where, getDocs, onSnapshot, collection, orderBy } from "firebase/firestore";
 import SuccessModal from "./customs/SuccessModal";
 import CustomCalendar from "./customs/CustomCalendar";
 import "./styles/Dashboard.css";

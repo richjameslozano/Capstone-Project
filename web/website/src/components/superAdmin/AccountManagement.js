@@ -12,25 +12,19 @@ import {
   message,
   List,
 } from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined } from "@ant-design/icons";
+import { EditOutlined, PlusOutlined } from "@ant-design/icons";
 import { useLocation, useNavigate } from "react-router-dom";
-import { db, auth } from "../../backend/firebase/FirebaseConfig";
-import { createUserWithEmailAndPassword, updateEmail, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth";
+import { db } from "../../backend/firebase/FirebaseConfig";
 import {
   collection,
-  addDoc,
   getDocs,
   updateDoc,
-  deleteDoc,
   doc,
   onSnapshot,
   query,
   where,
   setDoc,
 } from "firebase/firestore";
-import { debounce } from 'lodash';
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
 import "../styles/superAdminStyle/AccountManagement.css";
 import SuccessModal from "../customs/SuccessModal"; 
 import NotificationModal from "../customs/NotificationModal";
@@ -43,7 +37,6 @@ const AccountManagement = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingAccount, setEditingAccount] = useState(null);
   const [form] = Form.useForm();
-  const [pageTitle, setPageTitle] = useState("");
   const [showModal, setShowModal] = useState(false); 
   const [adminCredentials, setAdminCredentials] = useState(null);
   const [isPasswordModalVisible, setIsPasswordModalVisible] = useState(false);

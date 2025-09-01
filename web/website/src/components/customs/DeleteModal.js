@@ -96,11 +96,9 @@
 
 // export default DeleteModal;
 
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState } from "react";
 import axios from 'axios';
 import { Modal, message } from 'antd'; 
-import { deleteDoc, doc, collection, getDocs, query, where, setDoc } from 'firebase/firestore'; 
-import { db } from '../../backend/firebase/FirebaseConfig';
 import NotificationModal from "./NotificationModal";
 
 const DeleteModal = ({ visible, onClose, item, onDeleteSuccess, setDataSource }) => {

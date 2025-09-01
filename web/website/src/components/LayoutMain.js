@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   UserOutlined,
   DashboardOutlined,
@@ -8,7 +8,6 @@ import {
   HistoryOutlined,
   LogoutOutlined,
   FileDoneOutlined,
-  SnippetsOutlined,
   ClockCircleOutlined,
   SearchOutlined,
   ShoppingCartOutlined,
@@ -18,11 +17,10 @@ import {
   DatabaseOutlined,
   HomeOutlined,
   UserSwitchOutlined,
-  IdcardOutlined,
 } from '@ant-design/icons';
 import nulsLogo from './images/NULS_Favicon_white.png'
 
-import { Button, Layout, Menu, theme } from 'antd';
+import { Layout, Menu, theme } from 'antd';
 import { useNavigate, useLocation, Routes, Route } from "react-router-dom";
 import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../backend/firebase/FirebaseConfig"; 
@@ -30,7 +28,6 @@ import Dashboard from './Dashboard';
 import Inventory from './admin/Inventory';
 import PendingRequest from './admin/PendingRequest';
 import BorrowCatalog from './admin/BorrowCatalog';
-import History from './admin/History';
 import Profile from './Profile';
 import AccountManagement from './superAdmin/AccountManagement';
 import PendingAccounts from './superAdmin/PendingAccounts';

@@ -6,18 +6,14 @@ import {
   Input,
   Form,
   Modal,
-  message,
   Popconfirm,
   Select,
   InputNumber,
 } from "antd";
 import { PlusOutlined, CheckOutlined, CloseOutlined } from "@ant-design/icons";
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { collection, addDoc, doc, setDoc, serverTimestamp, onSnapshot, query, where, deleteDoc, getDocs, writeBatch } from "firebase/firestore"; 
+import { collection, addDoc, doc, setDoc, serverTimestamp, onSnapshot, deleteDoc, getDocs, writeBatch } from "firebase/firestore"; 
 import "../styles/usersStyle/CapexRequest.css";
-import { getAuth } from "firebase/auth";
 import NotificationModal from "../customs/NotificationModal"; 
 import FinalizeCapexModal from "../customs/FinalizeCapexModal";
 import "../styles/usersStyle/CapexRequest.css";
@@ -32,7 +28,6 @@ const CapexRequest = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRow, setEditingRow] = useState(null);
   const [totalPrice, setTotalPrice] = useState(0);
-  const [pageTitle, setPageTitle] = useState("CAPEX Request");
   const [notificationVisible, setNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [isFinalizeModalVisible, setIsFinalizeModalVisible] = useState(false);

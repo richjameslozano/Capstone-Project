@@ -1,17 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { Pie } from "react-chartjs-2";
-import { Card, Spin, Empty, Typography } from "antd";
+import { Spin, Empty, Typography } from "antd";
 import {
   Chart as ChartJS,
   ArcElement,
   Tooltip,
   Legend,
 } from "chart.js";
-import { Bot, LineChart, BarChart2  } from 'lucide-react';
-import { FaRobot, FaChartLine  } from 'react-icons/fa';
-import { MdSmartToy, MdAnalytics } from 'react-icons/md';      // Material Icons
-import { GiArtificialHive } from 'react-icons/gi';// Game Icons (AI-theme)
-import { LineChartOutlined } from '@ant-design/icons';
+import { Bot, BarChart2  } from 'lucide-react';
 
 const { Paragraph, Title } = Typography;
 

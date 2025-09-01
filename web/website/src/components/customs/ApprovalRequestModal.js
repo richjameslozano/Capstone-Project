@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import { Modal, Row, Col, Typography, Table, Button, Input } from "antd";
 import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs, deleteDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { getAuth } from "firebase/auth";
 import NotificationModal from "./NotificationModal";
 const { Text, Title } = Typography;
 

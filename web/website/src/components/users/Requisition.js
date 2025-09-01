@@ -1,15 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {Layout,Input,Table,Button,Card,Modal, DatePicker,TimePicker,message,Select,Typography,Descriptions,Spin,} from "antd";
-import { PlusOutlined,DeleteOutlined,CalendarOutlined,CloseOutlined, PlusSquareOutlined, PlusSquareFilled, FormOutlined} from "@ant-design/icons";
+import {Layout,Input,Table,Button,DatePicker,TimePicker,message,Select,Typography} from "antd";
+import { DeleteOutlined, PlusSquareFilled, FormOutlined} from "@ant-design/icons";
 import moment from "moment";
 import dayjs from 'dayjs';
 import { useLocation, useNavigate } from "react-router-dom";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, deleteDoc,setDoc, getDoc, serverTimestamp, onSnapshot, collectionGroup,query,where } from "firebase/firestore";
+import { collection, addDoc, Timestamp, getDocs, updateDoc, doc, deleteDoc,setDoc, getDoc, serverTimestamp, onSnapshot, collectionGroup,query,where } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { getAuth } from 'firebase/auth';
 import { db } from "../../backend/firebase/FirebaseConfig";
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
 import "../styles/usersStyle/Requisition.css";
 import SuccessModal from "../customs/SuccessModal";
 import PoliciesModal from "../Policies";
@@ -18,52 +16,11 @@ import NotificationModal from "../customs/NotificationModal";
 import "../styles/usersStyle/ActivityLog.css";
 
 const sanitizeInput = (input) =>
-  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
+  input.replace(/\s+/g, " ")        
       .replace(/[^a-zA-Z0-9\s\-.,()]/g, "");
   
 const { Content } = Layout;
 const { Title } = Typography;
-
-
-const columns2 = [
-  {
-    title: "Date",
-    dataIndex: "date",
-    key: "date",
-    className: "table-header",
-    align: "center",
-  },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "action",
-    className: "table-header",
-    align: "center",
-  },
-  {
-    title: "By",
-    dataIndex: "by",
-    key: "by",
-    className: "table-header",
-    align: "center",
-  },
-];
-
-
-
-const tableHeaderStyle = {
-  padding: "8px",
-  borderBottom: "1px solid #ddd",
-  backgroundColor: "#f5f5f5",
-  fontWeight: "bold",
-  textAlign: "center",
-};
-
-const tableCellStyle = {
-  padding: "8px",
-  borderBottom: "1px solid #ddd",
-  textAlign: "center",
-};
 
 const Requisition = () => {
   const [requestList, setRequestList] = useState([]);
@@ -82,7 +39,6 @@ const Requisition = () => {
   const [usageType, setUsageType] = useState("");
   const [room, setRoom] = useState("");
   const [reason, setReason] = useState("");
-  const [searchUsageType, setSearchUsageType] = useState("");
   const [customUsageType, setCustomUsageType] = useState("");
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
@@ -95,7 +51,6 @@ const Requisition = () => {
   const [modalMessage, setModalMessage] = useState("");
   const [showPolicies, setShowPolicies] = useState(false)
   const [mergedData, setMergedData] = useState([]);
-  const [volumeOptions, setVolumeOptions] = useState([]);
   const [finalizeLoading, setFinalizeLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const location = useLocation();

@@ -248,15 +248,14 @@
 
 // VERSION 2
 import React, { useState, useEffect, useRef } from "react";
-import {Layout,Card,Row,Col,Upload,Avatar,Button,Typography,message,} from "antd";
-import {UserOutlined,UploadOutlined,IdcardOutlined, ApartmentOutlined, SolutionOutlined, MailOutlined } from "@ant-design/icons";
+import {Layout,Upload,Avatar,Typography,message,} from "antd";
+import {UserOutlined,IdcardOutlined, ApartmentOutlined, SolutionOutlined, MailOutlined } from "@ant-design/icons";
 import {collection,query,where,getDocs,updateDoc} from "firebase/firestore";
 import { db, storage } from "../backend/firebase/FirebaseConfig";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import "./styles/Profile.css";
 
 const { Content } = Layout;
-const { Title, Text } = Typography;
 
 const Profile = () => {
   const [formData, setFormData] = useState(null);

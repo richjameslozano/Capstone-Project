@@ -1,7 +1,5 @@
 import React, { useState } from "react";
 import { Layout, Table, Button, Modal, Typography, Row, Col } from "antd";
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
 import "../styles/adminStyle/History.css";
 
 const { Content } = Layout;

@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   Layout,
-  Input,
-  Table,
   Typography,
   Modal,
   Descriptions,
@@ -10,16 +8,13 @@ import {
   Button,
   Spin,
   Tabs,
-  theme,
-  Steps
 } from "antd";
-import { AppstoreAddOutlined, ArrowRightOutlined, CloseOutlined, ExpandAltOutlined, ExperimentOutlined, FileSearchOutlined, FormOutlined, LikeOutlined, MessageOutlined, RocketOutlined, SearchOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
+import { AppstoreAddOutlined, CloseOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
 import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
 import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
-import StickyBox from 'react-sticky-box';
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 

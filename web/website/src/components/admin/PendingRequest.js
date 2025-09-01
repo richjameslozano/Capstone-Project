@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Layout, Row, Col, Card, Button, Typography, Space, Modal, Table, notification, Input, Select, Spin, Tooltip } from "antd";
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
+import { Layout, Button, Typography, Modal, Table, notification, Input, Select, Spin } from "antd";
 import "../styles/adminStyle/PendingRequest.css";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { collection, getDocs, getDoc, doc, addDoc, query, where, deleteDoc,Timestamp, serverTimestamp, onSnapshot, updateDoc, orderBy } from "firebase/firestore";
+import { collection, getDocs, getDoc, doc, addDoc, query, where, deleteDoc, serverTimestamp, onSnapshot, updateDoc, orderBy } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions"
 import { getAuth } from "firebase/auth";
 import RequisitionRequestModal from "../customs/RequisitionRequestModal";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
 import NotificationModal from "../customs/NotificationModal";
-import { ArrowDownOutlined, ArrowUpOutlined, DownOutlined, UploadOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
 const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Option } = Select;

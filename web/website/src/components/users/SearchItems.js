@@ -446,7 +446,7 @@ import {
   Modal,
   Descriptions,
 } from "antd";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import "../styles/usersStyle/SearchItems.css";
 import {

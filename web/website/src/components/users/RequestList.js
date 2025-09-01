@@ -6,7 +6,6 @@ import {
   Button,
   Typography,
   Modal,
-  message,
   Spin,
 } from "antd";
 import { SearchOutlined, CloseOutlined } from "@ant-design/icons";
@@ -14,7 +13,6 @@ import {
   collection,
   getDocs,
   doc,
-  updateDoc,
   getDoc,
   deleteDoc,
   setDoc,

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Row, Col, Table, Input, Button, Typography, Select } from "antd";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { Layout, Row, Col, Table, Input, Typography, Select } from "antd";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
 import "../styles/adminStyle/BorrowCatalog.css";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
 

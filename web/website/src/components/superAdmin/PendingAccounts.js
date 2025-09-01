@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Layout, Row, Col, Button, Typography, Space, Table, notification, Modal, Popconfirm } from "antd";
+import { Layout, Row, Col, Button, Typography, Space, Table, notification, Popconfirm } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import { collection, getDocs, doc, updateDoc, addDoc, deleteDoc, getDoc, setDoc, query, where, onSnapshot } from "firebase/firestore";
-import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import { collection, doc, deleteDoc, getDoc, onSnapshot } from "firebase/firestore";
 import NotificationModal from "../customs/NotificationModal";
 
 const { Content } = Layout;
@@ -11,7 +10,6 @@ const { Title } = Typography;
 const PendingAccounts = () => {
   const [requests, setRequests] = useState([]);
   const [selectedRequests, setSelectedRequests] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
   const [approveLoading, setApproveLoading] = useState(false);

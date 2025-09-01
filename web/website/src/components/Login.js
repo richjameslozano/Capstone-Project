@@ -4,16 +4,12 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
-  onAuthStateChanged,
-  updatePassword,
   signOut,
-  getAuth,
   sendEmailVerification,
 } from "firebase/auth";
 import { auth, db } from "../backend/firebase/FirebaseConfig";
-import { collection, query, where, getDocs, doc, updateDoc, Timestamp, addDoc, serverTimestamp, onSnapshot } from "firebase/firestore";
-import { notification, Modal, message } from "antd";
-import bcrypt from "bcryptjs";
+import { collection, query, where, getDocs, updateDoc, onSnapshot } from "firebase/firestore";
+import { message } from "antd";
 import "./styles/Login.css";
 import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import axios from "axios";
@@ -34,13 +30,11 @@ const Login = () => {
   const [forgotPasswordError, setForgotPasswordError] = useState("");
   const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [newPassword, setNewPassword] = useState("");
   const [isModalVisible, setIsModalVisible] = useState(false); 
   const [isTermModalVisible, setIsTermModalVisible] = useState(false); 
   const [modalMessage, setModalMessage] = useState("");
   const [signUpMode, setSignUpMode] = useState(false);
   const [termsChecked, setTermsChecked] = useState(false);
-  const [passwordTouched, setPasswordTouched] = useState(false);
   const [emailChecked, setEmailChecked] = useState(false);
   const [isVerifiedWithoutPassword, setIsVerifiedWithoutPassword] = useState(false);
   const [signUpData, setSignUpData] = useState({

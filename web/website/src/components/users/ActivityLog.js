@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from "react";
 import {
   Layout,
-  Input,
   Table,
   Typography,
-  Modal,
-  Descriptions,
 } from "antd";
-import { SearchOutlined } from "@ant-design/icons";
-import { collection, getDocs, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 

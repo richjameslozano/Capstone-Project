@@ -1,14 +1,10 @@
 import React, { useState, useRef, useEffect } from "react";
-import {Layout,Table,Input,Button,Select,Form,Row,Col,Space,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
-import { EditOutlined, DeleteOutlined, EyeOutlined, MinusCircleOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
-import moment from "moment";
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
+import {Layout,Table,Input,Button,Select,Form,Row,Col,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
+import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, updateDoc, doc, onSnapshot, setDoc, getDoc, query, where, serverTimestamp, orderBy, limit, writeBatch } from "firebase/firestore";
-import CryptoJS from "crypto-js";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, doc, onSnapshot, query, where, serverTimestamp, orderBy, limit, writeBatch } from "firebase/firestore";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
 import DeleteModal from "../customs/DeleteModal";

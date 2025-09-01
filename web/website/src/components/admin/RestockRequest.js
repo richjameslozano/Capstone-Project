@@ -10,7 +10,6 @@ import {
   Select,
   Spin,
   Tag,
-  Input,
   InputNumber,
 } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";

@@ -1207,8 +1207,7 @@
 
 // VERSION 2
 import React, { useEffect, useState, useRef } from "react";
-import { QRCodeCanvas } from "qrcode.react";
-import { Layout, Row, Col, Table, Input, Button, Typography, Modal, Tabs, Select } from "antd";
+import { Table, Input, Button, Modal, Tabs } from "antd";
 import { collection, getDocs, onSnapshot, doc, updateDoc, writeBatch, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/LabRoomQR.css";

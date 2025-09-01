@@ -1,6 +1,6 @@
 import React from 'react';
 import '../styles/customsStyle/TermsModal.css'; 
-import { href, Link, Navigate, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 const TermsModal = ({ isVisible, onClose }) => {
   const navigate = useNavigate();

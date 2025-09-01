@@ -1,7 +1,7 @@
 import React from "react";
 import { Modal } from "antd";
 import "../styles/usersStyle/Requisition.css";
-import { FileDoneOutlined, SaveOutlined } from '@ant-design/icons';
+import { FileDoneOutlined } from '@ant-design/icons';
 
 const FinalizeRequestModal = ({
   visible,

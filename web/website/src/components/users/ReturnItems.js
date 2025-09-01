@@ -1,16 +1,11 @@
-
-
-
 // VERSION 2
 import React, { useState, useEffect } from "react";
 import { Layout, Table, Button, Modal, Typography, Row, Col, Select, InputNumber, Descriptions } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, getDocs, doc, setDoc, updateDoc, getDoc, serverTimestamp, deleteDoc, onSnapshot, query, where } from "firebase/firestore";
-import Sidebar from "../Sidebar";
-import AppHeader from "../Header";
 import "../styles/adminStyle/RequestLog.css";
 import "../styles/usersStyle/ReturnItems.css";
-import {CheckCircleOutlined, ClockCircleOutlined, RollbackOutlined} from "@ant-design/icons";
+import { RollbackOutlined} from "@ant-design/icons";
 const { Content } = Layout;
 const { Text } = Typography;
 const { Option } = Select;

@@ -2,27 +2,10 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
 import Login from './Login';
-import Dashboard from './Dashboard';
-import Inventory from './admin/Inventory';
-import PendingRequest from './admin/PendingRequest';
-import BorrowCatalog from './admin/BorrowCatalog';
-import History from './admin/History';
-import Profile from './Profile';
-import AccountManagement from './superAdmin/AccountManagement';
-import Requisition from './users/Requisition';
-import RequestList from './users/RequestList';
-import ActivityLog from './users/ActivityLog';
-import SearchItems from './users/SearchItems';
-import CapexRequest from './users/CapexRequest';
-import ReturnItems from './users/ReturnItems';
 import LayoutMain from './LayoutMain';
 import ProtectedRoute from './ProtectedRoute'; 
 import SessionTimeout from './SessionTimeout'; 
-import HistoryLog from './users/HistoryLog';
-import RequestLog from './admin/RequestLog';
-import AdminActivityLog from './admin/AdminActivityLog';
 import PrivacyPolicy from './PrivacyPolicy';
-import RestockRequest from './admin/RestockRequest';
 
 
 const AppWrapper = () => {
