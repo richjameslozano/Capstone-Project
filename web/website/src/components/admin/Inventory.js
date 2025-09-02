@@ -4,7 +4,7 @@ import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadO
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
-import { getFirestore, collection, addDoc, Timestamp, getDocs, doc, onSnapshot, query, where, serverTimestamp, orderBy, limit, writeBatch } from "firebase/firestore";
+import { getFirestore, collection, addDoc, Timestamp, getDocs, doc, onSnapshot, query, where, serverTimestamp, orderBy, limit, writeBatch, updateDoc } from "firebase/firestore";
 import CONFIG from "../../config";
 import "../styles/adminStyle/Inventory.css";
 import DeleteModal from "../customs/DeleteModal";
@@ -1942,7 +1942,7 @@ const printPdf = async () => {
 //   }
 // };
 
-// BACKEND
+// FRONTEND-ONLY SOLUTION
  const updateItem = async (values) => {
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName") || "User";
@@ -1963,7 +1963,11 @@ const printPdf = async () => {
     const expiryDate =
       values.expiryDate?.isValid?.() ? values.expiryDate.format("YYYY-MM-DD") : null;
 
+    // Check if this is an equipment/glasswares/materials item that needs condition tracking
+    const isConditionTracked = ["Equipment", "Glasswares", "Materials"].includes(editingItem.category);
+
     try {
+      // First, update the backend with the quantity change
       const response = await axios.post("https://webnuls.onrender.com/update-inventory-item", {
         userId,
         userName,
@@ -1975,14 +1979,74 @@ const printPdf = async () => {
       });
 
       if (response.status === 200) {
+        // If it's a condition-tracked item, we need to manually update the condition
+        if (isConditionTracked) {
+          try {
+            // Get the current inventory document
+            const inventoryQuery = query(collection(db, "inventory"), where("itemId", "==", editingItem.itemId));
+            const inventorySnapshot = await getDocs(inventoryQuery);
+            
+            if (!inventorySnapshot.empty) {
+              const inventoryDoc = inventorySnapshot.docs[0];
+              const inventoryRef = doc(db, "inventory", inventoryDoc.id);
+              const currentData = inventoryDoc.data();
+              
+              // Update the condition to add the new quantity to Good condition
+              const currentCondition = currentData.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
+              const updatedCondition = {
+                ...currentCondition,
+                Good: currentCondition.Good + addedQuantity,
+              };
+              
+              await updateDoc(inventoryRef, {
+                condition: updatedCondition,
+              });
+              
+              // Also update labRoom items if they exist
+              if (currentData.labRoom) {
+                const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", currentData.labRoom));
+                const labRoomSnapshot = await getDocs(labRoomQuery);
+                
+                if (!labRoomSnapshot.empty) {
+                  const labRoomDoc = labRoomSnapshot.docs[0];
+                  const labRoomItemsRef = collection(db, "labRoom", labRoomDoc.id, "items");
+                  const labItemQuery = query(labRoomItemsRef, where("itemId", "==", editingItem.itemId));
+                  const labItemSnapshot = await getDocs(labItemQuery);
+                  
+                  if (!labItemSnapshot.empty) {
+                    const labItemDoc = labItemSnapshot.docs[0];
+                    const labItemRef = doc(db, "labRoom", labRoomDoc.id, "items", labItemDoc.id);
+                    await updateDoc(labItemRef, {
+                      condition: updatedCondition,
+                    });
+                  }
+                }
+              }
+            }
+          } catch (conditionError) {
+            console.error("Error updating condition:", conditionError);
+            // Don't fail the entire operation if condition update fails
+          }
+        }
+
         setNotificationMessage("Item updated successfully!");
         setIsNotificationVisible(true);
 
+        // Update local state with proper condition handling
         const updatedItem = {
           ...editingItem,
           quantity: editingItem.quantity + addedQuantity,
           ...(expiryDate && { expiryDate }),
         };
+
+        // For condition-tracked items, update the condition breakdown
+        if (isConditionTracked) {
+          const currentCondition = editingItem.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
+          updatedItem.condition = {
+            ...currentCondition,
+            Good: currentCondition.Good + addedQuantity, // Add new quantity to Good condition
+          };
+        }
 
         setDataSource((prev) =>
           prev.map((item) => (item.itemId === editingItem.itemId ? updatedItem : item))
@@ -1999,6 +2063,8 @@ const printPdf = async () => {
       }
     } catch (err) {
       console.error("Backend update failed:", err);
+      setNotificationMessage("Failed to update Item!");
+      setIsNotificationVisible(true);
     }
   };
 
