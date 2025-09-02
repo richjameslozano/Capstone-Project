@@ -6,6 +6,7 @@ import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getD
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { getAuth } from "firebase/auth";
 import NotificationModal from "./NotificationModal";
+import { FileDoneOutlined } from '@ant-design/icons';
 const { Text, Title } = Typography;
 
 const ApprovedRequestModal = ({
@@ -845,8 +846,9 @@ function getConditionSummary(conditionsArray) {
       {selectedApprovedRequest && (
         <div style={{ padding: "20px", paddingTop: 60 }}>
           
-        <div style={{position: 'absolute', left: 0, top: 0, right: 0, backgroundColor: '#165a72', height: 60, borderTopRightRadius: 8, borderTopLeftRadius: 8, alignItems: 'center'}}>
-            <h1 style={{margin:0, color: 'white'}}>Requisition Slip</h1>
+        <div style={{position: 'absolute', left: 0, top: 0, right: 0, backgroundColor: '#165a72', height: 60, borderTopRightRadius: 8, borderTopLeftRadius: 8, alignItems: 'center', display: 'flex', paddingLeft: 20, gap: 10}}>
+            <FileDoneOutlined style={{color: 'white', fontSize: 25}}/>
+            <h1 style={{margin:0, color: 'white', fontSize: 23}}>Requisition Slip</h1>
         </div>
           {/* <Row gutter={[16, 16]}>
             <Col span={12}>
@@ -969,7 +971,7 @@ function getConditionSummary(conditionsArray) {
 
 
           {selectedApprovedRequest?.status === "Borrowed" && (
-            <Button type="primary" danger onClick={handleDeploy} loading={deployLoading} disabled={approveLoading || releaseLoading}>
+            <Button style={{marginTop: 20}} type="primary" danger onClick={handleDeploy} loading={deployLoading} disabled={approveLoading || releaseLoading}>
               Deploy
             </Button>
           )}
