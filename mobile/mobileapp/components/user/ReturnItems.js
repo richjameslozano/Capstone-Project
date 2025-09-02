@@ -447,6 +447,7 @@ const ReturnItems = () => {
         userName: selectedRequest.raw?.userName || "N/A",
         requisitionId: selectedRequest.requisitionId,
         status: "Returned",
+        usageType: selectedRequest.raw?.usageType || "N/A",
         requestList: (selectedRequest.raw?.requestList || []).map((item) => {
           const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
           // Keep your existing logic, but filter out "Lost" from returnedQuantity count here:

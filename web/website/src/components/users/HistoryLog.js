@@ -8,9 +8,14 @@ import {
   Button,
   Spin,
   Tabs,
+  DatePicker,
+  TimePicker,
+  Form,
+  Input,
 } from "antd";
+import dayjs from 'dayjs';
 import { AppstoreAddOutlined, CloseOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
@@ -91,6 +96,9 @@ const HistoryLog = () => {
   const [notificationMessage, setNotificationMessage] = useState("");
   const [selectedActivityLog, setSelectedActivityLog] = useState(null);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [reorderModalVisible, setReorderModalVisible] = useState(false);
+  const [selectedCompletedOrder, setSelectedCompletedOrder] = useState(null);
+  const [reorderForm] = Form.useForm();
 
 const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
@@ -265,6 +273,78 @@ const sanitizeInput = (input) =>
   const handleModalClose = () => {
     setViewDetailsModalVisible(false);
     setSelectedRequest(null);
+  };
+
+  const handleReorder = (completedOrder) => {
+    setSelectedCompletedOrder(completedOrder);
+    setReorderModalVisible(true);
+  };
+
+  const handleReorderConfirm = async () => {
+    try {
+      const values = await reorderForm.validateFields();
+      const userId = localStorage.getItem("userId");
+      if (!userId || !selectedCompletedOrder) {
+        throw new Error("Missing user ID or selected order.");
+      }
+
+      // Format the date and time values
+      const dateRequired = values.dateRequired ? values.dateRequired.format('YYYY-MM-DD') : selectedCompletedOrder.fullData.dateRequired;
+      const timeFrom = values.timeFrom ? values.timeFrom.format('HH:mm') : selectedCompletedOrder.fullData.timeFrom;
+      const timeTo = values.timeTo ? values.timeTo.format('HH:mm') : selectedCompletedOrder.fullData.timeTo;
+
+      // Create a new request based on the completed order with updated date/time
+      const newRequest = {
+        timestamp: new Date(),
+        userName: selectedCompletedOrder.fullData.userName,
+        program: selectedCompletedOrder.fullData.program,
+        room: selectedCompletedOrder.fullData.room,
+        timeFrom: timeFrom,
+        timeTo: timeTo,
+        dateRequired: dateRequired,
+        reason: values.reason || selectedCompletedOrder.fullData.reason,
+        usageType: selectedCompletedOrder.fullData.usageType,
+        filteredMergedData: selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [],
+        status: "PENDING"
+      };
+
+      // Add to userRequests subcollection
+      const userRequestsRef = collection(db, `accounts/${userId}/userRequests`);
+      await addDoc(userRequestsRef, newRequest);
+
+      // Add to root userrequests collection
+      const rootRequestsRef = collection(db, "userrequests");
+      await addDoc(rootRequestsRef, {
+        ...newRequest,
+        accountId: userId
+      });
+
+      // Add notification
+      await addDoc(collection(db, "allNotifications"), {
+        action: `New requisition submitted by ${userName}`,
+        userId: userId,
+        userName: userName,
+        read: false,
+        timestamp: serverTimestamp()
+      });
+
+      setReorderModalVisible(false);
+      setSelectedCompletedOrder(null);
+      reorderForm.resetFields();
+      setNotificationMessage("Reorder request submitted successfully!");
+      setNotificationVisible(true);
+
+    } catch (error) {
+      console.error("Error creating reorder request:", error);
+      setNotificationMessage("Failed to create reorder request.");
+      setNotificationVisible(true);
+    }
+  };
+
+  const handleReorderCancel = () => {
+    setReorderModalVisible(false);
+    setSelectedCompletedOrder(null);
+    reorderForm.resetFields();
   };
 
   const columns = [
@@ -1305,6 +1385,25 @@ console.log(returnedData);
                     </div>
 
                   </div>
+
+                  {/* Reorder Button */}
+                  <div style={{ marginTop: 10, textAlign: "center" }}>
+                    <Button
+                      type="primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleReorder(item);
+                      }}
+                      style={{
+                        backgroundColor: "#37c225ff",
+                        borderColor: "#37c225ff",
+                        borderRadius: "6px",
+                        fontWeight: "500"
+                      }}
+                    >
+                      Reorder Again
+                    </Button>
+                  </div>
                 </div>
               );
             })
@@ -2014,6 +2113,144 @@ const handlePrint = () => {
             )}
           </div>
         )}
+      </Modal>
+
+      {/* Reorder Confirmation Modal */}
+      <Modal
+        title="Reorder Request"
+        open={reorderModalVisible}
+        onCancel={handleReorderCancel}
+        onOk={handleReorderConfirm}
+        zIndex={1030}
+        okText="Submit Reorder"
+        cancelText="Cancel"
+        width={700}
+      >
+        {selectedCompletedOrder && (
+          <div>
+            <p style={{ marginBottom: 20, color: '#666' }}>
+              Please review and modify the details for your reorder request:
+            </p>
+            
+            <Form
+              form={reorderForm}
+              layout="vertical"
+                             initialValues={{
+                 dateRequired: selectedCompletedOrder.fullData.dateRequired ? 
+                   dayjs(selectedCompletedOrder.fullData.dateRequired, "YYYY-MM-DD") : null,
+                 timeFrom: selectedCompletedOrder.fullData.timeFrom ? 
+                   dayjs(selectedCompletedOrder.fullData.timeFrom, "HH:mm") : null,
+                 timeTo: selectedCompletedOrder.fullData.timeTo ? 
+                   dayjs(selectedCompletedOrder.fullData.timeTo, "HH:mm") : null,
+                 reason: selectedCompletedOrder.fullData.reason || ""
+               }}
+            >
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div>
+                  <h4>Original Order Details:</h4>
+                  <Descriptions bordered size="small" column={1}>
+                    <Descriptions.Item label="Requester">
+                      {selectedCompletedOrder.fullData.userName}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Program">
+                      {selectedCompletedOrder.fullData.program}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Room">
+                      {selectedCompletedOrder.fullData.room}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Usage Type">
+                      {selectedCompletedOrder.fullData.usageType}
+                    </Descriptions.Item>
+                  </Descriptions>
+                </div>
+
+                <div>
+                  <h4>New Request Details:</h4>
+                  <Form.Item
+                    label="Date Required"
+                    name="dateRequired"
+                    rules={[{ required: true, message: 'Please select a date!' }]}
+                  >
+                    <DatePicker 
+                      style={{ width: '100%' }}
+                      placeholder="Select date"
+                      format="YYYY-MM-DD"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Time From"
+                    name="timeFrom"
+                    rules={[{ required: true, message: 'Please select start time!' }]}
+                  >
+                    <TimePicker 
+                      style={{ width: '100%' }}
+                      placeholder="Select start time"
+                      format="HH:mm"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Time To"
+                    name="timeTo"
+                    rules={[{ required: true, message: 'Please select end time!' }]}
+                  >
+                    <TimePicker 
+                      style={{ width: '100%' }}
+                      placeholder="Select end time"
+                      format="HH:mm"
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Note/Reason"
+                    name="reason"
+                  >
+                    <Input.TextArea 
+                      rows={3}
+                      placeholder="Enter reason for request (optional)"
+                    />
+                  </Form.Item>
+                </div>
+              </div>
+              
+              <div style={{ marginTop: 20 }}>
+                <h4>Items to Reorder:</h4>
+                <div style={{ 
+                  border: '1px solid #d9d9d9', 
+                  borderRadius: 6, 
+                  padding: 12, 
+                  backgroundColor: '#fafafa',
+                  maxHeight: 200,
+                  overflowY: 'auto'
+                }}>
+                  <ul style={{ margin: 0, paddingLeft: 20 }}>
+                    {(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || []).map((item, index) => (
+                      <li key={index} style={{ marginBottom: 8 }}>
+                        <strong>{item.itemName}</strong> - Quantity: {item.quantity}
+                        {item.department && ` (${item.department})`}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </Form>
+          </div>
+        )}
+      </Modal>
+
+      {/* Notification */}
+      <Modal
+        title="Notification"
+        open={notificationVisible}
+        onCancel={() => setNotificationVisible(false)}
+        footer={[
+          <Button key="ok" type="primary" onClick={() => setNotificationVisible(false)}>
+            OK
+          </Button>
+        ]}
+      >
+        <p>{notificationMessage}</p>
       </Modal>
     </Layout>
   );

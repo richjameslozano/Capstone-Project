@@ -115,7 +115,7 @@ const SessionTimeout = ({ onLogout }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const navigate = useNavigate();
 
-  const timeoutDuration = 2 * 60 * 1000; // 2 minutes
+  const timeoutDuration = 10 * 60 * 1000; // 10 minutes
   const modalAutoCloseDuration = 30 * 1000; // 30 seconds for modal auto-close
 
   const logoutUser = async () => {
