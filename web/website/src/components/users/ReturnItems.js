@@ -246,6 +246,7 @@ const ReturnItems = () => {
       userName: selectedRequest.raw?.userName || "N/A",
       requisitionId: selectedRequest.requisitionId,
       status: "Returned",
+      usageType: selectedRequest.raw?.usageType || "N/A",
       requestList: (selectedRequest.raw?.requestList || []).map((item) => {
         const returnedConditions = itemUnitConditions[item.itemIdFromInventory] || [];
         const conditions = Array.from({ length: item.quantity }, (_, idx) =>
