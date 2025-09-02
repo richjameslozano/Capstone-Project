@@ -1,324 +1,7 @@
-// VERSION 1
-// import React from "react";
-// import { Modal, Row, Col, Typography, Table, Button } from "antd";
-// import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs  } from "firebase/firestore";
-// import { db } from "../../backend/firebase/FirebaseConfig"; 
-// import { getAuth } from "firebase/auth";
-// const { Text, Title } = Typography;
-
-// const ApprovedRequestModal = ({
-//   isApprovedModalVisible,
-//   setIsApprovedModalVisible,
-//   selectedApprovedRequest,
-//   setSelectedApprovedRequest,
-//   formatDate,
-// }) => {
-//   // fallback to empty array if undefined
-//   const requestList = selectedApprovedRequest?.requestList || [];
-//  
-
-//   if (selectedApprovedRequest) {
-//     
-//   }
-
-//   // Define your own columns for the modal
-//   const approvedRequestColumns = [
-//     {
-//       title: "Item Name",
-//       dataIndex: "itemName",
-//       key: "itemName",
-//     },
-//     {
-//       title: "Quantity",
-//       dataIndex: "quantity",
-//       key: "quantity",
-//     },
-//     {
-//       title: "Category",
-//       dataIndex: "category",
-//       key: "category",
-//     },
-//     {
-//       title: "Condition",
-//       dataIndex: "condition",
-//       key: "condition",
-//     },
-//   ];
-
-//   // const handleApprove = async () => {
-//   //   try {
-//   //     const requisitionId = selectedApprovedRequest?.id;
-//   //     if (!requisitionId) {
-//   //     
-
-//   //       return;
-//   //     }
-  
-//   //     // Get current authenticated user
-//   //     const auth = getAuth();
-//   //     const currentUser = auth.currentUser;
-//   //     const userEmail = currentUser?.email;
-  
-//   //     let approverName = "Unknown";
-//   //     if (userEmail) {
-//   //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-//   //       const userSnapshot = await getDocs(userQuery);
-        
-//   //       if (!userSnapshot.empty) {
-//   //         approverName = userSnapshot.docs[0].data().name || "Unknown";
-//   //       }
-//   //     }
-  
-//   //     // ✅ Loop through each returned item and update inventory quantity
-//   //     for (const item of selectedApprovedRequest.requestList || []) {
-//   //       const inventoryId = item.selectedItemId || item.selectedItem?.value;
-//   //       const returnedQty = Number(item.quantity);
-  
-//   //       if (inventoryId && !isNaN(returnedQty)) {
-//   //         const inventoryDocRef = doc(db, "inventory", inventoryId);
-//   //         const inventoryDocSnap = await getDoc(inventoryDocRef);
-  
-//   //         if (inventoryDocSnap.exists()) {
-//   //           const currentQty = inventoryDocSnap.data().quantity || 0;
-//   //           await updateDoc(inventoryDocRef, {
-//   //             quantity: currentQty + returnedQty,
-//   //           });
-
-//   //         } else {
-//   //         
-//   //         }
-//   //       }
-//   //     }
-  
-//   //     // ✅ Update borrowcatalog status
-//   //     const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
-//   //     await updateDoc(borrowDocRef, { status: "Approved" });
-  
-//   //     // ✅ Log request in requestlog
-//   //     const requestLogRef = collection(db, "requestlog");
-//   //     await addDoc(requestLogRef, {
-//   //       requisitionId,
-//   //       userName: selectedApprovedRequest.userName || "N/A",
-//   //       timestamp: serverTimestamp(),
-//   //       dateRequired: selectedApprovedRequest.dateRequired || "N/A",
-//   //       timeFrom: selectedApprovedRequest.timeFrom || "N/A",
-//   //       timeTo: selectedApprovedRequest.timeTo || "N/A",
-//   //       reason: selectedApprovedRequest.reason || "N/A",
-//   //       room: selectedApprovedRequest.room || "N/A",
-//   //       course: selectedApprovedRequest.course || "N/A",
-//   //       courseDescription: selectedApprovedRequest.courseDescription || "N/A",
-//   //       program: selectedApprovedRequest.program || "N/A",
-//   //       status: "Returned",
-//   //       requestList: selectedApprovedRequest.requestList || [],
-//   //       approvedBy: approverName,
-//   //     });
-  
-//   //   
-//   //     setIsApprovedModalVisible(false);
-//   //     setSelectedApprovedRequest(null);
-  
-//   //   } catch (error) {
-//   //    
-//   //   }
-//   // };  
-
-
-//   const handleDeploy = async () => {
-//   try {
-//     const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
-//     await updateDoc(docRef, {
-//       status: "Deployed",
-//     });
-
-//     // Optional: feedback or close modal
-//     alert("Request successfully deployed!");
-//     setIsApprovedModalVisible(false);
-//   } catch (error) {
-//    
-
-//     alert("Failed to deploy request.");
-//   }
-// };
-
-//   const handleApprove = async () => {
-//     try {
-//       const requisitionId = selectedApprovedRequest?.id;
-//       if (!requisitionId) {
-//      
-//         return;
-//       }
-  
-//       // Get current authenticated user
-//       const auth = getAuth();
-//       const currentUser = auth.currentUser;
-//       const userEmail = currentUser?.email;
-  
-//       let approverName = "Unknown";
-//       if (userEmail) {
-//         const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-//         const userSnapshot = await getDocs(userQuery);
-        
-//         if (!userSnapshot.empty) {
-//           approverName = userSnapshot.docs[0].data().name || "Unknown";
-//         }
-//       }
-
-//       for (const item of selectedApprovedRequest.requestList || []) {
-//         const inventoryId = item.selectedItemId || item.selectedItem?.value;
-//         const returnedQty = Number(item.quantity);
-//         const labRoomId = item.labRoom; // Comes from filteredMergedData
-
-//         if (inventoryId && !isNaN(returnedQty)) {
-//           const inventoryDocRef = doc(db, "inventory", inventoryId);
-//           const inventoryDocSnap = await getDoc(inventoryDocRef);
-
-//           if (inventoryDocSnap.exists()) {
-//             const inventoryData = inventoryDocSnap.data();
-//             const currentInventoryQty = Number(inventoryData.quantity || 0);
-//             const newInventoryQty = currentInventoryQty + returnedQty;
-
-//             // Update inventory quantity
-//             await updateDoc(inventoryDocRef, {
-//               quantity: newInventoryQty,
-//             });
-//            
-
-//             // Update labRoom item quantity
-//             const itemId = inventoryData.itemId;
-//             if (labRoomId && itemId) {
-//               const labRoomItemRef = doc(db, "labRoom", labRoomId, "items", itemId);
-//               const labRoomItemSnap = await getDoc(labRoomItemRef);
-
-//               if (labRoomItemSnap.exists()) {
-//                 const currentLabQty = Number(labRoomItemSnap.data().quantity || 0);
-//                 const newLabQty = currentLabQty + returnedQty;
-
-//                 await updateDoc(labRoomItemRef, {
-//                   quantity: newLabQty,
-//                 });
-
-//               
-//               } else {
-//             
-//               }
-//             } else {
-//            
-//             }
-
-//           } else {
-//    
-//           }
-//         }
-//       }
-  
-//       // ✅ Update borrowcatalog status
-//       const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
-//       await updateDoc(borrowDocRef, { status: "Return Approved" });
-  
-//       // ✅ Log request in requestlog
-//       const requestLogRef = collection(db, "requestlog");
-//       await addDoc(requestLogRef, {
-//         requisitionId,
-//         userName: selectedApprovedRequest.userName || "N/A",
-//         timestamp: serverTimestamp(),
-//         dateRequired: selectedApprovedRequest.dateRequired || "N/A",
-//         timeFrom: selectedApprovedRequest.timeFrom || "N/A",
-//         timeTo: selectedApprovedRequest.timeTo || "N/A",
-//         reason: selectedApprovedRequest.reason || "N/A",
-//         room: selectedApprovedRequest.room || "N/A",
-//         course: selectedApprovedRequest.course || "N/A",
-//         courseDescription: selectedApprovedRequest.courseDescription || "N/A",
-//         program: selectedApprovedRequest.program || "N/A",
-//         status: "Returned",
-//         requestList: selectedApprovedRequest.requestList || [],
-//         approvedBy: approverName,
-//       });
-  
-//      
-//       setIsApprovedModalVisible(false);
-//       setSelectedApprovedRequest(null);
-  
-//     } catch (error) {
-//      
-//     }
-//   };  
-
-//   return (
-//     <Modal
-//       title={
-//         <div style={{ background: "#389e0d", padding: "12px", color: "#fff" }}>
-//           <Text strong>✅ Approved Request Details</Text>
-//           <span style={{ float: "right", fontStyle: "italic" }}>
-//             Requisition ID: {selectedApprovedRequest?.id || "N/A"}
-//           </span>
-//         </div>
-//       }
-//       open={isApprovedModalVisible}
-//       onCancel={() => {
-//         setIsApprovedModalVisible(false);
-//         setSelectedApprovedRequest(null);
-//       }}
-//       width={800}
-//       zIndex={1024}
-//       footer={
-//         selectedApprovedRequest?.status === "Returned" ? (
-//           <Button type="primary" onClick={handleApprove}>
-//             Approve
-//           </Button>
-//         ) : null
-//       }
-//     >
-//       {selectedApprovedRequest && (
-//         <div style={{ padding: "20px" }}>
-//           <Row gutter={[16, 16]}>
-//             <Col span={12}>
-//               <Text strong>Name:</Text> {selectedApprovedRequest.userName || "N/A"}<br />
-//               <Text strong>Request Date:</Text>{" "}
-//               {selectedApprovedRequest?.timestamp
-//                 ? formatDate(selectedApprovedRequest.timestamp)
-//                 : "N/A"}
-//               <br />
-//               <Text strong>Required Date:</Text> {selectedApprovedRequest.dateRequired || "N/A"}<br />
-//               <Text strong>Time Needed:</Text> {selectedApprovedRequest.timeFrom || "N/A"} - {selectedApprovedRequest.timeTo || "N/A"}
-//             </Col>
-//             <Col span={12}>
-//               <Text strong>Reason of Request:</Text>
-//               <p style={{ fontSize: "12px", marginTop: 5 }}>{selectedApprovedRequest.reason || "N/A"}</p>
-//               <Text strong>Room:</Text> {selectedApprovedRequest.room || "N/A"}<br />
-//               <Text strong>Course Code:</Text> {selectedApprovedRequest.course || "N/A"}<br />
-//               <Text strong>Course Description:</Text> {selectedApprovedRequest.courseDescription || "N/A"}<br />
-//               <Text strong>Program:</Text> {selectedApprovedRequest.program || "N/A"}
-//             </Col>
-//           </Row>
-
-//           <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
-//           <Table
-//             dataSource={requestList.map((item, index) => ({
-//               ...item,
-//               key: item.itemIdFromInventory || `item-${index}`,
-//             }))}
-//             columns={approvedRequestColumns}
-//             rowKey="key"
-//             pagination={false}
-//             bordered
-//           />
-//           {selectedApprovedRequest?.status === "Borrowed" && (
-//             <Button type="primary" danger onClick={handleDeploy}>
-//               Deploy
-//             </Button>
-//           )}
-
-//         </div>
-//       )}
-//     </Modal>
-//   );
-// };
-
-// export default ApprovedRequestModal;
 
 // VERSION 2
 import React, { useState, useEffect } from "react";
-import { Modal, Row, Col, Typography, Table, Button } from "antd";
+import { Modal, Row, Col, Typography, Table, Button, Descriptions } from "antd";
 import { doc, updateDoc, collection, addDoc, serverTimestamp, query, where, getDoc, getDocs, deleteDoc  } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { getAuth } from "firebase/auth";
@@ -1140,20 +823,12 @@ function getConditionSummary(conditionsArray) {
   return (
   <>
     <Modal
-      title={
-        <div style={{ background: "#389e0d", padding: "12px", color: "#fff" }}>
-          <Text strong>✅ Approved Request Details</Text>
-          {/* <span style={{ float: "right", fontStyle: "italic" }}>
-            Requisition ID: {selectedApprovedRequest?.id || "N/A"}
-          </span> */}
-        </div>
-      }
       open={isApprovedModalVisible}
       onCancel={() => {
         setIsApprovedModalVisible(false);
         setSelectedApprovedRequest(null);
       }}
-      width={800}
+      width={1000}
       zIndex={1024}
       footer={
         selectedApprovedRequest?.status === "Returned" ? (
@@ -1168,8 +843,12 @@ function getConditionSummary(conditionsArray) {
       }
     >
       {selectedApprovedRequest && (
-        <div style={{ padding: "20px" }}>
-          <Row gutter={[16, 16]}>
+        <div style={{ padding: "20px", paddingTop: 60 }}>
+          
+        <div style={{position: 'absolute', left: 0, top: 0, right: 0, backgroundColor: '#165a72', height: 60, borderTopRightRadius: 8, borderTopLeftRadius: 8, alignItems: 'center'}}>
+            <h1 style={{margin:0, color: 'white'}}>Requisition Slip</h1>
+        </div>
+          {/* <Row gutter={[16, 16]}>
             <Col span={12}>
               <Text strong>Name:</Text> {selectedApprovedRequest.userName || "N/A"}<br />
               <Text strong>Request Date:</Text>{" "}
@@ -1189,10 +868,57 @@ function getConditionSummary(conditionsArray) {
               <Text strong>Course Description:</Text> {selectedApprovedRequest.courseDescription || "N/A"}<br />
               <Text strong>Program:</Text> {selectedApprovedRequest.program || "N/A"}
             </Col>
-          </Row>
+          </Row> */}
+
+          <Descriptions 
+  bordered 
+  size="small" 
+  column={2} 
+  title="Approved Request Details"
+>
+  <Descriptions.Item label="Requester">
+    {selectedApprovedRequest.userName || "N/A"}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Request Date">
+    {selectedApprovedRequest?.timestamp
+      ? formatDate(selectedApprovedRequest.timestamp)
+      : "N/A"}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Required Date">
+    {selectedApprovedRequest.dateRequired || "N/A"}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Time Needed">
+    {selectedApprovedRequest.timeFrom || "N/A"} - {selectedApprovedRequest.timeTo || "N/A"}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Room">
+    {selectedApprovedRequest.room || "N/A"}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Course Code">
+    {selectedApprovedRequest.course || "N/A"}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Course Description" span={2}>
+    {selectedApprovedRequest.courseDescription || "N/A"}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Program" span={2}>
+    {selectedApprovedRequest.program || "N/A"}
+  </Descriptions.Item>
+
+    <Descriptions.Item label="Note" span={2}>
+    <p style={{ fontSize: "12px", margin: 0 }}>
+      {selectedApprovedRequest.reason || "N/A"}
+    </p>
+  </Descriptions.Item>
+</Descriptions>
 
           <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
-          <Table
+          {/* <Table
             dataSource={requestList.map((item, index) => ({
               ...item,
               key: item.itemIdFromInventory || `item-${index}`,
@@ -1202,7 +928,46 @@ function getConditionSummary(conditionsArray) {
             rowKey="key"
             pagination={false}
             bordered
-          />
+          /> */}
+
+<table style={{ width: "100%", borderCollapse: "collapse" }}>
+  <thead>
+    <tr>
+      <th style={{ border: "1px solid #ddd", padding: "8px", backgroundColor: '#e9ecee' }}>Item ID</th>
+      <th style={{ border: "1px solid #ddd", padding: "8px", backgroundColor: '#e9ecee'  }}>Item Name</th>
+      <th style={{ border: "1px solid #ddd", padding: "8px", backgroundColor: '#e9ecee'  }}>Item Description</th>
+      <th style={{ border: "1px solid #ddd", padding: "8px", backgroundColor: '#e9ecee'  }}>Category</th>
+      <th style={{ border: "1px solid #ddd", padding: "8px", backgroundColor: '#e9ecee'  }}>Quantity</th>
+      <th style={{ border: "1px solid #ddd", padding: "8px", backgroundColor: '#e9ecee'  }}>Condition Summary</th>
+    </tr>
+  </thead>
+  <tbody>
+    {requestList.map((item, index) => (
+      <tr key={item.itemIdFromInventory || `item-${index}`}>
+        <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+          {item.itemIdFromInventory || "N/A"}
+        </td>
+        <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+          {item.itemName || "N/A"}
+        </td>
+        <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+          {item.itemDescription || "N/A"}
+        </td>
+        <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+          {item.category || "N/A"}
+        </td>
+        <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+          {item.quantity || "N/A"}
+        </td>
+        <td style={{ border: "1px solid #ddd", padding: "8px" }}>
+          {getConditionSummary(item.conditions)}
+        </td>
+      </tr>
+    ))}
+  </tbody>
+</table>
+
+
           {selectedApprovedRequest?.status === "Borrowed" && (
             <Button type="primary" danger onClick={handleDeploy} loading={deployLoading} disabled={approveLoading || releaseLoading}>
               Deploy
