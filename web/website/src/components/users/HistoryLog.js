@@ -347,38 +347,38 @@ const sanitizeInput = (input) =>
     reorderForm.resetFields();
   };
 
-  const columns = [
+  // const columns = [
 
-    {
-      title: "Requisition Date",
-      dataIndex: "dateRequested",
-      key: "dateRequested",
-    },
-    {
-      title: "Date Required",
-      dataIndex: "dateRequired",
-      key: "dateRequired",
-    },
-    {
-      title: "Status",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => (
-        <Button type="text" className="status-btn">
-          {status}
-        </Button>
-      ),
-    },
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <Button onClick={() => handleViewDetails(record)} type="primary">
-          View Details
-        </Button>
-      ),
-    },
-  ];
+  //   {
+  //     title: "Requisition Date",
+  //     dataIndex: "dateRequested",
+  //     key: "dateRequested",
+  //   },
+  //   {
+  //     title: "Date Required",
+  //     dataIndex: "dateRequired",
+  //     key: "dateRequired",
+  //   },
+  //   {
+  //     title: "Status",
+  //     dataIndex: "status",
+  //     key: "status",
+  //     render: (status) => (
+  //       <Button type="text" className="status-btn">
+  //         {status}
+  //       </Button>
+  //     ),
+  //   },
+  //   {
+  //     title: "Action",
+  //     key: "action",
+  //     render: (_, record) => (
+  //       <Button onClick={() => handleViewDetails(record)} type="primary">
+  //         View Details
+  //       </Button>
+  //     ),
+  //   },
+  // ];
 
   // useEffect(() => {
   //   const userId = localStorage.getItem("userId");
