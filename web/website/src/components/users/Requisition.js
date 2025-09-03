@@ -2383,8 +2383,15 @@ const Requisition = () => {
                     <Input
                       type="number"
                       value={room}
-                      onChange={(e) => setRoom(sanitizeInput(e.target.value))}
-
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        // Prevent negative numbers
+                        if (value.startsWith('-')) {
+                          return; // Don't allow negative numbers
+                        }
+                        setRoom(sanitizeInput(value));
+                      }}
+                      min="1"
                       placeholder="Enter room number"
                       style={{
                         width: "100%",
