@@ -528,8 +528,8 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
         }}
       />
       <div style={{}}>
-        <h3 className="logo-title" style={{margin: 0, textAlign: 'left'}}>NU MOA</h3> {/* Remove default margin */}
-        <p className="logo-subtitle" style={{ margin: 0 }}>Laboratory System</p> {/* Remove default margin */}
+        <h3 className="logo-title" style={{margin: 0, textAlign: 'left', color: 'white', fontWeight: 700, fontSize: 19}}>NU MOA</h3> {/* Remove default margin */}
+        <p className="logo-subtitle" style={{ margin: 0 , fontSize: 16}}>Laboratory System</p> {/* Remove default margin */}
       </div>
     </div>
   ) : (

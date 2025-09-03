@@ -1225,7 +1225,7 @@ const Dashboard = () => {
               </Row>
             </Tabs.TabPane>
 
-            <Tabs.TabPane tab="Analytics" key="3">
+            {/* <Tabs.TabPane tab="Analytics" key="3">
               <Row gutter={[24, 24]} justify="center">
                 <Col xs={24} style={{ width: "100%" }}>
                   <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
@@ -1235,7 +1235,7 @@ const Dashboard = () => {
                   </div>
                 </Col>
               </Row>
-            </Tabs.TabPane>
+            </Tabs.TabPane> */}
           </Tabs>
         </Content>
 
