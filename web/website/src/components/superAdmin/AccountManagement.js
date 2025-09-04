@@ -1138,7 +1138,7 @@ const AccountManagement = () => {
           zIndex={1017}
         >
           <Form layout="vertical">
-            <Form.Item label="Enter your password to proceed:">
+            <Form.Item label="Enter the Technical Admin's password to proceed:">
               <Input.Password
                 value={password}
                 onChange={(e) => {
