@@ -271,11 +271,16 @@ export default StyleSheet.create({
     fontWeight: 'bold',
   },
 
+  tableContainer: {
+    marginTop: 10,
+  },
+  
   table: {
     marginTop: 10,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
+    minWidth: 600, // Ensure table has minimum width for scrolling
   },
   
   tableHeader: {

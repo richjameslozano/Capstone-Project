@@ -743,31 +743,33 @@ const renderDeployed = ({ item }) => {
             <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.usageType}</Text>
 
             <Text style={styles.subTitle}>Requested Items:</Text>
-              <View style={styles.table}>
-                <View style={styles.tableHeader}>
-                  <Text style={styles.tableHeaderCell}>Item ID</Text>
-                  <Text style={styles.tableHeaderCell}>Item Name</Text>
-                  <Text style={styles.tableHeaderCell}>Item Description</Text>
-                  <Text style={styles.tableHeaderCell}>Qty</Text>
-                  {hasUnitColumn && <Text style={styles.tableHeaderCell}>Unit</Text>}
-                  <Text style={styles.tableHeaderCell}>Dept</Text>
-                </View>
-                
-                {selectedRequest?.items.map((item, idx) => (
-                  <View key={idx} style={styles.tableRow}>
-                    <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
-                    <Text style={styles.tableCell}>{item.itemName}</Text>
-                    <Text style={styles.tableCell}>{item.itemDetails}</Text>
-                    <Text style={styles.tableCell}>{item.quantity}</Text>
-                    {hasUnitColumn && (
-                      <Text style={styles.tableCell}>
-                        {["Chemical", "Reagent"].includes(item.category) ? item.unit || '—' : '—'}
-                      </Text>
-                    )}
-                    <Text style={styles.tableCell}>{item.department}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.tableContainer}>
+                <View style={styles.table}>
+                  <View style={styles.tableHeader}>
+                    <Text style={styles.tableHeaderCell}>Item ID</Text>
+                    <Text style={styles.tableHeaderCell}>Item Name</Text>
+                    <Text style={styles.tableHeaderCell}>Item Description</Text>
+                    <Text style={styles.tableHeaderCell}>Qty</Text>
+                    {hasUnitColumn && <Text style={styles.tableHeaderCell}>Unit</Text>}
+                    <Text style={styles.tableHeaderCell}>Dept</Text>
                   </View>
-                ))}
-              </View>
+                  
+                  {selectedRequest?.items.map((item, idx) => (
+                    <View key={idx} style={styles.tableRow}>
+                      <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
+                      <Text style={styles.tableCell}>{item.itemName}</Text>
+                      <Text style={styles.tableCell}>{item.itemDetails}</Text>
+                      <Text style={styles.tableCell}>{item.quantity}</Text>
+                      {hasUnitColumn && (
+                        <Text style={styles.tableCell}>
+                          {["Chemical", "Reagent"].includes(item.category) ? item.unit || '—' : '—'}
+                        </Text>
+                      )}
+                      <Text style={styles.tableCell}>{item.department}</Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
 
             <Text><Text style={styles.label}>Message:</Text> {selectedRequest?.message || 'No message provided.'}</Text>
 
@@ -949,35 +951,37 @@ const renderDeployed = ({ item }) => {
 <Text style={styles.modalSubtitle}>Items</Text>
 
 {selectedLog?.requestList?.length > 0 ? (
-  <View style={styles.table}>
-    <View style={styles.tableHeader2}>
-      <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Item</Text>
-      <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Description</Text>
-      <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Qty</Text>
-      {hasUnitColumn && <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Unit</Text>}
-      <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Category</Text>
-    </View>
-
-    {selectedLog.requestList.map((item, index) => (
-      <View
-        key={item.id || index}
-        style={[
-          styles.tableRow,
-          index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
-        ]}
-      >
-        <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemName}</Text>
-        <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemDetails}</Text>
-        <Text style={[styles.tableCell2, { flex: 1 }]}>{item.quantity}</Text>
-        {hasUnitColumn && (
-          <Text style={[styles.tableCell2, { flex: 1 }]}>
-            {["Chemical", "Reagent"].includes(item.category) ? item.unit || "—" : "—"}
-          </Text>
-        )}
-        <Text style={[styles.tableCell2, { flex: 1 }]}>{item.category || "—"}</Text>
+  <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.tableContainer}>
+    <View style={styles.table}>
+      <View style={styles.tableHeader2}>
+        <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Item</Text>
+        <Text style={[styles.tableHeaderText2, { flex: 2 }]}>Description</Text>
+        <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Qty</Text>
+        {hasUnitColumn && <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Unit</Text>}
+        <Text style={[styles.tableHeaderText2, { flex: 1 }]}>Category</Text>
       </View>
-    ))}
-  </View>
+
+      {selectedLog.requestList.map((item, index) => (
+        <View
+          key={item.id || index}
+          style={[
+            styles.tableRow,
+            index % 2 === 0 ? styles.tableRowEven : styles.tableRowOdd,
+          ]}
+        >
+          <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemName}</Text>
+          <Text style={[styles.tableCell2, { flex: 2 }]}>{item.itemDetails}</Text>
+          <Text style={[styles.tableCell2, { flex: 1 }]}>{item.quantity}</Text>
+          {hasUnitColumn && (
+            <Text style={[styles.tableCell2, { flex: 1 }]}>
+              {["Chemical", "Reagent"].includes(item.category) ? item.unit || "—" : "—"}
+            </Text>
+          )}
+          <Text style={[styles.tableCell2, { flex: 1 }]}>{item.category || "—"}</Text>
+        </View>
+      ))}
+    </View>
+  </ScrollView>
 ) : (
   <Text style={styles.modalValue}>None</Text>
 )}

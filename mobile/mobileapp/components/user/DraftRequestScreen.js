@@ -261,25 +261,27 @@ export default function DraftRequestScreen() {
             <Text><Text style={styles.label}>Room:</Text> {selectedRequest?.room}</Text>
 
             <Text style={styles.subTitle}>Requested Items:</Text>
-              <View style={styles.table}>
-                <View style={styles.tableHeader}>
-                  <Text style={styles.tableHeaderCell}>Item Name</Text>
-                  <Text style={styles.tableHeaderCell}>Item ID</Text>
-                  <Text style={styles.tableHeaderCell}>Qty</Text>
-                  <Text style={styles.tableHeaderCell}>Dept</Text>
-                  <Text style={styles.tableHeaderCell}>Usage</Text>
-                </View>
-                
-                {selectedRequest?.items.map((item, idx) => (
-                  <View key={idx} style={styles.tableRow}>
-                    <Text style={styles.tableCell}>{item.itemName}</Text>
-                    <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
-                    <Text style={styles.tableCell}>{item.quantity}</Text>
-                    <Text style={styles.tableCell}>{item.department}</Text>
-                    <Text style={styles.tableCell}>{item.usageType}</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={true} style={styles.tableContainer}>
+                <View style={styles.table}>
+                  <View style={styles.tableHeader}>
+                    <Text style={styles.tableHeaderCell}>Item Name</Text>
+                    <Text style={styles.tableHeaderCell}>Item ID</Text>
+                    <Text style={styles.tableHeaderCell}>Qty</Text>
+                    <Text style={styles.tableHeaderCell}>Dept</Text>
+                    <Text style={styles.tableHeaderCell}>Usage</Text>
                   </View>
-                ))}
-              </View>
+                  
+                  {selectedRequest?.items.map((item, idx) => (
+                    <View key={idx} style={styles.tableRow}>
+                      <Text style={styles.tableCell}>{item.itemName}</Text>
+                      <Text style={styles.tableCell}>{item.itemIdFromInventory}</Text>
+                      <Text style={styles.tableCell}>{item.quantity}</Text>
+                      <Text style={styles.tableCell}>{item.department}</Text>
+                      <Text style={styles.tableCell}>{item.usageType}</Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
 
             <Text><Text style={styles.label}>Message:</Text> {selectedRequest?.message || 'No message provided.'}</Text>
 

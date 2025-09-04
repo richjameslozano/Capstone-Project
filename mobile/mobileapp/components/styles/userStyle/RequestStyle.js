@@ -220,11 +220,16 @@ export default StyleSheet.create({
     color: '#fff',
   },
 
+  tableContainer: {
+    marginTop: 10,
+  },
+  
   table: {
     marginTop: 10,
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 6,
+    minWidth: 600, // Ensure table has minimum width for scrolling
   },
   
   tableHeader: {
@@ -337,6 +342,7 @@ closeButtonText: {
 
 table: {
   marginTop: 10,
+  minWidth: 600, // Ensure table has minimum width for scrolling
 },
 
 tableHeader2: {
