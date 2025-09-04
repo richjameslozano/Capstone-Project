@@ -618,3 +618,15 @@ h3 {
     transform: translateY(0);
   }
 }
+
+/* Password Success Message */
+.password-success-message {
+  animation: slideInUp 0.5s ease-out;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.password-success-message p {
+  margin: 0;
+  font-weight: 600;
+  font-size: 14px;
+}

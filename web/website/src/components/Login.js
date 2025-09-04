@@ -45,6 +45,7 @@ const Login = () => {
     hasSpecial: false,
     matches: false
   });
+  const [passwordSetSuccess, setPasswordSetSuccess] = useState(false);
   const [signUpData, setSignUpData] = useState({
     
     name: "",
@@ -1139,19 +1140,35 @@ const Login = () => {
         await auth.signOut();
         console.log("User signed out after registration to await email verification");
 
-        // Redirect or show verification message
-        navigate("/", {
-          state: {
-            message: "Registration successful! Please verify your email before logging in.",
-          },
+        // Set success state briefly
+        setPasswordSetSuccess(true);
+        
+        // Reset form state to return to login view
+        setIsNewUser(false);
+        setIsVerifiedWithoutPassword(false);
+        setEmailChecked(false);
+        setFormData({ email: "", password: "" });
+        setConfirmPassword("");
+        
+        // Reset password validation
+        setPasswordValidation({
+          hasLength: false,
+          hasUppercase: false,
+          hasLowercase: false,
+          hasNumber: false,
+          hasSpecial: false,
+          matches: false
         });
 
-        setModalMessage("Registration successful! Please verify your email before logging in.");
-        setIsModalVisible(true);
-
-        setIsNewUser(false);
-        setFormData((prev) => ({ ...prev, email: "", password: "" }));
-        setConfirmPassword("");
+        // Show success message after a brief delay
+        setTimeout(() => {
+          setModalMessage("Password set successfully! Please verify your email before logging in.");
+          setIsModalVisible(true);
+          setPasswordSetSuccess(false);
+        }, 1500);
+        
+        // Clear any existing errors
+        setError("");
 
       } else {
         setError("User record not found in Firestore.");
@@ -1481,11 +1498,29 @@ const Login = () => {
             <h2 className={signUpMode ? "create-account-title" : "login-title"}>
               {signUpMode
                 ? "Create an Account"
-                // : isNewUser
+                : passwordSetSuccess
+                ? "Password Set Successfully!"
                 : isVerifiedWithoutPassword && !signUpMode
                 ? "Set Your Password"
                 : "Sign in to your account"} 
             </h2>
+            
+            {/* Success message when password is set */}
+            {passwordSetSuccess && (
+              <div className="password-success-message" style={{
+                backgroundColor: "#d4edda",
+                border: "1px solid #c3e6cb",
+                borderRadius: "8px",
+                padding: "12px",
+                marginBottom: "20px",
+                textAlign: "center",
+                color: "#155724"
+              }}>
+                <p>
+                  ✓ Password set successfully! Redirecting to login...
+                </p>
+              </div>
+            )}
 
             <form
               className={signUpMode ? "form-wrapper slide-in" : "form-wrapper slide-in2"}
