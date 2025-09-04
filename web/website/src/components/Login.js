@@ -37,6 +37,14 @@ const Login = () => {
   const [termsChecked, setTermsChecked] = useState(false);
   const [emailChecked, setEmailChecked] = useState(false);
   const [isVerifiedWithoutPassword, setIsVerifiedWithoutPassword] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({
+    hasLength: false,
+    hasUppercase: false,
+    hasLowercase: false,
+    hasNumber: false,
+    hasSpecial: false,
+    matches: false
+  });
   const [signUpData, setSignUpData] = useState({
     
     name: "",
@@ -445,34 +453,36 @@ const Login = () => {
     }, 700); // Debounce time (ms)
     }
 
-      // PASSWORD VALIDATION
+      // LIVE PASSWORD VALIDATION
       if (name === "password") {
-        const passwordRegex =
-          /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+        // Update password validation state
+        setPasswordValidation({
+          hasLength: value.length >= 8,
+          hasUppercase: /[A-Z]/.test(value),
+          hasLowercase: /[a-z]/.test(value),
+          hasNumber: /\d/.test(value),
+          hasSpecial: /[@$!%*#?&]/.test(value),
+          matches: confirmPassword ? value === confirmPassword : false
+        });
 
-        // if (!passwordRegex.test(value)) {
-        //   setError(
-        //     "Password must be at least 8 characters long and include a letter, a number, and a special character."
-        //   );
-        //   return;
-        // } else {
-        //   setError("");
-        // }
-
-      // check match with confirmPassword
-      if (confirmPassword && value !== confirmPassword) {
-        setError("Passwords do not match.");
-
-      } else {
-        setError("");
+        // check match with confirmPassword
+        if (confirmPassword && value !== confirmPassword) {
+          setError("Passwords do not match.");
+        } else {
+          setError("");
+        }
       }
-    }
 
     if (name === "confirmPassword") {
+      // Update password match validation
+      setPasswordValidation(prev => ({
+        ...prev,
+        matches: value === formData.password
+      }));
+
       // Check match after password and confirmPassword are both typed
       if (value !== formData.password) {
         setError("Passwords do not match.");
-
       } else {
         setError("");
       }
@@ -1805,16 +1815,71 @@ const Login = () => {
 
                     {error && <p className="error-message">{error}</p>}
 
-                    {/* ✅ Only show if email was checked AND isNewUser is true */}
-                    {/* {isNewUser && emailChecked && formData.password && ( */}
-                    {/* {!isNewUser && emailChecked && formData.password && (
-                        <small
-                          className="password-hint"
-                          style={{ color: "#888", fontSize: "12px", marginTop: "4px" }}
-                        >
-                          Password must be at least 8 characters long and include a letter, a number, and a special character.
-                        </small>
-                      )} */}
+                    {/* Live Password Validation Indicators */}
+                    {isVerifiedWithoutPassword && emailChecked && formData.password && (
+                      <div className="password-validation-indicators" style={{ marginTop: "8px" }}>
+                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                          <span style={{ 
+                            color: passwordValidation.hasLength ? "#4CAF50" : "#FF9800", 
+                            marginRight: "8px",
+                            fontSize: "14px"
+                          }}>
+                            {passwordValidation.hasLength ? "✓" : "○"}
+                          </span>
+                          <small style={{ color: "#666", fontSize: "12px" }}>
+                            At least 8 characters
+                          </small>
+                        </div>
+                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                          <span style={{ 
+                            color: passwordValidation.hasUppercase ? "#4CAF50" : "#FF9800", 
+                            marginRight: "8px",
+                            fontSize: "14px"
+                          }}>
+                            {passwordValidation.hasUppercase ? "✓" : "○"}
+                          </span>
+                          <small style={{ color: "#666", fontSize: "12px" }}>
+                            One uppercase letter
+                          </small>
+                        </div>
+                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                          <span style={{ 
+                            color: passwordValidation.hasLowercase ? "#4CAF50" : "#FF9800", 
+                            marginRight: "8px",
+                            fontSize: "14px"
+                          }}>
+                            {passwordValidation.hasLowercase ? "✓" : "○"}
+                          </span>
+                          <small style={{ color: "#666", fontSize: "12px" }}>
+                            One lowercase letter
+                          </small>
+                        </div>
+                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                          <span style={{ 
+                            color: passwordValidation.hasNumber ? "#4CAF50" : "#FF9800", 
+                            marginRight: "8px",
+                            fontSize: "14px"
+                          }}>
+                            {passwordValidation.hasNumber ? "✓" : "○"}
+                          </span>
+                          <small style={{ color: "#666", fontSize: "12px" }}>
+                            One number
+                          </small>
+                        </div>
+                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                          <span style={{ 
+                            color: passwordValidation.hasSpecial ? "#4CAF50" : "#FF9800", 
+                            marginRight: "8px",
+                            fontSize: "14px"
+                          }}>
+                            {passwordValidation.hasSpecial ? "✓" : "○"}
+                          </span>
+                          <small style={{ color: "#666", fontSize: "12px" }}>
+                            One special character (@$!%*#?&)
+                          </small>
+                        </div>
+                      </div>
+                    )}
                   </div>
   
                   {/* {isNewUser && (
@@ -1855,7 +1920,15 @@ const Login = () => {
                           type={showConfirmPassword ? "text" : "password"}
                           name="confirmPassword"
                           value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          onChange={(e) => {
+                            const value = e.target.value.replace(/\s/g, "");
+                            setConfirmPassword(value);
+                            // Update password match validation in real-time
+                            setPasswordValidation(prev => ({
+                              ...prev,
+                              matches: value === formData.password
+                            }));
+                          }}
                           required
                           placeholder="Confirm your password"
                         />
@@ -1872,6 +1945,45 @@ const Login = () => {
                         <small className="error-message" style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
                           {error}
                         </small>
+                      )}
+
+                      {/* Password Match Indicator */}
+                      {confirmPassword && (
+                        <div className="password-match-indicator" style={{ marginTop: "8px" }}>
+                          <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
+                            <span style={{ 
+                              color: passwordValidation.matches ? "#4CAF50" : "#FF9800", 
+                              marginRight: "8px",
+                              fontSize: "14px"
+                            }}>
+                              {passwordValidation.matches ? "✓" : "○"}
+                            </span>
+                            <small style={{ color: "#666", fontSize: "12px" }}>
+                              Passwords match
+                            </small>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* All Requirements Met Indicator */}
+                      {passwordValidation.hasLength && 
+                       passwordValidation.hasUppercase && 
+                       passwordValidation.hasLowercase && 
+                       passwordValidation.hasNumber && 
+                       passwordValidation.hasSpecial && 
+                       passwordValidation.matches && (
+                        <div className="password-success-indicator" style={{ 
+                          marginTop: "12px", 
+                          padding: "8px 12px", 
+                          backgroundColor: "#d4edda", 
+                          border: "1px solid #c3e6cb", 
+                          borderRadius: "6px",
+                          textAlign: "center"
+                        }}>
+                          <small style={{ color: "#155724", fontSize: "12px", fontWeight: "bold" }}>
+                            ✓ All password requirements met!
+                          </small>
+                        </div>
                       )}
 
                       {/* Password hint */}

@@ -549,3 +549,72 @@ h3 {
 .link:hover{
   text-decoration: underline;
 }
+
+/* Password Validation Indicators */
+.password-validation-indicators {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #e9ecef;
+  margin-top: 8px;
+}
+
+.validation-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 6px;
+  transition: all 0.2s ease;
+}
+
+.validation-item:last-child {
+  margin-bottom: 0;
+}
+
+.validation-item span {
+  font-weight: bold;
+  margin-right: 8px;
+  font-size: 14px;
+  min-width: 16px;
+  text-align: center;
+}
+
+.password-match-indicator {
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  padding: 8px 12px;
+  border: 1px solid #e9ecef;
+  margin-top: 8px;
+}
+
+/* Animation for validation changes */
+.validation-item {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Password Success Indicator */
+.password-success-indicator {
+  animation: slideInUp 0.4s ease-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
