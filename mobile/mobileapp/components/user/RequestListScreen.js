@@ -1194,11 +1194,11 @@ const boldLabel = {
           
           
           <View style={{flex:1, width: '70%', flexDirection: 'row'}}>
-            <View style={{width: '50%', flexDirection: 'row', alignItems:'center'}}>
+            {/* <View style={{width: '50%', flexDirection: 'row', alignItems:'center'}}>
             <Checkbox
             />
           <Text>Select All</Text>
-          </View>
+          </View> */}
 
           {/* <TouchableOpacity onPress={handleSaveDraft}  style={{width: '50%', backgroundColor: '#a3cae9', justifyContent:'center', alignItems: 'center'}}>
             <Text style={styles.requestButtonText}>
