@@ -52,6 +52,11 @@ export default function LoginScreen({navigation}) {
   const confirmPasswordBorderAnim = useRef(new Animated.Value(0)).current;
   const [jobTitleError, setJobTitleError] = useState('');
   const [departmentError, setDepartmentError] = useState('');
+  const [nameError, setNameError] = useState('');
+  const [signUpEmailError, setSignUpEmailError] = useState('');
+  const [employeeIDError, setEmployeeIDError] = useState('');
+  const [signUpPasswordError, setSignUpPasswordError] = useState('');
+  const [confirmPasswordError, setConfirmPasswordError] = useState('');
 
   const [focusStates, setFocusStates] = useState({
   name: false,
@@ -479,40 +484,80 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
     const handleSignup = async () => {
         setLoading(true);
       
+        // Clear all previous errors
+        setNameError('');
+        setSignUpEmailError('');
+        setEmployeeIDError('');
+        setSignUpPasswordError('');
+        setConfirmPasswordError('');
+        setJobTitleError('');
+        setDepartmentError('');
+        setError('');
+      
         // Use individual state variables instead of signUpData
         const email = signUpEmail;
         const employeeId = employeeID;
         const password = signUpPassword;
+      
+        // Step 0: Validate all required fields
+        if (!name.trim()) {
+          setNameError('Full Name is required.');
+          setLoading(false);
+          return;
+        }
+
+        if (!email.trim()) {
+          setSignUpEmailError('Email is required.');
+          setLoading(false);
+          return;
+        }
+
+        if (!employeeId.trim()) {
+          setEmployeeIDError('Employee ID is required.');
+          setLoading(false);
+          return;
+        }
+
+        if (!password.trim()) {
+          setSignUpPasswordError('Password is required.');
+          setLoading(false);
+          return;
+        }
+
+        if (!confirmPassword.trim()) {
+          setConfirmPasswordError('Confirm Password is required.');
+          setLoading(false);
+          return;
+        }
+
+        if (!jobTitle) {
+          setJobTitleError('Job Title is required.');
+          setLoading(false);
+          return;
+        }
+
+        if (!department) {
+          setDepartmentError('Department is required.');
+          setLoading(false);
+          return;
+        }
       
         // Step 1: Validate email domain
         const validDomains = ["nu-moa.edu.ph", "students.nu-moa.edu.ph"];
         const emailDomain = email.split("@")[1];
       
         if (!validDomains.includes(emailDomain)) {
-          setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
+          setSignUpEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
           setLoading(false);
           return;
         }
 
-        // Step 0: Validate required fields
-        if (!jobTitle) {
-          setError("Job Title is required.");
-          setLoading(false);
-          return;
-        }
-
-        if (!department) {
-          setError("Department is required.");
-          setLoading(false);
-          return;
-        }
-              
         // Step 2: Password match check
-        // if (password !== confirmPassword) {
-        //   setError("Passwords do not match.");
-        //   setLoading(false);
-        //   return;
-        // }
+        if (password !== confirmPassword) {
+          setConfirmPasswordError("Passwords do not match.");
+          setLoading(false);
+          return;
+        }
 
         if (!agreedToTerms) {
           setError("You must agree to the Terms and Conditions.");
@@ -520,10 +565,10 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           return;
         }        
     
-        // Step 4: Validate employee ID format (e.g. 12-3456)
+        // Step 3: Validate employee ID format (e.g. 12-3456)
         const employeeIdPattern = /^\d{2}-\d{4}$/;
         if (!employeeIdPattern.test(employeeId.trim())) {
-          setError("Invalid employee ID format. Please use ##-#### format.");
+          setEmployeeIDError("Invalid employee ID format. Please use ##-#### format.");
           setLoading(false);
           return;
         }
@@ -611,6 +656,14 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setJobTitle("");
           setDepartment("");
           setError("");
+          // Clear all error states
+          setNameError("");
+          setSignUpEmailError("");
+          setEmployeeIDError("");
+          setSignUpPasswordError("");
+          setConfirmPasswordError("");
+          setJobTitleError("");
+          setDepartmentError("");
 
           setModalMessage("Successfully Registered! Please check your junk email. Your account is pending approval.");
           setIsModalVisible(true);
@@ -651,14 +704,37 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
              <View style={styles.buttonContainer}>
               <Text style={{color: 'gray', marginTop: -30}}>Sign in to continue</Text>
           <TouchableOpacity style={{width: '100%',backgroundColor: '#134b5f', justifyContent: 'center', borderRadius: 30, padding: 10, paddingVertical: 13}}
-            onPress={()=> setIsLoginSignup(true)}
+            onPress={()=> {
+              setIsLoginSignup(true);
+              // Clear all errors when going to login
+              setError('');
+              setNameError('');
+              setSignUpEmailError('');
+              setEmployeeIDError('');
+              setSignUpPasswordError('');
+              setConfirmPasswordError('');
+              setJobTitleError('');
+              setDepartmentError('');
+            }}
             >
             <Text style={{textAlign: 'center', color: 'white', fontSize: 18, fontWeight: 700}}>Login</Text>
           </TouchableOpacity>
 
 
           <TouchableOpacity style={{width: '100%',backgroundColor: 'transparent', justifyContent: 'center', borderRadius: 30, padding: 10, borderWidth: 3, borderColor: '#134b5f'}}
-          onPress={() => {setIsLoginSignup(true), setIsSignup(true)}}
+          onPress={() => {
+            setIsLoginSignup(true);
+            setIsSignup(true);
+            // Clear all errors when switching to signup
+            setError('');
+            setNameError('');
+            setSignUpEmailError('');
+            setEmployeeIDError('');
+            setSignUpPasswordError('');
+            setConfirmPasswordError('');
+            setJobTitleError('');
+            setDepartmentError('');
+          }}
           >
             <Text style={{textAlign: 'center', color: '#134b5f', fontSize: 18, fontWeight: 700}}>Sign Up</Text>
           </TouchableOpacity>
@@ -709,6 +785,8 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     formatted = formatted.replace(/\b\w/g, (char) => char.toUpperCase());
 
                     setName(formatted);
+                    // Clear error when user starts typing
+                    if (nameError) setNameError('');
                   }}
                   mode="outlined"
                   onFocus={() => handleFocus('name')}
@@ -717,6 +795,11 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   inputStyle={styles.inputText}
                 />
               </Animated.View>
+              {nameError !== '' && (
+                <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                  {nameError}
+                </HelperText>
+              )}
                 
                 <Text style={styles.label}>Email:<Text style={{color:'red'}}>*</Text></Text>
               <Animated.View style={[styles.animatedInputContainer, { borderColor: emailBorderColor, width: '100%' }]}>
@@ -734,11 +817,13 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     const domain = parts.length > 1 ? parts[1] : "";
 
                     if (!validDomains.includes(domain)) {
-                      setEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
+                      setSignUpEmailError("Only @nu-moa.edu.ph or @students.nu-moa.edu.ph emails are allowed.");
                       
                     } else {
-                      setEmailError("");
+                      setSignUpEmailError("");
                     }
+                    // Clear error when user starts typing
+                    if (signUpEmailError && !cleanedText.includes('@')) setSignUpEmailError('');
                   }}
                   keyboardType="email-address"
                   autoCapitalize="none"
@@ -751,11 +836,11 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 {/* {signUpEmail.length > 0 && !signUpEmail.includes('@') ? (
                 <HelperText type="error" style={{ marginTop: '-25', marginBottom: '10'}}>Enter a valid email address.</HelperText>
                     ) : null} */}
-                    {emailError !== '' && (
-                      <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
-                        {emailError}
-                      </HelperText>
-                    )}
+                                         {signUpEmailError !== '' && (
+                       <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                         {signUpEmailError}
+                       </HelperText>
+                     )}
               </Animated.View>
 
                     {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -772,16 +857,77 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                       formatted = `${cleaned.slice(0, 2)}-${cleaned.slice(2, 6)}`;
                     }
                     setEmployeeID(formatted);
+                    // Clear error when user starts typing
+                    if (employeeIDError) setEmployeeIDError('');
                   }}
                   keyboardType="numeric"
                   maxLength={7}
-                  mode="outlined"s
+                  mode="outlined"
                   onFocus={() => handleFocus('employeeID')}
                 onBlur={() => handleBlur('employeeID')}
                   inputContainerStyle={[styles.inputContainer, {paddingTop: 3}]} // removes underline
                 inputStyle={styles.inputText}
                 />
                 </Animated.View>
+                {employeeIDError !== '' && (
+                  <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                    {employeeIDError}
+                  </HelperText>
+                )}
+
+                <Text style={styles.label}>Password:<Text style={{color:'red'}}>*</Text></Text>
+                <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['#ccc', '#395a7f']
+                }), width: '100%' }]}>
+                  <Input
+                    placeholder="Enter Password"
+                    value={signUpPassword}
+                    onChangeText={(text) => {
+                      setSignUpPassword(text);
+                      // Clear error when user starts typing
+                      if (signUpPasswordError) setSignUpPasswordError('');
+                    }}
+                    secureTextEntry={true}
+                    mode="outlined"
+                    onFocus={() => handleFocus('password')}
+                    onBlur={() => handleBlur('password')}
+                    inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]}
+                    inputStyle={styles.inputText}
+                  />
+                </Animated.View>
+                {signUpPasswordError !== '' && (
+                  <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                    {signUpPasswordError}
+                  </HelperText>
+                )}
+
+                <Text style={styles.label}>Confirm Password:<Text style={{color:'red'}}>*</Text></Text>
+                <Animated.View style={[styles.animatedInputContainer, { borderColor: confirmPasswordBorderAnim.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['#ccc', '#395a7f']
+                }), width: '100%' }]}>
+                  <Input
+                    placeholder="Confirm Password"
+                    value={confirmPassword}
+                    onChangeText={(text) => {
+                      setConfirmPassword(text);
+                      // Clear error when user starts typing
+                      if (confirmPasswordError) setConfirmPasswordError('');
+                    }}
+                    secureTextEntry={true}
+                    mode="outlined"
+                    onFocus={() => handleFocus('confirmPassword')}
+                    onBlur={() => handleBlur('confirmPassword')}
+                    inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]}
+                    inputStyle={styles.inputText}
+                  />
+                </Animated.View>
+                {confirmPasswordError !== '' && (
+                  <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                    {confirmPasswordError}
+                  </HelperText>
+                )}
 
                 {/* Job Title Menu */}
               <Text style={styles.label}>Select Job Title<Text style={{color:'red'}}>*</Text></Text>
@@ -822,11 +968,18 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     onPress={() => {
                       setJobTitle(option);
                       setJobMenuVisible(false);
+                      // Clear error when user selects job title
+                      if (jobTitleError) setJobTitleError('');
                     }}
                     title={option}
                   />
                 ))}
               </Menu>
+              {jobTitleError !== '' && (
+                <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                  {jobTitleError}
+                </HelperText>
+              )}
 
             {/* {error !== "" && (
               <Text style={{ color: "red", marginBottom: 10, textAlign: "center" }}>
@@ -889,11 +1042,18 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     onPress={() => {
                       setDepartment(option);
                       setDeptMenuVisible(false);
+                      // Clear error when user selects department
+                      if (departmentError) setDepartmentError('');
                     }}
                     title={option}
                   />
                 ))}
               </Menu>
+              {departmentError !== '' && (
+                <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
+                  {departmentError}
+                </HelperText>
+              )}
 
               {error !== "" && (
                 <Text style={{ color: "red", marginBottom: 10, textAlign: "center" }}>
@@ -958,7 +1118,18 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     ]}
                     labelStyle={styles.loginButtonText}
                   />
-                  <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
+                  <TouchableOpacity onPress={() => {
+                    setIsSignup(!isSignup);
+                    // Clear all errors when switching modes
+                    setError('');
+                    setNameError('');
+                    setSignUpEmailError('');
+                    setEmployeeIDError('');
+                    setSignUpPasswordError('');
+                    setConfirmPasswordError('');
+                    setJobTitleError('');
+                    setDepartmentError('');
+                  }}>
               <Text style={styles.footerText}>
                 {isSignup
                   ? "Already have an account? Login"
@@ -1050,7 +1221,18 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
 
                 
 
-           <TouchableOpacity onPress={() => setIsSignup(!isSignup)}>
+           <TouchableOpacity onPress={() => {
+             setIsSignup(!isSignup);
+             // Clear all errors when switching modes
+             setError('');
+             setNameError('');
+             setSignUpEmailError('');
+             setEmployeeIDError('');
+             setSignUpPasswordError('');
+             setConfirmPasswordError('');
+             setJobTitleError('');
+             setDepartmentError('');
+           }}>
               <Text style={styles.footerText}>
                 {isSignup
                   ? "Already have an account? Login"
