@@ -947,13 +947,13 @@ function getConditionSummary(conditionsArray) {
     {requestList.map((item, index) => (
       <tr key={item.itemIdFromInventory || `item-${index}`}>
         <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-          {item.itemIdFromInventory || "N/A"}
+          {item.itemIdFromInventory || item.itemId || "N/A"}
         </td>
         <td style={{ border: "1px solid #ddd", padding: "8px" }}>
           {item.itemName || "N/A"}
         </td>
         <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-          {item.itemDescription || "N/A"}
+          {item.itemDescription || item.itemDetails || "N/A"}
         </td>
         <td style={{ border: "1px solid #ddd", padding: "8px" }}>
           {item.category || "N/A"}
