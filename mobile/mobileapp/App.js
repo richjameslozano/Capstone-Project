@@ -468,6 +468,30 @@ const SuperUserDrawer = () => {
   );
 };
 
+// Authentication wrapper component
+function AppNavigator() {
+  const { user } = useAuth();
+
+  return (
+    <NavigationContainer>
+      <Stack.Navigator>
+        {user ? (
+          // User is logged in - show appropriate drawer based on role
+          <>
+            <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />
+            <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />
+            <Stack.Screen name="Super-User" component={SuperUserDrawer} options={{ headerShown: false }} />
+            <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>
+          </>
+        ) : (
+          // User is not logged in - show login screen
+          <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />
+        )}
+      </Stack.Navigator>
+    </NavigationContainer>
+  );
+}
+
 export default function App() {
   return (
     <RequestMetadataProvider>
@@ -476,15 +500,7 @@ export default function App() {
           <SafeAreaView style={styles.safeArea}>
             <GestureHandlerRootView style={styles.container}>
               <PaperProvider>
-                <NavigationContainer>
-                  <Stack.Navigator>
-                    <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />
-                    <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />
-                    <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />
-                    <Stack.Screen name="Super-User" component={SuperUserDrawer} options={{ headerShown: false }} />
-                    <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>
-                  </Stack.Navigator>
-                </NavigationContainer>
+                <AppNavigator />
               </PaperProvider>
             </GestureHandlerRootView>
           </SafeAreaView>

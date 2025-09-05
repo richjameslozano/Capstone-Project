@@ -135,7 +135,11 @@ export default function ProfileScreen({ navigation }) {
               console.error("Error logging logout:", error);
             } finally {
               logout();
-              navigation.replace("Login");
+              // Reset navigation stack to prevent white screen
+              navigation.reset({
+                index: 0,
+                routes: [{ name: 'Login' }],
+              });
             }
           },
         },
