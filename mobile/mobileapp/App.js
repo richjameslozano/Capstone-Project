@@ -472,21 +472,31 @@ const SuperUserDrawer = () => {
 function AppNavigator() {
   const { user } = useAuth();
 
+  const getCurrentScreen = () => {
+    if (!user) {
+      return <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />;
+    }
+    
+    const role = user.role?.toLowerCase();
+    switch (role) {
+      case "admin1":
+      case "admin2":
+      case "admin":
+        return <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />;
+      case "super-user":
+        return <Stack.Screen name="Super-User" component={SuperUserDrawer} options={{ headerShown: false }} />;
+      case "user":
+      default:
+        return <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />;
+    }
+  };
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
-        {user ? (
-          // User is logged in - show appropriate drawer based on role
-          <>
-            <Stack.Screen name="User" component={UserDrawer} options={{ headerShown: false }} />
-            <Stack.Screen name="Admin" component={AdminDrawer} options={{ headerShown: false }} />
-            <Stack.Screen name="Super-User" component={SuperUserDrawer} options={{ headerShown: false }} />
-            <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>
-          </>
-        ) : (
-          // User is not logged in - show login screen
-          <Stack.Screen name="Login" component={LoginScreen2} options={{ headerShown: false }} />
-        )}
+        {getCurrentScreen()}
+        {/* Always include ProfileScreen for navigation from drawers */}
+        <Stack.Screen name="ProfileScreen" component={ProfileScreen} options={{ headerShown: false }}/>
       </Stack.Navigator>
     </NavigationContainer>
   );

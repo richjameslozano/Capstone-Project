@@ -367,57 +367,19 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               timestamp: serverTimestamp(),
             });
 
-
             try {
               const token = await registerForPushNotificationsAsync(userDoc.id, role); // ⬅️ Pass role here
               if (token) {
                 console.log("✅ Push token registered and saved.");
-
               } else {
                 console.log("⚠️ Push token registration failed or permission denied.");
               }
-
             } catch (err) {
               console.error("🔥 Push token registration crashed:", err.message);
             }
-    
-            switch (role) {
-              case "admin1":
-              case "admin2":
-              case "admin":
-                // try {
-                //   await registerForPushNotificationsAsync(userDoc.id, userData.role);
-                //   console.log("Push token registered.");
-
-                // } catch (e) {
-                //   console.log("Push token registration failed:", e);
-                // }
-
-                navigation.replace("Admin");
-                console.log("Login Successful!");
-                break;
-
-              case "super-user":
-                // try {
-                //   await registerForPushNotificationsAsync(userDoc.id, userData.role);
-                //   console.log("Push token registered.");
-                  
-                // } catch (e) {
-                //   console.log("Push token registration failed:", e);
-                // }
-
-                navigation.replace("Super-User");
-                console.log("Login Succesfull!")
-                break;
-  
-              case "user":
-                navigation.replace('User')
-                console.log("Login Succesfull!")
-                break;
-  
-              default:
-                setLoginError("Unknown role. Contact admin.");
-            }
+            
+            // AppNavigator will automatically show the correct screen based on user role
+            console.log(`Login successful for ${role} role!`);
     
           } catch (authError) {
             // console.error("Auth login failed:", authError.message);

@@ -54,6 +54,7 @@ export default function RequestScreen() {
     { label: 'Cancelled', value: 'Cancelled a request' },
     { label: 'Deployed', value: 'Deployed' },
     { label: 'Returned', value: 'Returned' },
+    { label: 'Released', value: 'Released' },
   ];
   const { user } = useAuth();
 
@@ -308,6 +309,8 @@ export default function RequestScreen() {
       if(item.action === 'APPROVED') return '#134b5f';
       if(item.action === 'DEPLOYED') return '#2596be'; 
       if(item.action === 'COMPLETED') return '#18b933ff';
+      if(item.action === 'Returned') return '#18b933ff';
+      if(item.action === 'Released') return '#28a745';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
 
@@ -329,10 +332,10 @@ const filteredApproved = activityData
   }));
 
   const filteredReturned = activityData
-  .filter(req => req.action === 'Returned')
+  .filter(req => req.action === 'Returned' || req.action === 'Released')
   .map(req => ({
     ...req,
-    action: 'COMPLETED', // just for UI
+    action: req.action, // Keep the original action (Returned or Released)
     items: req.items || req.requestList || [] // ensure array exists
   }));
 

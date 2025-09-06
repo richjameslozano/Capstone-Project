@@ -135,11 +135,7 @@ export default function ProfileScreen({ navigation }) {
               console.error("Error logging logout:", error);
             } finally {
               logout();
-              // Reset navigation stack to prevent white screen
-              navigation.reset({
-                index: 0,
-                routes: [{ name: 'Login' }],
-              });
+              // The AppNavigator will automatically show Login screen when user becomes null
             }
           },
         },
