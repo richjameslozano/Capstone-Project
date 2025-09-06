@@ -12,6 +12,7 @@ import {
   Easing,
   TextInput,
   StatusBar,
+  TouchableWithoutFeedback,
 } from 'react-native';
 import { Card } from 'react-native-paper';
 import {
@@ -26,7 +27,8 @@ import {
   where,
   onSnapshot,
   addDoc,
-  serverTimestamp
+  serverTimestamp,
+  collectionGroup
 } from 'firebase/firestore';
 import moment from 'moment'
 import { Picker } from '@react-native-picker/picker';
@@ -37,6 +39,8 @@ import Header from '../Header';
 import PagerView from 'react-native-pager-view';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
+import { Calendar } from 'react-native-calendars';
+import Icon2 from 'react-native-vector-icons/Ionicons';
 
 export default function RequestScreen() {
   const [requests, setRequests] = useState([]);
@@ -49,6 +53,25 @@ export default function RequestScreen() {
   const [filteredData, setFilteredData] = useState([]);
   const [selectedLog, setSelectedLog] = useState(null);
   const [statusFilter, setStatusFilter] = useState('All');
+  const [reorderModalVisible, setReorderModalVisible] = useState(false);
+  const [selectedCompletedOrder, setSelectedCompletedOrder] = useState(null);
+  const [reorderForm, setReorderForm] = useState({
+    dateRequired: '',
+    timeFrom: '',
+    timeTo: '',
+    reason: ''
+  });
+  
+  // Date and Time Picker States
+  const [calendarVisible, setCalendarVisible] = useState(false);
+  const [timeModalVisible, setTimeModalVisible] = useState(false);
+  const [timePickerType, setTimePickerType] = useState('start');
+  const [selectedStartTime, setSelectedStartTime] = useState({ hour: '10', minute: '00', period: 'AM' });
+  const [selectedEndTime, setSelectedEndTime] = useState({ hour: '3', minute: '00', period: 'PM' });
+  
+  // Date constraints
+  const today = moment().format('YYYY-MM-DD');
+  const maxDate = moment().add(1, 'year').format('YYYY-MM-DD');
   const statusOptions = [
     { label: 'All', value: 'All' },
     { label: 'Approved', value: 'Request Approved' },
@@ -347,6 +370,287 @@ export default function RequestScreen() {
     }
   };
 
+  // Reorder functionality
+  const handleReorder = (completedOrder) => {
+    console.log('Completed order data:', completedOrder);
+    console.log('Full data:', completedOrder.fullData);
+    console.log('Items in fullData:', completedOrder.fullData?.filteredMergedData || completedOrder.fullData?.requestList);
+    setSelectedCompletedOrder(completedOrder);
+    
+    // Initialize form with original order data
+    setReorderForm({
+      dateRequired: completedOrder.fullData.dateRequired || '',
+      timeFrom: completedOrder.fullData.timeFrom || '',
+      timeTo: completedOrder.fullData.timeTo || '',
+      reason: completedOrder.fullData.reason || ''
+    });
+
+    // Initialize time picker states with original times
+    if (completedOrder.fullData.timeFrom) {
+      const startTime = convert24HourTo12Hour(completedOrder.fullData.timeFrom);
+      setSelectedStartTime(startTime);
+    }
+    if (completedOrder.fullData.timeTo) {
+      const endTime = convert24HourTo12Hour(completedOrder.fullData.timeTo);
+      setSelectedEndTime(endTime);
+    }
+    
+    setReorderModalVisible(true);
+  };
+
+  // Helper function to convert 24-hour format to 12-hour format for time picker
+  const convert24HourTo12Hour = (time24) => {
+    const [hours, minutes] = time24.split(':');
+    let hour = parseInt(hours);
+    const minute = minutes;
+    const period = hour >= 12 ? 'PM' : 'AM';
+    
+    if (hour === 0) hour = 12;
+    else if (hour > 12) hour = hour - 12;
+    
+    return {
+      hour: hour.toString(),
+      minute: minute,
+      period: period
+    };
+  };
+
+  // Function to clean item data by removing returned-specific fields
+  const cleanItemData = (items) => {
+    if (!Array.isArray(items)) return [];
+    
+    return items.map(item => {
+      const cleanedItem = { ...item };
+      
+      // Remove returned-specific fields
+      delete cleanedItem.returnedQuantity;
+      delete cleanedItem.scannedCount;
+      delete cleanedItem.conditions;
+      delete cleanedItem.dateReturned;
+      
+      // Debug: Log the cleaning process
+      console.log('Original item before cleaning:', item);
+      console.log('Cleaned item after removing returned fields:', cleanedItem);
+      
+      return cleanedItem;
+    });
+  };
+
+  // Validation function for schedule conflicts
+  const isRoomTimeConflict = async (room, timeFrom, timeTo, dateRequired) => {
+    const roomLower = room.toLowerCase();
+
+    const checkConflict = (docs) => {
+      return docs.some((doc) => {
+        const data = doc.data();
+        const docRoom = data.room?.toLowerCase();
+        const docDate = data.dateRequired;
+        const docTimeFrom = data.timeFrom;
+        const docTimeTo = data.timeTo;
+
+        return (
+          docRoom === roomLower &&
+          docDate === dateRequired &&
+          (
+            (timeFrom >= docTimeFrom && timeFrom < docTimeTo) || 
+            (timeTo > docTimeFrom && timeTo <= docTimeTo) ||  
+            (timeFrom <= docTimeFrom && timeTo >= docTimeTo)   
+          )
+        );
+      });
+    };
+
+    const userRequestsSnap = await getDocs(collectionGroup(db, 'userRequests'));
+    const borrowCatalogSnap = await getDocs(collection(db, 'borrowCatalog'));
+
+    const conflictInRequests = checkConflict(userRequestsSnap.docs);
+    const conflictInCatalog = checkConflict(borrowCatalogSnap.docs);
+
+    return conflictInRequests || conflictInCatalog;
+  };
+
+  // Validation function for stock availability
+  const validateStockAvailability = async (items) => {
+    const inventoryRef = collection(db, "inventory");
+    const inventorySnapshot = await getDocs(inventoryRef);
+    const inventoryMap = {};
+    
+    inventorySnapshot.forEach((doc) => {
+      inventoryMap[doc.id] = doc.data();
+    });
+
+    const stockIssues = [];
+    
+    for (const item of items) {
+      const inventoryId = item.selectedItemId || item.selectedItem?.value;
+      if (inventoryId && inventoryMap[inventoryId]) {
+        const availableQuantity = inventoryMap[inventoryId].quantity || 0;
+        const requestedQuantity = item.quantity || 0;
+        
+        if (requestedQuantity > availableQuantity) {
+          stockIssues.push({
+            itemName: item.itemName,
+            requested: requestedQuantity,
+            available: availableQuantity
+          });
+        }
+      }
+    }
+    
+    return stockIssues;
+  };
+
+  const handleReorderConfirm = async () => {
+    try {
+      if (!user?.id || !selectedCompletedOrder) {
+        throw new Error("Missing user ID or selected order.");
+      }
+
+      // Get the original items and clean them of returned-specific data
+      const originalItems = selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [];
+      console.log('Original items from Firestore:', originalItems);
+      const cleanedItems = cleanItemData(originalItems);
+      console.log('Cleaned items after processing:', cleanedItems);
+
+      // Validate schedule conflicts
+      const hasConflict = await isRoomTimeConflict(
+        selectedCompletedOrder.fullData.room,
+        reorderForm.timeFrom,
+        reorderForm.timeTo,
+        reorderForm.dateRequired
+      );
+
+      if (hasConflict) {
+        Alert.alert("Schedule Conflict", "The room is already booked for the selected date and time. Please choose a different time slot.");
+        return;
+      }
+
+      // Validate stock availability
+      const stockIssues = await validateStockAvailability(cleanedItems);
+      
+      if (stockIssues.length > 0) {
+        const issueMessages = stockIssues.map(issue => 
+          `${issue.itemName}: Requested ${issue.requested}, Available ${issue.available}`
+        ).join('\n');
+        
+        Alert.alert("Insufficient Stock", `Insufficient stock for the following items:\n${issueMessages}\n\nPlease adjust quantities or remove unavailable items.`);
+        return;
+      }
+
+      // Create a new request based on the completed order with updated date/time
+      const newRequest = {
+        timestamp: new Date(),
+        userName: selectedCompletedOrder.fullData.userName,
+        program: selectedCompletedOrder.fullData.program,
+        room: selectedCompletedOrder.fullData.room,
+        timeFrom: reorderForm.timeFrom,
+        timeTo: reorderForm.timeTo,
+        dateRequired: reorderForm.dateRequired,
+        reason: reorderForm.reason,
+        usageType: selectedCompletedOrder.fullData.usageType,
+        filteredMergedData: cleanedItems,
+        status: "PENDING"
+      };
+
+      // Add to userRequests subcollection
+      const userRequestsRef = collection(db, `accounts/${user.id}/userRequests`);
+      await addDoc(userRequestsRef, newRequest);
+
+      // Add to root userrequests collection
+      const rootRequestsRef = collection(db, "userrequests");
+      await addDoc(rootRequestsRef, {
+        ...newRequest,
+        accountId: user.id
+      });
+
+      // Add notification
+      await addDoc(collection(db, "allNotifications"), {
+        action: `New requisition submitted by ${selectedCompletedOrder.fullData.userName}`,
+        userId: user.id,
+        userName: selectedCompletedOrder.fullData.userName,
+        read: false,
+        timestamp: serverTimestamp()
+      });
+
+      setReorderModalVisible(false);
+      setSelectedCompletedOrder(null);
+      setReorderForm({
+        dateRequired: '',
+        timeFrom: '',
+        timeTo: '',
+        reason: ''
+      });
+      Alert.alert("Success", "Reorder request submitted successfully!");
+
+    } catch (error) {
+      console.error("Error creating reorder request:", error);
+      Alert.alert("Error", "Failed to create reorder request.");
+    }
+  };
+
+  const handleReorderCancel = () => {
+    setReorderModalVisible(false);
+    setSelectedCompletedOrder(null);
+    setReorderForm({
+      dateRequired: '',
+      timeFrom: '',
+      timeTo: '',
+      reason: ''
+    });
+  };
+
+  // Time formatting functions from InventoryScreen
+  const formatTime = (timeObj) => {
+    if (!timeObj || typeof timeObj !== 'object') return '';
+
+    let { hour, minute, period } = timeObj;
+    hour = parseInt(hour);
+    minute = parseInt(minute);
+
+    if (period === 'PM' && hour !== 12) {
+      hour += 12;
+    } else if (period === 'AM' && hour === 12) {
+      hour = 0;
+    }
+
+    const paddedHour = hour.toString().padStart(2, '0');
+    const paddedMinute = minute.toString().padStart(2, '0');
+
+    return `${paddedHour}:${paddedMinute}`;
+  };
+
+  const convertTo24Hour = ({ hour, minute, period }) => {
+    let hours = parseInt(hour);
+    if (period === 'PM' && hours !== 12) hours += 12;
+    if (period === 'AM' && hours === 12) hours = 0;
+
+    // Format to HH:mm (24-hour format)
+    const formattedHour = hours.toString().padStart(2, '0');
+    const formattedMinute = minute.toString().padStart(2, '0');
+    return `${formattedHour}:${formattedMinute}`;
+  };
+
+  const openTimePicker = (type) => {
+    setTimePickerType(type);
+    setTimeModalVisible(true);
+  };
+
+  const handleStartTimeSelect = (startTime) => {
+    const formattedStartTime = convertTo24Hour(startTime);
+    setReorderForm(prev => ({
+      ...prev,
+      timeFrom: formattedStartTime
+    }));
+  };
+
+  const handleEndTimeSelect = (endTime) => {
+    const formattedEndTime = convertTo24Hour(endTime);
+    setReorderForm(prev => ({
+      ...prev,
+      timeTo: formattedEndTime
+    }));
+  };
+
 
       const handleStatus =(item)=>{
       if(item.status === 'PENDING') return 'orange';
@@ -425,95 +729,121 @@ const filteredApproved = activityData
 
 const renderItem = ({ item }) => {
   const data = item.fullData; // actual Firestore fields
+  const isCompleted = item.action === 'Returned' || item.action === 'Released';
+  
   return (
-    <TouchableOpacity
-      onPress={() => {
-        setSelectedLog(data);
-        setModalVisible(true);
-      }}
-      style={styles.pendingCard}
-    >
-      {/* Status and Date */}
-      <View style={{
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        borderBottomWidth: 1,
-        borderColor: '#e9ecee',
-        paddingBottom: 5
-      }}>
-        <Text style={{
-          backgroundColor: handleStatus(item),
-          fontWeight: 'bold',
-          color: "white",
-          paddingHorizontal: 10,
-          paddingVertical: 3,
-          borderRadius: 3
-        }}>
-          {item.action}
-        </Text>
-        <Text style={{ fontWeight: '300', color: 'gray', fontSize: 13 }}>
-          {data.dateRequested}
-        </Text>
-      </View>
-
-      {/* Items Requested */}
-      <View>
-        <Text style={{ fontWeight: '300', fontSize: 13 }}>Items Requested:</Text>
-        {data.requestList?.length > 0 ? (
-          data.requestList.map((innerItem) => (
-            <View
-              key={innerItem.id || `${innerItem.itemName}-${innerItem.quantity}`}
-              style={{
-                paddingHorizontal: 10,
-                marginTop: 8,
-                flexDirection: 'row',
-                justifyContent: 'space-between'
-              }}
-            >
-              <Text style={{ fontWeight: 'bold' }}>{innerItem.itemName}</Text>
-              <Text style={{ fontWeight: '300' }}>x {innerItem.quantity}</Text>
-            </View>
-          ))
-        ) : (
-          <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
-        )}
-      </View>
-
-      {/* Usage Type & Date Required */}
-      <View style={{
-        padding: 10,
-        backgroundColor: '#d3eaf2',
-        marginTop: 5,
-        borderRadius: 5
-      }}>
+    <View style={styles.pendingCard}>
+      <TouchableOpacity
+        onPress={() => {
+          setSelectedLog(data);
+          setModalVisible(true);
+        }}
+        style={{ flex: 1 }}
+      >
+        {/* Status and Date */}
         <View style={{
           flexDirection: 'row',
           justifyContent: 'space-between',
-          alignItems: 'center'
+          alignItems: 'center',
+          borderBottomWidth: 1,
+          borderColor: '#e9ecee',
+          paddingBottom: 5
         }}>
-          <Text style={{ fontSize: 13 }}>Usage Type:</Text>
-          <Text style={{ fontWeight: '300', fontSize: 13 }}>
-            {data.usageType}
-          </Text>
-        </View>
-
-        <View style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <Text style={{ fontSize: 13 }}>Date Required:</Text>
           <Text style={{
+            backgroundColor: handleStatus(item),
             fontWeight: 'bold',
-            fontSize: 13,
-            color: '#395a7f'
+            color: "white",
+            paddingHorizontal: 10,
+            paddingVertical: 3,
+            borderRadius: 3
           }}>
-            {data.dateRequired}
+            {item.action}
+          </Text>
+          <Text style={{ fontWeight: '300', color: 'gray', fontSize: 13 }}>
+            {data.dateRequested}
           </Text>
         </View>
-      </View>
-    </TouchableOpacity>
+
+        {/* Items Requested */}
+        <View>
+          <Text style={{ fontWeight: '300', fontSize: 13 }}>Items Requested:</Text>
+          {data.requestList?.length > 0 ? (
+            data.requestList.map((innerItem) => (
+              <View
+                key={innerItem.id || `${innerItem.itemName}-${innerItem.quantity}`}
+                style={{
+                  paddingHorizontal: 10,
+                  marginTop: 8,
+                  flexDirection: 'row',
+                  justifyContent: 'space-between'
+                }}
+              >
+                <Text style={{ fontWeight: 'bold' }}>{innerItem.itemName}</Text>
+                <Text style={{ fontWeight: '300' }}>x {innerItem.quantity}</Text>
+              </View>
+            ))
+          ) : (
+            <Text style={{ fontStyle: 'italic', color: 'gray' }}>No items found</Text>
+          )}
+        </View>
+
+        {/* Usage Type & Date Required */}
+        <View style={{
+          padding: 10,
+          backgroundColor: '#d3eaf2',
+          marginTop: 5,
+          borderRadius: 5
+        }}>
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Text style={{ fontSize: 13 }}>Usage Type:</Text>
+            <Text style={{ fontWeight: '300', fontSize: 13 }}>
+              {data.usageType}
+            </Text>
+          </View>
+
+          <View style={{
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <Text style={{ fontSize: 13 }}>Date Required:</Text>
+            <Text style={{
+              fontWeight: 'bold',
+              fontSize: 13,
+              color: '#395a7f'
+            }}>
+              {data.dateRequired}
+            </Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+
+      {/* Reorder Button for Completed Orders */}
+      {isCompleted && (
+        <TouchableOpacity
+          onPress={() => handleReorder(item)}
+          style={{
+            backgroundColor: '#28a745',
+            padding: 10,
+            marginTop: 5,
+            borderRadius: 5,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 5
+          }}
+        >
+          <Icon name="refresh" size={16} color="white" />
+          <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 14 }}>
+            Reorder
+          </Text>
+        </TouchableOpacity>
+      )}
+    </View>
   );
 };
 
@@ -1080,6 +1410,321 @@ const renderDeployed = ({ item }) => {
       </PagerView>
 </View>
 
+      {/* Reorder Modal */}
+      <Modal visible={reorderModalVisible} transparent animationType="fade">
+        <View style={styles.modalContainer}>
+          <StatusBar
+            translucent
+            backgroundColor={'transparent'}
+          />
+          <ScrollView style={[styles.modalContent, { maxHeight: '90%' }]}>
+            {/* Header */}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalTitle, { fontSize: 20, fontWeight: 'bold' }]}>Reorder Request</Text>
+                <Text style={{ fontSize: 14, color: '#666', marginTop: 5 }}>
+                  Please review and modify the details for your reorder request:
+                </Text>
+              </View>
+              <TouchableOpacity onPress={handleReorderCancel} style={{ padding: 5 }}>
+                <Icon name="close" size={24} color="#666" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Main Content */}
+            <View style={{ flexDirection: 'row', gap: 15 }}>
+              {/* Original Order Details */}
+              <View style={{ flex: 1, backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
+                  Original Order Details:
+                </Text>
+                
+                <View style={{ gap: 10 }}>
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                    <Text style={{ fontWeight: '600', color: '#666' }}>Requester:</Text>
+                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.userName || 'N/A'}</Text>
+                  </View>
+                  
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                    <Text style={{ fontWeight: '600', color: '#666' }}>Program:</Text>
+                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.program || 'N/A'}</Text>
+                  </View>
+                  
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                    <Text style={{ fontWeight: '600', color: '#666' }}>Room:</Text>
+                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.room || 'N/A'}</Text>
+                  </View>
+                  
+                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                    <Text style={{ fontWeight: '600', color: '#666' }}>Usage Type:</Text>
+                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.usageType || 'N/A'}</Text>
+                  </View>
+                </View>
+              </View>
+
+              {/* New Request Details */}
+              <View style={{ flex: 1, backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
+                  New Request Details:
+                </Text>
+                
+                <View style={{ gap: 15 }}>
+                  <View>
+                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                      Date Required <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TouchableOpacity
+                      style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
+                      onPress={() => setCalendarVisible(true)}
+                    >
+                      <Text style={{ flex: 1, fontSize: 14, color: reorderForm.dateRequired ? '#333' : '#999' }}>
+                        {reorderForm.dateRequired || 'Select Date'}
+                      </Text>
+                      <Icon name="calendar" size={20} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View>
+                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                      Time From <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TouchableOpacity
+                      style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
+                      onPress={() => openTimePicker('start')}
+                    >
+                      <Text style={{ flex: 1, fontSize: 14, color: reorderForm.timeFrom ? '#333' : '#999' }}>
+                        {reorderForm.timeFrom || 'Select Time'}
+                      </Text>
+                      <Icon name="clock" size={20} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View>
+                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                      Time To <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TouchableOpacity
+                      style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
+                      onPress={() => openTimePicker('end')}
+                    >
+                      <Text style={{ flex: 1, fontSize: 14, color: reorderForm.timeTo ? '#333' : '#999' }}>
+                        {reorderForm.timeTo || 'Select Time'}
+                      </Text>
+                      <Icon name="clock" size={20} color="#666" />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View>
+                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                      Note/Reason <Text style={{ color: 'red' }}>*</Text>
+                    </Text>
+                    <TextInput
+                      style={{ 
+                        backgroundColor: 'white', 
+                        borderRadius: 6, 
+                        borderWidth: 1, 
+                        borderColor: '#ddd', 
+                        padding: 12, 
+                        height: 80, 
+                        textAlignVertical: 'top',
+                        fontSize: 14
+                      }}
+                      value={reorderForm.reason}
+                      onChangeText={(text) => setReorderForm({...reorderForm, reason: text})}
+                      placeholder="Enter reason for reorder"
+                      multiline
+                      numberOfLines={3}
+                    />
+                  </View>
+                </View>
+              </View>
+            </View>
+
+            {/* Items to Reorder */}
+            <View style={{ marginTop: 20, backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
+              <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
+                Items to Reorder:
+              </Text>
+              
+              {selectedCompletedOrder?.fullData?.requestList?.length > 0 ? (
+                <View style={{ gap: 8 }}>
+                  {selectedCompletedOrder.fullData.requestList.map((item, index) => (
+                    <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5 }}>
+                      <Text style={{ fontSize: 16, marginRight: 8 }}>•</Text>
+                      <Text style={{ fontSize: 14, color: '#333', flex: 1 }}>
+                        {item.itemName} - Quantity: {item.quantity} ({item.category || 'N/A'})
+                      </Text>
+                    </View>
+                  ))}
+                </View>
+              ) : (
+                <Text style={{ fontStyle: 'italic', color: '#666' }}>No items found</Text>
+              )}
+            </View>
+
+            {/* Action Buttons */}
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
+              <TouchableOpacity 
+                onPress={handleReorderCancel} 
+                style={{ 
+                  backgroundColor: '#6c757d', 
+                  paddingHorizontal: 20, 
+                  paddingVertical: 12, 
+                  borderRadius: 6 
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: '600' }}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleReorderConfirm}
+                style={{ 
+                  backgroundColor: '#007bff', 
+                  paddingHorizontal: 20, 
+                  paddingVertical: 12, 
+                  borderRadius: 6 
+                }}
+              >
+                <Text style={{ color: 'white', fontWeight: '600' }}>Submit Reorder</Text>
+              </TouchableOpacity>
+            </View>
+          </ScrollView>
+        </View>
+      </Modal>
+
+      {/* Calendar Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={calendarVisible}
+        onRequestClose={() => setCalendarVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Calendar
+              onDayPress={(day) => {
+                setReorderForm(prev => ({ ...prev, dateRequired: day.dateString }));
+                setCalendarVisible(false);
+              }}
+              markedDates={{
+                [reorderForm.dateRequired]: { selected: true, selectedColor: '#00796B' }
+              }}
+              minDate={today}
+              maxDate={maxDate}
+            />
+            <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.closeButton}>
+              <Text style={{ color: 'white' }}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Time Picker Modal */}
+      <Modal
+        visible={timeModalVisible}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setTimeModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setTimeModalVisible(false)}>
+          <View style={styles.timeModalContainer}>
+            <TouchableWithoutFeedback>
+              <View style={styles.timeModalContent}>
+                <Text style={styles.modalTitle}>
+                  Select {timePickerType === 'start' ? 'Start' : 'End'} Time
+                </Text>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  <ScrollView style={styles.timeScroll}>
+                    {[...Array(12).keys()].map((h) => (
+                      <TouchableOpacity
+                        key={h + 1}
+                        onPress={() => {
+                          if (timePickerType === 'start') {
+                            setSelectedStartTime({ ...selectedStartTime, hour: (h + 1).toString() });
+                          } else {
+                            setSelectedEndTime({ ...selectedEndTime, hour: (h + 1).toString() });
+                          }
+                        }}
+                      >
+                        <Text style={styles.timeText}>{h + 1}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+
+                  <Text style={styles.colon}>:</Text>
+
+                  <ScrollView style={styles.timeScroll}>
+                    {['00', '15', '30', '45'].map((m) => (
+                      <TouchableOpacity
+                        key={m}
+                        onPress={() => {
+                          if (timePickerType === 'start') {
+                            setSelectedStartTime({ ...selectedStartTime, minute: m });
+                          } else {
+                            setSelectedEndTime({ ...selectedEndTime, minute: m });
+                          }
+                        }}
+                      >
+                        <Text style={styles.timeText}>{m}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+
+                  <Text style={styles.colon}> </Text>
+
+                  <ScrollView style={styles.timeScroll}>
+                    {['AM', 'PM'].map((p) => (
+                      <TouchableOpacity
+                        key={p}
+                        onPress={() => {
+                          if (timePickerType === 'start') {
+                            setSelectedStartTime({ ...selectedStartTime, period: p });
+                          } else {
+                            setSelectedEndTime({ ...selectedEndTime, period: p });
+                          }
+                        }}
+                      >
+                        <Text style={styles.timeText}>{p}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </ScrollView>
+
+                <TouchableOpacity
+                  style={styles.okButton}
+                  onPress={() => {
+                    let selectedTime;
+                    if (timePickerType === 'start') {
+                      selectedTime = selectedStartTime;
+                    } else {
+                      selectedTime = selectedEndTime;
+                    }
+
+                    const { hour, minute, period } = selectedTime;
+
+                    if (!hour || !minute || !period) {
+                      Alert.alert('Error', 'Please select hour, minute, and AM/PM.');
+                      return;
+                    }
+
+                    // Pass the selected time to the appropriate handler
+                    if (timePickerType === 'start') {
+                      handleStartTimeSelect(selectedTime);
+                    } else {
+                      handleEndTimeSelect(selectedTime);
+                    }
+
+                    setTimeModalVisible(false);
+                  }}
+                >
+                  <Text style={styles.okButtonText}>OK</Text>
+                </TouchableOpacity>
+
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
 
       
     </View>
