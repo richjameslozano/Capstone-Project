@@ -42,6 +42,7 @@ const Requisition = () => {
   const [customUsageType, setCustomUsageType] = useState("");
   const [items, setItems] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
+  const [itemsLoading, setItemsLoading] = useState(false);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
   const [notificationMessage, setNotificationMessage] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
@@ -370,6 +371,7 @@ const Requisition = () => {
   // }, []);
 
   useEffect(() => {
+    setItemsLoading(true);
     const unsubscribe = onSnapshot(collection(db, "inventory"), async (inventorySnapshot) => {
       const now = new Date();
       const validItems = [];
@@ -421,6 +423,7 @@ const Requisition = () => {
 
       setItems(validItems);
       setFilteredItems(validItems);
+      setItemsLoading(false);
     });
 
     return () => unsubscribe(); // Cleanup on unmount
@@ -1613,6 +1616,8 @@ const Requisition = () => {
             filterOption={(input, option) =>
               option?.label?.toLowerCase().includes(input.toLowerCase())
             }
+            loading={itemsLoading}
+            notFoundContent={itemsLoading ? "Loading items..." : "No items found"}
           >
             {filteredItems
               .filter(
