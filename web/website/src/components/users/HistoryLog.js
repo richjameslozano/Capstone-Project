@@ -227,7 +227,24 @@ const sanitizeInput = (input) =>
       await setDoc(activityLogRef, {
         ...requestData,
         status: "CANCELLED",
-        cancelledAt: new Date(),
+        cancelledAt: serverTimestamp(),
+      });
+
+      // Also add to activitylog collection for Activity Log page
+      await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+        action: "Cancelled a request",
+        userName: requestData.userName,
+        timestamp: serverTimestamp(),
+        requestList: requestData.filteredMergedData || [],
+        status: "CANCELLED",
+        dateRequired: requestData.dateRequired,
+        timeFrom: requestData.timeFrom,
+        timeTo: requestData.timeTo,
+        program: requestData.program,
+        room: requestData.room,
+        reason: requestData.reason,
+        usageType: requestData.usageType,
+        department: requestData.department
       });
   
       // Delete from userRequests subcollection
