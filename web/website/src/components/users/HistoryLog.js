@@ -2346,15 +2346,15 @@ const handlePrint = () => {
                       style={{ width: '100%' }}
                       placeholder="Select date"
                       format="YYYY-MM-DD"
-                       disabledDate={(current) => {
-                                            const today = moment().startOf('day');
-                                            const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
-                                            return (
-                                              current && (
-                                                current < today || current > threeWeeksFromNow
-                                              )
-                                            );
-                                          }}
+                      disabledDate={(current) => {
+                        const today = moment().startOf('day');
+                        const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
+                        return (
+                          current && (
+                            current < today || current > threeWeeksFromNow
+                          )
+                        );
+                      }}
                     />
                   </Form.Item>
 
