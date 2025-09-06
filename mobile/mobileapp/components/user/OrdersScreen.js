@@ -296,6 +296,30 @@ export default function RequestScreen() {
         department: requestData.department
       });
 
+      // Remove the notification from allNotifications (delete the most recent one for this user)
+      const notificationQuery = query(
+        collection(db, "allNotifications"),
+        where("userId", "==", user.id),
+        where("action", "==", `New requisition submitted by ${requestData.userName}`),
+        where("read", "==", false)
+      );
+
+      const notificationSnap = await getDocs(notificationQuery);
+      
+      if (notificationSnap.docs.length > 0) {
+        // Sort by timestamp to get the most recent notification
+        const sortedNotifications = notificationSnap.docs.sort((a, b) => {
+          const timestampA = a.data().timestamp?.seconds || 0;
+          const timestampB = b.data().timestamp?.seconds || 0;
+          return timestampB - timestampA; // Most recent first
+        });
+        
+        // Delete the most recent notification
+        const mostRecentNotification = sortedNotifications[0];
+        console.log("Deleting most recent notification:", mostRecentNotification.id);
+        await deleteDoc(doc(db, "allNotifications", mostRecentNotification.id));
+      }
+
       await deleteDoc(userRequestRef);
 
       const rootQuery = query(
