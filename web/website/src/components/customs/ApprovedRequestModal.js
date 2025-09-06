@@ -420,6 +420,7 @@ function getConditionSummary(conditionsArray) {
         usageType: usageTypeToLog,
         course: selectedApprovedRequest.course || "N/A",
         courseDescription: selectedApprovedRequest.courseDescription || "N/A",
+        reason: selectedApprovedRequest.reason || "N/A",
       });
 
       console.log("🚀 Selected Approved Request:", selectedApprovedRequest);
@@ -810,8 +811,159 @@ function getConditionSummary(conditionsArray) {
   const handleRelease = async () => {
     setReleaseLoading(true);
     try {
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName");
+      let requestorAccountId = selectedApprovedRequest.accountId;
+
+      // Fallback: if accountId is missing, fetch it using userId
+      if (!requestorAccountId && selectedApprovedRequest.accountId) {
+        console.warn("⚠️ accountId missing. Trying to fetch via userId...");
+
+        const accountsQuery = query(
+          collection(db, "accounts"),
+          where("accountId", "==", selectedApprovedRequest.accountId)
+        );
+
+        const accountsSnapshot = await getDocs(accountsQuery);
+        if (!accountsSnapshot.empty) {
+          requestorAccountId = accountsSnapshot.docs[0].accountId;
+          console.log("✅ accountId fetched:", requestorAccountId);
+        } else {
+          throw new Error("No account found for userId");
+        }
+      }
+
+      if (!requestorAccountId) {
+        console.error("❌ Cannot update userrequestlog: accountId is missing");
+        alert("Cannot update user request log. accountId is missing.");
+        return;
+      }
+
+      // 1. Update status in borrowcatalog
       const docRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
       await updateDoc(docRef, { status: "Released" });
+
+      const mainItemName = selectedApprovedRequest.requestList?.[0]?.itemName || "Item";
+      const releaseMessage = `Released "${mainItemName}" to ${selectedApprovedRequest.userName} in ${selectedApprovedRequest.room}`;
+
+      // 2. Log the activity
+      await logRequestOrReturn(userId, userName, releaseMessage, {
+        requestId: selectedApprovedRequest.id,
+        status: "Released",
+        itemName: mainItemName,
+        userReleasedTo: selectedApprovedRequest.userName,
+        course: selectedApprovedRequest.course || "N/A",
+        courseDescription: selectedApprovedRequest.courseDescription || "N/A",
+      });
+
+      // 3. Add to historylog subcollection of the user
+      const borrowDocRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+      const borrowDocSnap = await getDoc(borrowDocRef);
+      const borrowData = borrowDocSnap.exists() ? borrowDocSnap.data() : {};
+
+      // Use the usageType from the full document
+      const usageTypeToLog = borrowData.usageType || "N/A";
+
+      await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
+        action: "Released",
+        userName: selectedApprovedRequest.userName,
+        timestamp: serverTimestamp(),
+        requestList: selectedApprovedRequest.requestList || [],
+        program: selectedApprovedRequest.program,
+        room: selectedApprovedRequest.room,
+        dateRequired: selectedApprovedRequest.dateRequired,
+        timeFrom: selectedApprovedRequest.timeFrom,
+        timeTo: selectedApprovedRequest.timeTo,
+        approvedBy: userName || "N/A",
+        usageType: usageTypeToLog,
+        course: selectedApprovedRequest.course || "N/A",
+        courseDescription: selectedApprovedRequest.courseDescription || "N/A",
+        reason: selectedApprovedRequest.reason || "N/A",
+      });
+
+      // 3.1 Remove previous "Request Approved" entries for the same request in historylog
+      const approvedHistoryQuery = query(
+        collection(db, `accounts/${requestorAccountId}/historylog`),
+        where("action", "==", "Request Approved")
+      );
+
+      const approvedHistorySnapshot = await getDocs(approvedHistoryQuery);
+
+      for (const docSnap of approvedHistorySnapshot.docs) {
+        const docData = docSnap.data();
+
+        const matches =
+          docData.requestList?.[0]?.itemName === selectedApprovedRequest.requestList?.[0]?.itemName &&
+          docData.program === selectedApprovedRequest.program &&
+          docData.timeFrom === selectedApprovedRequest.timeFrom &&
+          docData.timeTo === selectedApprovedRequest.timeTo;
+
+        if (matches) {
+          await deleteDoc(doc(db, `accounts/${requestorAccountId}/historylog/${docSnap.id}`));
+          console.log("✅ Removed matching 'Request Approved' history entry");
+        }
+      }
+
+      // 3.2 Remove previous "Deployed" entries for the same request in historylog
+      const deployedHistoryQuery = query(
+        collection(db, `accounts/${requestorAccountId}/historylog`),
+        where("action", "==", "Deployed")
+      );
+
+      const deployedHistorySnapshot = await getDocs(deployedHistoryQuery);
+
+      for (const docSnap of deployedHistorySnapshot.docs) {
+        const docData = docSnap.data();
+
+        const matches =
+          docData.requestList?.[0]?.itemName === selectedApprovedRequest.requestList?.[0]?.itemName &&
+          docData.program === selectedApprovedRequest.program &&
+          docData.timeFrom === selectedApprovedRequest.timeFrom &&
+          docData.timeTo === selectedApprovedRequest.timeTo;
+
+        if (matches) {
+          await deleteDoc(doc(db, `accounts/${requestorAccountId}/historylog/${docSnap.id}`));
+          console.log("✅ Removed matching 'Deployed' history entry");
+        }
+      }
+
+      // 5. Update userrequestlog
+      const userRequestQuery = query(
+        collection(db, `accounts/${requestorAccountId}/userrequestlog`)
+      );
+
+      const userRequestSnapshot = await getDocs(userRequestQuery);
+      console.log("📄 userrequestlog found:", userRequestSnapshot.docs.length);
+
+      for (const docSnap of userRequestSnapshot.docs) {
+        const docData = docSnap.data();
+
+        docData.requestList?.forEach(async (item) => {
+          const selectedItem = selectedApprovedRequest.requestList?.[0];
+          const requestorLogData = selectedApprovedRequest;
+
+          const matches =
+            item.itemName === selectedItem?.itemName &&
+            item.itemDetails === selectedItem?.itemDetails &&
+            item.selectedItemId === selectedItem?.selectedItemId &&
+            item.labRoom === selectedItem?.labRoom &&
+            item.quantity === selectedItem?.quantity &&
+            docData.program === requestorLogData.program &&
+            docData.timeFrom === requestorLogData.timeFrom &&
+            docData.timeTo === requestorLogData.timeTo;
+
+          if (matches) {
+            await updateDoc(
+              doc(db, `accounts/${requestorAccountId}/userrequestlog/${docSnap.id}`),
+              {
+                status: "Released",
+              }
+            );
+
+            console.log("✅ userrequestlog updated to 'Released'");
+          }
+        });
+      }
 
       showNotification("Requested Item successfully released!");
       setIsApprovedModalVisible(false);

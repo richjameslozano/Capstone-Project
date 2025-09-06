@@ -589,6 +589,8 @@ const sanitizeInput = (input) =>
               ? data.rejectedBy
               : action === "Deployed"
               ? data.approvedBy
+              : action === "Released"
+              ? data.approvedBy
               : data.userName || "Unknown User";
 
           return {
@@ -810,6 +812,8 @@ const getBGColor = (modalBG) => {
       return "#081538"
     case "Deployed":
       return "#2596be"
+    case "Released":
+      return "#0e7490"
     case "Returned":
       return "#056625ff"
   }
@@ -821,6 +825,8 @@ const getLabel = (modalLabel) => {
       return "APPROVED"
     case "Deployed":
       return "DEPLOYED"
+    case "Released":
+      return "RELEASED"
     case "Returned":
       return "COMPLETED"
   }
@@ -831,6 +837,8 @@ const getIcon = (modalIcon) => {
       return <LikeOutlined style={{fontSize: 23, color: 'white'}}/>
     case "Deployed":
       return <SendOutlined style={{fontSize: 23, color: 'white'}}/>
+    case "Released":
+      return <CheckCircleOutlined style={{fontSize: 23, color: 'white'}}/>
     case "Returned":
       return <CheckCircleOutlined style={{fontSize: 23, color: 'white'}}/>
   }
@@ -1376,7 +1384,7 @@ console.log(deployedData);
 
 
 const renderReturnedTab = () => {
-  const returnedData = filteredData.filter((item) => item.action === 'Returned');
+  const returnedData = filteredData.filter((item) => item.action === 'Returned' || item.action === 'Released');
 
 console.log(returnedData);
   return (
@@ -1385,9 +1393,9 @@ console.log(returnedData);
         <CheckCircleOutlined style={{ fontSize: 28, color: "#37c225ff", paddingTop: 10 }} />
         <div>
           <h1 style={{ color: "#37c225ff", margin: 0, padding: 0, textDecoration: "none" }}>
-            Completed Requisitions
+            Released & Completed Requisitions
           </h1>
-          <p>These requisitions have been completed and will automatically be removed 7 days after completion.</p>
+          <p>These requisitions have been released or completed. Completed requisitions will automatically be removed 7 days after completion.</p>
         </div>
       </div>
 
@@ -1428,7 +1436,7 @@ console.log(returnedData);
                     <p
                       style={{
                         fontWeight: "bold",
-                        backgroundColor: "#37c225ff",
+                        backgroundColor: item.action === "Released" ? "#0e7490" : "#37c225ff",
                         margin: 0,
                         paddingTop: 4,
                         paddingBottom: 4,
@@ -1439,10 +1447,10 @@ console.log(returnedData);
                         fontSize: 15,
                       }}
                     >
-                      COMPLETED
+                      {item.action === "Released" ? "RELEASED" : "COMPLETED"}
                     </p>
                     <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
-                      Date Approved: {item.dateApproved || item.dateRequested}
+                      {item.action === "Released" ? "Released by:" : "Date Approved:"} {item.action === "Released" ? item.fullData.approvedBy : (item.dateApproved || item.dateRequested)}
                     </p>
                   </div>
 
@@ -2075,7 +2083,7 @@ const handlePrint = () => {
       label: (
         <>
         <CheckCircleOutlined style={{ marginRight: 8 }} />
-        Step 4: Completed
+        Step 4: Released & Completed
         </>
       ),
       children: renderReturnedTab(),
