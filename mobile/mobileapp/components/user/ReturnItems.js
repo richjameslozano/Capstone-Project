@@ -435,6 +435,7 @@ const ReturnItems = () => {
       const fullReturnData = {
         accountId: user.id,
         approvedBy: selectedRequest.raw?.approvedBy || "N/A",
+        course: selectedRequest.raw?.courseCode || "N/A",
         courseCode: selectedRequest.raw?.courseCode || "N/A",
         courseDescription: selectedRequest.raw?.courseDescription || "N/A",
         dateRequired: selectedRequest.raw?.dateRequired || "N/A",

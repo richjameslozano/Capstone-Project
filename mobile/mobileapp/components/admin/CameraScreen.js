@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Animated, Dimensions, Alert, StatusBar } 
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import CryptoJS from "crypto-js"; // 🔒 Import crypto-js for decryption
-import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc, getDoc } from "firebase/firestore";
+import { collection, query, where, getDocs, doc, updateDoc, addDoc, serverTimestamp, setDoc, getDoc, deleteDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { useAuth } from '../contexts/AuthContext';
 import styles from "../styles/adminStyle/CameraStyle";
@@ -270,10 +270,26 @@ const CameraScreen = ({ onClose, selectedItem }) => {
               };
 
               // 5️⃣ Write to historylog
-              if (allDeployed && requestorUserId && requestorLogData) {
+              // if (allDeployed && requestorUserId && requestorLogData) {
+              if (allDeployed && requestorUserId) {
                 try {
                   console.log("Writing to historylog for:", requestorUserId);
-                  await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), requestorLogData);
+                  // await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), requestorLogData);
+                  await addDoc(collection(db, `accounts/${requestorUserId}/historylog`), {
+                    action: "Deployed",
+                    userName: data.userName || "Unknown",
+                    timestamp: serverTimestamp(),
+                    requestList: data.requestList || [],
+                    program: data.program || "N/A",
+                    room: data.room || "N/A",
+                    dateRequired: data.dateRequired || "N/A",
+                    timeFrom: data.timeFrom || "N/A",
+                    timeTo: data.timeTo || "N/A",
+                    approvedBy: user.name || "N/A",
+                    usageType: usageTypeToLog,
+                    course: data.course || "N/A",
+                    courseDescription: data.courseDescription || "N/A",
+                  });
 
                   // Remove matching "Approved" historylog entries
                   const approvedHistoryQuery = query(
