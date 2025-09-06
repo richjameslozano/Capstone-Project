@@ -289,6 +289,7 @@ const CameraScreen = ({ onClose, selectedItem }) => {
                     usageType: usageTypeToLog,
                     course: data.course || "N/A",
                     courseDescription: data.courseDescription || "N/A",
+                    reason: data.reason || "N/A",
                   });
 
                   // Remove matching "Approved" historylog entries
