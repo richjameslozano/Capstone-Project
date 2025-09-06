@@ -380,6 +380,8 @@ function getConditionSummary(conditionsArray) {
         status: "Deployed",
         itemName: mainItemName,
         userDeployedTo: selectedApprovedRequest.userName,
+        course: selectedApprovedRequest.course || "N/A",
+        courseDescription: selectedApprovedRequest.courseDescription || "N/A",
       });
 
       // ✅ 3. Add to historylog subcollection of the user
@@ -416,6 +418,8 @@ function getConditionSummary(conditionsArray) {
         timeTo: selectedApprovedRequest.timeTo,
         approvedBy: userName || "N/A",
         usageType: usageTypeToLog,
+        course: selectedApprovedRequest.course || "N/A",
+        courseDescription: selectedApprovedRequest.courseDescription || "N/A",
       });
 
       console.log("🚀 Selected Approved Request:", selectedApprovedRequest);

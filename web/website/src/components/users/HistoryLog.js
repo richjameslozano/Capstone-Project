@@ -15,7 +15,7 @@ import {
 } from "antd";
 import dayjs from 'dayjs';
 import { AppstoreAddOutlined, CloseOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where, addDoc, serverTimestamp } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where, addDoc, serverTimestamp, collectionGroup } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
@@ -276,8 +276,96 @@ const sanitizeInput = (input) =>
   };
 
   const handleReorder = (completedOrder) => {
+    console.log('Completed order data:', completedOrder);
+    console.log('Full data:', completedOrder.fullData);
+    console.log('Items in fullData:', completedOrder.fullData?.filteredMergedData || completedOrder.fullData?.requestList);
     setSelectedCompletedOrder(completedOrder);
     setReorderModalVisible(true);
+  };
+
+  // Function to clean item data by removing returned-specific fields
+  const cleanItemData = (items) => {
+    if (!Array.isArray(items)) return [];
+    
+    return items.map(item => {
+      const cleanedItem = { ...item };
+      
+      // Remove returned-specific fields
+      delete cleanedItem.returnedQuantity;
+      delete cleanedItem.scannedCount;
+      delete cleanedItem.conditions;
+      delete cleanedItem.dateReturned;
+      
+      // Debug: Log the cleaning process
+      console.log('Original item before cleaning:', item);
+      console.log('Cleaned item after removing returned fields:', cleanedItem);
+      
+      return cleanedItem;
+    });
+  };
+
+  // Validation function for schedule conflicts
+  const isRoomTimeConflict = async (room, timeFrom, timeTo, dateRequired) => {
+    const roomLower = room.toLowerCase();
+
+    const checkConflict = (docs) => {
+      return docs.some((doc) => {
+        const data = doc.data();
+        const docRoom = data.room?.toLowerCase();
+        const docDate = data.dateRequired;
+        const docTimeFrom = data.timeFrom;
+        const docTimeTo = data.timeTo;
+
+        return (
+          docRoom === roomLower &&
+          docDate === dateRequired &&
+          (
+            (timeFrom >= docTimeFrom && timeFrom < docTimeTo) || 
+            (timeTo > docTimeFrom && timeTo <= docTimeTo) ||  
+            (timeFrom <= docTimeFrom && timeTo >= docTimeTo)   
+          )
+        );
+      });
+    };
+
+    const userRequestsSnap = await getDocs(collectionGroup(db, 'userRequests'));
+    const borrowCatalogSnap = await getDocs(collection(db, 'borrowCatalog'));
+
+    const conflictInRequests = checkConflict(userRequestsSnap.docs);
+    const conflictInCatalog = checkConflict(borrowCatalogSnap.docs);
+
+    return conflictInRequests || conflictInCatalog;
+  };
+
+  // Validation function for stock availability
+  const validateStockAvailability = async (items) => {
+    const inventoryRef = collection(db, "inventory");
+    const inventorySnapshot = await getDocs(inventoryRef);
+    const inventoryMap = {};
+    
+    inventorySnapshot.forEach((doc) => {
+      inventoryMap[doc.id] = doc.data();
+    });
+
+    const stockIssues = [];
+    
+    for (const item of items) {
+      const inventoryId = item.selectedItemId || item.selectedItem?.value;
+      if (inventoryId && inventoryMap[inventoryId]) {
+        const availableQuantity = inventoryMap[inventoryId].quantity || 0;
+        const requestedQuantity = item.quantity || 0;
+        
+        if (requestedQuantity > availableQuantity) {
+          stockIssues.push({
+            itemName: item.itemName,
+            requested: requestedQuantity,
+            available: availableQuantity
+          });
+        }
+      }
+    }
+    
+    return stockIssues;
   };
 
   const handleReorderConfirm = async () => {
@@ -293,6 +381,39 @@ const sanitizeInput = (input) =>
       const timeFrom = values.timeFrom ? values.timeFrom.format('HH:mm') : selectedCompletedOrder.fullData.timeFrom;
       const timeTo = values.timeTo ? values.timeTo.format('HH:mm') : selectedCompletedOrder.fullData.timeTo;
 
+      // Get the original items and clean them of returned-specific data
+      const originalItems = selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [];
+      console.log('Original items from Firestore:', originalItems);
+      const cleanedItems = cleanItemData(originalItems);
+      console.log('Cleaned items after processing:', cleanedItems);
+
+      // Validate schedule conflicts
+      const hasConflict = await isRoomTimeConflict(
+        selectedCompletedOrder.fullData.room,
+        timeFrom,
+        timeTo,
+        dateRequired
+      );
+
+      if (hasConflict) {
+        setNotificationMessage("Schedule conflict detected! The room is already booked for the selected date and time. Please choose a different time slot.");
+        setNotificationVisible(true);
+        return;
+      }
+
+      // Validate stock availability
+      const stockIssues = await validateStockAvailability(cleanedItems);
+      
+      if (stockIssues.length > 0) {
+        const issueMessages = stockIssues.map(issue => 
+          `${issue.itemName}: Requested ${issue.requested}, Available ${issue.available}`
+        ).join('\n');
+        
+        setNotificationMessage(`Insufficient stock for the following items:\n${issueMessages}\n\nPlease adjust quantities or remove unavailable items.`);
+        setNotificationVisible(true);
+        return;
+      }
+
       // Create a new request based on the completed order with updated date/time
       const newRequest = {
         timestamp: new Date(),
@@ -304,7 +425,7 @@ const sanitizeInput = (input) =>
         dateRequired: dateRequired,
         reason: values.reason || selectedCompletedOrder.fullData.reason,
         usageType: selectedCompletedOrder.fullData.usageType,
-        filteredMergedData: selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [],
+        filteredMergedData: cleanedItems,
         status: "PENDING"
       };
 
@@ -2038,7 +2159,7 @@ const handlePrint = () => {
           {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
             <tr key={index}>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
-                {item.itemIdFromInventory || "N/A"}
+                {item.itemIdFromInventory || item.itemId || "N/A"}
               </td>
               <td style={{ border: "1px solid #ddd", padding: "8px" }}>
                 {item.itemName}
@@ -2225,7 +2346,7 @@ const handlePrint = () => {
                   overflowY: 'auto'
                 }}>
                   <ul style={{ margin: 0, paddingLeft: 20 }}>
-                    {(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || []).map((item, index) => (
+                    {cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || []).map((item, index) => (
                       <li key={index} style={{ marginBottom: 8 }}>
                         <strong>{item.itemName}</strong> - Quantity: {item.quantity}
                         {item.department && ` (${item.department})`}
