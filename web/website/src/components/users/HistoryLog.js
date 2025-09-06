@@ -22,6 +22,7 @@ import { getAuth } from "firebase/auth";
 import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import moment from "moment";
 
 const { Option } = Select; 
 const { Content } = Layout;
@@ -2345,6 +2346,15 @@ const handlePrint = () => {
                       style={{ width: '100%' }}
                       placeholder="Select date"
                       format="YYYY-MM-DD"
+                       disabledDate={(current) => {
+                                            const today = moment().startOf('day');
+                                            const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
+                                            return (
+                                              current && (
+                                                current < today || current > threeWeeksFromNow
+                                              )
+                                            );
+                                          }}
                     />
                   </Form.Item>
 
