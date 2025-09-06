@@ -137,6 +137,7 @@ const BorrowCatalog = () => {
               requestList: Array.isArray(data.requestList) ? data.requestList : [],
               requestedItems,
               status: data.status || "Pending",
+              usageType: data.usageType || "N/A",
             };
           });
 

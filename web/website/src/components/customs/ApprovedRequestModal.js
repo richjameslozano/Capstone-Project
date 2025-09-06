@@ -403,8 +403,12 @@ function getConditionSummary(conditionsArray) {
       const borrowDocSnap = await getDoc(borrowDocRef);
       const borrowData = borrowDocSnap.exists() ? borrowDocSnap.data() : {};
 
-      // Use the usageType from the full document
-      const usageTypeToLog = borrowData.usageType || "N/A";
+      // Use the usageType from the borrowcatalog document or fallback to selectedApprovedRequest
+      const usageTypeToLog = borrowData.usageType || selectedApprovedRequest.usageType || "N/A";
+
+      console.log("🔍 Deploy - borrowData.usageType:", borrowData.usageType);
+      console.log("🔍 Deploy - selectedApprovedRequest.usageType:", selectedApprovedRequest.usageType);
+      console.log("🔍 Deploy - usageTypeToLog:", usageTypeToLog);
 
       await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
         action: "Deployed",
@@ -861,8 +865,14 @@ function getConditionSummary(conditionsArray) {
       const borrowDocSnap = await getDoc(borrowDocRef);
       const borrowData = borrowDocSnap.exists() ? borrowDocSnap.data() : {};
 
-      // Use the usageType from the full document
-      const usageTypeToLog = borrowData.usageType || "N/A";
+      // Use the usageType from the borrowcatalog document or fallback to selectedApprovedRequest
+      const usageTypeToLog = borrowData.usageType || selectedApprovedRequest.usageType || "N/A";
+
+      console.log("🔍 Release - borrowData.usageType:", borrowData.usageType);
+      console.log("🔍 Release - selectedApprovedRequest.usageType:", selectedApprovedRequest.usageType);
+      console.log("🔍 Release - usageTypeToLog:", usageTypeToLog);
+      console.log("🔍 Release - Full borrowData:", borrowData);
+      console.log("🔍 Release - Full selectedApprovedRequest:", selectedApprovedRequest);
 
       await addDoc(collection(db, `accounts/${requestorAccountId}/historylog`), {
         action: "Released",

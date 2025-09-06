@@ -3324,6 +3324,7 @@ try {
           approvedBy: userName,
           reason: selectedRequest.reason || "No reason provided",
           program: selectedRequest.program,
+          usageType: selectedRequest.usageType || "N/A",
         };
 
         await addDoc(collection(db, "borrowcatalog"), consumableCatalogEntry);
