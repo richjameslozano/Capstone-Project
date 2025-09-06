@@ -24,7 +24,9 @@ import {
   setDoc,
   query,
   where,
-  onSnapshot
+  onSnapshot,
+  addDoc,
+  serverTimestamp
 } from 'firebase/firestore';
 import moment from 'moment'
 import { Picker } from '@react-native-picker/picker';
@@ -270,10 +272,28 @@ export default function RequestScreen() {
 
       const requestData = requestSnap.data();
 
+      // Write to activity log
       await setDoc(activityLogRef, {
         ...requestData,
-        status: 'CANCELLED',
-        cancelledAt: new Date(),
+        status: "CANCELLED",
+        cancelledAt: serverTimestamp(),
+      });
+
+      // Also add to activitylog collection for Activity Log page
+      await addDoc(collection(db, `accounts/${user.id}/activitylog`), {
+        action: "Cancelled a request",
+        userName: requestData.userName,
+        timestamp: serverTimestamp(),
+        requestList: requestData.filteredMergedData || [],
+        status: "CANCELLED",
+        dateRequired: requestData.dateRequired,
+        timeFrom: requestData.timeFrom,
+        timeTo: requestData.timeTo,
+        program: requestData.program,
+        room: requestData.room,
+        reason: requestData.reason,
+        usageType: requestData.usageType,
+        department: requestData.department
       });
 
       await deleteDoc(userRequestRef);
