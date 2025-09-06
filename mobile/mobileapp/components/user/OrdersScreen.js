@@ -71,7 +71,7 @@ export default function RequestScreen() {
   
   // Date constraints
   const today = moment().format('YYYY-MM-DD');
-  const maxDate = moment().add(1, 'year').format('YYYY-MM-DD');
+  const maxDate = moment().add(3, 'weeks').format('YYYY-MM-DD');
   const statusOptions = [
     { label: 'All', value: 'All' },
     { label: 'Approved', value: 'Request Approved' },
