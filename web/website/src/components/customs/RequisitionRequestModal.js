@@ -114,6 +114,7 @@ const RequisitionRequestModal = ({
         onCancel={handleCancel}
         width={800}
         zIndex={1022}
+        closable={false}
         footer={[
           <Button key="cancel" onClick={handleCancel} disabled={approveLoading || rejectLoading}>Cancel</Button>,
           <Button key="reject" type="default" onClick={handleReturn} loading={rejectLoading} disabled={approveLoading}>Reject</Button>,
