@@ -220,7 +220,7 @@ const shouldShowSpinner = useMemo(() => {
         setPageTitle("Lab Room Details");
         break;
 
-      case "/main/approval-requeest":
+      case "/main/approval-request":
         setSelectedKey("20");
         setPageTitle("Approval Request");
         break;
