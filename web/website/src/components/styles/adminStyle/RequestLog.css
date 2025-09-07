@@ -107,3 +107,26 @@
   background-color: #ffc53d !important; 
   border-color: #ffc53d !important;
 }
+
+/* Mobile responsiveness - make table scrollable */
+@media (max-width: 768px) {
+  .request-log-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .request-log-table .ant-table {
+    min-width: 600px; /* Ensure table maintains minimum width for readability */
+  }
+  
+  .request-log-table .ant-table-tbody > tr > td,
+  .request-log-table .ant-table-thead > tr > th {
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+  
+  /* Ensure the table container doesn't break the layout */
+  .ant-layout-content {
+    overflow-x: hidden;
+  }
+}
