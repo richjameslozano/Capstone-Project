@@ -1095,15 +1095,15 @@ const Dashboard = () => {
           <Tabs defaultActiveKey="1" style={{ marginTop: 20 }}>
             <Tabs.TabPane tab="Analytics Center" key="1">
               <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-                <Row gutter={16}>
-                  <Col flex="2">
+                <Row gutter={[16, 16]}>
+                  <Col xs={24} lg={16}>
                     <div style={{ flex: 1 }}>
                       <div style={{ marginBottom: "24px" }}>
                         <AIInventoryPieChart />
                       </div>
 
-                      <Row gutter={16}>
-                        <Col flex="1">
+                      <Row gutter={[16, 16]}>
+                        <Col xs={24} md={12}>
                           <Card
                             title={
                               <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 18 }}>
@@ -1154,14 +1154,14 @@ const Dashboard = () => {
                           </Card>
                         </Col>
 
-                        <Col flex="1">
+                        <Col xs={24} md={12}>
                           <MonthlyRequestTrendLineChart />
                         </Col>
                       </Row>
                     </div>
                   </Col>
 
-                  <Col flex="1" xs={24} md={8}>
+                  <Col xs={24} lg={8}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "24px", width: "100%" }}>
                       <MostRequestedItemsBarChart />
 
