@@ -559,7 +559,17 @@ const currentSiderWidth = isMobile ? (mobileOpen ? SIDEBAR_WIDTH : 0) : (collaps
       </div>
     </div>
   ) : (
-    <h3 className="logo-title">NU MOA</h3>
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+      <img
+        src={nulsLogo}
+        alt="NULS Logo"
+        style={{
+          maxHeight: '50px',
+          maxWidth: '50px',
+          objectFit: 'contain',
+        }}
+      />
+    </div>
   )}
 </div>
 
