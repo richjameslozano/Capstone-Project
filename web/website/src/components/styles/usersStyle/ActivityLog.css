@@ -151,8 +151,48 @@
   padding: 35px !important;
 }
 
-/* Responsive */
+/* Responsive Design */
+/* Mobile First Approach */
+
+/* Large screens (desktop) - default styles above */
+
+/* Tablet and smaller desktop */
+@media screen and (max-width: 1024px) {
+  .pending-content, .activity-content {
+    padding: 8px;
+    gap: 20px;
+  }
+  
+  .activity-controls {
+    max-width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .activity-search {
+    min-width: 100%;
+    max-width: 100%;
+  }
+  
+  .activity-filter {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  /* Reorder form tablet */
+  .reorder-form-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+}
+
+/* Tablet */
 @media screen and (max-width: 768px) {
+  .pending-content, .activity-content {
+    padding: 6px;
+    gap: 16px;
+  }
+
   .request-details-whole {
     flex-direction: column;
   }
@@ -170,6 +210,463 @@
   .activity-header {
     flex-direction: column;
     align-items: flex-start;
+  }
+
+  /* Card responsive adjustments */
+  .pending-cards, .approved-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .request-card {
+    margin-bottom: 12px !important;
+    padding: 12px !important;
+  }
+
+  /* Card content responsive */
+  .request-card > div:first-child {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .request-card > div:last-child {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .request-card > div:last-child > div {
+    width: 100% !important;
+  }
+
+  /* Card info section responsive */
+  .card-info-section {
+    flex-direction: column !important;
+    gap: 12px !important;
+  }
+
+  .card-info-left,
+  .card-info-center,
+  .card-info-right {
+    width: 100% !important;
+  }
+
+  /* Tabs responsive */
+  .two-step-tabs {
+    padding: 8px 12px;
+    margin-bottom: 16px;
+  }
+
+  .two-step-tabs .ant-tabs-nav {
+    padding: 12px 0;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .two-step-tabs .ant-tabs-tab {
+    padding: 8px 16px;
+    font-size: 14px;
+    margin-right: 4px;
+    margin-bottom: 4px;
+    min-width: auto;
+    flex: 1;
+    text-align: center;
+  }
+
+  .two-step-tabs .ant-tabs-tab::after {
+    display: block; /* Show arrows on tablet */
+    right: -20px;
+    font-size: 16px;
+  }
+
+  .two-step-tabs .ant-tabs-tab-btn {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Modal responsive */
+  .request-list-modal .ant-modal-content,
+  .other-modal .ant-modal-content {
+    padding: 20px !important;
+    margin: 10px;
+  }
+
+  .ant-modal {
+    max-width: calc(100vw - 20px);
+    margin: 10px auto;
+  }
+
+  /* Descriptions responsive */
+  .ant-descriptions {
+    font-size: 13px;
+  }
+
+  .ant-descriptions-item-label {
+    font-size: 12px;
+  }
+
+  /* Table responsive */
+  .details-table table {
+    font-size: 12px;
+  }
+
+  .details-table th,
+  .details-table td {
+    padding: 6px 4px;
+  }
+
+  /* Form responsive */
+  .ant-form-item {
+    margin-bottom: 12px;
+  }
+
+  /* Button responsive */
+  .ant-btn {
+    font-size: 13px;
+    padding: 4px 8px;
+  }
+}
+
+/* Mobile */
+@media screen and (max-width: 480px) {
+  .pending-content, .activity-content {
+    padding: 4px;
+    gap: 12px;
+  }
+
+  /* Header responsive */
+  .activity-title {
+    font-size: 20px !important;
+  }
+
+  .icon-activity, .icon-pending {
+    font-size: 20px;
+  }
+
+  /* Card mobile adjustments */
+  .request-card {
+    padding: 10px !important;
+    border-radius: 8px !important;
+  }
+
+  .request-card h3 {
+    font-size: 14px;
+  }
+
+  .request-card p {
+    font-size: 12px;
+    margin: 2px 0;
+  }
+
+  /* Status badges */
+  .request-card p[style*="backgroundColor"] {
+    font-size: 12px !important;
+    padding: 2px 6px !important;
+  }
+
+  /* Card info section mobile */
+  .card-info-section {
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 8px !important;
+  }
+
+  .card-info-left,
+  .card-info-center,
+  .card-info-right {
+    width: 100% !important;
+  }
+
+  .card-info-right {
+    width: 100% !important;
+  }
+
+  /* Tabs mobile */
+  .two-step-tabs {
+    padding: 6px 8px;
+    margin-bottom: 12px;
+  }
+
+  .two-step-tabs .ant-tabs-nav {
+    padding: 8px 0;
+  }
+
+  .two-step-tabs .ant-tabs-tab {
+    padding: 6px 8px;
+    font-size: 11px;
+    border-radius: 20px;
+    margin-right: 2px;
+    margin-bottom: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .two-step-tabs .ant-tabs-tab-btn {
+    font-size: 11px;
+    padding: 0 4px;
+  }
+
+  .two-step-tabs .ant-tabs-tab .anticon {
+    font-size: 12px;
+    margin-right: 4px;
+  }
+
+  /* Show arrows on mobile with smaller size */
+  .two-step-tabs .ant-tabs-tab::after {
+    display: block !important;
+    right: -15px;
+    font-size: 14px;
+  }
+
+  /* Modal mobile */
+  .ant-modal {
+    max-width: calc(100vw - 10px);
+    margin: 5px auto;
+  }
+
+  .request-list-modal .ant-modal-content,
+  .other-modal .ant-modal-content {
+    padding: 15px !important;
+  }
+
+  .ant-modal-header {
+    padding: 12px 15px;
+  }
+
+  .ant-modal-body {
+    padding: 15px;
+  }
+
+  .ant-modal-footer {
+    padding: 10px 15px;
+  }
+
+  /* Descriptions mobile */
+  .ant-descriptions {
+    font-size: 12px;
+  }
+
+  .ant-descriptions-item-label {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .ant-descriptions-item-content {
+    font-size: 12px;
+  }
+
+  /* Table mobile */
+  .details-table {
+    padding: 10px;
+    overflow-x: auto;
+  }
+
+  .details-table table {
+    font-size: 11px;
+    min-width: 100%;
+  }
+
+  .details-table th,
+  .details-table td {
+    padding: 4px 2px;
+    white-space: nowrap;
+  }
+
+  /* Form mobile */
+  .ant-form-item-label {
+    padding-bottom: 2px;
+  }
+
+  .ant-form-item-label > label {
+    font-size: 12px;
+  }
+
+  .ant-input,
+  .ant-picker,
+  .ant-select-selector {
+    font-size: 12px;
+  }
+
+  /* Button mobile */
+  .ant-btn {
+    font-size: 12px;
+    padding: 3px 6px;
+    height: auto;
+  }
+
+  /* Modal header mobile */
+  .modal-header {
+    height: 50px;
+    padding: 0 15px;
+  }
+
+  .modal-header p {
+    font-size: 16px !important;
+  }
+
+  /* Reorder modal mobile */
+  .ant-modal[style*="width: 700px"] {
+    width: calc(100vw - 10px) !important;
+    max-width: calc(100vw - 10px) !important;
+  }
+
+  /* Grid layout mobile */
+  .ant-form[style*="gridTemplateColumns"] > div {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  /* Reorder form responsive */
+  .reorder-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+  }
+
+  .reorder-original-details,
+  .reorder-new-details {
+    width: 100%;
+  }
+
+  /* Search and filter mobile */
+  .activity-search,
+  .pending-search {
+    font-size: 12px;
+    padding: 4px 8px;
+  }
+
+  .activity-filter {
+    font-size: 12px;
+  }
+
+  /* Empty state mobile */
+  .empty-row {
+    font-size: 12px;
+    padding: 20px;
+    text-align: center;
+  }
+
+  /* Loading spinner mobile */
+  .ant-spin {
+    font-size: 12px;
+  }
+
+  /* Icon sizes mobile */
+  .anticon {
+    font-size: 16px;
+  }
+
+  /* List items mobile */
+  ul {
+    font-size: 11px;
+    padding-left: 12px;
+  }
+
+  li {
+    margin-bottom: 2px;
+  }
+
+  /* Touch improvements */
+  .request-card {
+    touch-action: manipulation;
+  }
+
+  .ant-btn {
+    min-height: 32px;
+    touch-action: manipulation;
+  }
+
+  .ant-tabs-tab {
+    touch-action: manipulation;
+  }
+}
+
+/* Extra small mobile */
+@media screen and (max-width: 320px) {
+  .pending-content, .activity-content {
+    padding: 2px;
+    gap: 8px;
+  }
+
+  .request-card {
+    padding: 8px !important;
+  }
+
+  .two-step-tabs .ant-tabs-tab {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .ant-modal {
+    max-width: calc(100vw - 5px);
+    margin: 2px auto;
+  }
+
+  .request-list-modal .ant-modal-content,
+  .other-modal .ant-modal-content {
+    padding: 10px !important;
+  }
+
+  .details-table table {
+    font-size: 10px;
+  }
+
+  .details-table th,
+  .details-table td {
+    padding: 2px 1px;
+  }
+}
+
+/* Landscape mobile */
+@media screen and (max-height: 500px) and (orientation: landscape) {
+  .pending-content, .activity-content {
+    padding: 4px;
+    gap: 8px;
+  }
+
+  .two-step-tabs {
+    padding: 4px 8px;
+    margin-bottom: 8px;
+  }
+
+  .request-card {
+    padding: 8px !important;
+    margin-bottom: 8px !important;
+  }
+
+  .ant-modal {
+    max-height: calc(100vh - 10px);
+    overflow-y: auto;
+  }
+}
+
+/* High DPI displays */
+@media screen and (-webkit-min-device-pixel-ratio: 2), screen and (min-resolution: 192dpi) {
+  .request-card {
+    border-width: 0.5px;
+  }
+  
+  .ant-table th,
+  .ant-table td {
+    border-width: 0.5px;
+  }
+}
+
+/* Print styles */
+@media print {
+  .two-step-tabs {
+    display: none;
+  }
+  
+  .ant-btn {
+    display: none;
+  }
+  
+  .request-card {
+    break-inside: avoid;
+    box-shadow: none;
+    border: 1px solid #000;
   }
 }
 

@@ -942,20 +942,20 @@ const renderPendingTab = () => (
                 <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.usageType}</h3>
               </div>
 
-              <div style={{display: 'flex', justifyContent: 'space-between', padding: 10, backgroundColor: '#e9f5f9', borderRadius: 7, paddingBottom: 0}}>
-                <div>     
+              <div className="card-info-section" style={{display: 'flex', justifyContent: 'space-between', padding: 10, backgroundColor: '#e9f5f9', borderRadius: 7, paddingBottom: 0}}>
+                <div className="card-info-left">     
               <p><strong>Requester:</strong> {item.requester}</p>
               <p><strong>Date Required:</strong> {item.dateRequired}</p>
               
               {/* <p><strong>Usage Type:</strong> {item.courseCode} - {item.courseDescription}</p> */}
               </div>
 
-              <div>
+              <div className="card-info-center">
                 <p><strong>Time Needed:</strong> {item.timeNeeded}</p>
                 <p><strong>Room:</strong> {item.room}</p>
               </div>
 
-              <div style={{ width: 250}}>
+              <div className="card-info-right" style={{ width: 250}}>
               {item.items && item.items.length > 0 && (
                   <div>
                     <strong>Requested Items:</strong>
@@ -1221,6 +1221,7 @@ const renderApprovedTab = () => {
 
                 {/* Info Section */}
                 <div
+                  className="card-info-section"
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
@@ -1230,7 +1231,7 @@ const renderApprovedTab = () => {
                     paddingBottom: 0,
                   }}
                 >
-                  <div>
+                  <div className="card-info-left">
                     <p>
                       <strong>Requester:</strong> {item.fullData.userName}
                     </p>
@@ -1239,7 +1240,7 @@ const renderApprovedTab = () => {
                     </p>
                   </div>
 
-                  <div>
+                  <div className="card-info-center">
                     <p>
                       <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
                     </p>
@@ -1248,7 +1249,7 @@ const renderApprovedTab = () => {
                     </p>
                   </div>
 
-<div style={{ width: 250 }}>
+<div className="card-info-right" style={{ width: 250 }}>
   {item.requestList && item.requestList.length > 0 && (
     <div>
       <strong>Requested Items:</strong>
@@ -1366,6 +1367,7 @@ console.log(deployedData);
 
                   {/* Info Section */}
                   <div
+                    className="card-info-section"
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -1375,7 +1377,7 @@ console.log(deployedData);
                       paddingBottom: 0,
                     }}
                   >
-                    <div key={index}>
+                    <div className="card-info-left" key={index}>
                       <p>
                         <strong>Requester:</strong> {item.fullData.userName}
                       </p>
@@ -1384,7 +1386,7 @@ console.log(deployedData);
                       </p>
                     </div>
 
-                    <div>
+                    <div className="card-info-center">
                       <p>
                     <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
                       </p>
@@ -1393,7 +1395,7 @@ console.log(deployedData);
                       </p>
                     </div>
 
-                    <div style={{ width: 250 }}>
+                    <div className="card-info-right" style={{ width: 250 }}>
                       {item.requestList && item.requestList.length > 0 && (
                         <div>
                           <strong>Requested Items:</strong>
@@ -1512,6 +1514,7 @@ console.log(returnedData);
 
                   {/* Info Section */}
                   <div
+                    className="card-info-section"
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -1521,7 +1524,7 @@ console.log(returnedData);
                       paddingBottom: 0,
                     }}
                   >
-                    <div key={index}>
+                    <div className="card-info-left" key={index}>
                       <p>
                         <strong>Requester:</strong> {item.fullData.userName}
                       </p>
@@ -1530,7 +1533,7 @@ console.log(returnedData);
                       </p>
                     </div>
 
-                    <div>
+                    <div className="card-info-center">
                       <p>
                     <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
                       </p>
@@ -1539,7 +1542,7 @@ console.log(returnedData);
                       </p>
                     </div>
 
-                    <div style={{ width: 250 }}>
+                    <div className="card-info-right" style={{ width: 250 }}>
                       {item.requestList && item.requestList.length > 0 && (
                         <div>
                           <strong>Requested Items:</strong>
@@ -2316,8 +2319,8 @@ const handlePrint = () => {
                  reason: selectedCompletedOrder.fullData.reason || ""
                }}
             >
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <div>
+              <div className="reorder-form-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div className="reorder-original-details">
                   <h4>Original Order Details:</h4>
                   <Descriptions bordered size="small" column={1}>
                     <Descriptions.Item label="Requester">
@@ -2335,7 +2338,7 @@ const handlePrint = () => {
                   </Descriptions>
                 </div>
 
-                <div>
+                <div className="reorder-new-details">
                   <h4>New Request Details:</h4>
                   <Form.Item
                     label="Date Required"
