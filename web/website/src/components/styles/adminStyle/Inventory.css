@@ -133,6 +133,17 @@
   border-radius: 8px;
 }
 
+/* Horizontal scroll wrapper for table */
+.table-wrapper {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+}
+
+.table-wrapper .ant-table {
+  min-width: 100%;
+}
+
 .form-container {
   margin-top: 20px;
   background-color: white;
@@ -326,6 +337,461 @@
 .custom-float-btn-group .ant-float-btn {
   width: 65px !important;
   height: 65px !important;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .inventory-container {
+    padding: 10px;
+  }
+
+  .inventory-header {
+    flex-direction: column;
+    gap: 15px;
+    height: auto;
+    margin-bottom: 15px;
+    margin-top: 15px;
+  }
+
+  .search-bar {
+    width: 100%;
+    margin-right: 0;
+    margin-bottom: 10px;
+  }
+
+  .search-bar .ant-input-group-wrapper {
+    width: 100%;
+  }
+
+  .inventory-table {
+    font-size: 12px;
+  }
+
+  /* Horizontal scrollable table wrapper */
+  .inventory-table .ant-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .inventory-table .ant-table-content {
+    overflow-x: auto;
+    min-width: 800px; /* Minimum width to maintain table structure */
+  }
+
+  .inventory-table .ant-table-thead > tr > th,
+  .inventory-table .ant-table-tbody > tr > td {
+    white-space: nowrap;
+    min-width: 80px; /* Minimum column width */
+  }
+
+  .inventory-table .ant-table-thead th,
+  .inventory-table .ant-table-tbody td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(1), 
+  .inventory-table .ant-table-tbody td:nth-child(1) {
+    width: 15px;
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(2), 
+  .inventory-table .ant-table-tbody td:nth-child(2) {
+    width: 120px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(3), 
+  .inventory-table .ant-table-tbody td:nth-child(3) {
+    width: 80px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(4), 
+  .inventory-table .ant-table-tbody td:nth-child(4) {
+    width: 70px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(5), 
+  .inventory-table .ant-table-tbody td:nth-child(5) {
+    width: 60px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(6), 
+  .inventory-table .ant-table-tbody td:nth-child(6) {
+    width: 80px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(7), 
+  .inventory-table .ant-table-tbody td:nth-child(7) {
+    width: 100px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(8), 
+  .inventory-table .ant-table-tbody td:nth-child(8) {
+    width: 100px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(9), 
+  .inventory-table .ant-table-tbody td:nth-child(9) {
+    width: 100px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(10), 
+  .inventory-table .ant-table-tbody td:nth-child(10) {
+    width: 40px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(11), 
+  .inventory-table .ant-table-tbody td:nth-child(11) {
+    width: 80px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(12), 
+  .inventory-table .ant-table-tbody td:nth-child(12) {
+    width: 120px; 
+  }
+
+  .add-item-button {
+    right: 20px;
+    bottom: 20px;
+    height: 60px;
+    width: auto;
+    padding: 2px;
+  }
+
+  .add-item-button .inner-btn {
+    font-size: 12px;
+    padding-right: 15px;
+    padding-left: 15px;
+  }
+
+  .custom-float-btn-group {
+    right: 20px !important;
+    bottom: 90px !important;
+  }
+
+  .custom-float-btn-group .ant-float-btn {
+    width: 50px !important;
+    height: 50px !important;
+  }
+
+  .form-container {
+    padding: 15px;
+    margin-top: 15px;
+  }
+
+  .add-input {
+    height: 45px;
+  }
+
+  .modal-header {
+    padding: 8px;
+    padding-left: 15px;
+  }
+
+  .modal-header h3 {
+    font-size: 16px;
+  }
+
+  .horizontal-table {
+    font-size: 14px;
+  }
+
+  .horizontal-table th,
+  .horizontal-table td {
+    padding: 6px 8px;
+  }
+
+  .delivery-table th,
+  .delivery-table td {
+    padding: 8px 10px;
+    font-size: 12px;
+  }
+
+  /* Row Modal Mobile Responsiveness */
+  .ant-modal {
+    max-width: 95vw !important;
+    margin: 10px !important;
+  }
+
+  .ant-modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .ant-modal-body {
+    padding: 10px !important;
+  }
+
+  /* Modal header mobile adjustments */
+  .modal-header h1 {
+    font-size: 16px !important;
+  }
+
+  .modal-header h1 .anticon {
+    font-size: 20px !important;
+    margin-right: 10px !important;
+  }
+
+  /* Modal content layout for mobile */
+  .ant-modal-body > div > div:first-child {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  .ant-modal-body > div > div:first-child > div:first-child {
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-top: 60px !important;
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  .ant-modal-body > div > div:first-child > div:last-child {
+    width: 100% !important;
+    margin-right: 0 !important;
+    margin-top: 20px !important;
+  }
+
+  /* QR Code mobile adjustments */
+  .ant-modal-body .anticon {
+    font-size: 20px !important;
+  }
+
+  /* Button groups mobile layout */
+  .ant-modal-body div[style*="flexDirection: column"] {
+    gap: 10px !important;
+  }
+
+  .ant-modal-body div[style*="display: flex"][style*="gap: 10"] {
+    flex-direction: column !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .ant-modal-body .ant-btn {
+    width: 100% !important;
+    margin-bottom: 5px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .inventory-container {
+    padding: 5px;
+  }
+
+  .inventory-header {
+    gap: 10px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+  }
+
+  .inventory-table {
+    font-size: 10px;
+  }
+
+  /* Enhanced horizontal scrollable table for small mobile */
+  .inventory-table .ant-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+
+  .inventory-table .ant-table-content {
+    overflow-x: auto;
+    min-width: 700px; /* Slightly smaller minimum width for very small screens */
+  }
+
+  .inventory-table .ant-table-thead > tr > th,
+  .inventory-table .ant-table-tbody > tr > td {
+    white-space: nowrap;
+    min-width: 60px; /* Smaller minimum column width for small mobile */
+  }
+
+  .inventory-table .ant-table-thead th,
+  .inventory-table .ant-table-tbody td {
+    padding: 4px 6px;
+    font-size: 10px;
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(1), 
+  .inventory-table .ant-table-tbody td:nth-child(1) {
+    width: 12px;
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(2), 
+  .inventory-table .ant-table-tbody td:nth-child(2) {
+    width: 100px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(3), 
+  .inventory-table .ant-table-tbody td:nth-child(3) {
+    width: 60px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(4), 
+  .inventory-table .ant-table-tbody td:nth-child(4) {
+    width: 50px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(5), 
+  .inventory-table .ant-table-tbody td:nth-child(5) {
+    width: 45px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(6), 
+  .inventory-table .ant-table-tbody td:nth-child(6) {
+    width: 60px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(7), 
+  .inventory-table .ant-table-tbody td:nth-child(7) {
+    width: 80px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(8), 
+  .inventory-table .ant-table-tbody td:nth-child(8) {
+    width: 80px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(9), 
+  .inventory-table .ant-table-tbody td:nth-child(9) {
+    width: 80px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(10), 
+  .inventory-table .ant-table-tbody td:nth-child(10) {
+    width: 30px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(11), 
+  .inventory-table .ant-table-tbody td:nth-child(11) {
+    width: 60px; 
+  }
+
+  .inventory-table .ant-table-thead th:nth-child(12), 
+  .inventory-table .ant-table-tbody td:nth-child(12) {
+    width: 100px; 
+  }
+
+  .add-item-button {
+    right: 15px;
+    bottom: 15px;
+    height: 50px;
+    padding: 1px;
+  }
+
+  .add-item-button .inner-btn {
+    font-size: 10px;
+    padding-right: 10px;
+    padding-left: 10px;
+  }
+
+  .custom-float-btn-group {
+    right: 15px !important;
+    bottom: 75px !important;
+  }
+
+  .custom-float-btn-group .ant-float-btn {
+    width: 45px !important;
+    height: 45px !important;
+  }
+
+  .form-container {
+    padding: 10px;
+    margin-top: 10px;
+  }
+
+  .add-input {
+    height: 40px;
+  }
+
+  .modal-header {
+    padding: 6px;
+    padding-left: 10px;
+  }
+
+  .modal-header h3 {
+    font-size: 14px;
+  }
+
+  .horizontal-table {
+    font-size: 12px;
+  }
+
+  .horizontal-table th,
+  .horizontal-table td {
+    padding: 4px 6px;
+  }
+
+  .delivery-table th,
+  .delivery-table td {
+    padding: 6px 8px;
+    font-size: 10px;
+  }
+
+  /* Row Modal Small Mobile Responsiveness */
+  .ant-modal {
+    max-width: 98vw !important;
+    margin: 5px !important;
+  }
+
+  .ant-modal-content {
+    max-height: 95vh;
+  }
+
+  .ant-modal-body {
+    padding: 5px !important;
+  }
+
+  /* Modal header small mobile adjustments */
+  .modal-header h1 {
+    font-size: 14px !important;
+  }
+
+  .modal-header h1 .anticon {
+    font-size: 18px !important;
+    margin-right: 8px !important;
+  }
+
+  /* Modal content layout for small mobile */
+  .ant-modal-body > div > div:first-child > div:first-child {
+    margin-top: 50px !important;
+    gap: 15px !important;
+  }
+
+  .ant-modal-body > div > div:first-child > div:last-child {
+    margin-top: 15px !important;
+  }
+
+  /* QR Code small mobile adjustments */
+  .ant-modal-body .anticon {
+    font-size: 18px !important;
+  }
+
+  /* Button groups small mobile layout */
+  .ant-modal-body div[style*="flexDirection: column"] {
+    gap: 8px !important;
+  }
+
+  .ant-modal-body div[style*="display: flex"][style*="gap: 10"] {
+    gap: 8px !important;
+  }
+
+  .ant-modal-body .ant-btn {
+    font-size: 12px !important;
+    height: 35px !important;
+    margin-bottom: 3px !important;
+  }
+
+  /* Horizontal tables in modal for small mobile */
+  .horizontal-table {
+    font-size: 10px;
+  }
+
+  .horizontal-table th,
+  .horizontal-table td {
+    padding: 4px 6px;
+  }
 }
 
 

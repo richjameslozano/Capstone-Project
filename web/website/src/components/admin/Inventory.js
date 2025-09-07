@@ -3116,7 +3116,8 @@ useEffect(() => {
             onCancel={() => setIsRowModalVisible(false)}
             zIndex={1019}
             closable={true} 
-            width={'70%'}
+            width={window.innerWidth <= 768 ? '95%' : '70%'}
+            style={{ top: window.innerWidth <= 768 ? 10 : 50 }}
           
           >
             {selectedRow && (
@@ -3248,7 +3249,8 @@ useEffect(() => {
                   <div style={{ marginTop: 24, textAlign: 'center' }}>
                     <h4>Item QR Code</h4>
                     {selectedRow.qrCode ? (
-                      <QRCodeSVG value={selectedRow.qrCode} size={250} />
+                      // <QRCodeSVG value={selectedRow.qrCode} size={250} />
+                      <QRCodeSVG value={selectedRow.qrCode} size={window.innerWidth <= 768 ? 180 : 250} />
                     ) : (
                       <p>No QR Code Available</p>
                     )}
