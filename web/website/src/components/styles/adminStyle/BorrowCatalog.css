@@ -54,3 +54,26 @@
 .borrow-catalog-table .ant-table-tbody > tr:hover > td {
   background-color: #e6f7ff; /* Light blue highlight */
 }
+
+/* Mobile responsiveness - make table scrollable */
+@media (max-width: 768px) {
+  .borrow-catalog-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .borrow-catalog-table .ant-table {
+    min-width: 600px; /* Ensure table maintains minimum width for readability */
+  }
+  
+  .borrow-catalog-table .ant-table-tbody > tr > td,
+  .borrow-catalog-table .ant-table-thead > tr > th {
+    white-space: nowrap;
+    padding: 8px 12px;
+  }
+  
+  /* Ensure the table container doesn't break the layout */
+  .ant-layout-content {
+    overflow-x: hidden;
+  }
+}
