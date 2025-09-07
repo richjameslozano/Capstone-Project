@@ -161,3 +161,200 @@
 .capex-modal-table .ant-table-tbody > tr:hover > td {
   background-color: #e6f7ff; /* Light blue highlight */
 }
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .capex-content {
+    padding: 10px;
+  }
+
+  .capex-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .capex-header h2 {
+    font-size: 18px;
+    margin-bottom: 0;
+  }
+
+  .capex-header h2 span {
+    display: block;
+    margin-left: 0;
+    margin-top: 5px;
+    font-size: 14px;
+  }
+
+  /* Make tables horizontally scrollable on mobile */
+  .capex-table,
+  .capex-history-table,
+  .capex-modal-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .capex-table .ant-table,
+  .capex-history-table .ant-table,
+  .capex-modal-table .ant-table {
+    min-width: 600px;
+  }
+
+  /* Adjust table column widths for mobile */
+  .capex-table .ant-table-thead > tr > th,
+  .capex-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .capex-history-table .ant-table-thead > tr > th,
+  .capex-history-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .capex-modal-table .ant-table-thead > tr > th,
+  .capex-modal-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  /* Adjust total price container for mobile */
+  .total-price-container {
+    margin-top: 15px;
+    text-align: center;
+  }
+
+  .total-price-container h3 {
+    font-size: 16px;
+  }
+
+  /* Adjust button group for mobile */
+  .button-group {
+    flex-direction: column;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .button-group .ant-btn {
+    width: 100%;
+    height: 40px;
+  }
+
+  /* Adjust modal for mobile */
+  .ant-modal {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .ant-modal-content {
+    border-radius: 8px;
+  }
+
+  /* Adjust form elements for mobile */
+  .ant-form-item-label > label {
+    font-size: 14px;
+  }
+
+  .ant-input,
+  .ant-input-number,
+  .ant-select-selector {
+    height: 40px;
+    font-size: 14px;
+  }
+
+  .ant-input-number-input {
+    height: 38px;
+  }
+
+  /* Adjust select dropdown for mobile */
+  .ant-select {
+    width: 100% !important;
+    margin-bottom: 15px;
+  }
+
+  /* Adjust history section for mobile */
+  .capex-content > div:last-child {
+    margin-top: 20px;
+  }
+
+  .capex-content > div:last-child h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+  }
+
+  /* Adjust modal table for mobile */
+  .ant-modal-body {
+    padding: 15px;
+  }
+
+  .ant-modal-body p {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+
+  .ant-modal-body h3 {
+    font-size: 16px;
+    margin: 15px 0 10px 0;
+  }
+}
+
+/* Extra small devices (phones, 480px and down) */
+@media (max-width: 480px) {
+  .capex-content {
+    padding: 5px;
+  }
+
+  .capex-header h2 {
+    font-size: 16px;
+  }
+
+  .capex-header h2 span {
+    font-size: 12px;
+  }
+
+  .capex-table .ant-table,
+  .capex-history-table .ant-table,
+  .capex-modal-table .ant-table {
+    min-width: 500px;
+  }
+
+  .capex-table .ant-table-thead > tr > th,
+  .capex-table .ant-table-tbody > tr > td,
+  .capex-history-table .ant-table-thead > tr > th,
+  .capex-history-table .ant-table-tbody > tr > td,
+  .capex-modal-table .ant-table-thead > tr > th,
+  .capex-modal-table .ant-table-tbody > tr > td {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+
+  .total-price-container h3 {
+    font-size: 14px;
+  }
+
+  .button-group .ant-btn {
+    height: 36px;
+    font-size: 14px;
+  }
+
+  .ant-modal {
+    margin: 5px;
+    max-width: calc(100vw - 10px);
+  }
+
+  .ant-form-item-label > label {
+    font-size: 13px;
+  }
+
+  .ant-input,
+  .ant-input-number,
+  .ant-select-selector {
+    height: 36px;
+    font-size: 13px;
+  }
+
+  .ant-input-number-input {
+    height: 34px;
+  }
+}

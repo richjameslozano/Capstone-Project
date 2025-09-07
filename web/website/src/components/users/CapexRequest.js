@@ -688,6 +688,7 @@ const CapexRequest = () => {
             pagination={false}
             bordered
             className="capex-table"
+            scroll={{ x: 600 }}
             // onRow={(record) => ({
             //   onClick: () => {
             //     setSelectedRowDetails(record);
@@ -863,6 +864,7 @@ const CapexRequest = () => {
               pagination={{ pageSize: 5 }}
               bordered
               className="capex-history-table"
+              scroll={{ x: 400 }}
             />
           </div>
 
@@ -875,7 +877,8 @@ const CapexRequest = () => {
         onCancel={() => setViewModalVisible(false)}
         footer={null}
         zIndex={1013}
-        width={800}
+        width="90%"
+        style={{ maxWidth: 800 }}
       >
         {selectedRowDetails && (
           <div>
@@ -890,6 +893,7 @@ const CapexRequest = () => {
               pagination={false}
               rowKey="itemDescription" 
               className="capex-modal-table"
+              scroll={{ x: 500 }}
             />
 
             <Button
