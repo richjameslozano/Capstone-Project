@@ -461,6 +461,7 @@ const CapexList = () => {
     {
       title: "Requestor",
       dataIndex: "userName",
+      width: 200,
       render: (text, record, index) => (
         <span>
           {index + 1}. <strong>{text}</strong>
@@ -471,17 +472,20 @@ const CapexList = () => {
       title: "Submission Date",
       dataIndex: "createdAt",
       key: "createdAt",
+      width: 180,
       render: (createdAt) => formatDate(createdAt),
     },
     {
       title: "Total Price",
       dataIndex: "totalPrice",
       key: "totalPrice",
+      width: 150,
       render: (price) => `₱${price?.toLocaleString()}`,
     },
     {
       title: "Actions",
       key: "actions",
+      width: 100,
       render: (text, record) => (
         <Button type="link" onClick={() => handleViewDetails(record)}>
           View
@@ -491,8 +495,8 @@ const CapexList = () => {
   ];
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Content style={{ margin: "20px" }}>
+    <Layout style={{ minHeight: "100vh" }} className="capex-list-layout">
+      <Content style={{ margin: "20px" }} className="capex-list-content">
         <Row gutter={24}>
           <Col span={24}>
             <h2>CAPEX Request for Materials Year {yearRange}</h2>
@@ -556,13 +560,15 @@ const CapexList = () => {
               <Text strong> Total Cost: ₱{totalCost.toLocaleString()} </Text>
             </div>
 
-            <Table
-              dataSource={filteredRequests}
-              rowKey="id"
-              pagination={{ pageSize: 10 }}
-              columns={columns}
-              className="capex-list-table"
-            />
+            <div className="table-scroll-wrapper">
+              <Table
+                dataSource={filteredRequests}
+                rowKey="id"
+                pagination={{ pageSize: 10 }}
+                columns={columns}
+                className="capex-list-table"
+              />
+            </div>
           </Col>
         </Row>
       </Content>
@@ -579,6 +585,7 @@ const CapexList = () => {
         width={800}
         zIndex={1026}
         bodyStyle={{ maxHeight: "65vh", overflowY: "auto" }}
+        className="capex-list-ant-modal"
       >
         {selectedRequest && (
           <div ref={modalRef} style={{ padding: "10px" }}>
@@ -599,39 +606,45 @@ const CapexList = () => {
               </Col>
             </Row>
 
-            <Table
-              dataSource={selectedRequest.items}
-              columns={[
-                {
-                  title: "Item Description",
-                  dataIndex: "itemDescription",
-                  key: "itemDescription",
-                },
-                { title: "Subject", dataIndex: "subject", key: "subject" },
-                {
-                  title: "Justification",
-                  dataIndex: "justification",
-                  key: "justification",
-                },
-                { title: "Quantity", dataIndex: "qty", key: "qty" },
-                {
-                  title: "Estimated Cost",
-                  dataIndex: "estimatedCost",
-                  key: "estimatedCost",
-                  render: (cost) => `₱${cost?.toLocaleString()}`,
-                },
-                {
-                  title: "Total Price",
-                  dataIndex: "totalPrice",
-                  key: "totalPrice",
-                  render: (price) => `₱${price?.toLocaleString()}`,
-                },
-              ]}
-              pagination={false}
-              size="small"
-              className="capex-list-table"
-              style={{ marginTop: 20 }}
-            />
+            <div className="table-scroll-wrapper">
+              <Table
+                dataSource={selectedRequest.items}
+                columns={[
+                  {
+                    title: "Item Description",
+                    dataIndex: "itemDescription",
+                    key: "itemDescription",
+                    width: 200,
+                  },
+                  { title: "Subject", dataIndex: "subject", key: "subject", width: 120 },
+                  {
+                    title: "Justification",
+                    dataIndex: "justification",
+                    key: "justification",
+                    width: 200,
+                  },
+                  { title: "Quantity", dataIndex: "qty", key: "qty", width: 80 },
+                  {
+                    title: "Estimated Cost",
+                    dataIndex: "estimatedCost",
+                    key: "estimatedCost",
+                    width: 120,
+                    render: (cost) => `₱${cost?.toLocaleString()}`,
+                  },
+                  {
+                    title: "Total Price",
+                    dataIndex: "totalPrice",
+                    key: "totalPrice",
+                    width: 120,
+                    render: (price) => `₱${price?.toLocaleString()}`,
+                  },
+                ]}
+                pagination={false}
+                size="small"
+                className="capex-list-table"
+                style={{ marginTop: 20 }}
+              />
+            </div>
           </div>
         )}
       </Modal>

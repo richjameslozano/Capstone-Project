@@ -232,3 +232,161 @@
   color: #333;
   font-weight: bold;
 }
+
+/* Desktop table styles - keep original layout */
+.table-scroll-wrapper {
+  width: 100%;
+}
+
+.table-scroll-wrapper .ant-table-wrapper {
+  /* Keep default desktop behavior */
+}
+
+.table-scroll-wrapper .ant-table {
+  /* Keep default desktop behavior */
+}
+
+.table-scroll-wrapper .ant-table-thead > tr > th,
+.table-scroll-wrapper .ant-table-tbody > tr > td {
+  /* Keep default desktop behavior */
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .capex-list-content {
+    margin: 10px;
+  }
+
+  /* Make filter and export buttons stack vertically on mobile */
+  .capex-list-content .ant-row .ant-col > div[style*="display: flex"] {
+    flex-direction: column !important;
+    gap: 10px;
+  }
+
+  .capex-list-content .ant-row .ant-col > div[style*="display: flex"] > div:last-child {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .capex-list-content .ant-row .ant-col > div[style*="display: flex"] .ant-select {
+    width: 100% !important;
+    margin-bottom: 10px;
+  }
+
+  .capex-list-content .ant-row .ant-col > div[style*="display: flex"] .ant-btn {
+    width: 100%;
+    margin: 0 !important;
+  }
+
+  /* Force table responsive with horizontal scroll - MOBILE ONLY */
+  .table-scroll-wrapper {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+  }
+
+  .table-scroll-wrapper .ant-table-wrapper {
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .table-scroll-wrapper .ant-table {
+    min-width: 800px !important;
+    width: max-content !important;
+  }
+
+  .table-scroll-wrapper .ant-table-thead > tr > th,
+  .table-scroll-wrapper .ant-table-tbody > tr > td {
+    white-space: nowrap !important;
+    min-width: 120px;
+  }
+
+  .table-scroll-wrapper .ant-table-thead > tr > th:last-child,
+  .table-scroll-wrapper .ant-table-tbody > tr > td:last-child {
+    min-width: 100px;
+  }
+
+  .capex-list-table .ant-table-thead > tr > th,
+  .capex-list-table .ant-table-tbody > tr > td {
+    padding: 8px 12px;
+  }
+
+  /* Adjust modal for mobile */
+  .capex-list-ant-modal {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .capex-list-ant-modal .ant-modal-content {
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  /* Make modal table responsive */
+  .capex-list-ant-modal .table-scroll-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .capex-list-ant-modal .ant-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .capex-list-ant-modal .ant-table {
+    min-width: 500px;
+  }
+
+  .capex-list-ant-modal .ant-table-thead > tr > th,
+  .capex-list-ant-modal .ant-table-tbody > tr > td {
+    white-space: nowrap;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  /* Adjust modal content padding */
+  .capex-list-ant-modal .ant-modal-body {
+    padding: 16px;
+  }
+
+  /* Make modal rows stack on mobile */
+  .capex-list-ant-modal .ant-row .ant-col {
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .capex-list-content {
+    margin: 5px;
+  }
+
+  /* Further reduce padding for very small screens */
+  .capex-list-table .ant-table-thead > tr > th,
+  .capex-list-table .ant-table-tbody > tr > td {
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+
+  .capex-list-ant-modal .ant-table-thead > tr > th,
+  .capex-list-ant-modal .ant-table-tbody > tr > td {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  /* Adjust button sizes for very small screens */
+  .capex-list-content .ant-row .ant-col > div[style*="display: flex"] .ant-btn {
+    height: 36px;
+    font-size: 12px;
+  }
+
+  /* Adjust modal for very small screens */
+  .capex-list-ant-modal {
+    margin: 5px;
+    max-width: calc(100vw - 10px);
+  }
+}
