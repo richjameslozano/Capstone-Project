@@ -491,8 +491,8 @@ const menuItems =
     : userMenuItems;
 
 const SIDEBAR_WIDTH = 250;
-const COLLAPSED_WIDTH = isMobile ? 0 : 80;
-const currentSiderWidth = isMobile ? (mobileOpen ? SIDEBAR_WIDTH : 0) : (collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH);
+const COLLAPSED_WIDTH = 80;
+const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH);
 
 
 
@@ -516,26 +516,26 @@ const currentSiderWidth = isMobile ? (mobileOpen ? SIDEBAR_WIDTH : 0) : (collaps
         />
       )}
       
-      <Sider
-        trigger={null}
-        collapsible
-        collapsed={collapsed}
-        collapsedWidth={COLLAPSED_WIDTH}
-        width={SIDEBAR_WIDTH}
-        className={`responsive-sider ${isMobile ? 'mobile-sider' : ''} ${isMobile && !mobileOpen ? 'mobile-hidden' : ''}`}
-        style={{
-          width: currentSiderWidth,
-          position: "fixed",
-          top: 0,
-          left: 0,
-          height: "100vh",
-          zIndex: 1000,
-          overflow: "auto",
-          padding: 0,
-          transition: 'transform 0.3s ease-in-out, width 0.3s ease-in-out',
-          transform: isMobile && !mobileOpen ? 'translateX(-100%)' : 'translateX(0)',
-        }}
-      >
+       <Sider
+         trigger={null}
+         collapsible
+         collapsed={!isMobile && collapsed}
+         collapsedWidth={COLLAPSED_WIDTH}
+         width={SIDEBAR_WIDTH}
+         className={`responsive-sider ${isMobile ? 'mobile-sider' : ''} ${isMobile && !mobileOpen ? 'mobile-hidden' : ''}`}
+         style={{
+           width: isMobile ? SIDEBAR_WIDTH : currentSiderWidth,
+           position: "fixed",
+           top: 0,
+           left: 0,
+           height: "100vh",
+           zIndex: 1000,
+           overflow: "auto",
+           padding: 0,
+           transition: 'transform 0.3s ease-in-out, width 0.3s ease-in-out',
+           transform: isMobile && !mobileOpen ? 'translateX(-100%)' : 'translateX(0)',
+         }}
+       >
 
 
           <div className="demo-logo-vertical" />
