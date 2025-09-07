@@ -49,7 +49,7 @@
   border-radius: 5px;
   transition: background-color 0.3s;
   margin-bottom: 40px;
-  cursor: pointer;;
+  cursor: pointer;
 }
 
 .edit-btn{
@@ -59,7 +59,6 @@
 
 .upload-btn:hover {
   background-color: #40a9ff;
-
 }
 
 .profile-summary {
@@ -71,7 +70,7 @@
 }
 
 .info{
-  font-size: 20px ;
+  font-size: 20px;
   display: flex;
   align-items: center;
   align-content: center;
@@ -104,7 +103,6 @@
   margin-top: 20px;
   border-radius: 10px;
   border: 1px solid #dcdcdc;
-  /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
   justify-content: center;
   align-content: center;
   padding-left: 20px;
@@ -112,11 +110,14 @@
 
 .container-two{
   display: flex;
-  gap: 50;
+  gap: 50px;
   border-top: 1px solid #e1e1e1;
   justify-content: space-between;
 }
 
+/* Responsive Design - Keep Original Layout, Just Make It Responsive */
+
+/* Tablet and below - Stack the layout vertically */
 @media (max-width: 768px) {
   .profile-content {
     padding: 20px 10px;
@@ -124,5 +125,199 @@
 
   .ant-card {
     max-width: 100%;
+  }
+
+  .container-two {
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Make avatar section responsive */
+  .container-two > div:first-child {
+    padding: 30px 20px 20px 20px;
+  }
+
+  /* Make avatar smaller on mobile */
+  .ant-avatar {
+    width: 180px !important;
+    height: 180px !important;
+    font-size: 70px !important;
+  }
+
+  /* Adjust text sizes for mobile */
+  .container-two > div:first-child p {
+    font-size: 20px !important;
+  }
+
+  .upload-btn {
+    font-size: 14px !important;
+    padding: 6px 10px !important;
+  }
+
+  /* Make info section responsive */
+  .title-container {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+
+  .info {
+    margin: 15px 0;
+    font-size: 18px;
+  }
+
+  .profile-icon {
+    font-size: 20px;
+    margin-right: 20px;
+  }
+
+  .text-display {
+    font-size: 16px;
+  }
+
+  .title {
+    font-size: 13px;
+  }
+}
+
+/* Mobile small */
+@media (max-width: 480px) {
+  .profile-content {
+    padding: 15px 5px;
+  }
+
+  /* Make avatar even smaller */
+  .ant-avatar {
+    width: 150px !important;
+    height: 150px !important;
+    font-size: 60px !important;
+  }
+
+  /* Adjust padding */
+  .container-two > div:first-child {
+    padding: 20px 15px 15px 15px;
+  }
+
+  /* Adjust text sizes */
+  .container-two > div:first-child p {
+    font-size: 18px !important;
+  }
+
+  .upload-btn {
+    font-size: 13px !important;
+    padding: 5px 8px !important;
+  }
+
+  /* Make info section more compact */
+  .title-container {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .info {
+    margin: 12px 0;
+    font-size: 16px;
+  }
+
+  .profile-icon {
+    font-size: 18px;
+    margin-right: 15px;
+  }
+
+  .text-display {
+    font-size: 14px;
+  }
+
+  .title {
+    font-size: 12px;
+  }
+
+  /* Adjust main title */
+  h1 {
+    font-size: 20px !important;
+  }
+}
+
+/* Extra small mobile */
+@media (max-width: 360px) {
+  .profile-content {
+    padding: 10px 2px;
+  }
+
+  /* Make avatar very small */
+  .ant-avatar {
+    width: 120px !important;
+    height: 120px !important;
+    font-size: 50px !important;
+  }
+
+  /* Adjust padding */
+  .container-two > div:first-child {
+    padding: 15px 10px 10px 10px;
+  }
+
+  /* Adjust text sizes */
+  .container-two > div:first-child p {
+    font-size: 16px !important;
+  }
+
+  .upload-btn {
+    font-size: 12px !important;
+    padding: 4px 6px !important;
+  }
+
+  /* Make info section very compact */
+  .title-container {
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .info {
+    margin: 10px 0;
+    font-size: 14px;
+  }
+
+  .profile-icon {
+    font-size: 16px;
+    margin-right: 12px;
+  }
+
+  .text-display {
+    font-size: 13px;
+  }
+
+  .title {
+    font-size: 11px;
+  }
+
+  /* Adjust main title */
+  h1 {
+    font-size: 18px !important;
+  }
+}
+
+/* Landscape mobile - keep side by side if there's enough space */
+@media (max-height: 500px) and (orientation: landscape) {
+  .container-two {
+    flex-direction: row;
+    gap: 30px;
+  }
+
+  .ant-avatar {
+    width: 120px !important;
+    height: 120px !important;
+    font-size: 50px !important;
+  }
+
+  .container-two > div:first-child {
+    padding: 15px;
+  }
+
+  .container-two > div:first-child p {
+    font-size: 16px !important;
+  }
+
+  .upload-btn {
+    font-size: 12px !important;
+    padding: 4px 6px !important;
   }
 }
