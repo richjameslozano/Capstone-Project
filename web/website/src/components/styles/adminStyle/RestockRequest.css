@@ -32,6 +32,13 @@
   margin-top: 20px;
 }
 
+.table-responsive-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
 .restock-table .ant-table-tbody > tr:nth-child(odd) > td {
   background-color: #fafafa; /* Light gray */
 }
@@ -42,4 +49,164 @@
 
 .restock-table .ant-table-tbody > tr:hover > td {
   background-color: #e6f7ff; /* Light blue highlight */
+}
+
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .restock-content {
+    margin: 10px;
+  }
+
+  .restock-header {
+    margin-bottom: 15px;
+  }
+
+  .restock-header .ant-col:first-child {
+    margin-bottom: 15px;
+  }
+
+  .export-buttons {
+    text-align: left;
+  }
+
+  .export-buttons .ant-btn {
+    margin-left: 0;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .filter-row {
+    margin-top: 15px;
+    margin-bottom: 15px;
+  }
+
+  .filter-row .ant-col {
+    margin-bottom: 10px;
+  }
+
+  .filter-select {
+    width: 100%;
+  }
+
+  .restock-table {
+    margin-top: 15px;
+  }
+
+  .table-responsive-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border: 1px solid #f0f0f0;
+    border-radius: 6px;
+    position: relative;
+  }
+
+  /* Make table horizontally scrollable on mobile */
+  .restock-table {
+    min-width: 600px;
+  }
+
+  .restock-table .ant-table-wrapper {
+    overflow-x: visible;
+  }
+
+  .restock-table .ant-table-container {
+    overflow-x: visible;
+  }
+
+  .restock-table .ant-table-content {
+    overflow-x: visible;
+  }
+
+  .restock-table .ant-table-body {
+    overflow-x: visible;
+  }
+
+  /* Force table to be scrollable */
+  .table-responsive-wrapper .ant-table {
+    width: max-content !important;
+    min-width: 600px !important;
+  }
+
+  .table-responsive-wrapper .ant-table-tbody {
+    overflow-x: visible !important;
+  }
+
+  .table-responsive-wrapper .ant-table-thead {
+    overflow-x: visible !important;
+  }
+
+  /* Adjust table cell padding for mobile */
+  .restock-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  .restock-table .ant-table-thead > tr > th {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+
+  /* Modal responsive adjustments */
+  .ant-modal {
+    margin: 10px;
+    max-width: calc(100vw - 20px);
+  }
+
+  .ant-modal-content {
+    max-height: calc(100vh - 20px);
+    overflow-y: auto;
+  }
+
+  /* Button adjustments for mobile */
+  .ant-btn {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  /* Input adjustments for mobile */
+  .ant-input,
+  .ant-select-selector,
+  .ant-input-number {
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  /* Textarea adjustments */
+  textarea {
+    min-height: 80px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .restock-content {
+    margin: 5px;
+  }
+
+  .export-buttons .ant-btn {
+    width: 100%;
+    max-width: none;
+    margin-right: 0;
+  }
+
+  .restock-table .ant-table-tbody > tr > td {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+
+  .restock-table .ant-table-thead > tr > th {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+
+  .ant-modal {
+    margin: 5px;
+    max-width: calc(100vw - 10px);
+  }
+
+  .ant-modal-content {
+    max-height: calc(100vh - 10px);
+  }
 }

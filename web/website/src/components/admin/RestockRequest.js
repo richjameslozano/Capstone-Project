@@ -403,12 +403,12 @@ const RestockRequest = () => {
     <Layout className="restock-layout">
       <Content className="restock-content">
         <Row justify="space-between" align="middle" className="restock-header">
-          <Col span={12}>
+          <Col xs={24} sm={24} md={12} lg={12} xl={12}>
             <Title level={2}>Restock Requests</Title>
             <Text type="secondary">Manage all requests for item restocks here.</Text>
           </Col>
 
-          <Col span={12} className="export-buttons">
+          <Col xs={24} sm={24} md={12} lg={12} xl={12} className="export-buttons">
             <Button type="primary" onClick={generatePDF} loading={pdfLoading} disabled={exportLoading}>
               Export as PDF
             </Button>
@@ -419,11 +419,11 @@ const RestockRequest = () => {
           </Col>
         </Row>
 
-        <Row className="filter-row">
-          <Col>
+        <Row className="filter-row" gutter={[8, 8]}>
+          <Col xs={24} sm={12} md={8} lg={6} xl={6}>
             <Select
               className="filter-select"
-              style={{ width: 150, marginRight: 8 }}
+              style={{ width: "100%" }}
               placeholder="Filter by Status"
               value={filterStatus === "" ? undefined : filterStatus}
               onChange={(value) => setFilterStatus(value)}
@@ -436,10 +436,10 @@ const RestockRequest = () => {
             </Select>
           </Col>
 
-          <Col>
+          <Col xs={24} sm={12} md={16} lg={18} xl={18}>
             <Select
               className="filter-select"
-              style={{ width: 200 }}
+              style={{ width: "100%" }}
               placeholder="Filter by Department"
               value={filterDepartment === "" ? undefined : filterDepartment}
               onChange={(value) => setFilterDepartment(value)}
@@ -457,21 +457,24 @@ const RestockRequest = () => {
 
         <Spin spinning={loading} tip="Loading...">
           {filteredData.length > 0 ? (
-            <Table
-              columns={columns}
-              dataSource={filteredData}
-              rowKey="id"
-              className="restock-table"
-              pagination={{ pageSize: 10 }}
-              onRow={(record) => ({
-                onClick: () => {
-                  if (["admin", "super-user"].includes(userRole)) {
-                    setSelectedRequest(record);
-                    setIsModalVisible(true);
-                  }
-                },
-              })}
-            />
+            <div className="table-responsive-wrapper">
+              <Table
+                columns={columns}
+                dataSource={filteredData}
+                rowKey="id"
+                className="restock-table"
+                pagination={{ pageSize: 10 }}
+                scroll={{ x: 'max-content' }}
+                onRow={(record) => ({
+                  onClick: () => {
+                    if (["admin", "super-user"].includes(userRole)) {
+                      setSelectedRequest(record);
+                      setIsModalVisible(true);
+                    }
+                  },
+                })}
+              />
+            </div>
           ) : (
             <Text>No restock requests found.</Text>
           )}
@@ -494,6 +497,8 @@ const RestockRequest = () => {
             setEditedQuantity(null);
           }}
           zIndex={1030}
+          width="90%"
+          style={{ maxWidth: 600 }}
           footer={
             userRole === "admin" && selectedRequest?.status === "pending"
               ? [
