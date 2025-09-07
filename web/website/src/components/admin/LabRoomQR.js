@@ -2321,12 +2321,21 @@ const LabRoomQR = () => {
     /* ---------- one table row per shelf ---------- */
     const data = Object.entries(room.shelves).map(([shelfId, shelfData]) => ({
       key: shelfId,
-      shelfLabel: shelfData.name || `Shelf ${shelfId}`,
+      shelfLabel: shelfData.name || `Shelf ${shelfId}`,
       shelfQR: shelfData.shelvesQR,
       rows: shelfData.rows || [], // contains rowId, rowQR, items[]
     }));
 
-    return <Table columns={cols} dataSource={data} pagination={false} />;
+    return (
+      <div className="labroom-table-container">
+        <Table 
+          columns={cols} 
+          dataSource={data} 
+          pagination={false}
+          scroll={{ x: 800 }} // Enable horizontal scrolling
+        />
+      </div>
+    );
   };
 
   const renderRows = (roomId) => {
@@ -2370,7 +2379,16 @@ const LabRoomQR = () => {
       }
     });
 
-    return <Table columns={rowColumns} dataSource={rowData} rowKey="row" />;
+    return (
+      <div className="labroom-table-container">
+        <Table 
+          columns={rowColumns} 
+          dataSource={rowData} 
+          rowKey="row"
+          scroll={{ x: 600 }} // Enable horizontal scrolling
+        />
+      </div>
+    );
   };
 
   // 1. Filter rooms based on a general search term (searchTerm)
@@ -2414,7 +2432,11 @@ const LabRoomQR = () => {
         placeholder="Search lab room by name or room number"
         value={searchTerm}
         onChange={(e) => setSearchTerm(e.target.value)}
-        style={{ width: 300, marginBottom: 20 }}
+        style={{ 
+          width: window.innerWidth <= 768 ? '100%' : 300, 
+          marginBottom: 20,
+          maxWidth: '100%'
+        }}
         allowClear
       />
 
@@ -2631,12 +2653,18 @@ return (
                   placeholder="Search items in this room"
                   value={itemSearchTerms[room.id] || ""}
                   onChange={(e) => setItemSearchTerms(prev => ({ ...prev, [room.id]: e.target.value }))}
-                  style={{ marginBottom: 10, padding: 5, width: "100%" }}
+                  style={{ 
+                    marginBottom: 10, 
+                    padding: 5, 
+                    width: "100%",
+                    fontSize: window.innerWidth <= 768 ? '14px' : '16px'
+                  }}
                 />
 
                 {/* Add the Tabs for Shelves and Rows */}
                 <Tabs defaultActiveKey="1">
                   <TabPane tab="Stock Room" key="1">
+                    <div className="labroom-table-container">
                       <table className="labroom-table">
                         <thead>
                           <tr>
@@ -2728,6 +2756,7 @@ return (
                           ))}
                         </tbody>
                       </table>
+                    </div>
                   </TabPane>
 
                   <TabPane tab="Shelves" key="2">

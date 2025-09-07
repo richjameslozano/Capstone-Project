@@ -1,9 +1,16 @@
 .labroom-container {
   text-align: center;
-  padding: 2rem;
+  padding: 1rem;
   background-color: #f0f4f8;
   min-height: 100vh;
   font-family: 'Segoe UI', sans-serif;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .labroom-container {
+    padding: 0.5rem;
+  }
 }
 
 .labroom-header {
@@ -11,6 +18,14 @@
   font-weight: bold;
   margin-bottom: 2rem;
   color: #2e2e2e;
+}
+
+/* Mobile responsiveness for header */
+@media (max-width: 768px) {
+  .labroom-header {
+    font-size: 24px;
+    margin-bottom: 1rem;
+  }
 }
 
 /* NEW: Room Wrapper */
@@ -24,6 +39,16 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
+/* Mobile responsiveness for table wrapper */
+@media (max-width: 768px) {
+  .labroom-table-wrapper {
+    margin: 1rem auto;
+    max-width: 100%;
+    padding: 0.5rem;
+    border-radius: 8px;
+  }
+}
+
 /* NEW: Room Title */
 .labroom-title {
   font-size: 20px;
@@ -33,11 +58,26 @@
   text-align: left;
 }
 
+/* Mobile responsiveness for title */
+@media (max-width: 768px) {
+  .labroom-title {
+    font-size: 18px;
+    margin-bottom: 0.5rem;
+  }
+}
+
 /* NEW: QR Cell Content */
 .labroom-qr-cell {
   vertical-align: middle;
   text-align: center;
   padding: 1rem;
+}
+
+/* Mobile responsiveness for QR cell */
+@media (max-width: 768px) {
+  .labroom-qr-cell {
+    padding: 0.5rem;
+  }
 }
 
 /* QR + Button Layout */
@@ -46,6 +86,13 @@
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
+}
+
+/* Mobile responsiveness for QR layout */
+@media (max-width: 768px) {
+  .labroom-qr {
+    gap: 0.25rem;
+  }
 }
 
 /* Download QR Button */
@@ -59,21 +106,67 @@
   cursor: pointer;
   margin-top: 0.5rem;
   transition: background-color 0.3s ease;
+  white-space: nowrap;
 }
 
 .labroom-download-button:hover {
   background-color: #004a9f;
 }
 
+.labroom-download-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Mobile responsiveness for download button */
+@media (max-width: 768px) {
+  .labroom-download-button {
+    padding: 6px 12px;
+    font-size: 12px;
+    margin-top: 0.25rem;
+  }
+}
+
 /* Responsive Table Container */
 .labroom-table-container {
   overflow-x: auto;
   margin-top: 1rem;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc #f1f1f1;
+}
+
+/* Custom scrollbar for webkit browsers */
+.labroom-table-container::-webkit-scrollbar {
+  height: 8px;
+}
+
+.labroom-table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.labroom-table-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.labroom-table-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Mobile responsiveness for table container */
+@media (max-width: 768px) {
+  .labroom-table-container {
+    margin-top: 0.5rem;
+    border-radius: 8px;
+  }
 }
 
 /* Main Table Styling */
 .labroom-table {
   width: 100%;
+  min-width: 800px; /* Ensure table has minimum width for horizontal scroll */
   border-collapse: collapse;
   margin-top: 1rem;
   font-size: 14px;
@@ -84,12 +177,16 @@
   border: 1px solid #ddd;
   padding: 10px 14px;
   text-align: center;
+  white-space: nowrap; /* Prevent text wrapping in cells */
 }
 
 .labroom-table th {
   background-color: #f0f0f0;
   font-weight: 600;
   color: #333;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .labroom-table tr:nth-child(even) {
@@ -98,6 +195,25 @@
 
 .labroom-table tr:hover {
   background-color: #f1f1f1;
+}
+
+/* Mobile responsiveness for table */
+@media (max-width: 768px) {
+  .labroom-table {
+    font-size: 12px;
+    min-width: 600px;
+  }
+  
+  .labroom-table th,
+  .labroom-table td {
+    padding: 8px 6px;
+  }
+  
+  /* Make QR code column wider on mobile */
+  .labroom-table th:first-child,
+  .labroom-table td:first-child {
+    min-width: 120px;
+  }
 }
 
 .labroom-card,
@@ -129,6 +245,20 @@
   margin-left: 1rem;
 }
 
+/* Mobile responsiveness for title wrapper */
+@media (max-width: 768px) {
+  .labroom-title-wrapper {
+    padding: 0.5rem;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .dropdown-arrow {
+    font-size: 16px;
+    margin-left: 0.5rem;
+  }
+}
+
 .labroom-table {
   margin-top: 1rem;
   width: 100%;
@@ -145,4 +275,111 @@
 .labroom-table th {
   background-color: #f0f4f8;
   font-weight: 600;
+}
+
+/* Additional mobile optimizations */
+@media (max-width: 480px) {
+  .labroom-container {
+    padding: 0.25rem;
+  }
+  
+  .labroom-header {
+    font-size: 20px;
+  }
+  
+  .labroom-table-wrapper {
+    padding: 0.25rem;
+    margin: 0.5rem auto;
+  }
+  
+  .labroom-table {
+    font-size: 11px;
+    min-width: 500px;
+  }
+  
+  .labroom-table th,
+  .labroom-table td {
+    padding: 4px 3px;
+  }
+  
+  .labroom-title {
+    font-size: 16px;
+  }
+  
+  .labroom-download-button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  /* Improve touch targets on mobile */
+  .labroom-title-wrapper {
+    min-height: 44px; /* iOS recommended touch target size */
+  }
+  
+  .labroom-download-button {
+    min-height: 32px;
+    min-width: 60px;
+  }
+}
+
+/* Tablet responsiveness */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .labroom-table {
+    min-width: 700px;
+  }
+  
+  .labroom-table th,
+  .labroom-table td {
+    padding: 8px 10px;
+  }
+}
+
+/* Ant Design Table responsiveness within labroom-table-container */
+.labroom-table-container .ant-table {
+  min-width: 100%;
+}
+
+.labroom-table-container .ant-table-thead > tr > th {
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: #fafafa;
+}
+
+.labroom-table-container .ant-table-tbody > tr > td {
+  white-space: nowrap;
+}
+
+/* Mobile responsiveness for Ant Design tables */
+@media (max-width: 768px) {
+  .labroom-table-container .ant-table {
+    font-size: 12px;
+  }
+  
+  .labroom-table-container .ant-table-thead > tr > th,
+  .labroom-table-container .ant-table-tbody > tr > td {
+    padding: 8px 6px;
+  }
+  
+  .labroom-table-container .ant-btn {
+    font-size: 11px;
+    padding: 4px 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .labroom-table-container .ant-table {
+    font-size: 11px;
+  }
+  
+  .labroom-table-container .ant-table-thead > tr > th,
+  .labroom-table-container .ant-table-tbody > tr > td {
+    padding: 6px 4px;
+  }
+  
+  .labroom-table-container .ant-btn {
+    font-size: 10px;
+    padding: 3px 6px;
+  }
 }
