@@ -1,0 +1,181 @@
+.blurred {
+  filter: blur(5px);
+  pointer-events: none;
+  transition: filter 0.3s ease;
+}
+
+/* App.css or global style */
+.ant-menu-item-group-title {
+  font-size: 14px;
+  color: #9ca3af; /* a light gray or use your custom color */
+  padding: 8px 16px;
+  letter-spacing: 0.5px;
+  margin-bottom: 0px;
+  margin-top: 20px;
+}
+
+.ant-menu-item-group{
+    margin-bottom: 30px;
+}
+
+/* Style the menu background (optional if Sider handles it) */
+.custom-menu {
+  background-color: transparent;
+  font-weight: 500;
+  border-right: none;
+}
+
+/* Top-level menu items and single items */
+.custom-menu > .ant-menu-item,
+.custom-menu > .ant-menu-submenu > .ant-menu-submenu-title {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* Submenu items (children under top-level submenu) */
+.custom-menu .ant-menu-sub {
+  font-size: 14px;
+}
+
+/* Style selected item */
+.custom-menu .ant-menu-item-selected {
+  background-color: #19344a !important;
+  color: #fff !important;
+}
+
+/* Hover effect */
+.custom-menu .ant-menu-item:hover {
+  background-color: #284b63 !important;
+  color: #fff !important;
+}
+
+/* Icon + text spacing */
+.custom-menu .ant-menu-item .anticon {
+  margin-right: 10px;
+}
+
+/* Group label (like Admin Panel, Faculty Panel) */
+.custom-menu .ant-menu-item-group-title {
+  color: #9ca3af;
+  font-weight: bold;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  padding-left: 24px;
+  margin-top: 8px;
+}
+
+/* Responsive Styles - MOBILE ONLY */
+@media (max-width: 768px) {
+  .responsive-sider {
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  .mobile-sider {
+    width: 250px !important;
+  }
+  
+  .mobile-hidden {
+    transform: translateX(-100%) !important;
+  }
+  
+  .mobile-backdrop {
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  /* MOBILE ONLY - Adjust logo positioning */
+  .logo {
+    padding: 32px 24px 20px 24px !important;
+    margin-top: 100px !important;
+  }
+  
+  .logo-title {
+    font-size: 16px !important;
+  }
+  
+  .logo-subtitle {
+    font-size: 14px !important;
+  }
+  
+  /* MOBILE ONLY - Adjust menu positioning */
+  .custom-menu {
+    padding: 20px 0 8px 0 !important;
+    margin-top: 15px !important;
+  }
+  
+  .custom-menu .ant-menu-item {
+    margin: 4px 8px;
+    border-radius: 6px;
+  }
+  
+  .custom-menu .ant-menu-submenu {
+    margin: 4px 8px;
+    border-radius: 6px;
+  }
+  
+  /* Content adjustments */
+  .ant-layout-content {
+    padding: 12px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  /* MOBILE ONLY - Even smaller screens */
+  .logo {
+    padding: 28px 16px 16px 16px !important;
+    margin-top: 50px !important;
+  }
+  
+  .logo-title {
+    font-size: 14px !important;
+  }
+  
+  .logo-subtitle {
+    font-size: 12px !important;
+  }
+  
+  .custom-menu {
+    padding: 18px 0 8px 0 !important;
+    margin-top: 12px !important;
+  }
+  
+  .custom-menu .ant-menu-item {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+  
+  .custom-menu .ant-menu-submenu-title {
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+}
+
+/* Animation for mobile backdrop */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Smooth transitions for all responsive elements */
+.responsive-sider,
+.ant-layout-header,
+.ant-layout-content {
+  transition: all 0.3s ease-in-out;
+}
+
+/* Ensure proper z-index stacking */
+.mobile-backdrop {
+  z-index: 999;
+}
+
+.responsive-sider {
+  z-index: 1000;
+}
+
+.ant-layout-header {
+  z-index: 1001;
+}
