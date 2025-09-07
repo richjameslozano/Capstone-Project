@@ -998,13 +998,10 @@ const AccountManagement = () => {
                 <Input
                   placeholder="Enter Name"
                   onChange={(e) => {
-                    // Clean input: allow only letters and spaces
                     let value = e.target.value.replace(/[^a-zA-Z\s]/g, "");
 
-                    // Auto-capitalize first letter of each word
                     value = value.replace(/\b\w/g, (char) => char.toUpperCase());
 
-                    // Manually update the form field value using the form instance
                     form.setFieldsValue({ name: value });
                   }}
                   onKeyDown={(e) => {
@@ -1045,12 +1042,12 @@ const AccountManagement = () => {
                 <Input
                   placeholder="Enter Email"
                   onChange={(e) => {
-                    const value = e.target.value.replace(/\s/g, ""); // Remove all spaces
+                    const value = e.target.value.replace(/\s/g, "");
                     e.target.value = value;
                   }}
                   onKeyDown={(e) => {
                     if (e.key === " ") {
-                      e.preventDefault(); // Block spacebar
+                      e.preventDefault(); 
                     }
                   }}
                 />
