@@ -6,6 +6,21 @@
   gap: 20px;
 }
 
+/* Mobile responsive styles */
+@media (max-width: 768px) {
+  .search-content {
+    padding: 15px;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-content {
+    padding: 10px;
+    gap: 10px;
+  }
+}
+
 .search-container {
   display: flex;
 }
@@ -17,6 +32,21 @@
   border-radius: 5px;
 }
 
+/* Mobile responsive styles for search input */
+@media (max-width: 768px) {
+  .search-input {
+    height: 36px;
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    height: 32px;
+    font-size: 14px;
+  }
+}
+
 .pending-main {
   background-color: white;
   padding: 20px;
@@ -24,13 +54,82 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* Mobile responsive styles for table container */
+@media (max-width: 768px) {
+  .pending-main {
+    padding: 15px;
+    border-radius: 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .pending-main {
+    padding: 10px;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  }
+}
+
 .search-table {
   width: 100%;
+}
+
+/* Mobile responsive styles for table */
+@media (max-width: 768px) {
+  .search-table {
+    font-size: 14px;
+  }
+  
+  .search-table .ant-table-thead > tr > th {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .search-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-table {
+    font-size: 12px;
+  }
+  
+  .search-table .ant-table-thead > tr > th {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+  
+  .search-table .ant-table-tbody > tr > td {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+  
+  /* Make table horizontally scrollable on very small screens */
+  .search-table .ant-table-container {
+    overflow-x: auto;
+  }
 }
 
 .ant-tag {
   font-size: 12px;
   padding: 3px 8px;
+}
+
+/* Mobile responsive styles for tags */
+@media (max-width: 768px) {
+  .ant-tag {
+    font-size: 11px;
+    padding: 2px 6px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ant-tag {
+    font-size: 10px;
+    padding: 2px 4px;
+  }
 }
 
 .ant-table-thead > tr > th {
@@ -65,4 +164,102 @@
 
 .search-modal-container .custom-descriptions .ant-descriptions-item-content {
   font-size: 16px;
+}
+
+/* Mobile responsive styles for modal */
+@media (max-width: 768px) {
+  .search-modal-container {
+    margin: 10px;
+  }
+  
+  .search-modal-container .custom-descriptions .ant-descriptions-item-label {
+    font-size: 14px;
+  }
+  
+  .search-modal-container .custom-descriptions .ant-descriptions-item-content {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-modal-container {
+    margin: 5px;
+  }
+  
+  .search-modal-container .custom-descriptions .ant-descriptions-item-label {
+    font-size: 12px;
+    width: 40%;
+  }
+  
+  .search-modal-container .custom-descriptions .ant-descriptions-item-content {
+    font-size: 12px;
+  }
+}
+
+/* Mobile responsive styles for description section */
+.description-section {
+  display: flex;
+  width: 50%;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .description-section {
+    width: 100%;
+    margin-bottom: 15px;
+  }
+  
+  .description-section h1 {
+    font-size: 24px !important;
+  }
+  
+  .description-section p {
+    font-size: 14px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .description-section {
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .description-section h1 {
+    font-size: 20px !important;
+  }
+  
+  .description-section p {
+    font-size: 13px !important;
+  }
+}
+
+/* Mobile responsive styles for search/filter section */
+.search-filter-section {
+  display: flex;
+  width: 50%;
+  gap: 20px;
+}
+
+@media (max-width: 768px) {
+  .search-filter-section {
+    width: 100%;
+    flex-direction: column;
+    gap: 15px;
+  }
+  
+  .search-filter-section .ant-select {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-filter-section {
+    width: 100%;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .search-filter-section .ant-select {
+    width: 100% !important;
+  }
 }
