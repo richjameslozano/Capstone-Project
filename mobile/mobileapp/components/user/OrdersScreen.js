@@ -1417,7 +1417,7 @@ const renderDeployed = ({ item }) => {
             translucent
             backgroundColor={'transparent'}
           />
-          <ScrollView style={[styles.modalContent, { maxHeight: '90%' }]}>
+          <View style={[styles.modalContent, { maxHeight: '90%', flex: 1 }]}>
             {/* Header */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <View style={{ flex: 1 }}>
@@ -1431,139 +1431,146 @@ const renderDeployed = ({ item }) => {
               </TouchableOpacity>
             </View>
 
-            {/* Main Content */}
-            <View style={{ flexDirection: 'row', gap: 15 }}>
-              {/* Original Order Details */}
-              <View style={{ flex: 1, backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
-                  Original Order Details:
-                </Text>
-                
-                <View style={{ gap: 10 }}>
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
-                    <Text style={{ fontWeight: '600', color: '#666' }}>Requester:</Text>
-                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.userName || 'N/A'}</Text>
-                  </View>
+            {/* Scrollable Content */}
+            <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={true}>
+              {/* Main Content */}
+              <View style={{ gap: 20 }}>
+                {/* Original Order Details */}
+                <View style={{ backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
+                    Original Order Details:
+                  </Text>
                   
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
-                    <Text style={{ fontWeight: '600', color: '#666' }}>Program:</Text>
-                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.program || 'N/A'}</Text>
-                  </View>
-                  
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
-                    <Text style={{ fontWeight: '600', color: '#666' }}>Room:</Text>
-                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.room || 'N/A'}</Text>
-                  </View>
-                  
-                  <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
-                    <Text style={{ fontWeight: '600', color: '#666' }}>Usage Type:</Text>
-                    <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.usageType || 'N/A'}</Text>
-                  </View>
-                </View>
-              </View>
-
-              {/* New Request Details */}
-              <View style={{ flex: 1, backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
-                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
-                  New Request Details:
-                </Text>
-                
-                <View style={{ gap: 15 }}>
-                  <View>
-                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
-                      Date Required <Text style={{ color: 'red' }}>*</Text>
-                    </Text>
-                    <TouchableOpacity
-                      style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
-                      onPress={() => setCalendarVisible(true)}
-                    >
-                      <Text style={{ flex: 1, fontSize: 14, color: reorderForm.dateRequired ? '#333' : '#999' }}>
-                        {reorderForm.dateRequired || 'Select Date'}
-                      </Text>
-                      <Icon name="calendar" size={20} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View>
-                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
-                      Time From <Text style={{ color: 'red' }}>*</Text>
-                    </Text>
-                    <TouchableOpacity
-                      style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
-                      onPress={() => openTimePicker('start')}
-                    >
-                      <Text style={{ flex: 1, fontSize: 14, color: reorderForm.timeFrom ? '#333' : '#999' }}>
-                        {reorderForm.timeFrom || 'Select Time'}
-                      </Text>
-                      <Icon name="clock" size={20} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View>
-                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
-                      Time To <Text style={{ color: 'red' }}>*</Text>
-                    </Text>
-                    <TouchableOpacity
-                      style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
-                      onPress={() => openTimePicker('end')}
-                    >
-                      <Text style={{ flex: 1, fontSize: 14, color: reorderForm.timeTo ? '#333' : '#999' }}>
-                        {reorderForm.timeTo || 'Select Time'}
-                      </Text>
-                      <Icon name="clock" size={20} color="#666" />
-                    </TouchableOpacity>
-                  </View>
-
-                  <View>
-                    <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
-                      Note/Reason <Text style={{ color: 'red' }}>*</Text>
-                    </Text>
-                    <TextInput
-                      style={{ 
-                        backgroundColor: 'white', 
-                        borderRadius: 6, 
-                        borderWidth: 1, 
-                        borderColor: '#ddd', 
-                        padding: 12, 
-                        height: 80, 
-                        textAlignVertical: 'top',
-                        fontSize: 14
-                      }}
-                      value={reorderForm.reason}
-                      onChangeText={(text) => setReorderForm({...reorderForm, reason: text})}
-                      placeholder="Enter reason for reorder"
-                      multiline
-                      numberOfLines={3}
-                    />
-                  </View>
-                </View>
-              </View>
-            </View>
-
-            {/* Items to Reorder */}
-            <View style={{ marginTop: 20, backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
-              <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
-                Items to Reorder:
-              </Text>
-              
-              {selectedCompletedOrder?.fullData?.requestList?.length > 0 ? (
-                <View style={{ gap: 8 }}>
-                  {selectedCompletedOrder.fullData.requestList.map((item, index) => (
-                    <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5 }}>
-                      <Text style={{ fontSize: 16, marginRight: 8 }}>•</Text>
-                      <Text style={{ fontSize: 14, color: '#333', flex: 1 }}>
-                        {item.itemName} - Quantity: {item.quantity} ({item.category || 'N/A'})
-                      </Text>
+                  <View style={{ gap: 10 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                      <Text style={{ fontWeight: '600', color: '#666' }}>Requester:</Text>
+                      <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.userName || 'N/A'}</Text>
                     </View>
-                  ))}
+                    
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                      <Text style={{ fontWeight: '600', color: '#666' }}>Program:</Text>
+                      <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.program || 'N/A'}</Text>
+                    </View>
+                    
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                      <Text style={{ fontWeight: '600', color: '#666' }}>Room:</Text>
+                      <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.room || 'N/A'}</Text>
+                    </View>
+                    
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#e9ecee' }}>
+                      <Text style={{ fontWeight: '600', color: '#666' }}>Usage Type:</Text>
+                      <Text style={{ color: '#333' }}>{selectedCompletedOrder?.fullData?.usageType || 'N/A'}</Text>
+                    </View>
+                  </View>
                 </View>
-              ) : (
-                <Text style={{ fontStyle: 'italic', color: '#666' }}>No items found</Text>
-              )}
-            </View>
 
-            {/* Action Buttons */}
-            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
+                {/* New Request Details */}
+                <View style={{ backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
+                  <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
+                    New Request Details:
+                  </Text>
+                  
+                  <View style={{ gap: 15 }}>
+                    <View>
+                      <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                        Date Required <Text style={{ color: 'red' }}>*</Text>
+                      </Text>
+                      <TouchableOpacity
+                        style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
+                        onPress={() => setCalendarVisible(true)}
+                      >
+                        <Text style={{ flex: 1, fontSize: 14, color: reorderForm.dateRequired ? '#333' : '#999' }}>
+                          {reorderForm.dateRequired || 'Select Date'}
+                        </Text>
+                        <Icon name="calendar" size={20} color="#666" />
+                      </TouchableOpacity>
+                    </View>
+
+                    <View style={{ flexDirection: 'row', gap: 15 }}>
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                          Time From <Text style={{ color: 'red' }}>*</Text>
+                        </Text>
+                        <TouchableOpacity
+                          style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
+                          onPress={() => openTimePicker('start')}
+                        >
+                          <Text style={{ flex: 1, fontSize: 14, color: reorderForm.timeFrom ? '#333' : '#999' }}>
+                            {reorderForm.timeFrom || 'Select Time'}
+                          </Text>
+                          <Icon name="clock" size={20} color="#666" />
+                        </TouchableOpacity>
+                      </View>
+
+                      <View style={{ flex: 1 }}>
+                        <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                          Time To <Text style={{ color: 'red' }}>*</Text>
+                        </Text>
+                        <TouchableOpacity
+                          style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 6, borderWidth: 1, borderColor: '#ddd', paddingHorizontal: 12, paddingVertical: 12 }}
+                          onPress={() => openTimePicker('end')}
+                        >
+                          <Text style={{ flex: 1, fontSize: 14, color: reorderForm.timeTo ? '#333' : '#999' }}>
+                            {reorderForm.timeTo || 'Select Time'}
+                          </Text>
+                          <Icon name="clock" size={20} color="#666" />
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+
+                    <View>
+                      <Text style={{ fontWeight: '600', color: '#666', marginBottom: 5 }}>
+                        Note/Reason
+                      </Text>
+                      <TextInput
+                        style={{ 
+                          backgroundColor: 'white', 
+                          borderRadius: 6, 
+                          borderWidth: 1, 
+                          borderColor: '#ddd', 
+                          padding: 12, 
+                          height: 80, 
+                          textAlignVertical: 'top',
+                          fontSize: 14
+                        }}
+                        value={reorderForm.reason}
+                        onChangeText={(text) => setReorderForm({...reorderForm, reason: text})}
+                        placeholder="Enter reason for reorder"
+                        multiline
+                        numberOfLines={3}
+                      />
+                    </View>
+                  </View>
+                </View>
+              </View>
+
+              {/* Items to Reorder */}
+              <View style={{ marginTop: 20, backgroundColor: '#f8f9fa', padding: 15, borderRadius: 8 }}>
+                <Text style={{ fontSize: 16, fontWeight: 'bold', marginBottom: 15, color: '#333' }}>
+                  Items to Reorder:
+                </Text>
+                
+                {selectedCompletedOrder?.fullData?.requestList?.length > 0 ? (
+                  <ScrollView style={{ maxHeight: 200 }} showsVerticalScrollIndicator={true}>
+                    <View style={{ gap: 8 }}>
+                      {selectedCompletedOrder.fullData.requestList.map((item, index) => (
+                        <View key={index} style={{ flexDirection: 'row', alignItems: 'center', paddingVertical: 5 }}>
+                          <Text style={{ fontSize: 16, marginRight: 8 }}>•</Text>
+                          <Text style={{ fontSize: 14, color: '#333', flex: 1 }}>
+                            {item.itemName} - Quantity: {item.quantity} ({item.category || 'N/A'})
+                          </Text>
+                        </View>
+                      ))}
+                    </View>
+                  </ScrollView>
+                ) : (
+                  <Text style={{ fontStyle: 'italic', color: '#666' }}>No items found</Text>
+                )}
+              </View>
+            </ScrollView>
+
+            {/* Action Buttons - Fixed at bottom */}
+            <View style={{ flexDirection: 'row', justifyContent: 'flex-end', gap: 10, marginTop: 20, paddingTop: 15, borderTopWidth: 1, borderTopColor: '#e9ecee' }}>
               <TouchableOpacity 
                 onPress={handleReorderCancel} 
                 style={{ 
@@ -1588,7 +1595,7 @@ const renderDeployed = ({ item }) => {
                 <Text style={{ color: 'white', fontWeight: '600' }}>Submit Reorder</Text>
               </TouchableOpacity>
             </View>
-          </ScrollView>
+          </View>
         </View>
       </Modal>
 
