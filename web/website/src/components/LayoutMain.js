@@ -60,7 +60,7 @@ const LayoutMain = () => {
   } = theme.useToken();
 
   const [collapsed, setCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 408);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [mobileOpen, setMobileOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,12 +82,13 @@ const shouldShowSpinner = useMemo(() => {
 
   useEffect(() => {
     const handleResize = () => {
-      setIsMobile(window.innerWidth <= 408);
-      if (window.innerWidth > 408) {
-        setMobileOpen(false); 
+      const newIsMobile = window.innerWidth <= 768;
+      setIsMobile(newIsMobile);
+      if (!newIsMobile) {
+        setMobileOpen(false);
+        setCollapsed(false);
       }
     };
-
 
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
@@ -239,21 +240,27 @@ const shouldShowSpinner = useMemo(() => {
   const toggleSidebar = () => {
     if (isMobile) {
       setMobileOpen(!mobileOpen);
-
     } else {
       setCollapsed(!collapsed);
+    }
+  };
+
+  const closeMobileSidebar = () => {
+    if (isMobile) {
+      setMobileOpen(false);
     }
   };
 
   const handleMenuClick = (e) => {
     if (e.key === "logout") {
       setShowModal(true);
-
     } else {
       navigate(e.key); 
     }
   
-    if (isMobile) setMobileOpen(false);
+    if (isMobile) {
+      setMobileOpen(false);
+    }
   };  
 
   const handleSignOut = async () => {
@@ -485,31 +492,50 @@ const menuItems =
 
 const SIDEBAR_WIDTH = 250;
 const COLLAPSED_WIDTH = isMobile ? 0 : 80;
-const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
+const currentSiderWidth = isMobile ? (mobileOpen ? SIDEBAR_WIDTH : 0) : (collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH);
 
 
 
 
   return (
-    <Layout style={{ minHeight: "100vh",  marginLeft: 50, transition: 'margin-left 0.2s' }}>
-            <Sider
-              trigger={null}
-              collapsible
-              collapsed={collapsed}
-              collapsedWidth={COLLAPSED_WIDTH}
-              width={SIDEBAR_WIDTH}
-              className={isMobile && !mobileOpen ? 'mobile-collapsed' : ''}
-              style={{
-                width: currentSiderWidth,
-                position: "fixed",
-                top: 0,
-                left: 0,
-                height: "100vh",
-                zIndex: 1000,
-                overflow: "auto",
-                padding: 0,
-              }}
-            >
+    <Layout style={{ minHeight: "100vh" }}>
+      {/* Mobile backdrop overlay */}
+      {isMobile && mobileOpen && (
+        <div 
+          className="mobile-backdrop"
+          onClick={closeMobileSidebar}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            zIndex: 999,
+          }}
+        />
+      )}
+      
+      <Sider
+        trigger={null}
+        collapsible
+        collapsed={collapsed}
+        collapsedWidth={COLLAPSED_WIDTH}
+        width={SIDEBAR_WIDTH}
+        className={`responsive-sider ${isMobile ? 'mobile-sider' : ''} ${isMobile && !mobileOpen ? 'mobile-hidden' : ''}`}
+        style={{
+          width: currentSiderWidth,
+          position: "fixed",
+          top: 0,
+          left: 0,
+          height: "100vh",
+          zIndex: 1000,
+          overflow: "auto",
+          padding: 0,
+          transition: 'transform 0.3s ease-in-out, width 0.3s ease-in-out',
+          transform: isMobile && !mobileOpen ? 'translateX(-100%)' : 'translateX(0)',
+        }}
+      >
 
 
           <div className="demo-logo-vertical" />
@@ -549,19 +575,21 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
 
       </Sider>
 
-      <Layout style={{ marginLeft: collapsed ? 80 : 200, transition: 'margin-left 0.2s' }}>
-
+      <Layout style={{ 
+        marginLeft: isMobile ? 0 : (collapsed ? 80 : 250),
+        transition: 'margin-left 0.3s ease-in-out'
+      }}>
         <Header
           style={{
             position: "fixed",
             top: 0,
-            left: currentSiderWidth,
+            left: isMobile ? 0 : currentSiderWidth,
             right: 0,
             zIndex: 1001,
             background: "#fff",
             padding: 0,
-            transition: 'left 0.2s',
-            
+            transition: 'left 0.3s ease-in-out',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
           }}
         >
           <AppHeader
@@ -574,13 +602,12 @@ const currentSiderWidth = collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH;
         <Content
           style={{
             marginTop: 80,
-            padding: 20,
-            paddingTop: 20,
-            marginLeft: 16,
-            marginRight: 16,
+            padding: isMobile ? '16px 12px' : '20px 16px',
             minHeight: "100vh",
             background: colorBgContainer,
             borderRadius: borderRadiusLG,
+            marginLeft: isMobile ? 0 : 16,
+            marginRight: isMobile ? 0 : 16,
           }}
         >
           <Spin spinning={shouldShowSpinner && loading} tip="Loading..." size="large">
