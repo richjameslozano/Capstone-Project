@@ -4342,26 +4342,28 @@ useEffect(() => {
     <Layout style={{ minHeight: "100vh" }}>
       <Layout style={{padding: 20}}>
 
-            <div style={{ display: 'flex', gap: 10, padding: 30, borderRadius: 10, backgroundColor: 'white', marginBottom: 20 }}>
-              {usageTypes.map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setSelectedFilter(type)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: 8,
-                    border: '1px solid #ccc',
-                    backgroundColor: selectedFilter === type ? '#395a7f' : 'white',
-                    color: selectedFilter === type ? 'white' : '#395a7f',
-                    fontWeight: selectedFilter === type ? 'normal' : 'normal',
-                    transition: 'all 0.3s ease',
-                    cursor: 'pointer',
-                    fontSize: 15
-                  }}
-                >
-                  {type}
-                </button>
-              ))}
+            <div className="filter-section" style={{ display: 'flex', gap: 10, padding: 30, borderRadius: 10, backgroundColor: 'white', marginBottom: 20 }}>
+              <div className="filter-buttons" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                {usageTypes.map((type) => (
+                  <button
+                    key={type}
+                    onClick={() => setSelectedFilter(type)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: 8,
+                      border: '1px solid #ccc',
+                      backgroundColor: selectedFilter === type ? '#395a7f' : 'white',
+                      color: selectedFilter === type ? 'white' : '#395a7f',
+                      fontWeight: selectedFilter === type ? 'normal' : 'normal',
+                      transition: 'all 0.3s ease',
+                      cursor: 'pointer',
+                      fontSize: 15
+                    }}
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
 
               <input placeholder="Search" className="search-input" value={searchTerm}
                     onChange={(e) => {
@@ -4388,7 +4390,7 @@ useEffect(() => {
       return (
         <div key={label} style={{ marginBottom: "2rem", justifyItems: 'flex-start' }}>
           {/* Group Header */}
-          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: 10 }}>
+          <div className="group-header" style={{ display: 'flex', alignItems: 'center', marginBottom: '1rem', gap: 10 }}>
             <button
               onClick={() => toggleGroup(label)}
               style={{
@@ -4518,7 +4520,7 @@ useEffect(() => {
             }}
           >
             {/* Existing UI content */}
-            <div style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center' }}>
+            <div className="usage-badge" style={{ width: '4%', padding: 10, paddingTop: 0, justifyItems: 'center' }}>
               <p
                 style={{
                   fontSize: 20,
@@ -4535,14 +4537,15 @@ useEffect(() => {
               </p>
             </div>
 
-            <div style={{ paddingLeft: 10, width: '100%', paddingTop: 0, paddingBottom: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+            <div className="card-content" style={{ paddingLeft: 10, width: '100%', paddingTop: 0, paddingBottom: 0 }}>
+              <div className="user-info" style={{ display: 'flex', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <div>
-                  <p style={{ fontSize: 23, fontWeight: 500, marginBottom: 5 }}>{capitalizeName(request.userName)}</p>
-                  <p style={{ fontSize: 18, color: '#707070' }}>{request.program}</p>
+                  <p className="user-name" style={{ fontSize: 23, fontWeight: 500, marginBottom: 5 }}>{capitalizeName(request.userName)}</p>
+                  <p className="program" style={{ fontSize: 18, color: '#707070' }}>{request.program}</p>
                 </div>
 
                 <p
+                  className="required-date"
                   style={{
                     margin: 0,
                     fontSize: 15,
@@ -4557,23 +4560,25 @@ useEffect(() => {
               </div>
 
               <div style={{ margin: 0 }}>
-                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
-                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
-                <p style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.course}{request.courseDescription}</p>
+                <p className="room" style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>Room: {request.room}</p>
+                <p className="usage-type" style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.usageType}</p>
+                <p className="course" style={{ color: '#707070', fontSize: 15, marginBottom: 5 }}>{request.course}{request.courseDescription}</p>
 
-                {request.requestList?.map((item, index) => {
-                const key = `${item.selectedItemId}_${request.dateRequired}`;
-                const position = requestOrderMap?.[request.id]?.[key];
+                <div className="item-list">
+                  {request.requestList?.map((item, index) => {
+                    const key = `${item.selectedItemId}_${request.dateRequired}`;
+                    const position = requestOrderMap?.[request.id]?.[key];
 
-                return (
-                  <p
-                    key={index}
-                    style={{ color: '#5a5a5a', fontSize: 13, marginBottom: 2 }}
-                  >
-                    • {item.itemName} - #{position ?? 'N/A'} to request
-                  </p>
-                );
-              })}
+                    return (
+                      <p
+                        key={index}
+                        style={{ color: '#5a5a5a', fontSize: 13, marginBottom: 2 }}
+                      >
+                        • {item.itemName} - #{position ?? 'N/A'} to request
+                      </p>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* {isDisabled && (
