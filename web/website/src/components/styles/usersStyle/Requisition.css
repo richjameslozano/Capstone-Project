@@ -277,3 +277,130 @@ gap: 15px;
   background-color: #e6f7ff; /* Light blue highlight */
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+  .requisition-content {
+    padding: 16px;
+  }
+
+  .whole-section {
+    flex-direction: column !important;
+    gap: 20px !important;
+  }
+
+  .left-section {
+    width: 100% !important;
+  }
+
+  .reason-container {
+    width: 100% !important;
+    gap: 20px !important;
+  }
+
+  .dropdowns {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .dropdowns select {
+    width: 100% !important;
+  }
+
+  .date-time-container {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .date-required,
+  .time-required {
+    width: 100% !important;
+  }
+
+  .program-room-container {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .program-container,
+  .room-container {
+    width: 100% !important;
+  }
+
+  .usage-container {
+    flex-direction: column !important;
+    gap: 15px !important;
+  }
+
+  .requisition-table {
+    overflow-x: auto !important;
+  }
+
+  .requisition-table .ant-table-container {
+    min-width: 600px !important;
+  }
+
+  .finalize-btn {
+    width: 100% !important;
+    margin-top: 15px !important;
+  }
+
+  .bottom-btns {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .add-item-row-btn {
+    width: 100% !important;
+  }
+
+  .page-sections {
+    padding: 16px !important;
+    height: auto !important;
+  }
+
+  .site-layout-req {
+    min-height: auto !important;
+  }
+
+  .modal-whole {
+    flex-direction: column !important;
+    min-width: auto !important;
+    padding: 20px !important;
+  }
+
+  .modal-left,
+  .modal-right {
+    width: 100% !important;
+    padding-right: 0 !important;
+  }
+
+  .finalize-title-container {
+    width: 100% !important;
+    position: relative !important;
+    border-radius: 0 !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .requisition-content {
+    padding: 12px;
+  }
+
+  .page-sections {
+    padding: 12px !important;
+  }
+
+  .requisition-table .ant-table-container {
+    min-width: 500px !important;
+  }
+
+  .requisition-header {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .requisition-search {
+    width: 100% !important;
+  }
+}
+
