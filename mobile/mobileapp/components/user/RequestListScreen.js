@@ -740,6 +740,7 @@ const RequestListScreen = ({}) => {
   const [tempDocIdsToDelete, setTempDocIdsToDelete] = useState([]);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [removeLoading, setRemoveLoading] = useState({});
+  const [liabilityAccepted, setLiabilityAccepted] = useState(false);
 
     const navigation = useNavigation()
   
@@ -1030,6 +1031,10 @@ const RequestListScreen = ({}) => {
   
     // Close the confirmation modal after the request is saved
     setShowConfirmationModal(false);
+  };
+
+  const handleLiabilityChange = (checked) => {
+    setLiabilityAccepted(checked);
   };
   
 
@@ -1353,39 +1358,174 @@ const boldLabel = {
 
              <Text style={styles.confirmationSubtitle}>Items</Text>
 
-                           <View style={{ maxHeight: 200, marginBottom: 10, borderWidth: 1, borderColor: '#ccc', borderRadius: 8, overflow: 'hidden' }}>
-                <ScrollView
-                  horizontal={true}
-                  showsHorizontalScrollIndicator={true}
-                  contentContainerStyle={{ minWidth: 400 }}
-                >
-                  <ScrollView
-                    showsVerticalScrollIndicator={true}
-                    nestedScrollEnabled={true}
-                  >
-                    <View>
-                      {/* Header */}
-                      <View style={styles.tableRowHeader}>
-                        <Text style={[styles.tableCellHeader, { width: 120 }]}>Name</Text>
-                        <Text style={[styles.tableCellHeader, { width: 150 }]}>Details</Text>
-                        <Text style={[styles.tableCellHeader, { width: 60 }]}>Qty</Text>
-                        <Text style={[styles.tableCellHeader, { width: 80 }]}>Unit</Text>
-                      </View>
+             <View style={{ 
+               height: 140, 
+               marginBottom: 6, 
+               borderWidth: 1, 
+               borderColor: '#ccc', 
+               borderRadius: 6, 
+               overflow: 'hidden',
+               backgroundColor: '#fff'
+             }}>
+               <ScrollView
+                 horizontal={true}
+                 showsHorizontalScrollIndicator={true}
+                 contentContainerStyle={{ width: 800 }}
+                 style={{ flex: 1 }}
+                 bounces={false}
+                 scrollEnabled={true}
+                 nestedScrollEnabled={true}
+               >
+                 <View style={{ width: 800 }}>
+                   {/* Header */}
+                   <View style={{ 
+                     flexDirection: 'row', 
+                     backgroundColor: '#f5f5f5', 
+                     borderBottomWidth: 1, 
+                     borderBottomColor: '#ddd',
+                     height: 35,
+                     alignItems: 'center',
+                     width: 800
+                   }}>
+                     <Text style={{ 
+                       width: 150, 
+                       paddingHorizontal: 8, 
+                       fontSize: 12, 
+                       fontWeight: 'bold',
+                       color: '#333'
+                     }}>Name</Text>
+                     <Text style={{ 
+                       width: 200, 
+                       paddingHorizontal: 8, 
+                       fontSize: 12, 
+                       fontWeight: 'bold',
+                       color: '#333'
+                     }}>Details</Text>
+                     <Text style={{ 
+                       width: 80, 
+                       paddingHorizontal: 8, 
+                       fontSize: 12, 
+                       fontWeight: 'bold',
+                       color: '#333'
+                     }}>Qty</Text>
+                     <Text style={{ 
+                       width: 100, 
+                       paddingHorizontal: 8, 
+                       fontSize: 12, 
+                       fontWeight: 'bold',
+                       color: '#333'
+                     }}>Unit</Text>
+                     <Text style={{ 
+                       width: 120, 
+                       paddingHorizontal: 8, 
+                       fontSize: 12, 
+                       fontWeight: 'bold',
+                       color: '#333'
+                     }}>Category</Text>
+                     <Text style={{ 
+                       width: 150, 
+                       paddingHorizontal: 8, 
+                       fontSize: 12, 
+                       fontWeight: 'bold',
+                       color: '#333'
+                     }}>Status</Text>
+                   </View>
 
-                      {/* Rows */}
-                      {requestList.map((item, index) => (
-                        <View key={index} style={styles.tableRow}>
-                          <Text style={[styles.tableCell, { width: 120 }]} numberOfLines={2}>{item.selectedItem?.label}</Text>
-                          <Text style={[styles.tableCell, { width: 150 }]} numberOfLines={2}>{item.itemDetails}</Text>
-                          <Text style={[styles.tableCell, { width: 60 }]}>{item.quantity}</Text>
-                          <Text style={[styles.tableCell, { width: 80 }]}>{item.unit}</Text>
-                        </View>
-                      ))}
-                    </View>
-                  </ScrollView>
-                </ScrollView>
-              </View>
+                   {/* Rows */}
+                   {requestList.map((item, index) => (
+                     <View key={index} style={{ 
+                       flexDirection: 'row', 
+                       borderBottomWidth: 1, 
+                       borderBottomColor: '#eee',
+                       height: 30,
+                       alignItems: 'center',
+                       backgroundColor: index % 2 === 0 ? '#fff' : '#fafafa',
+                       width: 800
+                     }}>
+                       <Text style={{ 
+                         width: 150, 
+                         paddingHorizontal: 8, 
+                         fontSize: 11,
+                         color: '#333'
+                       }} numberOfLines={1}>
+                         {item.selectedItem?.label}
+                       </Text>
+                       <Text style={{ 
+                         width: 200, 
+                         paddingHorizontal: 8, 
+                         fontSize: 11,
+                         color: '#333'
+                       }} numberOfLines={1}>
+                         {item.itemDetails}
+                       </Text>
+                       <Text style={{ 
+                         width: 80, 
+                         paddingHorizontal: 8, 
+                         fontSize: 11,
+                         color: '#333'
+                       }}>
+                         {item.quantity}
+                       </Text>
+                       <Text style={{ 
+                         width: 100, 
+                         paddingHorizontal: 8, 
+                         fontSize: 11,
+                         color: '#333'
+                       }}>
+                         {item.unit}
+                       </Text>
+                       <Text style={{ 
+                         width: 120, 
+                         paddingHorizontal: 8, 
+                         fontSize: 11,
+                         color: '#333'
+                       }}>
+                         {item.category}
+                       </Text>
+                       <Text style={{ 
+                         width: 150, 
+                         paddingHorizontal: 8, 
+                         fontSize: 11,
+                         color: '#333'
+                       }}>
+                         {item.status}
+                       </Text>
+                     </View>
+                   ))}
+                 </View>
+               </ScrollView>
+             </View>
            </ScrollView>
+
+           {/* Liability Checkbox */}
+           <View style={{
+             marginTop: 8,
+             padding: 8,
+             backgroundColor: '#f8f9fa',
+             borderRadius: 4,
+             borderWidth: 1,
+             borderColor: '#e9ecef'
+           }}>
+             <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+               <Checkbox
+                 status={liabilityAccepted ? 'checked' : 'unchecked'}
+                 onPress={() => handleLiabilityChange(!liabilityAccepted)}
+                 color="#1e7898"
+               />
+               <Text style={{
+                 flex: 1,
+                 fontSize: 11,
+                 lineHeight: 14,
+                 marginLeft: 4,
+                 color: '#333'
+               }}>
+                 <Text style={{ fontWeight: '500' }}>
+                   I am responsible for the proper use, care, and timely return of all borrowed laboratory items. 
+                   I accept liability for any loss or damage and will report such incidents immediately to the laboratory custodian.
+                 </Text>
+               </Text>
+             </View>
+           </View>
 
            <View style={styles.modalActions}>
              <TouchableOpacity
@@ -1396,7 +1536,10 @@ const boldLabel = {
              </TouchableOpacity>
 
              <TouchableOpacity
-               style={[styles.confirmButton, submitLoading && styles.disabledButton]}
+               style={[
+                 styles.confirmButton, 
+                 (submitLoading || !liabilityAccepted) && styles.disabledButton
+               ]}
                onPress={async () => {
                  const requestSuccess = await submitRequest();
                  if (requestSuccess) {
@@ -1407,9 +1550,12 @@ const boldLabel = {
                    alert('There was a problem processing your request. Try again later.');
                  }
                }}
-               disabled={submitLoading}
+               disabled={submitLoading || !liabilityAccepted}
              >
-               <Text style={styles.confirmButtonText}>
+               <Text style={[
+                 styles.confirmButtonText,
+                 (!liabilityAccepted && !submitLoading) && { color: '#999' }
+               ]}>
                  {submitLoading ? 'Submitting...' : 'Confirm'}
                </Text>
              </TouchableOpacity>
