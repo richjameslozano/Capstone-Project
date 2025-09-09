@@ -14,7 +14,7 @@ import {
   StatusBar,
   TouchableWithoutFeedback,
 } from 'react-native';
-import { Card } from 'react-native-paper';
+import { Card, Checkbox } from 'react-native-paper';
 import {
   collection,
   getDocs,
@@ -71,6 +71,7 @@ export default function RequestScreen() {
   const [selectedEndTime, setSelectedEndTime] = useState({ hour: '3', minute: '00', period: 'PM' });
   const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
   const [daysDifference, setDaysDifference] = useState(0);
+  const [liabilityAccepted, setLiabilityAccepted] = useState(false);
   
   // Date constraints
   const today = moment().format('YYYY-MM-DD');
@@ -600,6 +601,11 @@ export default function RequestScreen() {
       timeTo: '',
       reason: ''
     });
+    setLiabilityAccepted(false);
+  };
+
+  const handleLiabilityChange = (checked) => {
+    setLiabilityAccepted(checked);
   };
 
   // Time formatting functions from InventoryScreen
@@ -1600,6 +1606,36 @@ const renderDeployed = ({ item }) => {
                   <Text style={{ fontStyle: 'italic', color: '#666' }}>No items found</Text>
                 )}
               </View>
+
+              {/* Liability Checkbox */}
+              <View style={{
+                marginTop: 20,
+                padding: 10,
+                backgroundColor: '#f8f9fa',
+                borderRadius: 6,
+                borderWidth: 1,
+                borderColor: '#e9ecef'
+              }}>
+                <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+                  <Checkbox
+                    status={liabilityAccepted ? 'checked' : 'unchecked'}
+                    onPress={() => handleLiabilityChange(!liabilityAccepted)}
+                    color="#1e7898"
+                  />
+                  <Text style={{
+                    flex: 1,
+                    fontSize: 12,
+                    lineHeight: 16,
+                    marginLeft: 6,
+                    color: '#333'
+                  }}>
+                    <Text style={{ fontWeight: '500' }}>
+                      I am responsible for the proper use, care, and timely return of all borrowed laboratory items. 
+                      I accept liability for any loss or damage and will report such incidents immediately to the laboratory custodian.
+                    </Text>
+                  </Text>
+                </View>
+              </View>
             </ScrollView>
 
             {/* Action Buttons - Fixed at bottom */}
@@ -1619,13 +1655,19 @@ const renderDeployed = ({ item }) => {
               <TouchableOpacity
                 onPress={handleReorderConfirm}
                 style={{ 
-                  backgroundColor: '#007bff', 
+                  backgroundColor: !liabilityAccepted ? '#d9d9d9' : '#007bff', 
                   paddingHorizontal: 20, 
                   paddingVertical: 12, 
                   borderRadius: 6 
                 }}
+                disabled={!liabilityAccepted}
               >
-                <Text style={{ color: 'white', fontWeight: '600' }}>Submit Reorder</Text>
+                <Text style={{ 
+                  color: !liabilityAccepted ? '#999' : 'white', 
+                  fontWeight: '600' 
+                }}>
+                  Submit Reorder
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
