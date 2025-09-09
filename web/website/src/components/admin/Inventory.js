@@ -2156,7 +2156,12 @@ useEffect(() => {
       dataIndex: "quantity",
       key: "quantity",
     },
-    { title: "Status", dataIndex: "status", key: "status" },   
+    { 
+      title: "Status", 
+      dataIndex: "status", 
+      key: "status",
+      render: (text) => text ? text.toUpperCase() : text
+    },   
   ];
 
   const disabledDate = (current) => {
@@ -2300,9 +2305,13 @@ useEffect(() => {
 
               <Select
                 allowClear
+                showSearch
                 placeholder="Filter by Department"
                 style={{ height: '80%', flex: 1}}
                 onChange={(value) => setFilterDepartment(value)}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
               >
                 {departmentsAll.map((dept) => (
                   <Option key={dept.id} value={dept.name}>
@@ -2313,9 +2322,13 @@ useEffect(() => {
 
               <Select
                 allowClear
+                showSearch
                 placeholder="Filter by Category"
                 style={{flex:1,  height: '80%' }}
                 onChange={(value) => setFilterCategory(value)}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
               >
                 <Option value="Chemical">Chemical</Option>
                 <Option value="Reagent">Reagent</Option>
@@ -2326,9 +2339,13 @@ useEffect(() => {
 
               <Select
                 allowClear
+                showSearch
                 placeholder="Filter by Item Type"
                 style={{flex:1,  height: '80%' }}
                 onChange={(value) => setFilterItemType(value)}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
               >
                 <Option value="Fixed">Fixed</Option>
                 <Option value="Consumable">Consumable</Option>
@@ -3238,7 +3255,7 @@ useEffect(() => {
                       <tbody>
                         <tr>
                           <th>Status</th>
-                          <td>{selectedRow.status}</td>
+                          <td>{selectedRow.status ? selectedRow.status.toUpperCase() : selectedRow.status}</td>
                         </tr>
 
                         <tr>
