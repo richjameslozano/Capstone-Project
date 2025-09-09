@@ -1635,7 +1635,7 @@ const Requisition = () => {
                   ["Chemical", "Reagent"].includes(item.category) && item.unit
                     ? ` ${item.unit}`
                     : ""
-                } | ${item.status} | ${item.department}`;
+                } | ${item.status.toUpperCase()} | ${item.department}`;
                 // const isDisabled = selectedIds.includes(item.id);
 
                 const isDisabled = selectedIds.includes(item.id) || item.quantity === 0;
@@ -1751,6 +1751,7 @@ const Requisition = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status) => status?.toUpperCase() || status,
     },
     // {
     //   title: "Condition",
@@ -2020,7 +2021,7 @@ const Requisition = () => {
         key: "status",
         render: (status) => (
           <Button type="text" className="status-btn">
-            {status}
+            {status?.toUpperCase() || status}
           </Button>
         ),
       },
