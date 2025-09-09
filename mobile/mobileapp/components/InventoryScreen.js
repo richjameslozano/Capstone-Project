@@ -2341,7 +2341,8 @@ export default function InventoryScreen({ navigation }) {
 
       <KeyboardAvoidingView
       style={{ flex: 1,}}
-      keyboardVerticalOffset={Platform.OS === 'ios' ? 40 : 0} 
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 100 : 0} 
     >
      
       {!isComplete && (
@@ -2761,7 +2762,7 @@ export default function InventoryScreen({ navigation }) {
             {/* List Section */}
             <View style={[styles.wholeSection2, { flex: 7, marginTop: headerHeight+90 }]} >
               <FlatList
-                contentContainerStyle={{ paddingBottom: 80, paddingHorizontal: 5, paddingTop: 5 }}
+                contentContainerStyle={{ paddingBottom: 200, paddingHorizontal: 5, paddingTop: 5 }}
                 data={filteredItems}
                 renderItem={renderItem}
                 keyExtractor={(item) => item.id}
@@ -2770,6 +2771,7 @@ export default function InventoryScreen({ navigation }) {
                 }
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="always"
+                automaticallyAdjustKeyboardInsets={true}
               />
 
               {/* Floating Button / Bottom View */}
