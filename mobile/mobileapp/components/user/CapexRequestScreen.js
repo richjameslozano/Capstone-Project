@@ -39,6 +39,7 @@ const CapexRequestScreen = () => {
   const [estimatedCost, setEstimatedCost] = useState("");
   const [justification, setJustification] = useState("");
   const [subject, setSubject] = useState("");
+  const [brand, setBrand] = useState("");
   const [totalPrice, setTotalPrice] = useState(0);
   const [confirmModalVisible, setConfirmModalVisible] = useState(false);
   const { user } = useAuth();
@@ -203,9 +204,10 @@ const CapexRequestScreen = () => {
     const trimmedCost = estimatedCost.trim();
     const trimmedJustification = justification.trim();
     const trimmedSubject = subject.trim();
+    const trimmedBrand = brand.trim();
     
-    if (!itemDescription.trim() || !trimmedSubject || !trimmedQty || !trimmedCost || !trimmedJustification) {
-      Alert.alert("Validation Error", "All fields are required");
+    if (!itemDescription.trim() || !trimmedSubject || !trimmedQty || !trimmedJustification || !trimmedBrand) {
+      Alert.alert("Validation Error", "All fields are required except Estimated Cost");
       return;
     }
 
@@ -230,6 +232,7 @@ const CapexRequestScreen = () => {
         totalPrice: parsedQty * parsedCost,
         justification: trimmedJustification,
         subject: trimmedSubject,
+        brand: trimmedBrand,
       };
 
       // ✅ Duplicate check (works for adding AND editing)
@@ -289,6 +292,7 @@ const CapexRequestScreen = () => {
     setEstimatedCost("");
     setJustification("");
     setSubject("");
+    setBrand("");
     setEditingItem(null);
     setModalVisible(false);
   };
@@ -300,6 +304,7 @@ const CapexRequestScreen = () => {
     setEstimatedCost(String(item.estimatedCost));
     setJustification(item.justification || "");
     setSubject(item.subject || "");
+    setBrand(item.brand || "");
     setModalVisible(true);
   };
 
@@ -416,26 +421,41 @@ const CapexRequestScreen = () => {
         padding: 16,
       }}>
   {/* <Text style={styles.title}>CAPEX Request</Text> */}
+        
+        <Text style={{ fontSize: 12, color: '#666', marginBottom: 8, textAlign: 'center' }}>
+          ← Swipe horizontally to see all columns →
+        </Text>
 
-        <ScrollView horizontal>
-          <View style={styles.tableContainer}>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={true}
+          scrollEventThrottle={16}
+          decelerationRate="fast"
+          snapToInterval={null}
+          contentContainerStyle={{ paddingRight: 20 }}
+        >
+          <View style={[styles.tableContainer, { minWidth: 620 }]}>
             {/* Header */}
             <View style={[styles.tableRow, styles.tableHeader]}>
-              <Text style={[styles.tableCell, styles.headerCell, { width: 150 }]}>Item</Text>
-              <Text style={[styles.tableCell, styles.headerCell, { width: 80 }]}>Qty</Text>
-              <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Est. Cost</Text>
-              <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Total</Text>
-              <Text style={[styles.tableCell, styles.headerCell, { width: 140 }]}>Actions</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 120 }]}>Item</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 80 }]}>Brand</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Reason</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 60 }]}>Qty</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 80 }]}>Est. Cost</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 80 }]}>Total</Text>
+              <Text style={[styles.tableCell, styles.headerCell, { width: 100 }]}>Actions</Text>
             </View>
 
             {/* Rows */}
             {dataSource.map((item) => (
               <View key={item.id} style={styles.tableRow}>
-                <Text style={[styles.tableCell, { width: 150 }]}>{item.itemDescription}</Text>
-                <Text style={[styles.tableCell, { width: 80 }]}>{item.qty}</Text>
-                <Text style={[styles.tableCell, { width: 100 }]}>₱{item.estimatedCost}</Text>
-                <Text style={[styles.tableCell, { width: 100 }]}>₱{item.totalPrice}</Text>
-                <View style={[styles.tableCell, styles.actionsCell, { width: 140, flexDirection: 'row', gap: 8 }]}>
+                <Text style={[styles.tableCell, { width: 120 }]}>{item.itemDescription}</Text>
+                <Text style={[styles.tableCell, { width: 80 }]}>{item.brand || 'N/A'}</Text>
+                <Text style={[styles.tableCell, { width: 100 }]}>{item.justification || 'N/A'}</Text>
+                <Text style={[styles.tableCell, { width: 60 }]}>{item.qty}</Text>
+                <Text style={[styles.tableCell, { width: 80 }]}>₱{item.estimatedCost}</Text>
+                <Text style={[styles.tableCell, { width: 80 }]}>₱{item.totalPrice}</Text>
+                <View style={[styles.tableCell, styles.actionsCell, { width: 100, flexDirection: 'row', gap: 8 }]}>
                   <TouchableOpacity onPress={() => handleEdit(item)} style={[styles.smallButton, styles.editButton]}>
                     <Text style={styles.buttonText}>Edit</Text>
                   </TouchableOpacity>
@@ -497,6 +517,14 @@ const CapexRequestScreen = () => {
               />
 
               <TextInput
+                placeholder="Brand"
+                placeholderTextColor="#888"
+                value={brand}
+                onChangeText={setBrand}
+                style={styles.input}
+              />
+
+              <TextInput
                 placeholder="Quantity"
                 placeholderTextColor="#888"
                 keyboardType="numeric"
@@ -515,7 +543,7 @@ const CapexRequestScreen = () => {
               />
 
               <TextInput
-                placeholder="Justification"
+                placeholder="Reason"
                 placeholderTextColor="#888"
                 value={justification}
                 onChangeText={setJustification}
@@ -546,26 +574,41 @@ const CapexRequestScreen = () => {
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Confirm Your Request</Text>
+            
+            <Text style={{ fontSize: 11, color: '#666', marginBottom: 8, textAlign: 'center' }}>
+              ← Swipe horizontally to see all columns →
+            </Text>
 
             {/* Scoped table styling */}
             <ScrollView style={{ maxHeight: 200 }}>
-              <View style={styles.confirmTable}>
-                {/* Table header */}
-                <View style={[styles.confirmRow, styles.confirmHeader]}>
-                  <Text style={[styles.confirmCell, styles.confirmHeaderText]}>Item</Text>
-                  <Text style={[styles.confirmCell, styles.confirmHeaderText]}>Qty</Text>
-                  <Text style={[styles.confirmCell, styles.confirmHeaderText]}>Price</Text>
-                </View>
-
-                {/* Table rows */}
-                {dataSource.map((item, index) => (
-                  <View key={index} style={styles.confirmRow}>
-                    <Text style={styles.confirmCell}>{item.itemDescription}</Text>
-                    <Text style={styles.confirmCell}>{item.qty}</Text>
-                    <Text style={styles.confirmCell}>{item.totalPrice}</Text>
+              <ScrollView 
+                horizontal 
+                showsHorizontalScrollIndicator={true}
+                scrollEventThrottle={16}
+                contentContainerStyle={{ paddingRight: 20 }}
+              >
+                <View style={[styles.confirmTable, { minWidth: 500 }]}>
+                  {/* Table header */}
+                  <View style={[styles.confirmRow, styles.confirmHeader]}>
+                    <Text style={[styles.confirmCell, styles.confirmHeaderText, { width: 120 }]}>Item</Text>
+                    <Text style={[styles.confirmCell, styles.confirmHeaderText, { width: 80 }]}>Brand</Text>
+                    <Text style={[styles.confirmCell, styles.confirmHeaderText, { width: 100 }]}>Reason</Text>
+                    <Text style={[styles.confirmCell, styles.confirmHeaderText, { width: 50 }]}>Qty</Text>
+                    <Text style={[styles.confirmCell, styles.confirmHeaderText, { width: 80 }]}>Price</Text>
                   </View>
-                ))}
-              </View>
+
+                  {/* Table rows */}
+                  {dataSource.map((item, index) => (
+                    <View key={index} style={styles.confirmRow}>
+                      <Text style={[styles.confirmCell, { width: 120 }]}>{item.itemDescription}</Text>
+                      <Text style={[styles.confirmCell, { width: 80 }]}>{item.brand || 'N/A'}</Text>
+                      <Text style={[styles.confirmCell, { width: 100 }]}>{item.justification || 'N/A'}</Text>
+                      <Text style={[styles.confirmCell, { width: 50 }]}>{item.qty}</Text>
+                      <Text style={[styles.confirmCell, { width: 80 }]}>{item.totalPrice}</Text>
+                    </View>
+                  ))}
+                </View>
+              </ScrollView>
             </ScrollView>
 
             <Text style={styles.totalText}>Total: ₱{totalPrice}</Text>

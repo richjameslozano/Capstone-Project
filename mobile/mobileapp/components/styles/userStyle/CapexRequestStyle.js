@@ -135,6 +135,8 @@ export default StyleSheet.create({
     borderColor: '#ccc',
     borderRadius: 8,
     overflow: 'hidden',
+    minWidth: 620,
+    backgroundColor: '#fff',
   },
   
   tableHeader: {
@@ -159,8 +161,11 @@ export default StyleSheet.create({
   
   tableCell: {
     flex: 1,
-    padding: 8,
+    padding: 12,
     textAlign: 'center',
+    fontSize: 14,
+    minHeight: 40,
+    justifyContent: 'center',
   },
   
   headerCell: {
@@ -372,6 +377,8 @@ export default StyleSheet.create({
     borderWidth: 1,
     borderColor: '#ccc',
     borderRadius: 5,
+    minWidth: 500,
+    backgroundColor: '#fff',
   },
 
   confirmRow: {
@@ -382,8 +389,11 @@ export default StyleSheet.create({
 
   confirmCell: {
     flex: 1,
-    padding: 8,
+    padding: 10,
     textAlign: 'center',
+    fontSize: 14,
+    minHeight: 35,
+    justifyContent: 'center',
   },
 
   confirmHeader: {
