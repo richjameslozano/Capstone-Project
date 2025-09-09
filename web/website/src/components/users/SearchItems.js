@@ -678,9 +678,13 @@ const SearchItems = () => {
               <Select
                 placeholder="Filter by Status"
                 allowClear
+                showSearch
                 style={{ width: 200 }}
                 onChange={(value) => setStatusFilter(value)}
                 value={statusFilter}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
               >
                 <Option value="Available">Available</Option>
                 <Option value="Out of Stock">Out of Stock</Option>
@@ -690,9 +694,13 @@ const SearchItems = () => {
               <Select
                 placeholder="Filter by Category"
                 allowClear
+                showSearch
                 style={{ width: 200 }}
                 onChange={(value) => setCategoryFilter(value)}
                 value={categoryFilter}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
               >
                 <Option value="Chemical">Chemical</Option>
                 <Option value="Reagent">Reagent</Option>

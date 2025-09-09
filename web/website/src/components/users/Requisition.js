@@ -1613,9 +1613,13 @@ const Requisition = () => {
             labelInValue
             value={record.selectedItem || undefined}
             onChange={(selected) => handleItemSelect(selected, index)}
-            filterOption={(input, option) =>
-              option?.label?.toLowerCase().includes(input.toLowerCase())
-            }
+            filterOption={(input, option) => {
+              // option?.label?.toLowerCase().includes(input.toLowerCase())
+              const searchText = input.toLowerCase();
+              const labelText = option?.label?.toLowerCase() || '';
+              const childrenText = option?.children?.toLowerCase() || '';
+              return labelText.includes(searchText) || childrenText.includes(searchText);
+            }}
             loading={itemsLoading}
             notFoundContent={itemsLoading ? "Loading items..." : "No items found"}
           >
@@ -1631,7 +1635,7 @@ const Requisition = () => {
                   ["Chemical", "Reagent"].includes(item.category) && item.unit
                     ? ` ${item.unit}`
                     : ""
-                } | ${item.status} | ${item.department}`;
+                } | ${item.status.toUpperCase()} | ${item.department}`;
                 // const isDisabled = selectedIds.includes(item.id);
 
                 const isDisabled = selectedIds.includes(item.id) || item.quantity === 0;
@@ -1747,6 +1751,7 @@ const Requisition = () => {
       title: "Status",
       dataIndex: "status",
       key: "status",
+      render: (status) => status?.toUpperCase() || status,
     },
     // {
     //   title: "Condition",
@@ -2016,7 +2021,7 @@ const Requisition = () => {
         key: "status",
         render: (status) => (
           <Button type="text" className="status-btn">
-            {status}
+            {status?.toUpperCase() || status}
           </Button>
         ),
       },
