@@ -724,8 +724,9 @@ import styles from '../styles/userStyle/RequestListStyle';
 import Header from '../Header';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { Checkbox  } from 'react-native-paper';
+// import { Checkbox  } from 'react-native-paper';
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const RequestListScreen = ({}) => {
   const { user } = useAuth();
@@ -1507,16 +1508,39 @@ const boldLabel = {
              borderColor: '#e9ecef'
            }}>
              <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-               <Checkbox
-                 status={liabilityAccepted ? 'checked' : 'unchecked'}
+               <TouchableOpacity 
+                 style={{ 
+                   flexDirection: 'row', 
+                   alignItems: 'center',
+                   marginRight: 8
+                 }}
                  onPress={() => handleLiabilityChange(!liabilityAccepted)}
-                 color="#1e7898"
-               />
+                 activeOpacity={0.7}
+               >
+                 <View style={{
+                   width: 20,
+                   height: 20,
+                   borderRadius: 4,
+                   borderWidth: 2,
+                   borderColor: liabilityAccepted ? '#1e7898' : '#ccc',
+                   backgroundColor: liabilityAccepted ? '#1e7898' : 'transparent',
+                   justifyContent: 'center',
+                   alignItems: 'center',
+                   marginRight: 8
+                 }}>
+                   {liabilityAccepted && (
+                     <MaterialCommunityIcons 
+                       name="check" 
+                       size={14} 
+                       color="white" 
+                     />
+                   )}
+                 </View>
+               </TouchableOpacity>
                <Text style={{
                  flex: 1,
                  fontSize: 11,
                  lineHeight: 14,
-                 marginLeft: 4,
                  color: '#333'
                }}>
                  <Text style={{ fontWeight: '500' }}>

@@ -14,7 +14,7 @@ import {
   StatusBar,
   TouchableWithoutFeedback,
 } from 'react-native';
-import { Card, Checkbox } from 'react-native-paper';
+import { Card } from 'react-native-paper';
 import {
   collection,
   getDocs,
@@ -41,6 +41,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 import Icon2 from 'react-native-vector-icons/Ionicons';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import WarningModal from '../customs/WarningModal';
 
 export default function RequestScreen() {
@@ -1617,16 +1618,39 @@ const renderDeployed = ({ item }) => {
                 borderColor: '#e9ecef'
               }}>
                 <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
-                  <Checkbox
-                    status={liabilityAccepted ? 'checked' : 'unchecked'}
+                  <TouchableOpacity 
+                    style={{ 
+                      flexDirection: 'row', 
+                      alignItems: 'center',
+                      marginRight: 8
+                    }}
                     onPress={() => handleLiabilityChange(!liabilityAccepted)}
-                    color="#1e7898"
-                  />
+                    activeOpacity={0.7}
+                  >
+                    <View style={{
+                      width: 20,
+                      height: 20,
+                      borderRadius: 4,
+                      borderWidth: 2,
+                      borderColor: liabilityAccepted ? '#1e7898' : '#ccc',
+                      backgroundColor: liabilityAccepted ? '#1e7898' : 'transparent',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      marginRight: 8
+                    }}>
+                      {liabilityAccepted && (
+                        <MaterialCommunityIcons 
+                          name="check" 
+                          size={14} 
+                          color="white" 
+                        />
+                      )}
+                    </View>
+                  </TouchableOpacity>
                   <Text style={{
                     flex: 1,
                     fontSize: 12,
                     lineHeight: 16,
-                    marginLeft: 6,
                     color: '#333'
                   }}>
                     <Text style={{ fontWeight: '500' }}>
