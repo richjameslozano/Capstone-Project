@@ -301,11 +301,12 @@ const CapexList = () => {
       ensureSpace(12);
 
       const head = [
-        ["Item Description", "Subject", "Qty", "Estimated Cost", "Total Price"],
+        ["Item Description", "Subject", "Brand", "Qty", "Estimated Cost", "Total Price"],
       ];
       const body = (request.items || []).map((item) => [
         item.itemDescription || "",
         item.subject || "",
+        item.brand || "",
         String(item.qty ?? ""),
         money(item.estimatedCost),
         money(item.totalPrice),
@@ -340,11 +341,12 @@ const CapexList = () => {
         },
         alternateRowStyles: { fillColor: [245, 245, 245] },
         columnStyles: {
-          0: { cellWidth: 66 },
-          1: { cellWidth: 34 },
-          2: { cellWidth: 14, halign: "right", noWrap: true },
-          3: { cellWidth: 30, halign: "right", noWrap: true },
+          0: { cellWidth: 50 },
+          1: { cellWidth: 30 },
+          2: { cellWidth: 30 },
+          3: { cellWidth: 14, halign: "right", noWrap: true },
           4: { cellWidth: 30, halign: "right", noWrap: true },
+          5: { cellWidth: 30, halign: "right", noWrap: true },
         },
         rowPageBreak: "auto",
         pageBreak: "auto",
@@ -425,7 +427,8 @@ const CapexList = () => {
           baseData[`Item ${itemIndex + 1} Description`] =
             item.itemDescription || "";
           baseData[`Item ${itemIndex + 1} Subject`] = item.subject || "";
-          baseData[`Item ${itemIndex + 1} Justification`] =
+          baseData[`Item ${itemIndex + 1} Brand`] = item.brand || "";
+          baseData[`Item ${itemIndex + 1} Reason`] =
             item.justification || "";
           baseData[`Item ${itemIndex + 1} Quantity`] = item.qty || "";
           baseData[`Item ${itemIndex + 1} Estimated Cost`] = `₱${
@@ -614,14 +617,15 @@ const CapexList = () => {
                     title: "Item Description",
                     dataIndex: "itemDescription",
                     key: "itemDescription",
-                    width: 200,
+                    width: 180,
                   },
-                  { title: "Subject", dataIndex: "subject", key: "subject", width: 120 },
+                  { title: "Subject", dataIndex: "subject", key: "subject", width: 100 },
+                  { title: "Brand", dataIndex: "brand", key: "brand", width: 100 },
                   {
-                    title: "Justification",
+                    title: "Reason",
                     dataIndex: "justification",
                     key: "justification",
-                    width: 200,
+                    width: 180,
                   },
                   { title: "Quantity", dataIndex: "qty", key: "qty", width: 80 },
                   {
@@ -629,14 +633,14 @@ const CapexList = () => {
                     dataIndex: "estimatedCost",
                     key: "estimatedCost",
                     width: 120,
-                    render: (cost) => `₱${cost?.toLocaleString()}`,
+                    render: (cost) => cost ? `₱${cost?.toLocaleString()}` : "N/A",
                   },
                   {
                     title: "Total Price",
                     dataIndex: "totalPrice",
                     key: "totalPrice",
                     width: 120,
-                    render: (price) => `₱${price?.toLocaleString()}`,
+                    render: (price) => price ? `₱${price?.toLocaleString()}` : "N/A",
                   },
                 ]}
                 pagination={false}
