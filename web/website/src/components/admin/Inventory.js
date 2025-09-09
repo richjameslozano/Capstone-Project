@@ -282,6 +282,14 @@ const isConsumable = (cat) =>
 const isDurable = (cat) =>
   ["equipment", "glasswares"].includes((cat || "").toLowerCase());
 
+// Function to override status display based on inventory balance
+const getDisplayStatus = (status, quantity, category) => {
+  if (quantity === 0) {
+    return "out of stock";
+  }
+  return status;
+};
+
 // === GLOBAL / CATEGORY CAPS (tune as needed) ===
 const MAX_CL_GLOBAL = 10000;
 const CATEGORY_CL_CAPS = {
@@ -481,23 +489,49 @@ useEffect(() => {
               });
             }
 
-            // ===== Status logic =====
-            if (isConsumable(category)) {
-              if (quantity === 0) newStatus = "out of stock";
-              else if (quantity <= finalCriticalLevel) newStatus = "low stock";
-              else newStatus = "in stock";
-            }
+          // if (isConsumable(category)) {
+          //     if (quantity === 0) newStatus = "out of stock";
+          //     else if (quantity <= finalCriticalLevel) newStatus = "low stock";
+          //     else newStatus = "in stock";
+          //   }
 
-            if (isDurable(category)) {
-              if (quantity === 0) newStatus = "unavailable";
-              else if (
+          //   if (isDurable(category)) {
+          //     if (quantity === 0) newStatus = "unavailable";
+          //     else if (
+          //       availabilityThresholdOut != null &&
+          //       quantity < availabilityThresholdOut
+          //     ) newStatus = "low availability";
+          //     else newStatus = "available";
+          //   }
+            
+            // ===== Status logic =====
+            // PRIORITY: Check quantity first - if 0, item is unavailable regardless of type
+            if (quantity === 0) {
+              if (isConsumable(category)) {
+                newStatus = "out of stock";
+              } else if (isDurable(category)) {
+                newStatus = "unavailable";
+              } else {
+                newStatus = "out of stock"; // Default to out of stock for any category when quantity is 0
+              }
+              // Force update status when quantity is 0
+              batch.update(doc(db, "inventory", docId), { status: newStatus });
+            } else if (isConsumable(category)) {
+              if (quantity <= finalCriticalLevel) newStatus = "low stock";
+              else newStatus = "in stock";
+            } else if (isDurable(category)) {
+              if (
                 availabilityThresholdOut != null &&
                 quantity < availabilityThresholdOut
               ) newStatus = "low availability";
               else newStatus = "available";
+            } else {
+              // Default for unknown categories when quantity > 0
+              newStatus = "available";
             }
 
-            if (newStatus !== status) {
+            // Update status if it changed (for non-zero quantities)
+            if (quantity > 0 && newStatus !== status) {
               batch.update(doc(db, "inventory", docId), { status: newStatus });
             }
 
@@ -2160,7 +2194,10 @@ useEffect(() => {
       title: "Status", 
       dataIndex: "status", 
       key: "status",
-      render: (text) => text ? text.toUpperCase() : text
+      render: (text, record) => {
+        const displayStatus = getDisplayStatus(text, record.quantity, record.category);
+        return displayStatus ? displayStatus.toUpperCase() : displayStatus;
+      }
     },   
   ];
 
@@ -3255,7 +3292,10 @@ useEffect(() => {
                       <tbody>
                         <tr>
                           <th>Status</th>
-                          <td>{selectedRow.status ? selectedRow.status.toUpperCase() : selectedRow.status}</td>
+                          <td>{(() => {
+                            const displayStatus = getDisplayStatus(selectedRow.status, selectedRow.quantity, selectedRow.category);
+                            return displayStatus ? displayStatus.toUpperCase() : displayStatus;
+                          })()}</td>
                         </tr>
 
                         <tr>

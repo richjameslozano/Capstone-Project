@@ -489,6 +489,14 @@ const handleIcon = (item) => {
   return <AppstoreOutlined />;
 };
 
+// Function to override status display based on inventory balance
+const getDisplayStatus = (status, quantity, category) => {
+  if (quantity === 0) {
+    return "out of stock";
+  }
+  return status;
+};
+
 const columns = [
   {
     title: "Item Name",
@@ -507,8 +515,9 @@ const columns = [
     title: "Status",
     dataIndex: "status",
     key: "status",
-    render: (status) => {
-      const normalizedStatus = status?.toLowerCase();
+    render: (status, record) => {
+      const displayStatus = getDisplayStatus(status, record.quantity, record.category);
+      const normalizedStatus = displayStatus?.toLowerCase();
       let color;
 
       switch (normalizedStatus) {
@@ -528,7 +537,7 @@ const columns = [
           color = "blue";
       }
 
-      return <Tag color={color}>{status?.toUpperCase()}</Tag>;
+      return <Tag color={color}>{displayStatus?.toUpperCase()}</Tag>;
     },
   },
   {
@@ -749,7 +758,7 @@ const SearchItems = () => {
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Status">
-                    {selectedItem.status}
+                    {getDisplayStatus(selectedItem.status, selectedItem.quantity, selectedItem.category)}
                   </Descriptions.Item>
 
                   <Descriptions.Item label="Condition">
