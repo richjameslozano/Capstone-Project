@@ -471,8 +471,15 @@ const Requisition = () => {
     }
   
     if (savedTableData) {
-      setTableData(JSON.parse(savedTableData));
+      const parsedTableData = JSON.parse(savedTableData);
+      // If saved table data is empty, ensure we have at least one empty row
+      if (parsedTableData.length === 0) {
+        setTableData([{ key: 0, selectedItemId: null }]);
+      } else {
+        setTableData(parsedTableData);
+      }
     }
+    // If no saved table data, keep the initial empty row from useState
   }, []); 
 
   useEffect(() => {
@@ -1532,7 +1539,7 @@ const Requisition = () => {
   };
 
   const clearTableData = () => {
-    setTableData([]); // Clear tableData
+    setTableData([{ key: 0, selectedItemId: null }]); // Clear tableData but keep one empty row
     setRequestList([]); // Clear requestList
     setLiabilityAccepted(false); // Reset liability checkbox
     localStorage.removeItem("tableData"); // Remove from localStorage
