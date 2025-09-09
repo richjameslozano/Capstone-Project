@@ -1613,9 +1613,13 @@ const Requisition = () => {
             labelInValue
             value={record.selectedItem || undefined}
             onChange={(selected) => handleItemSelect(selected, index)}
-            filterOption={(input, option) =>
-              option?.label?.toLowerCase().includes(input.toLowerCase())
-            }
+            filterOption={(input, option) => {
+              // option?.label?.toLowerCase().includes(input.toLowerCase())
+              const searchText = input.toLowerCase();
+              const labelText = option?.label?.toLowerCase() || '';
+              const childrenText = option?.children?.toLowerCase() || '';
+              return labelText.includes(searchText) || childrenText.includes(searchText);
+            }}
             loading={itemsLoading}
             notFoundContent={itemsLoading ? "Loading items..." : "No items found"}
           >
