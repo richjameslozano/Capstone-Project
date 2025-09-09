@@ -19,7 +19,7 @@ const WarningModal = ({
       width={500}
       okText="Continue Anyway"
       cancelText="Change Date"
-      zIndex={1008}
+      zIndex={1042}
       closable={false}
       okButtonProps={{
         style: {

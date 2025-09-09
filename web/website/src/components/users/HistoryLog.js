@@ -23,6 +23,7 @@ import { ClockCircleOutlined, CheckCircleOutlined } from "@ant-design/icons";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import moment from "moment";
+import WarningModal from "../customs/WarningModal";
 
 const { Option } = Select; 
 const { Content } = Layout;
@@ -100,10 +101,40 @@ const HistoryLog = () => {
   const [reorderModalVisible, setReorderModalVisible] = useState(false);
   const [selectedCompletedOrder, setSelectedCompletedOrder] = useState(null);
   const [reorderForm] = Form.useForm();
+  const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
+  const [daysDifference, setDaysDifference] = useState(0);
 
 const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
       .replace(/[^a-zA-Z0-9\s\-.,()]/g, ""); // remove unwanted characters
+
+  // Function to check if selected date is less than 7 days from today
+  const checkDateWarning = (selectedDate) => {
+    if (!selectedDate) return false;
+    
+    const today = moment().startOf('day');
+    const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
+    const daysDiff = selected.diff(today, 'days');
+    
+    console.log('Date warning check:', {
+      selectedDate,
+      today: today.format('YYYY-MM-DD'),
+      selected: selected.format('YYYY-MM-DD'),
+      daysDiff,
+      shouldWarn: daysDiff < 7
+    });
+    
+    return daysDiff < 7;
+  };
+
+  // Function to get days difference
+  const getDaysDifference = (selectedDate) => {
+    if (!selectedDate) return 0;
+    
+    const today = moment().startOf('day');
+    const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
+    return selected.diff(today, 'days');
+  };
 
   const fetchUserName = async () => {
     const auth = getAuth();
@@ -2349,6 +2380,17 @@ const handlePrint = () => {
                       style={{ width: '100%' }}
                       placeholder="Select date"
                       format="YYYY-MM-DD"
+                      onChange={(date, dateString) => {
+                        console.log('Reorder DatePicker onChange:', { date, dateString });
+                        
+                        // Check for 7-day warning immediately when date is selected
+                        if (dateString && checkDateWarning(dateString)) {
+                          const daysDiff = getDaysDifference(dateString);
+                          setDaysDifference(daysDiff);
+                          console.log('Showing warning modal for reorder date:', dateString, 'days difference:', daysDiff);
+                          setIsWarningModalVisible(true);
+                        }
+                      }}
                       disabledDate={(current) => {
                         const today = moment().startOf('day');
                         const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
@@ -2435,6 +2477,18 @@ const handlePrint = () => {
       >
         <p>{notificationMessage}</p>
       </Modal>
+
+      {/* Warning Modal for 7-day notice */}
+      <WarningModal
+        visible={isWarningModalVisible}
+        onOk={() => {
+          setIsWarningModalVisible(false);
+          // Continue with the reorder process - the form validation will be handled by the submit button
+        }}
+        onCancel={() => setIsWarningModalVisible(false)}
+        dateRequired={reorderForm.getFieldValue('dateRequired')?.format('YYYY-MM-DD')}
+        daysDifference={daysDifference}
+      />
     </Layout>
   );
 };
