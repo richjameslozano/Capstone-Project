@@ -1111,13 +1111,21 @@ const Dashboard = () => {
                                 Critical / Low Availability
                               </div>
                             }
-                            className="critical-card"
-                            style={{ height: "100%", width: "100%" }}
+                            className={`critical-card ${criticalStockList.length <= 5 ? "auto-height" : ""}`}
+                            style={{ 
+                              height: "100%", 
+                              width: "100%",
+                              minHeight: criticalStockList.length === 0 ? "200px" : "auto"
+                            }}
                           >
                             <List
                               dataSource={criticalStockList}
                               locale={{ emptyText: "No issues" }}
-                              style={{ maxHeight: 375, overflowY: "auto" }}
+                              style={{ 
+                                maxHeight: criticalStockList.length > 5 ? "375px" : "none",
+                                overflowY: criticalStockList.length > 5 ? "auto" : "visible",
+                                minHeight: criticalStockList.length === 0 ? "120px" : "auto"
+                              }}
                               renderItem={(item) => {
                                 const isCon = item._kind === "consumable";
                                 const isDur = item._kind === "durable";
