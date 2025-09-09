@@ -83,6 +83,11 @@ const CapexRequestList = () => {
       key: "itemDescription",
     },
     {
+      title: "Brand",
+      dataIndex: "brand",
+      key: "brand",
+    },
+    {
       title: "Justification",
       dataIndex: "justification",
       key: "justification",
@@ -191,6 +196,8 @@ const CapexRequestList = () => {
 
                 <View style={styles.tableHeader}>
                   <Text style={styles.tableHeaderCell}>Description</Text>
+                  <Text style={styles.tableHeaderCell}>Brand</Text>
+                  <Text style={styles.tableHeaderCell}>Reason</Text>
                   <Text style={styles.tableHeaderCell}>Qty</Text>
                   <Text style={styles.tableHeaderCell}>Est. Cost</Text>
                   <Text style={styles.tableHeaderCell}>Total</Text>
@@ -199,6 +206,8 @@ const CapexRequestList = () => {
                 {selectedRowDetails.items.map((item, index) => (
                   <View key={index} style={styles.tableRow}>
                     <Text style={styles.tableCell}>{item.itemDescription}</Text>
+                    <Text style={styles.tableCell}>{item.brand || 'N/A'}</Text>
+                    <Text style={styles.tableCell}>{item.justification || 'N/A'}</Text>
                     <Text style={styles.tableCell}>{item.qty}</Text>
                     <Text style={styles.tableCell}>₱{item.estimatedCost}</Text>
                     <Text style={styles.tableCell}>₱{item.totalPrice}</Text>
