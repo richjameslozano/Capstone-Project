@@ -13,6 +13,7 @@ import SuccessModal from "../customs/SuccessModal";
 import PoliciesModal from "../Policies";
 import FinalizeRequestModal from "../customs/FinalizeRequestModal";
 import NotificationModal from "../customs/NotificationModal";
+import WarningModal from "../customs/WarningModal";
 import "../styles/usersStyle/ActivityLog.css";
 
 const sanitizeInput = (input) =>
@@ -50,12 +51,42 @@ const Requisition = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isFormValid, setIsFormValid] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
-  const [showPolicies, setShowPolicies] = useState(false)
+  const [showPolicies, setShowPolicies] = useState(false);
+  const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
+  const [daysDifference, setDaysDifference] = useState(0);
   const [mergedData, setMergedData] = useState([]);
   const [finalizeLoading, setFinalizeLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  // Function to check if selected date is less than 7 days from today
+  const checkDateWarning = (selectedDate) => {
+    if (!selectedDate) return false;
+    
+    const today = moment().startOf('day');
+    const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
+    const daysDiff = selected.diff(today, 'days');
+    
+    console.log('Date warning check:', {
+      selectedDate,
+      today: today.format('YYYY-MM-DD'),
+      selected: selected.format('YYYY-MM-DD'),
+      daysDiff,
+      shouldWarn: daysDiff < 7
+    });
+    
+    return daysDiff < 7;
+  };
+
+  // Function to get days difference
+  const getDaysDifference = (selectedDate) => {
+    if (!selectedDate) return 0;
+    
+    const today = moment().startOf('day');
+    const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
+    return selected.diff(today, 'days');
+  };
   const auth = getAuth();
 
   //history log state and hooks
@@ -2280,7 +2311,18 @@ const Requisition = () => {
                   <strong>Date Needed:</strong>
                   <DatePicker
                     value={dateRequired ? dayjs(dateRequired, "YYYY-MM-DD") : null}
-                    onChange={(date, dateString) => setDateRequired(dateString)}
+                    onChange={(date, dateString) => {
+                      console.log('DatePicker onChange:', { date, dateString });
+                      setDateRequired(dateString);
+                      
+                      // Check for 7-day warning immediately when date is selected
+                      if (dateString && checkDateWarning(dateString)) {
+                        const daysDiff = getDaysDifference(dateString);
+                        setDaysDifference(daysDiff);
+                        console.log('Showing warning modal for date:', dateString, 'days difference:', daysDiff);
+                        setIsWarningModalVisible(true);
+                      }
+                    }}
                     disabledDate={(current) => {
                       const today = moment().startOf('day');
                       const threeWeeksFromNow = moment().add(3, 'weeks').endOf('day');
@@ -2551,6 +2593,15 @@ const Requisition = () => {
                           setIsNotificationVisible(true);
                           return;
                         }
+
+                        // Check for 7-day warning
+                        if (checkDateWarning(dateRequired)) {
+                          const daysDiff = getDaysDifference(dateRequired);
+                          setDaysDifference(daysDiff);
+                          setIsWarningModalVisible(true);
+                          return;
+                        }
+
                         setIsFinalizeModalVisible(true);
                         
                       }}
@@ -2620,7 +2671,35 @@ const Requisition = () => {
           room={room}
           reason={reason}
           requestList={mergedData}
-          />
+        />
+
+        <WarningModal
+          visible={isWarningModalVisible}
+          onOk={async () => {
+            setIsWarningModalVisible(false);
+            
+            // Check all the same validations as the Finalize button
+            const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
+
+            if (hasConflict) {
+              setNotificationMessage("This room is already booked for the selected date and time.");
+              setIsNotificationVisible(true);
+              return;
+            }
+
+            // Check if form is valid before proceeding
+            if (!isFormValid) {
+              setNotificationMessage("Please fill out all required fields and add items to your request.");
+              setIsNotificationVisible(true);
+              return;
+            }
+
+            setIsFinalizeModalVisible(true);
+          }}
+          onCancel={() => setIsWarningModalVisible(false)}
+          dateRequired={dateRequired}
+          daysDifference={daysDifference}
+        />
             
               </div>
             </div>

@@ -67,6 +67,46 @@
 }
 
 
+/* Warning Modal Styles */
+.warning-modal .ant-modal-content {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.warning-title-container {
+  background: linear-gradient(135deg, #fff2f0 0%, #ffebe6 100%);
+  padding: 20px;
+  margin: -24px -24px 20px -24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #ffccc7;
+}
+
+.warning-content {
+  padding: 0 10px;
+}
+
+.warning-content p {
+  line-height: 1.6;
+  margin-bottom: 15px;
+}
+
+.warning-modal .ant-modal-footer {
+  border-top: 1px solid #f0f0f0;
+  padding: 16px 24px;
+}
+
+.warning-modal .ant-btn-primary {
+  background-color: #ff4d4f;
+  border-color: #ff4d4f;
+}
+
+.warning-modal .ant-btn-primary:hover {
+  background-color: #ff7875;
+  border-color: #ff7875;
+}
+
 @keyframes slide-down {
   from {
     opacity: 0;
