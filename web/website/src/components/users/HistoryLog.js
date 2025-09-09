@@ -12,6 +12,7 @@ import {
   TimePicker,
   Form,
   Input,
+  Checkbox,
 } from "antd";
 import dayjs from 'dayjs';
 import { AppstoreAddOutlined, CloseOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
@@ -103,6 +104,7 @@ const HistoryLog = () => {
   const [reorderForm] = Form.useForm();
   const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
   const [daysDifference, setDaysDifference] = useState(0);
+  const [reorderLiabilityAccepted, setReorderLiabilityAccepted] = useState(false);
 
 const sanitizeInput = (input) =>
   input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
@@ -524,6 +526,7 @@ const sanitizeInput = (input) =>
 
       setReorderModalVisible(false);
       setSelectedCompletedOrder(null);
+      setReorderLiabilityAccepted(false);
       reorderForm.resetFields();
       setNotificationMessage("Reorder request submitted successfully!");
       setNotificationVisible(true);
@@ -538,6 +541,7 @@ const sanitizeInput = (input) =>
   const handleReorderCancel = () => {
     setReorderModalVisible(false);
     setSelectedCompletedOrder(null);
+    setReorderLiabilityAccepted(false);
     reorderForm.resetFields();
   };
 
@@ -2330,6 +2334,14 @@ const handlePrint = () => {
         okText="Submit Reorder"
         cancelText="Cancel"
         width={700}
+        okButtonProps={{
+          disabled: !reorderLiabilityAccepted,
+          style: {
+            color: !reorderLiabilityAccepted ? 'white' : undefined,
+            backgroundColor: !reorderLiabilityAccepted ? '#d9d9d9' : undefined,
+            borderColor: !reorderLiabilityAccepted ? '#d9d9d9' : undefined
+          }
+        }}
       >
         {selectedCompletedOrder && (
           <div>
@@ -2458,6 +2470,19 @@ const handlePrint = () => {
                     ))}
                   </ul>
                 </div>
+              </div>
+
+              <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #e9ecef" }}>
+                <Checkbox
+                  checked={reorderLiabilityAccepted}
+                  onChange={(e) => setReorderLiabilityAccepted(e.target.checked)}
+                  style={{ fontSize: "14px", lineHeight: "1.5" }}
+                >
+                  <span style={{ fontWeight: "500" }}>
+                    I am responsible for the proper use, care, and timely return of all borrowed laboratory items. 
+                    I accept liability for any loss or damage and will report such incidents immediately to the laboratory custodian.
+                  </span>
+                </Checkbox>
               </div>
             </Form>
           </div>
