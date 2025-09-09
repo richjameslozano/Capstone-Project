@@ -510,6 +510,22 @@ useEffect(() => {
             //   await createRestockRequest({ ...data, criticalLevel: finalCriticalLevel, shortfall });
             // }
 
+            // ===== SYNC TO LABROOM ITEMS (your original logic) =====
+            const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
+            for (const roomDoc of labRoomsSnapshot.docs) {
+              const roomId = roomDoc.id;
+              const itemsRef = collection(db, `labRoom/${roomId}/items`);
+              const itemsSnap = await getDocs(itemsRef);
+
+              itemsSnap.forEach((itemDoc) => {
+                const itemData = itemDoc.data();
+                if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
+                  const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
+                  batch.update(labItemRef, { status: newStatus });
+                }
+              });
+            }
+
             return {
               docId,
               id: index + 1,
