@@ -41,6 +41,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { useNavigation } from '@react-navigation/native';
 import { Calendar } from 'react-native-calendars';
 import Icon2 from 'react-native-vector-icons/Ionicons';
+import WarningModal from '../customs/WarningModal';
 
 export default function RequestScreen() {
   const [requests, setRequests] = useState([]);
@@ -68,6 +69,8 @@ export default function RequestScreen() {
   const [timePickerType, setTimePickerType] = useState('start');
   const [selectedStartTime, setSelectedStartTime] = useState({ hour: '10', minute: '00', period: 'AM' });
   const [selectedEndTime, setSelectedEndTime] = useState({ hour: '3', minute: '00', period: 'PM' });
+  const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
+  const [daysDifference, setDaysDifference] = useState(0);
   
   // Date constraints
   const today = moment().format('YYYY-MM-DD');
@@ -649,6 +652,36 @@ export default function RequestScreen() {
       ...prev,
       timeTo: formattedEndTime
     }));
+  };
+
+  // Function to check if selected date is less than 7 days from today
+  const checkDateWarning = (selectedDate) => {
+    if (!selectedDate) return false;
+    
+    const today = moment().startOf('day');
+    const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
+    const daysDiff = selected.diff(today, 'days');
+    
+    console.log('Date warning check:', {
+      selectedDate,
+      today: today.format('YYYY-MM-DD'),
+      selected: selected.format('YYYY-MM-DD'),
+      daysDiff,
+      shouldWarn: daysDiff < 7
+    });
+    
+    return daysDiff < 7;
+  };
+
+  // Function to get days difference
+  const getDaysDifference = (selectedDate) => {
+    if (!selectedDate) return 0;
+    
+    const today = moment().startOf('day');
+    const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
+    const daysDiff = selected.diff(today, 'days');
+    
+    return daysDiff;
   };
 
 
@@ -1612,6 +1645,14 @@ const renderDeployed = ({ item }) => {
               onDayPress={(day) => {
                 setReorderForm(prev => ({ ...prev, dateRequired: day.dateString }));
                 setCalendarVisible(false);
+                
+                // Check for 7-day warning immediately when date is selected
+                if (day.dateString && checkDateWarning(day.dateString)) {
+                  const daysDiff = getDaysDifference(day.dateString);
+                  setDaysDifference(daysDiff);
+                  console.log('Showing warning modal for date:', day.dateString, 'days difference:', daysDiff);
+                  setIsWarningModalVisible(true);
+                }
               }}
               markedDates={{
                 [reorderForm.dateRequired]: { selected: true, selectedColor: '#00796B' }
@@ -1733,6 +1774,21 @@ const renderDeployed = ({ item }) => {
         </TouchableWithoutFeedback>
       </Modal>
 
+      {/* Warning Modal for dates less than 7 days */}
+      <WarningModal
+        visible={isWarningModalVisible}
+        onOk={() => {
+          setIsWarningModalVisible(false);
+          // User chose to continue anyway, no additional action needed
+        }}
+        onCancel={() => {
+          setIsWarningModalVisible(false);
+          // User chose to change date, reset the selected date
+          setReorderForm(prev => ({ ...prev, dateRequired: '' }));
+        }}
+        dateRequired={reorderForm.dateRequired}
+        daysDifference={daysDifference}
+      />
       
     </View>
   );
