@@ -1,5 +1,5 @@
-import React from "react";
-import { Modal } from "antd";
+import React, { useState } from "react";
+import { Modal, Checkbox } from "antd";
 import "../styles/usersStyle/Requisition.css";
 import { FileDoneOutlined } from '@ant-design/icons';
 
@@ -16,6 +16,10 @@ const FinalizeRequestModal = ({
   room,
   reason,
   requestList = [],
+  liabilityAccepted,
+  onLiabilityChange,
+  loading,
+  disabled,
 }) => {
 
   return (
@@ -31,6 +35,15 @@ const FinalizeRequestModal = ({
       cancelText="Cancel"
       zIndex={1007}
       closable={false}
+      okButtonProps={{
+        disabled: !liabilityAccepted || loading || disabled,
+        loading: loading,
+        style: {
+          color: (!liabilityAccepted || loading || disabled) ? 'white' : undefined,
+          backgroundColor: (!liabilityAccepted || loading || disabled) ? '#d9d9d9' : undefined,
+          borderColor: (!liabilityAccepted || loading || disabled) ? '#d9d9d9' : undefined
+        }
+      }}
     >
       <div className="finalize-title-container">
         <FileDoneOutlined style={{fontSize: 25, color: 'white'}}/>
@@ -92,6 +105,19 @@ const FinalizeRequestModal = ({
             )}
           </tbody>
         </table>
+      </div>
+
+      <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #e9ecef" }}>
+        <Checkbox
+          checked={liabilityAccepted}
+          onChange={onLiabilityChange}
+          style={{ fontSize: "14px", lineHeight: "1.5" }}
+        >
+          <span style={{ fontWeight: "500" }}>
+            I am responsible for the proper use, care, and timely return of all borrowed laboratory items. 
+            I accept liability for any loss or damage and will report such incidents immediately to the laboratory custodian.
+          </span>
+        </Checkbox>
       </div>
     </Modal>
   );

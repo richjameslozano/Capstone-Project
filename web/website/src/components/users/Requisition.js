@@ -57,6 +57,7 @@ const Requisition = () => {
   const [mergedData, setMergedData] = useState([]);
   const [finalizeLoading, setFinalizeLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
+  const [liabilityAccepted, setLiabilityAccepted] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -1533,6 +1534,7 @@ const Requisition = () => {
   const clearTableData = () => {
     setTableData([]); // Clear tableData
     setRequestList([]); // Clear requestList
+    setLiabilityAccepted(false); // Reset liability checkbox
     localStorage.removeItem("tableData"); // Remove from localStorage
     localStorage.removeItem("requestList"); // Remove from localStorage
   };  
@@ -2659,7 +2661,10 @@ const Requisition = () => {
             finalizeRequest();
             setIsFinalizeModalVisible(false);
           }}
-          onCancel={() => setIsFinalizeModalVisible(false)}
+          onCancel={() => {
+            setIsFinalizeModalVisible(false);
+            setLiabilityAccepted(false);
+          }}
           loading={finalizeLoading}
           disabled={cancelLoading}
           dateRequired={dateRequired}
@@ -2671,6 +2676,8 @@ const Requisition = () => {
           room={room}
           reason={reason}
           requestList={mergedData}
+          liabilityAccepted={liabilityAccepted}
+          onLiabilityChange={(e) => setLiabilityAccepted(e.target.checked)}
         />
 
         <WarningModal
