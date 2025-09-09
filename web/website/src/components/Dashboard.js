@@ -728,7 +728,7 @@
 // VERSION 2 (UPDATED)
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Layout, Card, Col, Row, List, Typography, Tag, Tabs } from "antd";
+import { Layout, Card, Col, Row, List, Typography, Tag, Tabs, Spin } from "antd";
 import { db } from "../backend/firebase/FirebaseConfig";
 import { collectionGroup, query, where, getDocs, onSnapshot, collection, orderBy } from "firebase/firestore";
 import SuccessModal from "./customs/SuccessModal";
@@ -820,6 +820,77 @@ const Dashboard = () => {
         };
       });
   };
+
+  /* ---------- Expiry ---------- */
+  useEffect(() => {
+    const fetchExpiryItems = async () => {
+      const inventoryRef = collection(db, "inventory");
+      const inventorySnapshot = await getDocs(inventoryRef);
+
+      const now = new Date();
+      const todayStart = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      
+      // 1 week from today
+      const oneWeekFromNow = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() + 7
+      );
+
+      const expired = [];
+      const expiringSoon = [];
+
+      for (const itemDoc of inventorySnapshot.docs) {
+        const data = itemDoc.data();
+        const stockLogRef = collection(db, "inventory", itemDoc.id, "stockLog");
+        const stockSnapshot = await getDocs(stockLogRef);
+
+        stockSnapshot.forEach((logDoc) => {
+          const logData = logDoc.data();
+          const expiryRaw = logData.expiryDate;
+          
+          if (!expiryRaw) return;
+
+          const expiryDate =
+            typeof expiryRaw === "string"
+              ? new Date(expiryRaw)
+              : expiryRaw?.toDate?.() || new Date(expiryRaw);
+          
+          if (isNaN(expiryDate.getTime())) return;
+
+          const daysDifference = Math.ceil((expiryDate - todayStart) / (1000 * 60 * 60 * 24));
+          
+          const itemInfo = {
+            key: `${itemDoc.id}_${logDoc.id}`,
+            itemName: data.itemName,
+            expiryDate: expiryDate.toDateString(),
+            category: data.category || "N/A",
+            daysUntilExpiry: daysDifference,
+            daysOverdue: daysDifference < 0 ? Math.abs(daysDifference) : 0
+          };
+
+          // Items that have already expired (before today)
+          if (expiryDate < todayStart) {
+            expired.push(itemInfo);
+          } 
+          // Items expiring within 1 week from today
+          else if (expiryDate <= oneWeekFromNow) {
+            expiringSoon.push(itemInfo);
+          }
+        });
+      }
+
+      setExpiredItems(expired);
+      setExpiringSoonItems(expiringSoon);
+    };
+
+    fetchExpiryItems();
+  }, []);
+
 
   // Subscribe to inventory and compute critical list
   useEffect(() => {
@@ -1165,6 +1236,51 @@ const Dashboard = () => {
                         <Col xs={24} md={12}>
                           <MonthlyRequestTrendLineChart />
                         </Col>
+
+                          <Col xs={24} md={8}>
+                <Card 
+                  title={
+                    <div style={{ display: "flex", alignItems: "center", gap: 12, fontSize: 18 }}>
+                      <MdAccessTime size={25} color="#f59e0b" />
+                      Expiring Within 1 Week
+                    </div>
+                  }
+                  className="dashboard-expiry-card"
+                  style={{ height: "100%", width: "100%" }}
+                >
+                  <List
+                    dataSource={expiringSoonItems}
+                    locale={{ emptyText: "No items expiring soon" }}
+                    style={{ 
+                      height: "375px",
+                      overflowY: "auto",
+                      overflowX: "hidden",
+                      padding: "8px 0"
+                    }}
+                    renderItem={(item) => (
+                      <List.Item>
+                        <List.Item.Meta
+                          title={<Text strong>{item.itemName}</Text>}
+                          description={
+                            <>
+                              <Text style={{ color: "#f59e0b" }}>
+                                Expires: {item.expiryDate}
+                              </Text>
+                              <br />
+                              <Text type="secondary">
+                                Category: {item.category} • {item.daysUntilExpiry} days left
+                              </Text>
+                              <Tag color="orange" style={{ marginLeft: 8 }}>
+                                Expiring Soon
+                              </Tag>
+                            </>
+                          }
+                        />
+                      </List.Item>
+                    )}
+                  />
+                </Card>
+              </Col>
                       </Row>
                     </div>
                   </Col>
