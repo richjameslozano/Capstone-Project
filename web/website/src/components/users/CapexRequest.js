@@ -215,13 +215,14 @@ const CapexRequest = () => {
     doc.text(`Total Price: ${totalPrice}`, 10, 28);
     doc.text(`Submission Date: ${submissionDate}`, 10, 36);
   
-    const tableColumn = ["Item Name", "Quantity", "Estimated Cost", "Justification"];
+    const tableColumn = ["Item Name", "Subject", "Brand", "Quantity", "Estimated Cost", "Justification"];
     const tableRows = itemsToPrint.map((item) => [
       item.itemDescription || "-",
+      item.subject || "-",
+      item.brand || "-",
       item.qty || "-",
       item.estimatedCost || "-",
-      item.justification || "-",
-      item.subject || "-"
+      item.justification || "-"
     ]);
   
     autoTable(doc, {
@@ -317,9 +318,10 @@ const CapexRequest = () => {
     const sanitizedValues = {
       itemDescription: sanitizeInput(values.itemDescription),
       subject: sanitizeInput(values.subject),
+      brand: sanitizeInput(values.brand),
       justification: sanitizeInput(values.justification),
       qty: values.qty, // Assume already validated as number >= 1
-      estimatedCost: values.estimatedCost,
+      estimatedCost: values.estimatedCost || 0,
     };
 
     const userId = localStorage.getItem("userId");
@@ -539,6 +541,11 @@ const CapexRequest = () => {
       key: "subject",
     },
     {
+      title: "Brand",
+      dataIndex: "brand",
+      key: "brand",
+    },
+    {
       title: "Qty",
       dataIndex: "qty",
       key: "qty",
@@ -568,7 +575,7 @@ const CapexRequest = () => {
       align: "right",
     },
     {
-      title: "Justification",
+      title: "Reason",
       dataIndex: "justification",
       key: "justification",
     },
@@ -637,7 +644,12 @@ const CapexRequest = () => {
       key: "subject",
     },
     {
-      title: "Justification",
+      title: "Brand",
+      dataIndex: "brand",
+      key: "brand",
+    },
+    {
+      title: "Reason",
       dataIndex: "justification",
       key: "justification",
     },
@@ -650,13 +662,13 @@ const CapexRequest = () => {
       title: "Estimated Cost",
       dataIndex: "estimatedCost",
       key: "estimatedCost",
-      render: (cost) => `₱${cost?.toLocaleString()}`,
+      render: (cost) => cost ? `₱${cost?.toLocaleString()}` : "N/A",
     },
     {
       title: "Total Price",
       dataIndex: "totalPrice",
       key: "totalPrice",
-      render: (price) => `₱${price?.toLocaleString()}`,
+      render: (price) => price ? `₱${price?.toLocaleString()}` : "N/A",
     },
   ];
 
@@ -740,6 +752,7 @@ const CapexRequest = () => {
               initialValues={{
                 qty: 1,
                 estimatedCost: 0,
+                brand: "",
               }}
             >
               <Form.Item
@@ -794,18 +807,24 @@ const CapexRequest = () => {
               </Form.Item>
 
               <Form.Item
+                name="brand"
+                label="Brand"
+                rules={[{ required: true, message: "Please enter the brand!" }]}
+              >
+                <Input placeholder="Enter brand name" />
+              </Form.Item>
+
+              <Form.Item
                 name="estimatedCost"
                 label="Estimated Cost (₱)"
                 validateTrigger="onChange"
                 rules={[
-                  { required: true },
                   {
                     validator: (_, value) => {
-                      if (value === undefined || value === null || value === '') {
-                        return Promise.reject("Please enter estimated cost!");
-                      }
-                      if (typeof value !== 'number' || value < 1) {
-                        return Promise.reject("Estimated cost must be at least ₱1");
+                      if (value !== undefined && value !== null && value !== '') {
+                        if (typeof value !== 'number' || value < 0) {
+                          return Promise.reject("Estimated cost must be a positive number");
+                        }
                       }
                       return Promise.resolve();
                     },
@@ -813,8 +832,8 @@ const CapexRequest = () => {
                 ]}
               >
                 <InputNumber
-                  min={1}
-                  placeholder="Enter estimated cost"
+                  min={0}
+                  placeholder="Enter estimated cost (optional)"
                   style={{ width: '100%' }}
                   controls={false}
                   parser={(value) => value.replace(/[^0-9]/g, '')}
@@ -832,10 +851,10 @@ const CapexRequest = () => {
 
               <Form.Item
                 name="justification"
-                label="Justification"
-                rules={[{ required: true, message: "Please enter a justification!" }]}
+                label="Reason"
+                rules={[{ required: true, message: "Please enter a reason!" }]}
               >
-                <Input.TextArea rows={3} placeholder="Enter justification" />
+                <Input.TextArea rows={3} placeholder="Enter reason" />
               </Form.Item>
             </Form>
           </Modal>
