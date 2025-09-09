@@ -276,15 +276,29 @@ const Inventory = () => {
   // }, []);
 
   //VERSION 2
-  const isConsumable = (cat) =>
+// === TYPE GUARDS ===
+const isConsumable = (cat) =>
   ["chemical", "reagent", "materials"].includes((cat || "").toLowerCase());
 const isDurable = (cat) =>
   ["equipment", "glasswares"].includes((cat || "").toLowerCase());
+
+// === GLOBAL / CATEGORY CAPS (tune as needed) ===
+const MAX_CL_GLOBAL = 10000;
+const CATEGORY_CL_CAPS = {
+  chemical: 5000,
+  reagent: 5000,
+  materials: 10000,
+};
 
 // If you have a fixed annual cycle, set it here (month is 0-based: 5 = June)
 const DEFAULT_RESTOCK_MONTH = 5; // June
 const DEFAULT_RESTOCK_DAY = 1;   // 1st
 
+// === UTILS ===
+const clamp = (v, min, max) => Math.min(Math.max(v ?? 0, min), max);
+const isValidDate = (d) => d instanceof Date && !isNaN(d);
+
+// Fixed-cycle helper (unchanged)
 function nextCycleDateFromFixedToday(today = new Date()) {
   const y = today.getFullYear();
   const candidate = new Date(Date.UTC(y, DEFAULT_RESTOCK_MONTH, DEFAULT_RESTOCK_DAY));
@@ -296,20 +310,23 @@ function nextCycleDateFromFixedToday(today = new Date()) {
   return candidate;
 }
 
+// Safer day-diff (returns a sane default if dates are invalid)
 function daysBetweenUTC(a, b) {
   const MS = 24 * 60 * 60 * 1000;
   const aUTC = new Date(Date.UTC(a.getFullYear(), a.getMonth(), a.getDate()));
   const bUTC = new Date(Date.UTC(b.getFullYear(), b.getMonth(), b.getDate()));
-  return Math.max(1, Math.ceil((bUTC.getTime() - aUTC.getTime()) / MS));
+  const diff = (bUTC.getTime() - aUTC.getTime()) / MS;
+  return Number.isFinite(diff) ? Math.max(1, Math.ceil(diff)) : 30;
 }
 
+// Your buffer function (already constrained). Keep but sanitize again at call site.
 function computeBufferPct(avgDaily, stdDaily) {
   const cv = stdDaily / Math.max(avgDaily, 1e-6);
   const raw = 0.15 + 0.5 * cv; // 15% base + variability up to 50%
   return Math.min(0.5, Math.max(0.15, raw));
 }
 
-// Group last 30 usage docs by day -> avg & std
+// Group last 30 usage docs by day -> avg & std (unchanged)
 async function getDailyUsageStats(db, itemId) {
   const usageQuery = query(
     collection(db, "itemUsage"),
@@ -342,18 +359,36 @@ async function getDailyUsageStats(db, itemId) {
   return { avgDaily: mean, stdDaily: std, daysCount: vals.length };
 }
 
-// For durables (fallback: quantity is what's available)
-function getDurableAvailabilityFields(itemDocData) {
-  const quantity = Number(itemDocData.quantity) || 0;
-  const availabilityThreshold =
-    Number(itemDocData.availabilityThreshold) > 0
-      ? Number(itemDocData.availabilityThreshold)
-      : 1; // default minimum
-  return { availableNow: quantity, availabilityThreshold };
+// Safer wrapper around your (external) resolveNextRestockDate(data)
+function resolveNextRestockDateSafe(data, today = new Date()) {
+  let d = null;
+  try {
+    d = typeof resolveNextRestockDate === "function" ? resolveNextRestockDate(data) : null;
+  } catch {
+    d = null;
+  }
+  if (!isValidDate(d)) d = nextCycleDateFromFixedToday(today);
+  if (!isValidDate(d)) d = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+  if (d < today) d = new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000);
+  return d;
 }
 
-// === Restock request: CONSUMABLES ONLY, dedup by pending, order shortfall (or minOrderQty)
-  useEffect(() => {
+// For durables (fallback: quantity is what's available) — keep 0 as valid
+function getDurableAvailabilityFields(itemDocData) {
+  const quantity = Number(itemDocData.quantity);
+  const safeQty = Number.isFinite(quantity) && quantity >= 0 ? quantity : 0;
+
+  let availabilityThreshold = Number(itemDocData.availabilityThreshold);
+  if (!Number.isFinite(availabilityThreshold)) {
+    availabilityThreshold = 1; // sensible default
+  }
+  // NOTE: if 0 is a valid threshold in your UX, keep it; we do not coerce 0 -> undefined here.
+
+  return { availableNow: safeQty, availabilityThreshold };
+}
+
+// === MAIN EFFECT ===
+useEffect(() => {
   const inventoryRef = collection(db, "inventory");
 
   const unsubscribe = onSnapshot(
@@ -372,7 +407,10 @@ function getDurableAvailabilityFields(itemDocData) {
             const entryDate = data.entryDate || "N/A";
             const expiryDate = data.expiryDate || "N/A";
 
-            const quantity = Number(data.quantity) || 0;
+            // sanitize numeric inputs
+            const quantityRaw = Number(data.quantity);
+            const quantity = Number.isFinite(quantityRaw) && quantityRaw >= 0 ? quantityRaw : 0;
+
             const category = (data.category || "").toLowerCase();
 
             let status = data.status || "";
@@ -380,42 +418,54 @@ function getDurableAvailabilityFields(itemDocData) {
 
             // ===== Compute by type =====
             let avgDailyUsage = 0;
-            let finalCriticalLevel = Number(data.criticalLevel) || 0; // for consumables
-            let availabilityThresholdOut = Number(data.availabilityThreshold) || undefined;
-            let availableNowOut = undefined;
+            let finalCriticalLevel = Number.isFinite(Number(data.criticalLevel))
+              ? Math.max(Number(data.criticalLevel), 0)
+              : 0; // initial/manual
+            let availabilityThresholdOut;
+            let availableNowOut;
 
             if (isConsumable(category) && data.itemId) {
-              // Annual-window critical level
+              // Usage stats
               const { avgDaily, stdDaily } = await getDailyUsageStats(db, data.itemId);
-              avgDailyUsage = avgDaily;
-
+              const safeAvg = Number.isFinite(avgDaily) ? Math.max(avgDaily, 0) : 0;
               const today = new Date();
-              const nextRestockDate = resolveNextRestockDate(data);
-              const daysUntilRestock = daysBetweenUTC(today, nextRestockDate);
-              const bufferPct = computeBufferPct(avgDaily, stdDaily);
+              const nextRestockDate = resolveNextRestockDateSafe(data, today);
 
-              const computedAnnualCL = Math.ceil(
-                avgDaily * daysUntilRestock * (1 + bufferPct)
-              );
+              // horizon with clamp
+              const rawDays = daysBetweenUTC(today, nextRestockDate);
+              const safeDays = clamp(rawDays, 1, 180); // ≤ 6 months horizon
 
-              // Honor a manual CL on the doc if present; pick the higher
-              finalCriticalLevel = Math.max(computedAnnualCL, Number(data.criticalLevel) || 0);
+              // buffer (sanitize and clamp again to [0, 1])
+              let bufferPct = computeBufferPct(safeAvg, stdDaily);
+              bufferPct = Number.isFinite(bufferPct) ? clamp(bufferPct, 0, 1) : 0.2;
 
-              // Runout projection for UI (optional but helpful)
-              const runoutDays = quantity / Math.max(avgDaily, 1e-6);
-              const runoutDate = new Date(
-                today.getTime() + runoutDays * 24 * 60 * 60 * 1000
-              );
+              // compute + cap per category/global
+              const capForCat = CATEGORY_CL_CAPS[category] ?? MAX_CL_GLOBAL;
+              let computedAnnualCL = Math.ceil(safeAvg * safeDays * (1 + bufferPct));
+              computedAnnualCL = clamp(computedAnnualCL, 0, capForCat);
+
+              // final policy: manual wins if sane; else computed
+              const manual = Number(data.criticalLevel);
+              const manualIsSane =
+                Number.isFinite(manual) && manual >= 0 && manual <= capForCat;
+
+              finalCriticalLevel = manualIsSane ? manual : computedAnnualCL;
+
+              // Runout projection (safe divide)
+              const runoutDays = quantity / Math.max(safeAvg, 1e-6);
+              const runoutDate = new Date(today.getTime() + runoutDays * 24 * 60 * 60 * 1000);
               const atRisk = runoutDate < nextRestockDate;
 
-              // Persist computed fields (keeps your UI fast on next load)
+              // Persist computed fields
               batch.update(doc(db, "inventory", docId), {
-                averageDailyUsage: avgDaily,
+                averageDailyUsage: safeAvg,
                 criticalLevel: finalCriticalLevel,               // reuse your existing field
                 nextRestockDate: nextRestockDate.toISOString(),  // optional; now per-item
                 runoutDate: runoutDate.toISOString(),
                 atRisk,
               });
+
+              avgDailyUsage = safeAvg; // for UI return
             }
 
             if (isDurable(category)) {
@@ -451,35 +501,14 @@ function getDurableAvailabilityFields(itemDocData) {
               batch.update(doc(db, "inventory", docId), { status: newStatus });
             }
 
-            // ===== Triggers =====
+            // ===== (OPTIONAL) Triggers =====
             // if (isConsumable(category) && quantity <= finalCriticalLevel) {
             //   const shortfall = Math.max(
             //     finalCriticalLevel - quantity,
             //     Number(data.minOrderQty) || 1
             //   );
-
-            //   await createRestockRequest({
-            //     ...data,
-            //     criticalLevel: finalCriticalLevel,
-            //     shortfall,
-            //   });
+            //   await createRestockRequest({ ...data, criticalLevel: finalCriticalLevel, shortfall });
             // }
-
-            // ===== SYNC TO LABROOM ITEMS (your original logic) =====
-            const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
-            for (const roomDoc of labRoomsSnapshot.docs) {
-              const roomId = roomDoc.id;
-              const itemsRef = collection(db, `labRoom/${roomId}/items`);
-              const itemsSnap = await getDocs(itemsRef);
-
-              itemsSnap.forEach((itemDoc) => {
-                const itemData = itemDoc.data();
-                if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
-                  const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
-                  batch.update(labItemRef, { status: newStatus });
-                }
-              });
-            }
 
             return {
               docId,
@@ -520,6 +549,7 @@ function getDurableAvailabilityFields(itemDocData) {
 
   return () => unsubscribe();
 }, []);
+//revised
 
   useEffect(() => {
     const departmentsCollection = collection(db, "departments");
