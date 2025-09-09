@@ -393,7 +393,6 @@ const formatCondition = (cond) => {
                 <Text style={styles.cardValueNum}>{(item.status || 'N/A').toUpperCase()}</Text>
                 </View>
 
-
                 {["Chemical", "Reagent"].includes(item.category) && item.unit && (
                   <View style={styles.row}>
                     <Text style={styles.cardLabel}>Unit: </Text>
