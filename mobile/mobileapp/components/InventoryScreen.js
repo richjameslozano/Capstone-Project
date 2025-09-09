@@ -1555,6 +1555,7 @@ import { Calendar } from 'react-native-calendars';
 import { useRequestMetadata } from './contexts/RequestMetadataContext';
 import Header from './Header';
 import IOSCompatibleDropdown from './customs/IOSCompatibleDropdown';
+import WarningModal from './customs/WarningModal';
 
 import Icon2 from 'react-native-vector-icons/Ionicons'; 
 import { useFocusEffect, useIsFocused } from '@react-navigation/native';
@@ -1590,6 +1591,8 @@ export default function InventoryScreen({ navigation }) {
   const [room, setRoom] = useState('');
   // Removed selectedUsageTypeInput state since we're using metadata now 
   const [usageTypeOtherInput, setUsageTypeOtherInput] = useState('')
+  const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
+  const [daysDifference, setDaysDifference] = useState(0);
   const today = new Date().toISOString().split('T')[0];
   const { metadata, setMetadata } = useRequestMetadata();
   const [isComplete, setIsComplete] = useState(false); 
@@ -2167,6 +2170,38 @@ export default function InventoryScreen({ navigation }) {
     return conflictInRequests || conflictInCatalog;
   };
 
+  // Function to check if selected date is less than 7 days from today
+  const checkDateWarning = (selectedDate) => {
+    if (!selectedDate) return false;
+    
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    const timeDiff = selected.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    console.log('Date warning check:', {
+      selectedDate,
+      today: today.toISOString().split('T')[0],
+      selected: selected.toISOString().split('T')[0],
+      daysDiff,
+      shouldWarn: daysDiff < 7
+    });
+    
+    return daysDiff < 7;
+  };
+
+  // Function to get days difference
+  const getDaysDifference = (selectedDate) => {
+    if (!selectedDate) return 0;
+    
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    const timeDiff = selected.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    return daysDiff;
+  };
+
   const handleNext = async () => {
     setHandleNextLoading(true);
     
@@ -2444,6 +2479,14 @@ export default function InventoryScreen({ navigation }) {
                 setSelectedDate(day.dateString);
                 setCalendarVisible(false);
                 setMetadata((prev) => ({ ...prev, dateRequired: day.dateString }));
+                
+                // Check for 7-day warning immediately when date is selected
+                if (day.dateString && checkDateWarning(day.dateString)) {
+                  const daysDiff = getDaysDifference(day.dateString);
+                  setDaysDifference(daysDiff);
+                  console.log('Showing warning modal for date:', day.dateString, 'days difference:', daysDiff);
+                  setIsWarningModalVisible(true);
+                }
               }}
               markedDates={{
                 [selectedDate]: { selected: true, selectedColor: '#00796B' }
@@ -3078,6 +3121,23 @@ export default function InventoryScreen({ navigation }) {
           </View>
         </View>
       </Modal>
+
+      {/* Warning Modal for dates less than 7 days */}
+      <WarningModal
+        visible={isWarningModalVisible}
+        onOk={() => {
+          setIsWarningModalVisible(false);
+          // User chose to continue anyway, no additional action needed
+        }}
+        onCancel={() => {
+          setIsWarningModalVisible(false);
+          // User chose to change date, reset the selected date
+          setSelectedDate('');
+          setMetadata((prev) => ({ ...prev, dateRequired: '' }));
+        }}
+        dateRequired={selectedDate}
+        daysDifference={daysDifference}
+      />
     </View>
   );
 }
