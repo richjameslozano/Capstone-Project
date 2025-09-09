@@ -66,9 +66,9 @@ const RestockRequest = () => {
       }));
 
       const sorted = [...requests].sort((a, b) => {
-        const dateA = a.created_at?.toDate?.() || new Date(0);
-        const dateB = b.created_at?.toDate?.() || new Date(0);
-        return dateB - dateA;
+        const nameA = (a.item_name || '').toLowerCase();
+        const nameB = (b.item_name || '').toLowerCase();
+        return nameA.localeCompare(nameB);
       });
       setRestockRequests(sorted);
       setLoading(false);
@@ -428,6 +428,10 @@ const RestockRequest = () => {
               value={filterStatus === "" ? undefined : filterStatus}
               onChange={(value) => setFilterStatus(value)}
               allowClear
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
             >
               <Option value="">All</Option>
               <Option value="pending">Pending</Option>
@@ -444,6 +448,10 @@ const RestockRequest = () => {
               value={filterDepartment === "" ? undefined : filterDepartment}
               onChange={(value) => setFilterDepartment(value)}
               allowClear
+              showSearch
+              filterOption={(input, option) =>
+                option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
             >
               <Option value="">All</Option>
               {departmentsAll.map((dept) => (
