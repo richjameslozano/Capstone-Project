@@ -207,6 +207,12 @@ const BorrowCatalog = () => {
       key: "course",
     },
     {
+      title: "Date Requested",
+      dataIndex: "timestamp",
+      key: "timestamp",
+      render: (timestamp) => formatDate(timestamp),
+    },
+    {
       title: "Date Required",
       dataIndex: "dateRequired",
       key: "dateRequired",
