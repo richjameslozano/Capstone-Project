@@ -511,7 +511,7 @@ const formatCondition = (cond) => {
                 </Text>
 
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Lab Room:</Text> {selectedItem.labRoom || 'N/A'}</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>Status:</Text> {selectedItem.status || 'N/A'}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Status:</Text> {(selectedItem.status || 'N/A').toUpperCase()}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Usage Type:</Text> {selectedItem.usageType || 'N/A'}</Text> */}
 
                 <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>

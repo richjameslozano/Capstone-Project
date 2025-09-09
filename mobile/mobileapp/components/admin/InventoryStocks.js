@@ -388,6 +388,12 @@ const formatCondition = (cond) => {
                 <Text style={styles.cardValueNum}>{item.type}</Text>
                 </View>
 
+                <View style={styles.row}>
+               <Text style={styles.cardLabel}>Status: </Text>
+                <Text style={styles.cardValueNum}>{(item.status || 'N/A').toUpperCase()}</Text>
+                </View>
+
+
                 {["Chemical", "Reagent"].includes(item.category) && item.unit && (
                   <View style={styles.row}>
                     <Text style={styles.cardLabel}>Unit: </Text>
@@ -494,7 +500,7 @@ const formatCondition = (cond) => {
                 </Text>
 
                 <Text style={styles.modalText}><Text style={styles.modalLabel}>Lab Room:</Text> {selectedItem.labRoom || 'N/A'}</Text>
-                <Text style={styles.modalText}><Text style={styles.modalLabel}>Status:</Text> {selectedItem.status || 'N/A'}</Text>
+                <Text style={styles.modalText}><Text style={styles.modalLabel}>Status:</Text> {(selectedItem.status || 'N/A').toUpperCase()}</Text>
                 {/* <Text style={styles.modalText}><Text style={styles.modalLabel}>Usage Type:</Text> {selectedItem.usageType || 'N/A'}</Text> */}
 
                 <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>

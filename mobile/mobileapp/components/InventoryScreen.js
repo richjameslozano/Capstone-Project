@@ -480,7 +480,7 @@
 //             <View style={styles.itemDetails}>
 //               <Text style={styles.itemName}>{item.itemName}</Text>
 //               <Text style={styles.itemType}>Quantity: {item.quantity}</Text>
-//               <Text style={styles.itemType}>Status: {item.status}</Text>
+//               <Text style={styles.itemType}>Status: {item.status?.toUpperCase()}</Text>
 //             </View>
   
 //             <TouchableOpacity
@@ -1303,7 +1303,7 @@
 //                       : selectedItem?.condition || 'N/A'
 //                   }
 //                 </Text>
-//                 <Text style={styles.itemType}>Status: {selectedItem?.status}</Text>
+//                 <Text style={styles.itemType}>Status: {selectedItem?.status?.toUpperCase()}</Text>
 //                 <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text>
 //                 {["Chemical", "Reagent"].includes(selectedItem?.category) && selectedItem?.unit && (
 //                   <Text style={styles.itemType}>
@@ -2023,7 +2023,7 @@ export default function InventoryScreen({ navigation }) {
             <View style={styles.itemDetails}>
               <Text style={styles.itemName}>{item.itemName}</Text>
               <Text style={styles.itemType}>Quantity: {item.quantity}</Text>
-              <Text style={styles.itemType}>Status: {item.status}</Text>
+              <Text style={styles.itemType}>Status: {item.status?.toUpperCase()}</Text>
             </View>
   
             <TouchableOpacity
@@ -2846,7 +2846,7 @@ export default function InventoryScreen({ navigation }) {
                       : selectedItem?.condition || 'N/A'
                   }
                 </Text>
-                <Text style={styles.itemType}>Status: {selectedItem?.status}</Text>
+                <Text style={styles.itemType}>Status: {selectedItem?.status?.toUpperCase()}</Text>
                 <Text style={styles.itemType}>Available Quantity: {selectedItem?.quantity}</Text>
                 {["Chemical", "Reagent"].includes(selectedItem?.category) && selectedItem?.unit && (
                   <Text style={styles.itemType}>
