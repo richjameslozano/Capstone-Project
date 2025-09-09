@@ -143,6 +143,25 @@ const BorrowCatalogScreen = () => {
     return name.replace(/\b\w/g, char => char.toUpperCase());
   };
 
+  const formatDateRequested = (timestamp) => {
+    if (!timestamp) return "N/A";
+    
+    try {
+      // Convert Firestore timestamp to JavaScript Date
+      const date = new Date(timestamp.seconds * 1000 + timestamp.nanoseconds / 1000000);
+      
+      // Format as MM/DD/YYYY
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const day = String(date.getDate()).padStart(2, '0');
+      const year = date.getFullYear();
+      
+      return `${month}/${day}/${year}`;
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return "N/A";
+    }
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case "Borrowed":
@@ -175,16 +194,14 @@ const BorrowCatalogScreen = () => {
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => handleViewDetails(item)} style={styles.card}>
       <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'}}>
-      <Text style={styles.requestor}>{capitalizeName(item.requestor)}</Text>
-      <Text style={styles.dateRequired}>{item.dateRequired}</Text>
+        <Text style={styles.requestor}>{capitalizeName(item.requestor)}</Text>
+        <Text style={styles.dateRequired}>Date Required: {item.dateRequired}</Text>
       </View>
-      <Text style={styles.description}>Room {item.room}</Text>
       
-      {/* <Text
-        style={[styles.status, item.status === "Approved" ? styles.approved : styles.pending]}
-      >
-        {item.status}
-      </Text> */}
+      <View style={{flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4}}>
+        <Text style={styles.description}>Room {item.room}</Text>
+        <Text style={styles.dateRequested}>Requested: {formatDateRequested(item.timestamp)}</Text>
+      </View>
 
       <Text
         style={[

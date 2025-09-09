@@ -63,6 +63,13 @@ position: 'absolute',
     fontWeight: 300,
   },
 
+  dateRequested: {
+    fontSize: 12,
+    color: "#666",
+    fontWeight: 400,
+    fontStyle: 'italic',
+  },
+
   status: {
     marginTop: 6,
     fontWeight: "bold",
