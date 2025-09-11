@@ -982,7 +982,19 @@ const ReturnItems = () => {
           title={`Specify issues for: ${currentIssueItem?.itemDescription || ""}`}
           visible={issueModalVisible}
           zIndex={1030}
-          onCancel={() => setIssueModalVisible(false)}
+          onCancel={() => {
+            // Uncheck the checkbox when cancel is clicked
+            if (currentIssueItem && selectedRequest) {
+              const baseKey = `${currentIssueItem.itemId}_${selectedRequest.requisitionId}`;
+              const checkboxKey = `${baseKey}_issue`;
+              
+              setGlasswareIssues((prev) => ({
+                ...prev,
+                [checkboxKey]: false,
+              }));
+            }
+            setIssueModalVisible(false);
+          }}
           onOk={() => {
             if (!currentIssueItem || !selectedRequest) return;
 
