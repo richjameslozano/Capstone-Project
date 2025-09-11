@@ -2114,73 +2114,48 @@ const printPdf = async () => {
       });
 
       if (response.status === 200) {
-        // If it's a condition-tracked item, we need to manually update the condition
+        // Backend already handles condition updates for condition-tracked items
+        // No need to manually update condition here as it's already done in the backend
+
+        setNotificationMessage("Item updated successfully!");
+        setIsNotificationVisible(true);
+
+        // Update local state - backend already updated the quantities, so we just need to refresh from backend
+        // For condition-tracked items, we need to get the updated data from the backend
+        let updatedItem = {
+          ...editingItem,
+          ...(expiryDate && { expiryDate }),
+        };
+
+        // For condition-tracked items, get the updated condition from the backend
         if (isConditionTracked) {
           try {
-            // Get the current inventory document
             const inventoryQuery = query(collection(db, "inventory"), where("itemId", "==", editingItem.itemId));
             const inventorySnapshot = await getDocs(inventoryQuery);
             
             if (!inventorySnapshot.empty) {
               const inventoryDoc = inventorySnapshot.docs[0];
-              const inventoryRef = doc(db, "inventory", inventoryDoc.id);
               const currentData = inventoryDoc.data();
               
-              // Update the condition to add the new quantity to Good condition
-              const currentCondition = currentData.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
-              const updatedCondition = {
-                ...currentCondition,
-                Good: currentCondition.Good + addedQuantity,
+              updatedItem = {
+                ...updatedItem,
+                quantity: currentData.quantity,
+                condition: currentData.condition,
               };
-              
-              await updateDoc(inventoryRef, {
-                condition: updatedCondition,
-              });
-              
-              // Also update labRoom items if they exist
-              if (currentData.labRoom) {
-                const labRoomQuery = query(collection(db, "labRoom"), where("roomNumber", "==", currentData.labRoom));
-                const labRoomSnapshot = await getDocs(labRoomQuery);
-                
-                if (!labRoomSnapshot.empty) {
-                  const labRoomDoc = labRoomSnapshot.docs[0];
-                  const labRoomItemsRef = collection(db, "labRoom", labRoomDoc.id, "items");
-                  const labItemQuery = query(labRoomItemsRef, where("itemId", "==", editingItem.itemId));
-                  const labItemSnapshot = await getDocs(labItemQuery);
-                  
-                  if (!labItemSnapshot.empty) {
-                    const labItemDoc = labItemSnapshot.docs[0];
-                    const labItemRef = doc(db, "labRoom", labRoomDoc.id, "items", labItemDoc.id);
-                    await updateDoc(labItemRef, {
-                      condition: updatedCondition,
-                    });
-                  }
-                }
-              }
             }
-          } catch (conditionError) {
-            console.error("Error updating condition:", conditionError);
-            // Don't fail the entire operation if condition update fails
+          } catch (error) {
+            console.error("Error fetching updated data:", error);
+            // Fallback to local calculation if backend fetch fails
+            updatedItem.quantity = editingItem.quantity + addedQuantity;
+            const currentCondition = editingItem.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
+            updatedItem.condition = {
+              ...currentCondition,
+              Good: currentCondition.Good + addedQuantity,
+            };
           }
-        }
-
-        setNotificationMessage("Item updated successfully!");
-        setIsNotificationVisible(true);
-
-        // Update local state with proper condition handling
-        const updatedItem = {
-          ...editingItem,
-          quantity: editingItem.quantity + addedQuantity,
-          ...(expiryDate && { expiryDate }),
-        };
-
-        // For condition-tracked items, update the condition breakdown
-        if (isConditionTracked) {
-          const currentCondition = editingItem.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
-          updatedItem.condition = {
-            ...currentCondition,
-            Good: currentCondition.Good + addedQuantity, // Add new quantity to Good condition
-          };
+        } else {
+          // For non-condition tracked items, just add the quantity locally
+          updatedItem.quantity = editingItem.quantity + addedQuantity;
         }
 
         setDataSource((prev) =>
@@ -3447,7 +3422,7 @@ useEffect(() => {
                             editItem(selectedRow, true);
                           }}
                         >
-                          Update Stock
+                          Add Quantity
                         </Button>
                       </div>
 
@@ -3527,29 +3502,31 @@ useEffect(() => {
             visible={isEditModalVisible}
             onCancel={() => setIsEditModalVisible(false)}
             onOk={() => editForm.submit()}
+            confirmLoading={updateStockLoading}
             zIndex={1020}
           >
-            <Form layout="vertical" 
-              form={editForm} 
-              onFinish={updateItem}
-              onValuesChange={(changedValues, allValues) => {
-                if ('quantity' in changedValues) {
-                  const newQuantity = parseInt(changedValues.quantity || 0);
+            <Spin spinning={updateStockLoading} tip="Updating inventory...">
+              <Form layout="vertical" 
+                form={editForm} 
+                onFinish={updateItem}
+                onValuesChange={(changedValues, allValues) => {
+                  if ('quantity' in changedValues) {
+                    const newQuantity = parseInt(changedValues.quantity || 0);
 
-                  // Delay to ensure it runs after React updates internal state
-                  setTimeout(() => {
-                    editForm.setFieldsValue({
-                      condition: {
-                        Good: newQuantity,
-                        Defect: 0,
-                        Damage: 0,
-                        Lost: 0,
-                      },
-                    });
-                  }, 0);
-                }
-              }}
-            >
+                    // Delay to ensure it runs after React updates internal state
+                    setTimeout(() => {
+                      editForm.setFieldsValue({
+                        condition: {
+                          Good: newQuantity,
+                          Defect: 0,
+                          Damage: 0,
+                          Lost: 0,
+                        },
+                      });
+                    }, 0);
+                  }
+                }}
+              >
               <Row gutter={16}>
                 {/* <Col span={12}>
                   <Form.Item
@@ -3628,6 +3605,7 @@ useEffect(() => {
                 >
                   <Input
                     placeholder="Enter quantity"
+                    disabled={updateStockLoading}
                     onInput={(e) => {
                       e.target.value = e.target.value.replace(/\D/g, "");
                     }}
@@ -3643,7 +3621,7 @@ useEffect(() => {
                             name="expiryDate"
                             rules={[{ required: true, message: "Please select expiry date" }]}
                           >
-                            <DatePicker style={{ width: "100%" }} />
+                            <DatePicker style={{ width: "100%" }} disabled={updateStockLoading} />
                         </Form.Item>
                       </Col>
                     </Row>
@@ -3660,7 +3638,8 @@ useEffect(() => {
                   </Col>
                 </Row>
               )}
-            </Form>
+              </Form>
+            </Spin>
           </Modal>
 
           <Modal
