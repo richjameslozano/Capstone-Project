@@ -57,6 +57,9 @@ const Inventory = () => {
   const [departmentsAll, setDepartmentsAll] = useState([]);
   const [filterDepartment, setFilterDepartment] = useState(null);
   const [loading, setLoading] = useState(true); // default: true
+  const [updateStockLoading, setUpdateStockLoading] = useState(false);
+  const [editItemLoading, setEditItemLoading] = useState(false);
+  const [restockRequestLoading, setRestockRequestLoading] = useState(false);
   const db = getFirestore();
   const [isRestockRequestModalVisible, setIsRestockRequestModalVisible] = useState(false);
   const [restockForm] = Form.useForm();
@@ -757,6 +760,7 @@ const handleRestockRequest = (item) => {
 
 // Function to handle form submission
 const handleRestockSubmit = async (values) => {
+  setRestockRequestLoading(true);
   try {
     // Check if the restock request already exists in the collection
     const restockRequestQuery = query(
@@ -823,6 +827,8 @@ const handleRestockSubmit = async (values) => {
     console.error("Error submitting restock request:", error);
     setNotificationMessage("Failed to submit restock request. Please try again.");
     setIsNotificationVisible(true);
+  } finally {
+    setRestockRequestLoading(false);
   }
 };
 
@@ -1282,11 +1288,13 @@ function resolveNextRestockDate(data) {
   //version 2 (revised critical)
 
   const handleFullUpdate = async (values) => {
+  setEditItemLoading(true);
   try {
     if (!editingItem || !editingItem.docId) {
       console.error("❌ No item selected or docId missing.");
       setNotificationMessage("Item selection error.");
       setIsNotificationVisible(true);
+      setEditItemLoading(false);
       return;
     }
 
@@ -1425,6 +1433,8 @@ function resolveNextRestockDate(data) {
     console.error("Error in handleFullUpdate:", error);
     setNotificationMessage("❌ Error updating item. Check console.");
     setIsNotificationVisible(true);
+  } finally {
+    setEditItemLoading(false);
   }
 };
 
@@ -2067,12 +2077,14 @@ const printPdf = async () => {
 
 // FRONTEND-ONLY SOLUTION
  const updateItem = async (values) => {
+    setUpdateStockLoading(true);
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName") || "User";
 
     if (!editingItem || !editingItem.itemId) {
       setNotificationMessage("Failed Editing Item");
       setIsNotificationVisible(true);
+      setUpdateStockLoading(false);
       return;
     }
 
@@ -2188,6 +2200,8 @@ const printPdf = async () => {
       console.error("Backend update failed:", err);
       setNotificationMessage("Failed to update Item!");
       setIsNotificationVisible(true);
+    } finally {
+      setUpdateStockLoading(false);
     }
   };
 
@@ -2880,7 +2894,7 @@ useEffect(() => {
         </Row>
 
         <Form.Item style={{ textAlign: "right" }}>
-          <Button type="primary" htmlType="submit">
+          <Button type="primary" htmlType="submit" loading={loading}>
             Add to Inventory
           </Button>
         </Form.Item>
@@ -3426,6 +3440,7 @@ useEffect(() => {
                         <Button
                           type="link"
                           icon={<EditOutlined />}
+                          loading={updateStockLoading}
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedRow(selectedRow);
@@ -3438,7 +3453,7 @@ useEffect(() => {
 
                       {/* Bottom Row: Edit Item + Request Restock */}
                       <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
-                        <Button type="primary" onClick={() => openFullEditModal(selectedRow)}>
+                        <Button type="primary" loading={editItemLoading} onClick={() => openFullEditModal(selectedRow)}>
                           Edit Item
                         </Button>
 
@@ -3446,6 +3461,7 @@ useEffect(() => {
                           <Button
                             type="primary"
                             icon={<PlusOutlined />}
+                            loading={restockRequestLoading}
                             onClick={() => handleRestockRequest(selectedRow)}
                           >
                             Request Restock
@@ -3698,7 +3714,7 @@ useEffect(() => {
 
               {/* Submit button inside the modal */}
               <Form.Item style={{ textAlign: "right" }}>
-                <Button type="primary" htmlType="submit">
+                <Button type="primary" htmlType="submit" loading={restockRequestLoading}>
                   Submit Restock Request
                 </Button>
               </Form.Item>
