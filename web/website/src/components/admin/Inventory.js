@@ -1321,7 +1321,7 @@ function resolveNextRestockDate(data) {
       itemName: sanitizedItemName,
       itemDetails: sanitizedItemDetails,
       category: cat,
-      department: values.department,
+      department: "Medical Technology",
       labRoom: values.labRoom,
       shelves: values.shelves,
       row: values.row,
@@ -1766,7 +1766,7 @@ const printPdf = async () => {
     setLoading(true); // Start loading
     try {
       // Validate local inputs
-      if (!itemName || !values.department || !itemDetails) {
+      if (!itemName || !itemDetails) {
         alert("Please fill up the form!");
         return;
       }
@@ -2736,7 +2736,7 @@ useEffect(() => {
             </Form.Item>
           </Col>
 
-          <Col xs={24} md={8}>
+          {/* <Col xs={24} md={8}>
             <Form.Item
               name="department"
               label="Department"
@@ -2755,7 +2755,7 @@ useEffect(() => {
                 ))}
               </Select>
             </Form.Item>  
-          </Col>
+          </Col> */}
 
           <Col xs={24} md={8}>
             <Form.Item
