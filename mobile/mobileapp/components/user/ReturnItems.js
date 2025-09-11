@@ -1129,7 +1129,17 @@ const ReturnItems = () => {
 
                   <View style={{ flexDirection: 'row', justifyContent: 'flex-end', marginTop: 10 }}>
                     <TouchableOpacity
-                      onPress={() => setIssueModalVisible(false)}
+                      onPress={() => {
+                        // Uncheck the checkbox when cancel is clicked
+                        if (currentIssueItem) {
+                          const returnKey = currentIssueItem.itemIdFromInventory;
+                          setIssuedStatus(prev => ({
+                            ...prev,
+                            [returnKey]: false,
+                          }));
+                        }
+                        setIssueModalVisible(false);
+                      }}
                       style={[styles.dialogButton, { marginRight: 10 }]}
                     >
                       <Text style={styles.dialogButtonText}>Cancel</Text>
