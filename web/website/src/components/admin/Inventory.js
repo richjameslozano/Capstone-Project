@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import ReactDOM from "react-dom/client";
 import {Layout,Table,Input,Button,Select,Form,Row,Col,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
@@ -2200,6 +2201,62 @@ useEffect(() => {
     });
   };
 
+  const downloadQRCode = (record) => {
+    if (!record.qrCode) {
+      console.error('No QR code available for this item');
+      return;
+    }
+
+    // Create a temporary canvas to generate the QR code image
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    canvas.width = 300;
+    canvas.height = 300;
+
+    // Create a temporary QR code element
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '-9999px';
+    document.body.appendChild(tempDiv);
+
+    // Create QR code using QRCodeCanvas
+    const QRCode = require('qrcode.react').QRCodeCanvas;
+    const qrElement = React.createElement(QRCode, {
+      value: record.qrCode,
+      size: 300,
+      level: 'M'
+    });
+
+    // Render QR code to temporary div
+    const root = ReactDOM.createRoot(tempDiv);
+    root.render(qrElement);
+
+    // Wait for QR code to render, then capture it
+    setTimeout(() => {
+      const qrCanvas = tempDiv.querySelector('canvas');
+      if (qrCanvas) {
+        // Draw QR code to our canvas
+        ctx.drawImage(qrCanvas, 0, 0, 300, 300);
+        
+        // Convert canvas to blob and download
+        canvas.toBlob((blob) => {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = `QRCode_${record.itemName || record.itemId}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      }
+      
+      // Clean up
+      document.body.removeChild(tempDiv);
+    }, 100);
+  };
+
   const handleDelete = (record) => {
     setItemToDelete(record);
     setDeleteModalVisible(true);
@@ -3420,6 +3477,19 @@ useEffect(() => {
                           </Button>
                         )}
                       </div>
+
+                      {/* QR Code Actions Row */}
+                      {selectedRow.qrCode && (
+                        <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                          <Button
+                            type="default"
+                            icon={<DownloadOutlined />}
+                            onClick={() => downloadQRCode(selectedRow)}
+                          >
+                            Download QR Code
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                   </div>
