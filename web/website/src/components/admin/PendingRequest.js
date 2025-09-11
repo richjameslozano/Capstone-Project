@@ -41,6 +41,7 @@ const PendingRequest = () => {
   const [approveLoading, setApproveLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
   const [multiRejectLoading, setMultiRejectLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'pastDue'
 
 const sanitizeInput = (input) =>
   input
@@ -4314,7 +4315,30 @@ const getFilteredRequests = () => {
 // const filteredRequests = getFilteredRequests();
 // Filter requests based on search term
 
-const categorizedRequests = groupByDueDateCategory(getFilteredRequests());
+// Helper function to check if a request is past due
+const isPastDue = (request) => {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  yesterday.setHours(23, 59, 59, 999); // End of yesterday
+  const dueDate = new Date(request.dateRequired);
+  return dueDate <= yesterday;
+};
+
+// Filter requests based on active tab
+const getTabFilteredRequests = () => {
+  const filtered = getFilteredRequests();
+  
+  if (activeTab === 'pastDue') {
+    // Show only past due requests
+    return filtered.filter(isPastDue);
+  } else {
+    // Show all requests EXCEPT past due ones
+    return filtered.filter(request => !isPastDue(request));
+  }
+};
+
+const categorizedRequests = groupByDueDateCategory(getTabFilteredRequests());
 
 useEffect(() => {
   // Timeout ensures layout finishes rendering before measuring scrollHeight
@@ -4331,16 +4355,66 @@ useEffect(() => {
   }, 50); // Adjust timeout if needed (50ms usually works well)
 
   return () => clearTimeout(timeout);
-}, [categorizedRequests, collapsedGroups]);
+}, [categorizedRequests, collapsedGroups, activeTab]);
 
 
   const usageTypes = ['All','Laboratory Experiment', 'Research', 'Community Extension', 'Others'];
   
-  const filteredData = getFilteredRequests();
+  const filteredData = getTabFilteredRequests();
+  
+  // Get count of past due requests for tab indicator
+  const getPastDueCount = () => {
+    const allFiltered = getFilteredRequests();
+    return allFiltered.filter(isPastDue).length;
+  };
+
+  // Get count of non-past due requests for All Requests tab
+  const getAllRequestsCount = () => {
+    const allFiltered = getFilteredRequests();
+    return allFiltered.filter(request => !isPastDue(request)).length;
+  };
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout style={{padding: 20}}>
+
+            {/* Tab Navigation */}
+            <div className="tab-navigation" style={{ display: 'flex', gap: 0, marginBottom: 20, backgroundColor: 'white', borderRadius: 10, padding: 5 }}>
+              <button
+                onClick={() => setActiveTab('all')}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  borderRadius: 8,
+                  border: 'none',
+                  backgroundColor: activeTab === 'all' ? '#395a7f' : 'transparent',
+                  color: activeTab === 'all' ? 'white' : '#395a7f',
+                  fontWeight: activeTab === 'all' ? 'bold' : 'normal',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  fontSize: 16
+                }}
+              >
+                All Requests ({getAllRequestsCount()})
+              </button>
+              <button
+                onClick={() => setActiveTab('pastDue')}
+                style={{
+                  flex: 1,
+                  padding: '12px 24px',
+                  borderRadius: 8,
+                  border: 'none',
+                  backgroundColor: activeTab === 'pastDue' ? '#395a7f' : 'transparent',
+                  color: activeTab === 'pastDue' ? 'white' : '#395a7f',
+                  fontWeight: activeTab === 'pastDue' ? 'bold' : 'normal',
+                  transition: 'all 0.3s ease',
+                  cursor: 'pointer',
+                  fontSize: 16
+                }}
+              >
+                Past Due Requests ({getPastDueCount()})
+              </button>
+            </div>
 
             <div className="filter-section" style={{ display: 'flex', gap: 10, padding: 30, borderRadius: 10, backgroundColor: 'white', marginBottom: 20 }}>
               <div className="filter-buttons" style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
