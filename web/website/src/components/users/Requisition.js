@@ -4,12 +4,13 @@ import { DeleteOutlined, PlusSquareFilled, FormOutlined} from "@ant-design/icons
 import moment from "moment";
 import dayjs from 'dayjs';
 import { useLocation, useNavigate } from "react-router-dom";
-import { collection, addDoc, Timestamp, getDocs, updateDoc, doc, deleteDoc,setDoc, getDoc, serverTimestamp, onSnapshot, collectionGroup,query,where } from "firebase/firestore";
+import { collection, addDoc, Timestamp, getDocs, updateDoc, doc, deleteDoc,setDoc, getDoc, serverTimestamp, onSnapshot, collectionGroup,query,where, orderBy } from "firebase/firestore";
 import { getFunctions, httpsCallable } from "firebase/functions";
 import { getAuth } from 'firebase/auth';
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/Requisition.css";
 import SuccessModal from "../customs/SuccessModal";
+import TodayRequestModal from "../customs/TodayRequestModal";
 import PoliciesModal from "../Policies";
 import FinalizeRequestModal from "../customs/FinalizeRequestModal";
 import NotificationModal from "../customs/NotificationModal";
@@ -30,6 +31,8 @@ const Requisition = () => {
   const [timeTo, setTimeTo] = useState(null);
   const [isFinalizeVisible, setIsFinalizeVisible] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [showTodayRequestModal, setShowTodayRequestModal] = useState(false);
+  const [todayRequestCount, setTodayRequestCount] = useState(0);
   const [programError, setProgramError] = useState(false);
   const [courseError, setCourseError] = useState(false);
   const [usageError, setUsageError] = useState(false);
@@ -513,6 +516,81 @@ const Requisition = () => {
 
   }, [location.state, navigate]);  
 
+  /* ---------- Check for today's requests ---------- */
+  useEffect(() => {
+    const checkTodaysRequests = async () => {
+      const userId = localStorage.getItem("userId");
+      console.log("User ID from localStorage:", userId);
+      if (!userId) {
+        console.log("No userId found in localStorage");
+        return;
+      }
+
+      try {
+        // Get start and end of today for timestamp comparison
+        const today = new Date();
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+        
+        // Query user's approved requests from historylog collection
+        const historyLogRef = collection(db, `accounts/${userId}/historylog`);
+        const q = query(historyLogRef, where("action", "==", "Request Approved"));
+        const querySnapshot = await getDocs(q);
+        
+        console.log("Total approved requests found in historylog:", querySnapshot.size);
+        console.log("Start of day:", startOfDay);
+        console.log("End of day:", endOfDay);
+        
+        let todayCount = 0;
+        
+        // Check approved requests from historylog
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log("HistoryLog - Request timestamp:", data.timestamp);
+          if (data.timestamp) {
+            // Handle both Firestore Timestamp and regular Date objects
+            let requestDate;
+            if (data.timestamp.toDate) {
+              // Firestore Timestamp
+              requestDate = data.timestamp.toDate();
+            } else if (data.timestamp.seconds) {
+              // Firestore Timestamp with seconds property
+              requestDate = new Date(data.timestamp.seconds * 1000);
+            } else {
+              // Regular Date object
+              requestDate = new Date(data.timestamp);
+            }
+            
+            console.log("HistoryLog - Parsed request date:", requestDate);
+            console.log("HistoryLog - Is today?", requestDate >= startOfDay && requestDate < endOfDay);
+            
+            if (requestDate >= startOfDay && requestDate < endOfDay) {
+              todayCount++;
+            }
+          }
+        });
+        
+        setTodayRequestCount(todayCount);
+        
+        console.log("Today's request count:", todayCount);
+        console.log("Login success state:", location.state?.loginSuccess);
+        
+        // Show modal if user has made requests today and just logged in
+        if (todayCount > 0 && location.state?.loginSuccess) {
+          console.log("Showing today's request modal");
+          // Delay the modal to show after login success modal
+          setTimeout(() => {
+            setShowTodayRequestModal(true);
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Error checking today's requests:", error);
+      }
+    };
+
+    checkTodaysRequests();
+  }, [location.state?.loginSuccess]);
+
     // useEffect(() => {
     //   const departmentsCollection = collection(db, "departments");
     //   const unsubscribe = onSnapshot(
@@ -557,6 +635,8 @@ const Requisition = () => {
     setShowModal(false);         // Close success modal
     setShowPolicies(true);       // Open policies modal next
   };
+
+  const closeTodayRequestModal = () => setShowTodayRequestModal(false);
   
   const closePolicies = () => {
     setShowPolicies(false);      // Close policies modal
@@ -2969,6 +3049,11 @@ const Requisition = () => {
         />
 
         <SuccessModal isVisible={showModal} onClose={closeModal} />
+        <TodayRequestModal 
+          isVisible={showTodayRequestModal} 
+          onClose={closeTodayRequestModal} 
+          requestCount={todayRequestCount}
+        />
 
         <PoliciesModal isOpen={showPolicies} onClose={closePolicies} />
       </Layout>

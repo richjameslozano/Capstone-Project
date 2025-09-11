@@ -732,6 +732,7 @@ import { Layout, Card, Col, Row, List, Typography, Tag, Tabs, Spin } from "antd"
 import { db } from "../backend/firebase/FirebaseConfig";
 import { collectionGroup, query, where, getDocs, onSnapshot, collection, orderBy } from "firebase/firestore";
 import SuccessModal from "./customs/SuccessModal";
+import TodayRequestModal from "./customs/TodayRequestModal";
 import CustomCalendar from "./customs/CustomCalendar";
 import "./styles/Dashboard.css";
 import AIInventoryPieChart from "./customs/AIInventoryPieChart";
@@ -758,6 +759,8 @@ const isDurable = (cat) =>
 /* ---------- Component ---------- */
 const Dashboard = () => {
   const [showModal, setShowModal] = useState(false);
+  const [showTodayRequestModal, setShowTodayRequestModal] = useState(false);
+  const [todayRequestCount, setTodayRequestCount] = useState(0);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
   const [borrowCatalogCount, setBorrowCatalogCount] = useState(0);
   const [historyData, setHistoryData] = useState(0);
@@ -1056,6 +1059,84 @@ const Dashboard = () => {
     }
   }, [location.state, navigate]);
 
+  /* ---------- Check for today's requests ---------- */
+  useEffect(() => {
+    const checkTodaysRequests = async () => {
+      const userId = localStorage.getItem("userId");
+      console.log("User ID from localStorage:", userId);
+      if (!userId) {
+        console.log("No userId found in localStorage");
+        return;
+      }
+
+      try {
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+        
+        // Get start and end of today for timestamp comparison
+        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+        
+        // Query user's approved requests from historylog collection
+        const historyLogRef = collection(db, `accounts/${userId}/historylog`);
+        const q = query(historyLogRef, where("action", "==", "Request Approved"));
+        const querySnapshot = await getDocs(q);
+        
+        console.log("Total approved requests found in historylog:", querySnapshot.size);
+        console.log("Start of day:", startOfDay);
+        console.log("End of day:", endOfDay);
+        
+        let todayCount = 0;
+        
+        // Check approved requests from historylog
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          console.log("HistoryLog - Request timestamp:", data.timestamp);
+          if (data.timestamp) {
+            // Handle both Firestore Timestamp and regular Date objects
+            let requestDate;
+            if (data.timestamp.toDate) {
+              // Firestore Timestamp
+              requestDate = data.timestamp.toDate();
+            } else if (data.timestamp.seconds) {
+              // Firestore Timestamp with seconds property
+              requestDate = new Date(data.timestamp.seconds * 1000);
+            } else {
+              // Regular Date object
+              requestDate = new Date(data.timestamp);
+            }
+            
+            console.log("HistoryLog - Parsed request date:", requestDate);
+            console.log("HistoryLog - Is today?", requestDate >= startOfDay && requestDate < endOfDay);
+            
+            if (requestDate >= startOfDay && requestDate < endOfDay) {
+              todayCount++;
+            }
+          }
+        });
+        
+        setTodayRequestCount(todayCount);
+        
+        console.log("Today's request count:", todayCount);
+        console.log("Login success state:", location.state?.loginSuccess);
+        
+        // Show modal if user has made requests today and just logged in
+        if (todayCount > 0 && location.state?.loginSuccess) {
+          console.log("Showing today's request modal");
+          // Delay the modal to show after login success modal
+          setTimeout(() => {
+            setShowTodayRequestModal(true);
+          }, 2000);
+        }
+      } catch (error) {
+        console.error("Error checking today's requests:", error);
+      }
+    };
+
+    checkTodaysRequests();
+  }, [location.state?.loginSuccess]);
+
   /* ---------- Recent activity (inventory history) ---------- */
   useEffect(() => {
     const fetchRecentProducts = async () => {
@@ -1095,6 +1176,7 @@ const Dashboard = () => {
 
   /* ---------- UI helpers ---------- */
   const closeModal = () => setShowModal(false);
+  const closeTodayRequestModal = () => setShowTodayRequestModal(false);
 
   const summaryCards = [
     { title: "Pending Requests", count: pendingRequestCount, color: "#2596be", icon: <FileTextOutlined /> },
@@ -1366,6 +1448,11 @@ const Dashboard = () => {
         </Content>
 
         <SuccessModal isVisible={showModal} onClose={closeModal} />
+        <TodayRequestModal 
+          isVisible={showTodayRequestModal} 
+          onClose={closeTodayRequestModal} 
+          requestCount={todayRequestCount}
+        />
       </Layout>
     </Layout>
   );
