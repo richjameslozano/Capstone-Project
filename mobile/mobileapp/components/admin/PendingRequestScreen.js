@@ -17,6 +17,7 @@ export default function PendingRequestScreen() {
   const [isNote, setIsNote] = useState(true)
   const [selectedFilter, setSelectedFilter] = useState('All'); // or 'All' if you want a default
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState('all'); // 'all' or 'pastDue'
 
   const navigation = useNavigation()
 
@@ -232,22 +233,44 @@ const groupByDueDateCategory = (requests) => {
   };
 };
 
+// Helper function to check if a request is past due
+const isPastDue = (request) => {
+  const now = new Date();
+  const yesterday = new Date(now);
+  yesterday.setDate(now.getDate() - 1);
+  yesterday.setHours(23, 59, 59, 999); // End of yesterday
+  const dueDate = new Date(request.dateRequired);
+  return dueDate <= yesterday;
+};
+
 const getFilteredRequests = () => {
-  if (selectedFilter === 'All') return pendingRequests;
+  let filtered = pendingRequests;
 
-  return pendingRequests.filter((item) => {
-    const usage = item.usageType?.trim().toLowerCase();
-    if (!usage) return false;
+  // Apply usage type filter
+  if (selectedFilter !== 'All') {
+    filtered = filtered.filter((item) => {
+      const usage = item.usageType?.trim().toLowerCase();
+      if (!usage) return false;
 
-    const normalized = usage.replace(/\s+/g, ' ').toLowerCase();
-    const isKnownType = ['laboratory experiment', 'research', 'community extension'];
+      const normalized = usage.replace(/\s+/g, ' ').toLowerCase();
+      const isKnownType = ['laboratory experiment', 'research', 'community extension'];
 
-    if (isKnownType.includes(normalized)) {
-      return normalized === selectedFilter.toLowerCase();
-    } else {
-      return selectedFilter === 'Others';
-    }
-  });
+      if (isKnownType.includes(normalized)) {
+        return normalized === selectedFilter.toLowerCase();
+      } else {
+        return selectedFilter === 'Others';
+      }
+    });
+  }
+
+  // Apply tab filter
+  if (activeTab === 'pastDue') {
+    // Show only past due requests
+    return filtered.filter(isPastDue);
+  } else {
+    // Show all requests EXCEPT past due ones
+    return filtered.filter(request => !isPastDue(request));
+  }
 };
 
 const filteredRequests = getFilteredRequests();
@@ -297,7 +320,63 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
               </Text>
             </TouchableOpacity>
 
-        <View style={{height: 'auto', marginTop: headerHeight, }}>
+        {/* Tab Navigation */}
+        <View style={{
+          flexDirection: 'row',
+          backgroundColor: '#fff',
+          marginHorizontal: 10,
+          marginTop: headerHeight + 10,
+          borderRadius: 10,
+          padding: 5,
+          marginBottom: 10,
+          elevation: 2,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.2,
+          shadowRadius: 2,
+        }}>
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 8,
+              backgroundColor: activeTab === 'all' ? '#395a7f' : 'transparent',
+              alignItems: 'center',
+            }}
+            onPress={() => setActiveTab('all')}
+          >
+            <Text style={{
+              color: activeTab === 'all' ? '#fff' : '#395a7f',
+              fontWeight: activeTab === 'all' ? 'bold' : 'normal',
+              fontSize: 14,
+            }}>
+              All Requests ({pendingRequests.filter(request => !isPastDue(request)).length})
+            </Text>
+          </TouchableOpacity>
+          
+          <TouchableOpacity
+            style={{
+              flex: 1,
+              paddingVertical: 12,
+              paddingHorizontal: 16,
+              borderRadius: 8,
+              backgroundColor: activeTab === 'pastDue' ? '#395a7f' : 'transparent',
+              alignItems: 'center',
+            }}
+            onPress={() => setActiveTab('pastDue')}
+          >
+            <Text style={{
+              color: activeTab === 'pastDue' ? '#fff' : '#395a7f',
+              fontWeight: activeTab === 'pastDue' ? 'bold' : 'normal',
+              fontSize: 14,
+            }}>
+              Past Due ({pendingRequests.filter(isPastDue).length})
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={{height: 'auto', marginTop: 0, }}>
           <ScrollView
             style={{borderColor: '#dcdcdc', borderBottomWidth: 1, height: 'auto', alignSelf: 'flex-start',  height: '8%'
             }}
