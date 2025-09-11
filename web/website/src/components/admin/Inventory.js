@@ -1340,7 +1340,7 @@ function resolveNextRestockDate(data) {
       itemDetails: sanitizedItemDetails,
       category: cat,
       department: "Medical Technology",
-      labRoom: values.labRoom,
+      labRoom: editingItem.labRoom, // Preserve original labroom value since field is removed from form
       shelves: values.shelves,
       row: values.row,
       unit: values.unit,               // you only render this for Chemical/Reagent; fine to pass through
@@ -2882,6 +2882,7 @@ useEffect(() => {
             visible={isFullEditModalVisible}
             onCancel={() => setIsFullEditModalVisible(false)}
             onOk={() => fullEditForm.submit()}
+            confirmLoading={editItemLoading}
             width={800}
             zIndex={1030}
           >
@@ -3007,25 +3008,6 @@ useEffect(() => {
                 </Form.Item>
               </Col>
 
-                <Col span={8}>
-                  <Form.Item
-                    name="department"
-                    label="Department"
-                    rules={[{ required: true, message: "Please select a department" }]}
-                  >
-                    <Select
-                      placeholder="Select department"
-                      loading={!departmentsAll.length}
-                      disabled={!departmentsAll.length}
-                    >
-                      {departmentsAll.map((dept) => (
-                        <Select.Option key={dept.id} value={dept.name}>
-                          {dept.name}
-                        </Select.Option>
-                      ))}
-                    </Select>
-                  </Form.Item>
-                </Col>
             </Row>
 
             <Row gutter={16}>
@@ -3119,11 +3101,6 @@ useEffect(() => {
 
               </Col>
 
-              <Col span={12}>
-                <Form.Item label="Lab/ Stock Room" name="labRoom">
-                  <Input />
-                </Form.Item>
-              </Col>
 
               <Col span={12}>
                 <Form.Item
