@@ -462,14 +462,17 @@ useEffect(() => {
               // Runout projection (safe divide)
               const runoutDays = quantity / Math.max(safeAvg, 1e-6);
               const runoutDate = new Date(today.getTime() + runoutDays * 24 * 60 * 60 * 1000);
-              const atRisk = runoutDate < nextRestockDate;
+              // const atRisk = runoutDate < nextRestockDate;
+              const atRisk = isValidDate(runoutDate) && isValidDate(nextRestockDate) ? runoutDate < nextRestockDate : false;
 
               // Persist computed fields
               batch.update(doc(db, "inventory", docId), {
                 averageDailyUsage: safeAvg,
                 criticalLevel: finalCriticalLevel,               // reuse your existing field
-                nextRestockDate: nextRestockDate.toISOString(),  // optional; now per-item
-                runoutDate: runoutDate.toISOString(),
+                // nextRestockDate: nextRestockDate.toISOString(),  // optional; now per-item
+                // runoutDate: runoutDate.toISOString(),
+                nextRestockDate: isValidDate(nextRestockDate) ? nextRestockDate.toISOString() : null,  // optional; now per-item
+                runoutDate: isValidDate(runoutDate) ? runoutDate.toISOString() : null,
                 atRisk,
               });
 
@@ -519,15 +522,22 @@ useEffect(() => {
             } else if (isConsumable(category)) {
               if (quantity <= finalCriticalLevel) newStatus = "low stock";
               else newStatus = "in stock";
-            } else if (isDurable(category)) {
+            } else if (category && category.toLowerCase() === "equipment") {
+              // Equipment items should always be "available" when quantity > 0
               if (
                 availabilityThresholdOut != null &&
                 quantity < availabilityThresholdOut
               ) newStatus = "low availability";
               else newStatus = "available";
+            } else if (isDurable(category)) {
+              if (
+                availabilityThresholdOut != null &&
+                quantity < availabilityThresholdOut
+              ) newStatus = "low availability";
+              else newStatus = "in stock"; // Changed from "available" to "in stock" for non-equipment durable items
             } else {
               // Default for unknown categories when quantity > 0
-              newStatus = "available";
+              newStatus = "in stock"; // Changed from "available" to "in stock"
             }
 
             // Update status if it changed (for non-zero quantities)
@@ -1783,15 +1793,48 @@ const printPdf = async () => {
         ? values.expiryDate.format("YYYY-MM-DD")
         : null;
 
+      // Determine initial status based on category
+      let initialStatus;
+      const category = (values.category || "").toLowerCase();
+      const quantity = Number(values.quantity) || 0;
+      
+      if (quantity === 0) {
+        if (isConsumable(category)) {
+          initialStatus = "out of stock";
+        } else if (isDurable(category)) {
+          initialStatus = "unavailable";
+        } else {
+          initialStatus = "out of stock";
+        }
+      } else if (isConsumable(category)) {
+        const criticalLevel = Number(values.criticalLevel) || 0;
+        if (quantity <= criticalLevel) {
+          initialStatus = "low stock";
+        } else {
+          initialStatus = "in stock";
+        }
+      } else if (category === "equipment") {
+        // Equipment items should be "available" when quantity > 0
+        initialStatus = "available";
+      } else if (isDurable(category)) {
+        // Other durable items (like glasswares) should be "in stock"
+        initialStatus = "in stock";
+      } else {
+        // Default for unknown categories
+        initialStatus = "in stock";
+      }
+
       // Build payload for backend
       const payload = {
         ...values,
         itemName: trimmedName,
         itemDetails: trimmedDetails,
+        department: "Medical Technology", // Always set to Medical Technology
         entryDate: formattedEntryDate,
         expiryDate: values.type === "Fixed" ? null : formattedExpiryDate,
         userId,
         userName,
+        status: initialStatus, // Add the calculated status
       };
 
       const response = await fetch("https://webnuls.onrender.com/add-inventory", {
@@ -2469,7 +2512,7 @@ useEffect(() => {
         <Row gutter={16} style={{marginBottom: 20}}>
           <Col xs={24} md={8}>
             <Form.Item
-              name="Item Name"
+              name="item Name"
               label="Item Name"
               rules={[{ required: true, message: "Please enter Item Name!" }]}
               tooltip="Enter only letters and spaces"
