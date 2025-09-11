@@ -1099,8 +1099,8 @@ const Dashboard = () => {
   const summaryCards = [
     { title: "Pending Requests", count: pendingRequestCount, color: "#2596be", icon: <FileTextOutlined /> },
     { title: "Borrow Catalog", count: borrowCatalogCount, color: "#165a72", icon: <ShoppingOutlined /> },
-    { title: "Inventory", count: dataSource, color: "#0b2d39", icon: <UnorderedListOutlined /> },
-    { title: "Request Log", count: historyData, color: "#000000", icon: <DatabaseOutlined /> },
+    { title: "Critical Stocks", count: criticalStockList.length, color: "#0b2d39", icon: <UnorderedListOutlined /> },
+    { title: "Expiring Items", count: expiringSoonItems.length, color: "#000000", icon: <DatabaseOutlined /> },
   ];
 
   const lightenColor = (hex, percent) => {
@@ -1146,8 +1146,8 @@ const Dashboard = () => {
                 onClick={() => {
                   if (card.title === "Pending Requests") navigate("/main/pending-request");
                   if (card.title === "Borrow Catalog") navigate("/main/borrow-catalog");
-                  if (card.title === "Request Log") navigate("/main/request-log");
-                  if (card.title === "Inventory") navigate("/main/inventory");
+                  if (card.title === "Expiring Items") navigate("/main/inventory");
+                  if (card.title === "Critical Stocks") navigate("/main/inventory");
                 }}
               >
                 <div className="summary-card-icon">{card.icon}</div>
