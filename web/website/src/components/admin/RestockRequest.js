@@ -105,7 +105,7 @@ const RestockRequest = () => {
   }, []);
 
   // can edit?
-  const canEditQuantity = userRole === "super-user" || userJobTitle === "Laboratory Custodian";
+  const canEditQuantity = userRole === "super-user" || userRole === "admin" || userJobTitle === "Laboratory Custodian";
 
   const filteredData = restockRequests.filter((item) => {
     const matchesStatus = filterStatus ? item.status === filterStatus : true;
