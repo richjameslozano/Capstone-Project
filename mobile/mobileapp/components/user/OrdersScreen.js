@@ -609,6 +609,33 @@ export default function RequestScreen() {
     setLiabilityAccepted(checked);
   };
 
+  // Function to get liability statement based on item categories
+  const getLiabilityStatement = (items) => {
+    const categories = [...new Set(items.map(item => item.category))];
+    
+    // If only one category, show specific statement
+    if (categories.length === 1) {
+      const category = categories[0];
+      switch (category) {
+        case 'Equipment':
+          return "I am responsible for the proper use, care, and timely return of borrowed equipment. I accept liability for any loss or damage.";
+        case 'Glasswares':
+          return "I am responsible for the proper handling, cleaning, and timely return of borrowed glasswares. I accept liability for any breakage or damage.";
+        case 'Materials':
+          return "I am responsible for the proper use, storage, and timely return of borrowed materials. I accept liability for any loss, damage, or contamination.";
+        case 'Chemical':
+          return "I am responsible for the proper handling, storage, and safe disposal of borrowed chemicals. I accept liability for any spillage or contamination.";
+        case 'Reagent':
+          return "I am responsible for the proper handling, storage, and timely return of borrowed reagents. I accept liability for any contamination or degradation.";
+        default:
+          return "I am responsible for the proper use, care, and timely return of borrowed laboratory items. I accept liability for any loss or damage.";
+      }
+    }
+    
+    // If mixed categories, show unified statement
+    return "I am responsible for the proper use, care, and timely return of all borrowed laboratory items. I accept liability for any loss, damage, or improper use.";
+  };
+
   // Time formatting functions from InventoryScreen
   const formatTime = (timeObj) => {
     if (!timeObj || typeof timeObj !== 'object') return '';
@@ -1654,8 +1681,7 @@ const renderDeployed = ({ item }) => {
                     color: '#333'
                   }}>
                     <Text style={{ fontWeight: '500' }}>
-                      I am responsible for the proper use, care, and timely return of all borrowed laboratory items. 
-                      I accept liability for any loss or damage and will report such incidents immediately to the laboratory custodian.
+                      {getLiabilityStatement(cleanItemData(selectedCompletedOrder?.fullData?.filteredMergedData || selectedCompletedOrder?.fullData?.requestList || []))}
                     </Text>
                   </Text>
                 </View>
