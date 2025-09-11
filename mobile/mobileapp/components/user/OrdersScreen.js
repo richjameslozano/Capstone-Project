@@ -718,7 +718,6 @@ export default function RequestScreen() {
     return daysDiff;
   };
 
-
       const handleStatus =(item)=>{
       if(item.status === 'PENDING') return 'orange';
       if(item.action === 'APPROVED') return '#134b5f';
@@ -728,7 +727,6 @@ export default function RequestScreen() {
       if(item.action === 'Released') return '#28a745';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
-
 
 const filteredApproved = activityData
   .filter(req => req.action === 'Request Approved')
