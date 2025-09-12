@@ -1,11 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   sendPasswordResetEmail,
   signOut,
-  sendEmailVerification,
 } from "firebase/auth";
 import { auth, db } from "../backend/firebase/FirebaseConfig";
 import { collection, query, where, getDocs, updateDoc, onSnapshot } from "firebase/firestore";
@@ -46,6 +44,13 @@ const Login = () => {
     matches: false
   });
   const [passwordSetSuccess, setPasswordSetSuccess] = useState(false);
+  const [isPasswordResetModalVisible, setIsPasswordResetModalVisible] = useState(false);
+  const [passwordResetData, setPasswordResetData] = useState({
+    newPassword: "",
+    confirmNewPassword: ""
+  });
+  const [passwordResetError, setPasswordResetError] = useState("");
+  const [passwordResetLoading, setPasswordResetLoading] = useState(false);
   const [signUpData, setSignUpData] = useState({
     
     name: "",
@@ -925,6 +930,10 @@ const Login = () => {
     setIsLoading(true);
     try {
       const { email, password } = formData;
+      
+      // Don't use client-side Firebase auth - let backend handle all authentication
+      // This prevents Firebase from auto-verifying emails on successful sign-in
+      
       const response = await axios.post("https://webnuls.onrender.com/login", { email, password });
       const data = response.data;
       const user = data.user;
@@ -936,65 +945,44 @@ const Login = () => {
       }
       console.log("User role from backend:", user.role);
 
-      if (user.requiresFirebaseLogin) {
-        try {
-          const userCredential = await signInWithEmailAndPassword(auth, email, password);
-          const firebaseUser = userCredential.user;
-          await firebaseUser.reload();
-
-          if (!firebaseUser.emailVerified) {
-            await signOut(auth);
-            setError("Please verify your email before logging in.");
-            setIsLoading(false);
-            return;
-          }
-
-          // Save user info to localStorage
-          localStorage.setItem("userId", user.userId);
-          localStorage.setItem("userEmail", user.email);
-          localStorage.setItem("userName", user.name);
-          localStorage.setItem("userDepartment", user.department || "");
-          localStorage.setItem("userPosition", user.role?.toLowerCase());
-          localStorage.setItem("userJobTitle", user.jobTitle || "User");
-
-          // Clear any existing session timeout to start fresh
-          localStorage.removeItem("sessionTimeout");
-
-          console.log("User role from backend:", user.role);
-
-          // Navigate based on role
-          switch (user.role?.toLowerCase()) {
-            case "admin":
-            case "super-user":
-              navigate("/main/dashboard", { state: { loginSuccess: true, role: user.role.toLowerCase() } });
-              break;
-
-            case "user":
-              navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
-              break;
-
-            default:
-              setError("Unknown role. Please contact admin.");
-          }
-
-        } catch (authError) {
-          setError("Invalid password.");
-        }
-      } else if (user.role?.toLowerCase() === "super-admin") {
-        // For super-admins, no Firebase login
+      // Check if password reset is required (first-time login with temporary password)
+      if (user.requiresPasswordReset) {
+        // Save user info to localStorage temporarily
         localStorage.setItem("userId", user.userId);
         localStorage.setItem("userEmail", user.email);
         localStorage.setItem("userName", user.name);
-        localStorage.setItem("userDepartment", user.department || "Admin");
-        localStorage.setItem("userPosition", "super-admin");
+        localStorage.setItem("userDepartment", user.department || "");
+        localStorage.setItem("userPosition", user.role?.toLowerCase());
         localStorage.setItem("userJobTitle", user.jobTitle || "User");
+        
+        // Show password reset modal
+        setIsPasswordResetModalVisible(true);
+        setIsLoading(false);
+        return;
+      }
 
-         // Clear any existing session timeout to start fresh
-        localStorage.removeItem("sessionTimeout");
+      // Save user info to localStorage
+      localStorage.setItem("userId", user.userId);
+      localStorage.setItem("userEmail", user.email);
+      localStorage.setItem("userName", user.name);
+      localStorage.setItem("userDepartment", user.department || "");
+      localStorage.setItem("userPosition", user.role?.toLowerCase());
+      localStorage.setItem("userJobTitle", user.jobTitle || "User");
 
+      // Clear any existing session timeout to start fresh
+      localStorage.removeItem("sessionTimeout");
+
+      console.log("User role from backend:", user.role);
+
+      // Navigate based on role
+      if (user.role?.toLowerCase() === "super-admin") {
         navigate("/main/accounts", { state: { loginSuccess: true, role: "super-admin" } });
+      } else if (user.role?.toLowerCase() === "admin" || user.role?.toLowerCase() === "super-user") {
+        navigate("/main/dashboard", { state: { loginSuccess: true, role: user.role.toLowerCase() } });
+      } else if (user.role?.toLowerCase() === "user") {
+        navigate("/main/requisition", { state: { loginSuccess: true, role: "user" } });
       } else {
-        setError("Login flow not defined for this role.");
+        setError("Unknown role. Please contact admin.");
       }
 
     } catch (err) {
@@ -1099,93 +1087,9 @@ const Login = () => {
   // };
 
   const handleRegisterPassword = async () => {
-    // Password validation regex: min 8 chars, at least one letter, one number, and one special character
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
-
-    if (!passwordRegex.test(formData.password)) {
-      setError("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
-      return;
-    }
-
-    if (formData.password !== confirmPassword) {
-      setError("Passwords do not match.");
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const { email, password } = formData;
-      const usersRef = collection(db, "accounts");
-      const q = query(usersRef, where("email", "==", email.trim().toLowerCase()));
-      const querySnapshot = await getDocs(q);
-
-      if (!querySnapshot.empty) {
-        const userDoc = querySnapshot.docs[0];
-        const userData = userDoc.data();
-
-        console.log("Creating Firebase Auth user...");
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const firebaseUser = userCredential.user;
-
-        await sendEmailVerification(firebaseUser);
-        console.log("Verification email sent to", firebaseUser.email);
-
-        // Save UID to Firestore (not password)
-        await updateDoc(userDoc.ref, {
-          uid: firebaseUser.uid
-        });
-
-        // ✅ Immediately sign the user out to prevent auto-login
-        await auth.signOut();
-        console.log("User signed out after registration to await email verification");
-
-        // Set success state briefly
-        setPasswordSetSuccess(true);
-        
-        // Reset form state to return to login view
-        setIsNewUser(false);
-        setIsVerifiedWithoutPassword(false);
-        setEmailChecked(false);
-        setFormData({ email: "", password: "" });
-        setConfirmPassword("");
-        
-        // Reset password validation
-        setPasswordValidation({
-          hasLength: false,
-          hasUppercase: false,
-          hasLowercase: false,
-          hasNumber: false,
-          hasSpecial: false,
-          matches: false
-        });
-
-        // Show success message after a brief delay
-        setTimeout(() => {
-          setModalMessage("Password set successfully! Please verify your email before logging in.");
-          setIsModalVisible(true);
-          setPasswordSetSuccess(false);
-        }, 1500);
-        
-        // Clear any existing errors
-        setError("");
-
-      } else {
-        setError("User record not found in Firestore.");
-      }
-
-    } catch (error) {
-      console.error("Error setting password and UID:", error.message);
-      if (error.code === "auth/email-already-in-use") {
-        setError("Email already in use. Try logging in instead.");
-
-      } else {
-        setError("Failed to set password. Try again.");
-      }
-
-    } finally {
-      setIsLoading(false);
-    }
+    // This function is no longer needed since Firebase Auth users are created during signup
+    // Users should use the normal signup flow instead
+    setError("Please use the signup form to create a new account.");
   };
 
   // FRONTEND
@@ -1417,8 +1321,12 @@ const Login = () => {
         return;
       }
 
-      // Success – show modal
-      setModalMessage(data.message || "Successfully registered!");
+      // Success – show modal with temporary password
+      let message = data.message || "Successfully registered!";
+      if (data.temporaryPassword) {
+        message += `\n\nYour temporary password is: ${data.temporaryPassword}\n\n${data.instructions || ''}`;
+      }
+      setModalMessage(message);
       setIsModalVisible(true);
 
       // Clear form
@@ -1476,6 +1384,68 @@ const Login = () => {
         setForgotPasswordEmail("");
       }, 50);
     }
+  };
+
+  const handlePasswordReset = async () => {
+    const { newPassword, confirmNewPassword } = passwordResetData;
+    const userEmail = localStorage.getItem("userEmail");
+
+    if (!newPassword || !confirmNewPassword) {
+      setPasswordResetError("Please fill in all fields.");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordResetError("Passwords do not match.");
+      return;
+    }
+
+    // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      setPasswordResetError("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+      return;
+    }
+
+    setPasswordResetLoading(true);
+    setPasswordResetError("");
+
+    try {
+      const response = await fetch("https://webnuls.onrender.com/password-reset", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: userEmail,
+          newPassword,
+          confirmPassword: confirmNewPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setPasswordResetError(data.error || "Failed to reset password.");
+        setPasswordResetLoading(false);
+        return;
+      }
+
+      // Success - close modal and show success message
+      setIsPasswordResetModalVisible(false);
+      setPasswordResetData({ newPassword: "", confirmNewPassword: "" });
+      setModalMessage("Password set successfully! You can now log in with your new password.");
+      setIsModalVisible(true);
+
+      // Clear form
+      setFormData({ email: "", password: "" });
+
+    } catch (error) {
+      console.error("Password reset error:", error);
+      setPasswordResetError("Failed to reset password. Please try again.");
+    } finally {
+      setPasswordResetLoading(false);
+    }
   };  
 
   return (
@@ -1498,10 +1468,6 @@ const Login = () => {
             <h2 className={signUpMode ? "create-account-title" : "login-title"}>
               {signUpMode
                 ? "Create an Account"
-                : passwordSetSuccess
-                ? "Password Set Successfully!"
-                : isVerifiedWithoutPassword && !signUpMode
-                ? "Set Your Password"
                 : "Sign in to your account"} 
             </h2>
             
@@ -1532,10 +1498,6 @@ const Login = () => {
                 }
                  if (signUpMode) {
                     handleSignUp();
-
-                  } else if (isVerifiedWithoutPassword) {
-                    handleRegisterPassword();
-                    
                   } else {
                     checkUserAndLogin();
                   }
@@ -1849,72 +1811,6 @@ const Login = () => {
                       </div>
 
                     {error && <p className="error-message">{error}</p>}
-
-                    {/* Live Password Validation Indicators */}
-                    {isVerifiedWithoutPassword && emailChecked && formData.password && (
-                      <div className="password-validation-indicators" style={{ marginTop: "8px" }}>
-                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                          <span style={{ 
-                            color: passwordValidation.hasLength ? "#4CAF50" : "#FF9800", 
-                            marginRight: "8px",
-                            fontSize: "14px"
-                          }}>
-                            {passwordValidation.hasLength ? "✓" : "○"}
-                          </span>
-                          <small style={{ color: "#666", fontSize: "12px" }}>
-                            At least 8 characters
-                          </small>
-                        </div>
-                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                          <span style={{ 
-                            color: passwordValidation.hasUppercase ? "#4CAF50" : "#FF9800", 
-                            marginRight: "8px",
-                            fontSize: "14px"
-                          }}>
-                            {passwordValidation.hasUppercase ? "✓" : "○"}
-                          </span>
-                          <small style={{ color: "#666", fontSize: "12px" }}>
-                            One uppercase letter
-                          </small>
-                        </div>
-                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                          <span style={{ 
-                            color: passwordValidation.hasLowercase ? "#4CAF50" : "#FF9800", 
-                            marginRight: "8px",
-                            fontSize: "14px"
-                          }}>
-                            {passwordValidation.hasLowercase ? "✓" : "○"}
-                          </span>
-                          <small style={{ color: "#666", fontSize: "12px" }}>
-                            One lowercase letter
-                          </small>
-                        </div>
-                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                          <span style={{ 
-                            color: passwordValidation.hasNumber ? "#4CAF50" : "#FF9800", 
-                            marginRight: "8px",
-                            fontSize: "14px"
-                          }}>
-                            {passwordValidation.hasNumber ? "✓" : "○"}
-                          </span>
-                          <small style={{ color: "#666", fontSize: "12px" }}>
-                            One number
-                          </small>
-                        </div>
-                        <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                          <span style={{ 
-                            color: passwordValidation.hasSpecial ? "#4CAF50" : "#FF9800", 
-                            marginRight: "8px",
-                            fontSize: "14px"
-                          }}>
-                            {passwordValidation.hasSpecial ? "✓" : "○"}
-                          </span>
-                          <small style={{ color: "#666", fontSize: "12px" }}>
-                            One special character (@$!%*#?&)
-                          </small>
-                        </div>
-                      </div>
-                    )}
                   </div>
   
                   {/* {isNewUser && (
@@ -1946,95 +1842,6 @@ const Login = () => {
                 </>
               )} */}
 
-                  {/* {isNewUser && ( */}
-                  {isVerifiedWithoutPassword && emailChecked && (
-                    <div className="form-group password-group">
-                      <label>Confirm Password</label>
-                      <div className="password-wrapper">
-                        <input
-                          type={showConfirmPassword ? "text" : "password"}
-                          name="confirmPassword"
-                          value={confirmPassword}
-                          onChange={(e) => {
-                            const value = e.target.value.replace(/\s/g, "");
-                            setConfirmPassword(value);
-                            // Update password match validation in real-time
-                            setPasswordValidation(prev => ({
-                              ...prev,
-                              matches: value === formData.password
-                            }));
-                          }}
-                          required
-                          placeholder="Confirm your password"
-                        />
-                        <span
-                          className="toggle-password"
-                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                        >
-                          {showConfirmPassword ? <EyeInvisibleOutlined/>: <EyeOutlined/>}
-                        </span>
-                      </div>
-
-                      {/* 🔴 Real-time error display */}
-                      {confirmPassword && error === "Passwords do not match." && (
-                        <small className="error-message" style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
-                          {error}
-                        </small>
-                      )}
-
-                      {/* Password Match Indicator */}
-                      {confirmPassword && (
-                        <div className="password-match-indicator" style={{ marginTop: "8px" }}>
-                          <div className="validation-item" style={{ display: "flex", alignItems: "center", marginBottom: "4px" }}>
-                            <span style={{ 
-                              color: passwordValidation.matches ? "#4CAF50" : "#FF9800", 
-                              marginRight: "8px",
-                              fontSize: "14px"
-                            }}>
-                              {passwordValidation.matches ? "✓" : "○"}
-                            </span>
-                            <small style={{ color: "#666", fontSize: "12px" }}>
-                              Passwords match
-                            </small>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* All Requirements Met Indicator */}
-                      {passwordValidation.hasLength && 
-                       passwordValidation.hasUppercase && 
-                       passwordValidation.hasLowercase && 
-                       passwordValidation.hasNumber && 
-                       passwordValidation.hasSpecial && 
-                       passwordValidation.matches && (
-                        <div className="password-success-indicator" style={{ 
-                          marginTop: "12px", 
-                          padding: "8px 12px", 
-                          backgroundColor: "#d4edda", 
-                          border: "1px solid #c3e6cb", 
-                          borderRadius: "6px",
-                          textAlign: "center"
-                        }}>
-                          <small style={{ color: "#155724", fontSize: "12px", fontWeight: "bold" }}>
-                            ✓ All password requirements met!
-                          </small>
-                        </div>
-                      )}
-
-                      {/* Password hint */}
-                      <small
-                        className="password-hint"
-                        style={{
-                          color: "#888",
-                          fontSize: "12px",
-                          marginTop: "4px",
-                        }}
-                      >
-                        Password must be at least 8 characters and include a letter, a number,
-                        and a special character.
-                      </small>
-                    </div>
-                  )}
                 </>
               )}
   
@@ -2045,10 +1852,6 @@ const Login = () => {
                   <div className="loader"></div>
                 ) : signUpMode ? (
                   "Sign Up"
-                  
-                // ) : isNewUser ? (
-                ) : isVerifiedWithoutPassword ? (
-                  "Set Password"
                 ) : (
                   "Login"
                 )}
@@ -2057,8 +1860,7 @@ const Login = () => {
             </form>
   
             <div className={signUpMode ? "bottom-label-div2" : "bottom-label-div"}>
-              {/* {!signUpMode && !isNewUser && ( */}
-              {!signUpMode && !isVerifiedWithoutPassword && (
+              {!signUpMode && (
                 <p
                   className="forgot-password-link"
                   style={{ marginTop: '20px', cursor: 'pointer' }}
@@ -2075,13 +1877,8 @@ const Login = () => {
                     <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign in here</span>
                   </>
                 ) : (
-                  // <>
-                  //   Don’t have an account?{" "}
-                  //   <span onClick={() => signUpAnimate()} style={{color: '#0a3e75', fontWeight: '700', cursor: 'pointer'}} className="link">Sign up here</span>
-                  // </>
-                  !isVerifiedWithoutPassword && (
                     <>
-                      Don’t have an account?{" "}
+                    Don't have an account?{" "}
                       <span
                         onClick={() => signUpAnimate()}
                         style={{ color: '#0a3e75', fontWeight: '700', cursor: 'pointer' }}
@@ -2090,7 +1887,6 @@ const Login = () => {
                         Sign up here
                       </span>
                     </>
-                  )
                 )}
               </p>
             </div>
@@ -2148,6 +1944,96 @@ const Login = () => {
             </div>
           </div>
 
+      )}
+
+      {/* Password Reset Modal */}
+      {isPasswordResetModalVisible && (
+        <div className="modal-overlay">
+          <div className="modal-content-forgot">
+            <h3>Set Your Password</h3>
+            <p className="modal-instruction">Please set a new password for your account</p>
+            
+            <div className="form-group">
+              <label>New Password</label>
+              <div className="password-wrapper">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  value={passwordResetData.newPassword}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\s/g, "");
+                    setPasswordResetData(prev => ({ ...prev, newPassword: value }));
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") {
+                      e.preventDefault();
+                    }
+                  }}
+                  placeholder="Enter new password"
+                  required
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeInvisibleOutlined/> : <EyeOutlined/>}
+                </span>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label>Confirm New Password</label>
+              <div className="password-wrapper">
+                <input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordResetData.confirmNewPassword}
+                  onChange={(e) => {
+                    const value = e.target.value.replace(/\s/g, "");
+                    setPasswordResetData(prev => ({ ...prev, confirmNewPassword: value }));
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === " ") {
+                      e.preventDefault();
+                    }
+                  }}
+                  placeholder="Confirm new password"
+                  required
+                />
+                <span
+                  className="toggle-password"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeInvisibleOutlined/> : <EyeOutlined/>}
+                </span>
+              </div>
+            </div>
+
+            {passwordResetError && (
+              <p className="error-message">{passwordResetError}</p>
+            )}
+
+            <div className="modal-actions-forgot">
+              <button 
+                onClick={handlePasswordReset} 
+                className="modal-btn-send"
+                disabled={passwordResetLoading}
+              >
+                {passwordResetLoading ? "Setting Password..." : "Set Password"}
+              </button>
+              <button
+                onClick={() => {
+                  setIsPasswordResetModalVisible(false);
+                  setPasswordResetData({ newPassword: "", confirmNewPassword: "" });
+                  setPasswordResetError("");
+                  // Clear localStorage and redirect to login
+                  localStorage.clear();
+                }}
+                className="modal-cancel-btn"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <TermsModal isVisible={isTermModalVisible} onClose={closeTermsModal} />
