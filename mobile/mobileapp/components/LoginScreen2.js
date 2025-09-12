@@ -5,7 +5,7 @@ import { TextInput, Card, HelperText, Menu, Provider, Button } from 'react-nativ
 import { useAuth } from '../components/contexts/AuthContext';
 import { db, auth } from '../backend/firebase/FirebaseConfig';
 import { collection, query, where, getDocs, updateDoc, addDoc, serverTimestamp, Timestamp, setDoc, doc, onSnapshot } from 'firebase/firestore';
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, getAuth } from 'firebase/auth';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, getAuth, updatePassword, sendEmailVerification } from 'firebase/auth';
 import styles from './styles/LoginStyle';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import CustomButton from './customs/CustomButton';
@@ -57,6 +57,15 @@ export default function LoginScreen({navigation}) {
   const [employeeIDError, setEmployeeIDError] = useState('');
   const [signUpPasswordError, setSignUpPasswordError] = useState('');
   const [confirmPasswordError, setConfirmPasswordError] = useState('');
+  
+  // Password reset modal states
+  const [isPasswordResetModalVisible, setIsPasswordResetModalVisible] = useState(false);
+  const [passwordResetData, setPasswordResetData] = useState({
+    newPassword: "",
+    confirmNewPassword: ""
+  });
+  const [passwordResetError, setPasswordResetError] = useState("");
+  const [passwordResetLoading, setPasswordResetLoading] = useState(false);
 
   const [focusStates, setFocusStates] = useState({
   name: false,
@@ -216,236 +225,180 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
   // const deptOptions = ['Medical Technology', 'Nursing', 'Dentistry', 'Optometry'];
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setLoginError('Please enter both email and password');
+      return;
+    }
     
-      if (!email || !password) {
-        setLoginError('Please enter both email and password');
+    setLoginError('');
+    setLoading(true);
+    
+    try {
+      // Use Firebase Auth directly for login
+      const usersRef = collection(db, "accounts");
+      const q = query(usersRef, where("email", "==", email));
+      const querySnapshot = await getDocs(q);
+
+      let userDoc, userData, isSuperAdmin = false;
+
+      // First check regular accounts
+      if (!querySnapshot.empty) {
+        userDoc = querySnapshot.docs[0];
+        userData = userDoc.data();
+
+      } else {
+        // Then check if it's a super-admin
+        const superAdminRef = collection(db, "super-admin");
+        const superAdminQuery = query(superAdminRef, where("email", "==", email));
+        const superAdminSnapshot = await getDocs(superAdminQuery);
+
+        if (!superAdminSnapshot.empty) {
+          isSuperAdmin = true;
+          userDoc = superAdminSnapshot.docs[0];
+          userData = userDoc.data();
+        }
+      }
+
+      if (!userData) {
+        setLoginError('User not found');
+        setLoading(false);
         return;
       }
-    
-      setLoginError('');
-      setLoading(true);
-    
-      try {
-        const usersRef = collection(db, "accounts");
-        const q = query(usersRef, where("email", "==", email));
-        const querySnapshot = await getDocs(q);
-    
-        let userDoc, userData, isSuperAdmin = false;
-    
-        // First check regular accounts
-        if (!querySnapshot.empty) {
-          userDoc = querySnapshot.docs[0];
-          userData = userDoc.data();
-  
-        } else {
-          // Then check if it's a super-admin
-          const superAdminRef = collection(db, "super-admin");
-          const superAdminQuery = query(superAdminRef, where("email", "==", email));
-          const superAdminSnapshot = await getDocs(superAdminQuery);
-    
-          if (!superAdminSnapshot.empty) {
-            userDoc = superAdminSnapshot.docs[0];
-            userData = userDoc.data();
-            isSuperAdmin = true;
-          }
-        }
-    
-        if (!userData) {
-          setLoginError("User not found. Please contact admin.");
-          setLoading(false);
-          return;
-        }
-    
-        if (userData.disabled) {
-          setLoginError("Your account has been disabled.");
-          await signOut(auth);
-          setLoading(false);
-          return;
-        }
-    
-        // If password not set yet (new user)
-        if (!isSuperAdmin && !userData.uid) {
-          setLoginError("Password not set. Please login through website first.");
-          setLoading(false);
-          return;
-        }
-    
-        // Block check
-        // if (userData.isBlocked && userData.blockedUntil) {
-        //   const now = Timestamp.now().toMillis();
-        //   const blockedUntil = userData.blockedUntil.toMillis();
-    
-        //   if (now < blockedUntil) {
-        //     const remainingTime = Math.ceil((blockedUntil - now) / 1000);
-        //     setError(`Account is blocked. Try again after ${remainingTime} seconds.`);
-        //     setLoading(false);
-        //     return;
-  
-        //   } else {
-        //     await updateDoc(userDoc.ref, {
-        //       isBlocked: false,
-        //       loginAttempts: 0,
-        //       blockedUntil: null,
-        //     });
-  
-        //     console.log("Account unblocked.");
-        //   }
-        // }
-    
-        if (isSuperAdmin) {
-          if (userData.password === password) {
-            await updateDoc(userDoc.ref, { loginAttempts: 0 });
-    
-            login({ ...userData, id: userDoc.id, role: "Super Admin" });
-    
-            navigation.replace("SuperAdminDashboard");
-    
-          } else {
-            // const newAttempts = (userData.loginAttempts || 0) + 1;
-    
-            // if (newAttempts >= 4) {
-            //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
-            //   await updateDoc(userDoc.ref, {
-            //     isBlocked: true,
-            //     blockedUntil: Timestamp.fromMillis(unblockTime),
-            //   });
-    
-            //   setError("Account blocked for 30 minutes.");
-  
-            // } else {
-            //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-            //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
-            // }
-            
-            setLoginError(`Invalid password.`);
-            setLoading(false);
-            return;
-          }
-    
-        } else {
-          // ✅ Firebase Auth login for regular users/admins
-          try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const signedInUser = userCredential.user;
-            
-            // await signInWithEmailAndPassword(auth, email, password);
-            // await updateDoc(userDoc.ref, { loginAttempts: 0 });
-    
-            // const role = (userData.role || "user").toLowerCase();
-            // login({ ...userData, id: userDoc.id });
 
-            // console.log("Login Succesfull!")
-    
-            // await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
-            //   action: "User Logged In (Mobile)",
-            //   userName: userData.name || "User",
-            //   timestamp: serverTimestamp(),
-              
-            // });
-
-            // 🔁 Force reload to ensure latest email verification status
-            await signedInUser.reload();
-            const refreshedUser = auth.currentUser;
-
-            if (!refreshedUser || !refreshedUser.emailVerified) {
-              await signOut(auth);
-              setLoginError("Please verify your email before logging in.");
-              setLoading(false);
-              return;
-            }
-
-            await updateDoc(userDoc.ref, { loginAttempts: 0 });
-
-            const role = (userData.role || "user").toLowerCase();
-            login({ ...userData, id: userDoc.id });
-
-            console.log("Login Successful!");
-
-            await addDoc(collection(db, `accounts/${userDoc.id}/activitylog`), {
-              action: "User Logged In (Mobile)",
-              userName: userData.name || "User",
-              timestamp: serverTimestamp(),
-            });
-
-            try {
-              const token = await registerForPushNotificationsAsync(userDoc.id, role); // ⬅️ Pass role here
-              if (token) {
-                console.log("✅ Push token registered and saved.");
-              } else {
-                console.log("⚠️ Push token registration failed or permission denied.");
-              }
-            } catch (err) {
-              console.error("🔥 Push token registration crashed:", err.message);
-            }
-            
-            // AppNavigator will automatically show the correct screen based on user role
-            console.log(`Login successful for ${role} role!`);
-    
-          } catch (authError) {
-            // console.error("Auth login failed:", authError.message);
-    
-            // const newAttempts = (userData.loginAttempts || 0) + 1;
-    
-            // if (newAttempts >= 4) {
-            //   const unblockTime = Timestamp.now().toMillis() + 30 * 60 * 1000;
-            //   await updateDoc(userDoc.ref, {
-            //     isBlocked: true,
-            //     blockedUntil: Timestamp.fromMillis(unblockTime),
-            //   });
-    
-            //   setError("Account blocked after 4 failed attempts.");
-              
-            // } else {
-            //   await updateDoc(userDoc.ref, { loginAttempts: newAttempts });
-            //   setError(`Invalid password. ${4 - newAttempts} attempts left.`);
-            // }
-    
-            setLoginError(`Invalid password.`);
-            setLoading(false);
-            return;
-          }
-        }
-    
-      } catch (error) {
-        console.error("Login error:", error);
-        setLoginError("Unexpected error. Try again.");
-  
-      } finally {
+      if (userData.disabled) {
+        setLoginError('Account is disabled');
         setLoading(false);
+        return;
       }
-    };
 
-    const sendEmail = async (email, name) => {
-      try {
-        const response = await fetch('https://webnuls.onrender.com/send-email', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            to: email.trim().toLowerCase(),
-            subject: 'Account Registration - Pending Approval',
-            text: `Hi ${name},\n\nThank you for registering. Your account is now pending approval.\n\nRegards,\nNU MOA NULS Team`,
-            html: `<p>Hi ${name},</p><p>Thank you for registering. Your account is now <strong>pending approval</strong> from the NULS.</p><p>Regards,<br>NU MOA NULS Team</p>`,
-          }),
+      // Check if user is in pendingaccounts (not yet approved)
+      const pendingRef = collection(db, "pendingaccounts");
+      const pendingQuery = query(pendingRef, where("email", "==", email));
+      const pendingSnapshot = await getDocs(pendingQuery);
+      
+      if (!pendingSnapshot.empty) {
+        setLoginError('Account is pending approval from technical admin');
+        setLoading(false);
+        return;
+      }
+
+      // For super-admins, check password directly
+      if (isSuperAdmin) {
+        if (userData.password !== password) {
+          setLoginError('Invalid password');
+          setLoading(false);
+          return;
+        }
+
+        // Super admin login successful
+        login({
+          id: userDoc.id,
+          email: userData.email,
+          name: userData.name || "Super Admin",
+          department: userData.department || "Admin",
+          role: "super-admin",
+          jobTitle: userData.jobTitle || "User"
         });
 
-        const result = await response.json();
-        if (result.success) {
-          console.log('✅ Email sent successfully!');
+        console.log("Super Admin Login Successful!");
+        setLoading(false);
+        return;
+      }
+
+      // For regular users, check if they have a temporary password
+      if (userData.temporaryPassword && !userData.passwordSet) {
+        if (userData.temporaryPassword === password) {
+          // User is using temporary password - show password reset modal
+          setPasswordResetData(prev => ({
+            ...prev,
+            userEmail: userData.email,
+            userId: userDoc.id,
+            userName: userData.name,
+            userDepartment: userData.department || "",
+            userRole: userData.role?.toLowerCase(),
+            userJobTitle: userData.jobTitle || "User"
+          }));
           
+          setIsPasswordResetModalVisible(true);
+          setLoading(false);
+          return;
         } else {
-          console.error('❌ Email failed:', result.error);
+          setLoginError('Invalid temporary password');
+          setLoading(false);
+          return;
+        }
+      }
+
+      // For regular users with set passwords, use Firebase Auth
+      if (!userData.uid) {
+        setLoginError('User not found in system');
+        setLoading(false);
+        return;
+      }
+
+      // Use Firebase Auth to verify password
+      try {
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const signedInUser = userCredential.user;
+
+        // Force reload to ensure latest email verification status
+        await signedInUser.reload();
+        const refreshedUser = auth.currentUser;
+
+        if (!refreshedUser || !refreshedUser.emailVerified) {
+          await signOut(auth);
+          setLoginError("Please verify your email before logging in. Check your email for the verification link.");
+          setLoading(false);
+          return;
         }
         
-      } catch (err) {
-        console.error('❌ Error sending email:', err.message);
+        // Firebase Auth successful and email verified - get user role and login
+        const role = (userData.role || "user").toLowerCase();
+        login({
+          id: userDoc.id,
+          email: userData.email,
+          name: userData.name || "User",
+          department: userData.department || "",
+          role: role,
+          jobTitle: userData.jobTitle || "User"
+        });
+
+        console.log("Login Successful!");
+        
+      } catch (authError) {
+        // Handle Firebase Auth errors with user-friendly messages
+        if (authError.code === 'auth/wrong-password' || authError.code === 'auth/invalid-credential') {
+          setLoginError('Invalid password');
+        } else if (authError.code === 'auth/user-not-found') {
+          setLoginError('User not found');
+        } else if (authError.code === 'auth/too-many-requests') {
+          setLoginError('Too many failed attempts. Please try again later.');
+        } else if (authError.code === 'auth/invalid-email') {
+          setLoginError('Invalid email address');
+        } else if (authError.code === 'auth/user-disabled') {
+          setLoginError('This account has been disabled');
+        } else if (authError.code === 'auth/network-request-failed') {
+          setLoginError('Network error. Please check your internet connection and try again.');
+        } else if (authError.code === 'auth/operation-not-allowed') {
+          setLoginError('Login is currently disabled. Please contact support.');
+        } else {
+          setLoginError('Login failed. Please try again.');
+        }
       }
-    };
+
+    } catch (err) {
+      console.error("Login error:", err);
+      setLoginError("Unexpected error. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
     const handleSignup = async () => {
         setLoading(true);
-      
+        setError("");
+
         // Clear all previous errors
         setNameError('');
         setSignUpEmailError('');
@@ -454,12 +407,10 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
         setConfirmPasswordError('');
         setJobTitleError('');
         setDepartmentError('');
-        setError('');
       
         // Use individual state variables instead of signUpData
         const email = signUpEmail;
         const employeeId = employeeID;
-        const password = signUpPassword;
       
         // Step 0: Validate all required fields
         if (!name.trim()) {
@@ -480,17 +431,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           return;
         }
 
-        if (!password.trim()) {
-          setSignUpPasswordError('Password is required.');
-          setLoading(false);
-          return;
-        }
-
-        if (!confirmPassword.trim()) {
-          setConfirmPasswordError('Confirm Password is required.');
-          setLoading(false);
-          return;
-        }
 
         if (!jobTitle) {
           setJobTitleError('Job Title is required.');
@@ -514,12 +454,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           return;
         }
 
-        // Step 2: Password match check
-        if (password !== confirmPassword) {
-          setConfirmPasswordError("Passwords do not match.");
-          setLoading(false);
-          return;
-        }
 
         if (!agreedToTerms) {
           setError("You must agree to the Terms and Conditions.");
@@ -534,87 +468,128 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setLoading(false);
           return;
         }
-    
+
         try {
-          // Step 4: Check if employeeId or email exists
-          const [employeePendingSnap, employeeAccountSnap, emailPendingSnap, emailAccountSnap] = await Promise.all([
-            getDocs(query(collection(db, "pendingaccounts"), where("employeeId", "==", employeeId.trim()))),
-            getDocs(query(collection(db, "accounts"), where("employeeId", "==", employeeId.trim()))),
-            getDocs(query(collection(db, "pendingaccounts"), where("email", "==", email.trim().toLowerCase()))),
-            getDocs(query(collection(db, "accounts"), where("email", "==", email.trim().toLowerCase()))),
-          ]);
-      
-          if (!employeePendingSnap.empty || !employeeAccountSnap.empty) {
-            setError("This employee ID is already registered.");
+          // Use Firebase directly for signup
+          
+          // Check if email already exists in accounts
+          const accountsRef = collection(db, "accounts");
+          const accountQuery = query(accountsRef, where("email", "==", email.trim().toLowerCase()));
+          const accountSnapshot = await getDocs(accountQuery);
+          
+          if (!accountSnapshot.empty) {
+            setError("Email is already registered.");
             setLoading(false);
             return;
           }
-      
-          if (!emailPendingSnap.empty || !emailAccountSnap.empty) {
-            setError("This email is already registered.");
+
+          // Check if email already exists in pendingaccounts
+          const pendingRef = collection(db, "pendingaccounts");
+          const pendingQuery = query(pendingRef, where("email", "==", email.trim().toLowerCase()));
+          const pendingSnapshot = await getDocs(pendingQuery);
+          
+          if (!pendingSnapshot.empty) {
+            setError("Email is already registered and pending approval.");
             setLoading(false);
             return;
           }
-      
-          // const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-          // const firebaseUser = userCredential.user;
-      
-          // let role = "user";
-          // if (jobTitle.toLowerCase() === "dean") {
-          //   role = "admin";
 
-          // } else if (jobTitle.toLowerCase() === "program chair") {
-          //   role = "admin";
+          // Check if employee ID already exists
+          const empIdQuery = query(accountsRef, where("employeeId", "==", employeeId.trim()));
+          const empIdSnapshot = await getDocs(empIdQuery);
+          
+          if (!empIdSnapshot.empty) {
+            setError("Employee ID is already registered.");
+            setLoading(false);
+            return;
+          }
 
-          // } else if (jobTitle.toLowerCase().includes("custodian")) {
-          //   role = "super-user";
+          // Check if employee ID already exists in pendingaccounts
+          const pendingEmpQuery = query(pendingRef, where("employeeId", "==", employeeId.trim()));
+          const pendingEmpSnapshot = await getDocs(pendingEmpQuery);
+          
+          if (!pendingEmpSnapshot.empty) {
+            setError("Employee ID is already registered and pending approval.");
+            setLoading(false);
+            return;
+          }
 
-          // } else if (jobTitle.toLowerCase() === "faculty") {
-          //   role = "user";
-          // }
-
+          // Assign role based on jobTitle and department
           let role = "user";
+          const jt = jobTitle.toLowerCase();
+          const dept = department.trim().toLowerCase();
 
-          if (jobTitle.toLowerCase() === "dean") {
-            if (department.toLowerCase() === "sah") {
-              role = "admin";
-
-            } else {
-              role = "user";
-            }
-
-          } else if (jobTitle.toLowerCase() === "program chair") {
+          if (jt === "dean" && dept === "sah") {
             role = "admin";
-
-          } else if (jobTitle.toLowerCase().includes("custodian")) {
-            role = "super-user";
-
-          } else if (jobTitle.toLowerCase() === "faculty") {
+          } else if (jt === "dean") {
             role = "user";
+          } else if (jt === "program chair") {
+            role = "admin";
+          } else if (jt.includes("custodian")) {
+            role = "super-user";
           }
 
-          const sanitizedData = {
+          // Generate temporary password
+          const generateTemporaryPassword = () => {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+            let password = '';
+            // Ensure at least one of each required character type
+            password += 'A'; // uppercase
+            password += 'a'; // lowercase  
+            password += '1'; // number
+            password += '!'; // special char
+            
+            // Fill the rest randomly
+            for (let i = 4; i < 12; i++) {
+              password += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            
+            // Shuffle the password
+            return password.split('').sort(() => Math.random() - 0.5).join('');
+          };
+
+          const temporaryPassword = generateTemporaryPassword();
+
+          // Create Firebase Auth user
+          const userCredential = await createUserWithEmailAndPassword(auth, email, temporaryPassword);
+          const uid = userCredential.user.uid;
+
+          // Send email verification
+          try {
+            await sendEmailVerification(userCredential.user);
+            console.log("✅ Email verification sent");
+          } catch (emailError) {
+            console.error("❌ Failed to send email verification:", emailError.message);
+            // Don't fail the signup if email verification fails
+          }
+
+          // Add user to pendingaccounts collection
+          await addDoc(pendingRef, {
             name: name.trim(),
             email: email.trim().toLowerCase(),
-            employeeId: employeeId.trim().replace(/[^\d-]/g, ""),
-            jobTitle,
-            department,
-            role,
+            employeeId: employeeId.trim(),
+            jobTitle: jobTitle,
+            department: department,
+            role: role,
+            temporaryPassword: temporaryPassword,
+            passwordSet: false,
+            uid: uid,
             createdAt: serverTimestamp(),
-            status: "pending",
-            // uid: firebaseUser.uid,
-          };
-      
-          await addDoc(collection(db, "pendingaccounts"), sanitizedData);
+            termsChecked: agreedToTerms,
+            disabled: false,
+            loginAttempts: 0,
+            status: "pending"
+          });
 
-          sendEmail(email, name);      
-      
+          // Success – show modal with temporary password and email verification info
+          const message = `Successfully registered!\n\nYour temporary password is: ${temporaryPassword}\n\n📧 Please check your email and verify your email address.\n\nAfter email verification, please wait for admin approval before you can log in.`;
+          setModalMessage(message);
+          setIsModalVisible(true);
+
           // Reset state variables
           setName("");
           setSignUpEmail("");
           setEmployeeID("");
-          setSignUpPassword("");
-          setConfirmPassword("");
           setJobTitle("");
           setDepartment("");
           setError("");
@@ -622,30 +597,135 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           setNameError("");
           setSignUpEmailError("");
           setEmployeeIDError("");
-          setSignUpPasswordError("");
-          setConfirmPasswordError("");
           setJobTitleError("");
           setDepartmentError("");
 
-          setModalMessage("Successfully Registered! Please check your junk email. Your account is pending approval.");
-          setIsModalVisible(true);
+          setAgreedToTerms(false);
 
-          // Alert.alert("Sign Up Succesfull!");
-      
         } catch (error) {
           console.error("Sign up error:", error.message);
-          if (error.code === "auth/email-already-in-use") {
-            setError("Email already in use.");
-    
+          if (error.code === 'auth/email-already-in-use') {
+            setError("Email is already registered.");
+          } else if (error.code === 'auth/invalid-email') {
+            setError("Invalid email address.");
+          } else if (error.code === 'auth/weak-password') {
+            setError("Password is too weak.");
+          } else if (error.code === 'auth/network-request-failed') {
+            setError("Network error. Please check your internet connection and try again.");
+          } else if (error.code === 'auth/too-many-requests') {
+            setError("Too many attempts. Please try again later.");
+          } else if (error.code === 'auth/operation-not-allowed') {
+            setError("Account creation is currently disabled. Please contact support.");
           } else {
-            setError("Failed to create account. Try again.");
+            setError("Failed to create account. Please try again.");
           }
-    
         } finally {
           setLoading(false);
         }
       };  
 
+  const handlePasswordReset = async () => {
+    const { newPassword, confirmNewPassword, userEmail, userId } = passwordResetData;
+
+    if (!newPassword || !confirmNewPassword) {
+      setPasswordResetError("Please fill in all fields.");
+      return;
+    }
+
+    if (newPassword !== confirmNewPassword) {
+      setPasswordResetError("Passwords do not match.");
+      return;
+    }
+
+    // Password validation
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$/;
+    if (!passwordRegex.test(newPassword)) {
+      setPasswordResetError("Password must be at least 8 characters long and include at least one uppercase letter, one lowercase letter, one number, and one special character.");
+      return;
+    }
+
+    setPasswordResetLoading(true);
+    setPasswordResetError("");
+
+    try {
+      // Get user document to check if they have a UID
+      const userDocRef = doc(db, "accounts", userId);
+      const userDoc = await getDocs(query(collection(db, "accounts"), where("email", "==", userEmail)));
+      
+      if (userDoc.empty) {
+        setPasswordResetError("User not found.");
+        setPasswordResetLoading(false);
+        return;
+      }
+
+      const userData = userDoc.docs[0].data();
+
+      if (!userData.uid) {
+        setPasswordResetError("User not found in system.");
+        setPasswordResetLoading(false);
+        return;
+      }
+
+      // Update password in Firebase Auth
+      try {
+        // First, sign in with temporary password to get current user
+        await signInWithEmailAndPassword(auth, userEmail, userData.temporaryPassword);
+        
+        // Update the password
+        await updatePassword(auth.currentUser, newPassword);
+        
+        // Update user document in Firestore
+        await updateDoc(userDocRef, {
+          passwordSet: true,
+          temporaryPassword: null, // Remove temporary password
+          passwordResetAt: serverTimestamp(),
+        });
+
+        // Log the password reset action
+        await addDoc(collection(db, `accounts/${userId}/activitylog`), {
+          action: "Password Reset - Temporary Password Replaced",
+          userName: userData.name || "User",
+          timestamp: serverTimestamp(),
+        });
+
+        // Sign out the user so they can log in with new password
+        await signOut(auth);
+
+        // Success - close modal and show success message
+        setIsPasswordResetModalVisible(false);
+        setPasswordResetData({ 
+          newPassword: "", 
+          confirmNewPassword: "",
+          userEmail: "",
+          userId: "",
+          userName: "",
+          userDepartment: "",
+          userRole: "",
+          userJobTitle: ""
+        });
+        setModalMessage("Password set successfully! You can now log in with your new password.");
+        setIsModalVisible(true);
+
+        // Clear login form
+        setEmail("");
+        setPassword("");
+
+      } catch (authError) {
+        console.error("Firebase Auth password update error:", authError);
+        if (authError.code === 'auth/requires-recent-login') {
+          setPasswordResetError("Please log out and log back in before changing your password.");
+        } else {
+          setPasswordResetError("Failed to update password. Please try again.");
+        }
+      }
+
+    } catch (error) {
+      console.error("Password reset error:", error);
+      setPasswordResetError("Failed to reset password. Please try again.");
+    } finally {
+      setPasswordResetLoading(false);
+    }
+  };
 
   return (
    
@@ -837,59 +917,6 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   </HelperText>
                 )}
 
-                <Text style={styles.label}>Password:<Text style={{color:'red'}}>*</Text></Text>
-                <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['#ccc', '#395a7f']
-                }), width: '100%' }]}>
-                  <Input
-                    placeholder="Enter Password"
-                    value={signUpPassword}
-                    onChangeText={(text) => {
-                      setSignUpPassword(text);
-                      // Clear error when user starts typing
-                      if (signUpPasswordError) setSignUpPasswordError('');
-                    }}
-                    secureTextEntry={true}
-                    mode="outlined"
-                    onFocus={() => handleFocus('password')}
-                    onBlur={() => handleBlur('password')}
-                    inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]}
-                    inputStyle={styles.inputText}
-                  />
-                </Animated.View>
-                {signUpPasswordError !== '' && (
-                  <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
-                    {signUpPasswordError}
-                  </HelperText>
-                )}
-
-                <Text style={styles.label}>Confirm Password:<Text style={{color:'red'}}>*</Text></Text>
-                <Animated.View style={[styles.animatedInputContainer, { borderColor: confirmPasswordBorderAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: ['#ccc', '#395a7f']
-                }), width: '100%' }]}>
-                  <Input
-                    placeholder="Confirm Password"
-                    value={confirmPassword}
-                    onChangeText={(text) => {
-                      setConfirmPassword(text);
-                      // Clear error when user starts typing
-                      if (confirmPasswordError) setConfirmPasswordError('');
-                    }}
-                    secureTextEntry={true}
-                    mode="outlined"
-                    onFocus={() => handleFocus('confirmPassword')}
-                    onBlur={() => handleBlur('confirmPassword')}
-                    inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]}
-                    inputStyle={styles.inputText}
-                  />
-                </Animated.View>
-                {confirmPasswordError !== '' && (
-                  <HelperText type="error" style={{ marginTop: -10, marginBottom: 10 }}>
-                    {confirmPasswordError}
-                  </HelperText>
-                )}
 
                 {/* Job Title Menu */}
               <Text style={styles.label}>Select Job Title<Text style={{color:'red'}}>*</Text></Text>
@@ -1221,6 +1248,129 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
               <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '80%' }}>
                 <Text>{modalMessage}</Text>
                 <Button onPress={() => setIsModalVisible(false)}>OK</Button>
+              </View>
+            </View>
+          </Modal>
+
+          {/* Password Reset Modal */}
+          <Modal
+            visible={isPasswordResetModalVisible}
+            transparent={true}
+            animationType="slide"
+            onRequestClose={() => setIsPasswordResetModalVisible(false)}
+          >
+            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'rgba(0,0,0,0.5)' }}>
+              <View style={{ backgroundColor: 'white', padding: 20, borderRadius: 10, width: '90%', maxHeight: '80%' }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 10, textAlign: 'center' }}>
+                  Set Your Password
+                </Text>
+                <Text style={{ marginBottom: 20, textAlign: 'center', color: '#666' }}>
+                  Please set a new password for your account
+                </Text>
+                
+                <Text style={styles.label}>New Password:</Text>
+                <Animated.View style={[styles.animatedInputContainer, { borderColor: passwordBorderColor, width: '100%' }]}>
+                  <Input
+                    placeholder="Enter new password"
+                    value={passwordResetData.newPassword}
+                    onChangeText={(text) => {
+                      const value = text.replace(/\s/g, "");
+                      setPasswordResetData(prev => ({ ...prev, newPassword: value }));
+                    }}
+                    secureTextEntry={!showPassword}
+                    mode="outlined"
+                    onFocus={() => handleFocus('password')}
+                    onBlur={() => handleBlur('password')}
+                    inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]}
+                    inputStyle={styles.inputText}
+                    rightIcon={
+                      <Icon
+                        type="material"
+                        name={showPassword ? 'visibility' : 'visibility-off'}
+                        color="#9CA3AF"
+                        onPress={() => setShowPassword(!showPassword)}
+                      />
+                    }
+                  />
+                </Animated.View>
+
+                <Text style={styles.label}>Confirm New Password:</Text>
+                <Animated.View style={[styles.animatedInputContainer, { borderColor: confirmPasswordBorderColor, width: '100%' }]}>
+                  <Input
+                    placeholder="Confirm new password"
+                    value={passwordResetData.confirmNewPassword}
+                    onChangeText={(text) => {
+                      const value = text.replace(/\s/g, "");
+                      setPasswordResetData(prev => ({ ...prev, confirmNewPassword: value }));
+                    }}
+                    secureTextEntry={!showPassword}
+                    mode="outlined"
+                    onFocus={() => handleFocus('confirmPassword')}
+                    onBlur={() => handleBlur('confirmPassword')}
+                    inputContainerStyle={[styles.inputContainer, { paddingTop: 3 }]}
+                    inputStyle={styles.inputText}
+                    rightIcon={
+                      <Icon
+                        type="material"
+                        name={showPassword ? 'visibility' : 'visibility-off'}
+                        color="#9CA3AF"
+                        onPress={() => setShowPassword(!showPassword)}
+                      />
+                    }
+                  />
+                </Animated.View>
+
+                {passwordResetError && (
+                  <Text style={{ color: 'red', marginTop: 10, marginBottom: 10, textAlign: 'center' }}>
+                    {passwordResetError}
+                  </Text>
+                )}
+
+                <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: '#134b5f',
+                      padding: 12,
+                      borderRadius: 8,
+                      flex: 1,
+                      marginRight: 10,
+                      alignItems: 'center'
+                    }}
+                    onPress={handlePasswordReset}
+                    disabled={passwordResetLoading}
+                  >
+                    <Text style={{ color: 'white', fontWeight: 'bold' }}>
+                      {passwordResetLoading ? "Setting Password..." : "Set Password"}
+                    </Text>
+                  </TouchableOpacity>
+                  
+                  <TouchableOpacity
+                    style={{
+                      backgroundColor: '#ccc',
+                      padding: 12,
+                      borderRadius: 8,
+                      flex: 1,
+                      marginLeft: 10,
+                      alignItems: 'center'
+                    }}
+                    onPress={() => {
+                      setIsPasswordResetModalVisible(false);
+                      setPasswordResetData({ 
+                        newPassword: "", 
+                        confirmNewPassword: "",
+                        userEmail: "",
+                        userId: "",
+                        userName: "",
+                        userDepartment: "",
+                        userRole: "",
+                        userJobTitle: ""
+                      });
+                      setPasswordResetError("");
+                    }}
+                  >
+                    <Text style={{ color: 'white', fontWeight: 'bold' }}>Cancel</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
             </View>
           </Modal>
