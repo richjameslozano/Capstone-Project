@@ -21,6 +21,7 @@ const RequisitionRequestModal = ({
   rejectLoading = false,
   editableItems,
   setEditableItems,
+  checkedItems = {},
 }) => {
   const [checkedItemIds, setCheckedItemIds] = useState([]);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
@@ -106,6 +107,9 @@ const RequisitionRequestModal = ({
 
   const isDeanOfSAH = userDepartment === "SAH" && userJobTitle === "dean";
   const shouldShowAskApproval = requestCollege !== "SAH" && !isDeanOfSAH;
+  
+  // Check if any items are checked to disable reject button
+  const hasCheckedItems = Object.values(checkedItems).some((checked) => checked);
 
   return (
     <>
@@ -117,7 +121,7 @@ const RequisitionRequestModal = ({
         closable={false}
         footer={[
           <Button key="cancel" onClick={handleCancel} disabled={approveLoading || rejectLoading}>Cancel</Button>,
-          <Button key="reject" type="default" onClick={handleReturn} loading={rejectLoading} disabled={approveLoading}>Reject</Button>,
+          <Button key="reject" type="default" onClick={handleReturn} loading={rejectLoading} disabled={approveLoading || hasCheckedItems}>Reject</Button>,
 
           requestCollege !== null && shouldShowAskApproval && (
             <Button

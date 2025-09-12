@@ -4819,6 +4819,7 @@ useEffect(() => {
           rejectLoading={rejectLoading}
           editableItems={editableItems}
           setEditableItems={setEditableItems}
+          checkedItems={checkedItems}
         />
 
         <ApprovedRequestModal
