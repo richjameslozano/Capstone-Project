@@ -2441,7 +2441,7 @@ useEffect(() => {
           }}
               />
 
-              <Select
+              {/* <Select
                 allowClear
                 showSearch
                 placeholder="Filter by Department"
@@ -2456,7 +2456,7 @@ useEffect(() => {
                     {dept.name}
                   </Option>
                 ))}
-              </Select>
+              </Select> */}
 
               <Select
                 allowClear
