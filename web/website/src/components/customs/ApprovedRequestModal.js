@@ -1136,7 +1136,7 @@ function getConditionSummary(conditionsArray) {
 </table>
 
 
-          {selectedApprovedRequest?.status === "Borrowed" && (
+          {selectedApprovedRequest?.status === "For Deployment" && (
             <Button style={{marginTop: 20}} type="primary" danger onClick={handleDeploy} loading={deployLoading} disabled={approveLoading || releaseLoading}>
               Deploy
             </Button>

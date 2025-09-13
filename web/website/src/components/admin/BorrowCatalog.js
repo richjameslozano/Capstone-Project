@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Layout, Row, Col, Table, Input, Typography, Select } from "antd";
+import React, { useState, useEffect, useMemo  } from "react";
+import { Layout, Row, Col, Table, Input, Typography, Select, Tabs } from "antd";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import "../styles/adminStyle/BorrowCatalog.css";
@@ -9,6 +9,7 @@ const { Content } = Layout;
 const { Title, Text } = Typography;
 const { Search } = Input;
 const { Option } = Select;
+const { TabPane } = Tabs;
 
 const BorrowCatalog = () => {
   const [catalog, setCatalog] = useState([]);
@@ -190,6 +191,23 @@ const BorrowCatalog = () => {
     return matchesSearch && matchesStatus;
   });
 
+  // compute today and 7 days later
+const today = new Date();
+const sevenDaysLater = new Date();
+sevenDaysLater.setDate(today.getDate() + 7);
+
+// group filteredCatalog
+const next7Days = filteredCatalog.filter((item) => {
+  const reqDate = new Date(item.dateRequired);
+  return reqDate >= today && reqDate <= sevenDaysLater;
+});
+
+const others = filteredCatalog.filter((item) => {
+  const reqDate = new Date(item.dateRequired);
+  return !(reqDate >= today && reqDate <= sevenDaysLater);
+});
+
+
   const columns = [
     {
       title: "Requestor",
@@ -345,7 +363,7 @@ const BorrowCatalog = () => {
 
             </Col>
 
-            <Col>
+            {/* <Col>
               <Select
                 value={statusFilter}
                 onChange={handleStatusFilter}
@@ -360,17 +378,233 @@ const BorrowCatalog = () => {
                   </Option>
                 ))}
               </Select>
-            </Col>
+            </Col> */}
           </Row>
 
-          <Table
+          {/* <Table
             className="borrow-catalog-table"
             dataSource={filteredCatalog}
             columns={columns}
             rowKey="id"
             bordered
             pagination={{ pageSize: 10 }}
-          />
+          /> */}
+
+<Tabs defaultActiveKey="1" type="card">
+  {/* Tab 1: For Release + For Deployment */}
+<TabPane tab="For Release / Deployment" key="1">
+  {/* Section: Next 7 days */}
+  <h2>Scheduled for deployment/releasing within the next seven (7) days.</h2>
+  <div className="catalog-cards">
+    {filteredCatalog
+      .filter(
+        (item) =>
+          ["For Release", "For Deployment"].includes(item.status) &&
+          (() => {
+            const today = new Date();
+            const required = new Date(item.dateRequired);
+            const diffDays = (required - today) / (1000 * 60 * 60 * 24);
+            return diffDays >= 0 && diffDays <= 7;
+          })()
+      )
+      .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+      .map((item) => (
+        <div
+          key={item.id}
+          className="catalog-card"
+          onClick={() => handleViewDetails(item)}
+        >
+          <div className="card-header">
+            <h3>{item.requestor}</h3>
+            <span className={`status ${item.status.toLowerCase()}`}>
+              {item.status}
+            </span>
+          </div>
+          <div className="card-body">
+            <p><strong>Course:</strong> {item.course}</p>
+            <p><strong>Description:</strong> {item.courseDescription}</p>
+            <p><strong>Date Required:</strong> {item.dateRequired}</p>
+          </div>
+        </div>
+      ))}
+    {filteredCatalog.filter(
+      (item) =>
+        ["For Release", "For Deployment"].includes(item.status) &&
+        (() => {
+          const today = new Date();
+          const required = new Date(item.dateRequired);
+          const diffDays = (required - today) / (1000 * 60 * 60 * 24);
+          return diffDays >= 0 && diffDays <= 7;
+        })()
+    ).length === 0 && <p>No requests within the next 7 days.</p>}
+  </div>
+
+  {/* Section: Later */}
+  <h2>Other Requisitions with later dates.</h2>
+  <div className="catalog-cards">
+    {filteredCatalog
+      .filter(
+        (item) =>
+          ["For Release", "For Deployment"].includes(item.status) &&
+          (() => {
+            const today = new Date();
+            const required = new Date(item.dateRequired);
+            const diffDays = (required - today) / (1000 * 60 * 60 * 24);
+            return diffDays > 7;
+          })()
+      )
+      .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+      .map((item) => (
+        <div
+          key={item.id}
+          className="catalog-card"
+          onClick={() => handleViewDetails(item)}
+        >
+          <div className="card-header">
+            <h3>{item.requestor}</h3>
+            <span className={`status ${item.status.toLowerCase()}`}>
+              {item.status}
+            </span>
+          </div>
+          <div className="card-body">
+            <p><strong>Course:</strong> {item.course}</p>
+            <p><strong>Description:</strong> {item.courseDescription}</p>
+            <p><strong>Date Required:</strong> {item.dateRequired}</p>
+          </div>
+        </div>
+      ))}
+    {filteredCatalog.filter(
+      (item) =>
+        ["For Release", "For Deployment"].includes(item.status) &&
+        (() => {
+          const today = new Date();
+          const required = new Date(item.dateRequired);
+          const diffDays = (required - today) / (1000 * 60 * 60 * 24);
+          return diffDays > 7;
+        })()
+    ).length === 0 && <p>No other requests.</p>}
+  </div>
+</TabPane>
+
+
+  {/* Tab 2: Deployed + Released */}
+  <TabPane tab="Deployed / Released" key="2">
+    <div className="catalog-cards">
+      {filteredCatalog
+        .filter((item) =>
+          ["Deployed", "Released"].includes(item.status)
+        )
+        .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+        .map((item) => (
+          <div
+            key={item.id}
+            className="catalog-card"
+            onClick={() => handleViewDetails(item)}
+          >
+            <div className="card-header">
+              <h3>{item.requestor}</h3>
+              <span className={`status ${item.status.toLowerCase()}`}>
+                {item.status}
+              </span>
+            </div>
+            <div className="card-body">
+              <p><strong>Course:</strong> {item.course}</p>
+              <p><strong>Description:</strong> {item.courseDescription}</p>
+              <p><strong>Date Required:</strong> {item.dateRequired}</p>
+            </div>
+          </div>
+        ))}
+    </div>
+  </TabPane>
+
+  {/* Tab 3: Returned */}
+  <TabPane tab="Returned" key="3">
+    <div className="catalog-cards">
+      {filteredCatalog
+        .filter((item) => item.status === "Returned")
+        .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+        .map((item) => (
+          <div
+            key={item.id}
+            className="catalog-card"
+            onClick={() => handleViewDetails(item)}
+          >
+            <div className="card-header">
+              <h3>{item.requestor}</h3>
+              <span className={`status ${item.status.toLowerCase()}`}>
+                {item.status}
+              </span>
+            </div>
+            <div className="card-body">
+              <p><strong>Course:</strong> {item.course}</p>
+              <p><strong>Description:</strong> {item.courseDescription}</p>
+              <p><strong>Date Required:</strong> {item.dateRequired}</p>
+            </div>
+          </div>
+        ))}
+    </div>
+  </TabPane>
+
+  {/* Tab 4: Return Approved */}
+  <TabPane tab="Return Approved" key="4">
+    <div className="catalog-cards">
+      {filteredCatalog
+        .filter((item) => item.status === "Return Approved")
+        .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+        .map((item) => (
+          <div
+            key={item.id}
+            className="catalog-card"
+            onClick={() => handleViewDetails(item)}
+          >
+            <div className="card-header">
+              <h3>{item.requestor}</h3>
+              <span className={`status ${item.status.toLowerCase()}`}>
+                {item.status}
+              </span>
+            </div>
+            <div className="card-body">
+              <p><strong>Course:</strong> {item.course}</p>
+              <p><strong>Description:</strong> {item.courseDescription}</p>
+              <p><strong>Date Required:</strong> {item.dateRequired}</p>
+            </div>
+          </div>
+        ))}
+    </div>
+  </TabPane>
+
+  <TabPane tab="Unclaimed" key="5">
+  <h2>Unclaimed Requisitions</h2>
+  <div className="catalog-cards">
+    {filteredCatalog
+      .filter((item) => item.status === "Unclaimed")
+      .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+      .map((item) => (
+        <div
+          key={item.id}
+          className="catalog-card"
+          onClick={() => handleViewDetails(item)}
+        >
+          <div className="card-header">
+            <h3>{item.requestor}</h3>
+            <span className={`status ${item.status.toLowerCase()}`}>
+              {item.status}
+            </span>
+          </div>
+          <div className="card-body">
+            <p><strong>Course:</strong> {item.course}</p>
+            <p><strong>Description:</strong> {item.courseDescription}</p>
+            <p><strong>Date Required:</strong> {item.dateRequired}</p>
+          </div>
+        </div>
+      ))}
+    {filteredCatalog.filter((item) => item.status === "Unclaimed").length === 0 && (
+      <p>No unclaimed requests.</p>
+    )}
+  </div>
+</TabPane>
+
+</Tabs>
 
             <ApprovedRequestModal
               isApprovedModalVisible={isModalVisible}

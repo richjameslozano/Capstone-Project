@@ -76,4 +76,69 @@
   .ant-layout-content {
     overflow-x: hidden;
   }
+
 }
+
+.catalog-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px; /* space between cards */
+  margin-top: 20px;
+}
+
+.catalog-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.catalog-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.card-header h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 0;
+  color: #333;
+}
+
+.status {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+  text-transform: capitalize;
+}
+
+/* Example status colors */
+.status.pending { background: #fff3cd; color: #856404; }
+.status.borrowed { background: #cce5ff; color: #004085; }
+.status.returned { background: #ffeeba; color: #856404; }
+.status.deployed { background: #f8d7da; color: #721c24; }
+.status.released { background: #d1ecf1; color: #0c5460; }
+
+.card-body p {
+  margin: 6px 0;
+  font-size: 0.95rem;
+  color: #555;
+}
+
+.card-body strong {
+  color: #222;
+}
+
