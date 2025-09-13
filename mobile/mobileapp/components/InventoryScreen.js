@@ -2679,7 +2679,7 @@ export default function InventoryScreen({ navigation }) {
                     <Text style={{ fontWeight: 'bold', color: '#515151' }}>{selectedCategory}</Text>
                   </TouchableOpacity> */}
 
-                  <TouchableOpacity
+                  {/* <TouchableOpacity
                     style={{
                       backgroundColor: '#efefef',
                       flex: 1,
@@ -2697,7 +2697,7 @@ export default function InventoryScreen({ navigation }) {
                     <Text style={{ fontWeight: 'bold', color: '#515151' }}>
                       {selectedDepartment || 'All Department'}
                     </Text>
-                  </TouchableOpacity>
+                  </TouchableOpacity> */}
 
                 </View>
 
