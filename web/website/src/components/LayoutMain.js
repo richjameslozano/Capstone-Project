@@ -17,6 +17,7 @@ import {
   DatabaseOutlined,
   HomeOutlined,
   UserSwitchOutlined,
+  BookOutlined,
 } from '@ant-design/icons';
 import nulsLogo from './images/NULS_Favicon_white.png'
 
@@ -38,6 +39,7 @@ import SearchItems from './users/SearchItems';
 import CapexRequest from './users/CapexRequest';
 import ReturnItems from './users/ReturnItems';
 import CustomModal from "./customs/CustomModal";
+import PolicyModal from "./PolicyModal";
 import AppHeader from './Header';
 import ProtectedRoute from './ProtectedRoute';
 import HistoryLog from './users/HistoryLog';
@@ -66,6 +68,7 @@ const LayoutMain = () => {
   const location = useLocation();
   const [selectedKey, setSelectedKey] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const [showPolicyModal, setShowPolicyModal] = useState(false);
   const [role, setRole] = useState("");
   const [pageTitle, setPageTitle] = useState("");
   const [loading, setLoading] = useState(false);
@@ -254,6 +257,8 @@ const shouldShowSpinner = useMemo(() => {
   const handleMenuClick = (e) => {
     if (e.key === "logout") {
       setShowModal(true);
+    } else if (e.key === "policy") {
+      setShowPolicyModal(true);
     } else {
       navigate(e.key); 
     }
@@ -299,6 +304,11 @@ const shouldShowSpinner = useMemo(() => {
       key: "/main/pending-accounts",
       icon: <UserOutlined />,
       label: "Pending Accounts",
+    },
+    {
+      key: "policy",
+      icon: <BookOutlined />,
+      label: "Policy",
     },
     {
       key: "logout",
@@ -386,6 +396,11 @@ const shouldShowSpinner = useMemo(() => {
     label: "Activity Log",
   },
   {
+    key: "policy",
+    icon: <BookOutlined />,
+    label: "Policy",
+  },
+  {
     key: "logout",
     icon: <LogoutOutlined />,
     label: "Sign Out",
@@ -435,6 +450,11 @@ const superUserMenuItems = [
     label: "Restock Requests",
   },
   {
+    key: "policy",
+    icon: <BookOutlined />,
+    label: "Policy",
+  },
+  {
     key: "logout",
     icon: <LogoutOutlined />,
     label: "Sign Out",
@@ -472,6 +492,11 @@ const userMenuItems = [
     key: "/main/activity-log",
     icon: <ClockCircleOutlined />,
     label: "Activity Log",
+  },
+  {
+    key: "policy",
+    icon: <BookOutlined />,
+    label: "Policy",
   },
   {
     key: "logout",
@@ -681,6 +706,11 @@ const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDT
             visible={showModal}
             onConfirm={handleSignOut}
             onCancel={() => setShowModal(false)}
+        />
+        
+        <PolicyModal
+            visible={showPolicyModal}
+            onCancel={() => setShowPolicyModal(false)}
         />
       </Layout>
     </Layout>
