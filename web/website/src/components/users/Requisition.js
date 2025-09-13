@@ -2335,7 +2335,7 @@ const Requisition = () => {
                   </select>
 
                   {/* Department Dropdown from Firestore */}
-                  <select
+                  {/* <select
                     value={searchDepartment}
                     onChange={(e) => {
                       const selectedDept = e.target.value;
@@ -2360,7 +2360,7 @@ const Requisition = () => {
                         {dept.name}
                       </option>
                     ))}
-                  </select>
+                  </select> */}
                 </div>
 
                 <div style={{ overflow: "auto", marginBottom: 50}}>

@@ -31,6 +31,7 @@ const Inventory = () => {
   const [itemName, setItemName] = useState("");
   const [itemDetails, setItemDetails] = useState("");
   const [itemId, setItemId] = useState("");
+  const [itemIdMode, setItemIdMode] = useState("automatic"); // "automatic" or "manual"
   const [editingItem, setEditingItem] = useState(null);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const qrRefs = useRef({});
@@ -1531,7 +1532,14 @@ const handleCategoryChange = (value) => {
 };
 
   const showModal = () => setIsModalVisible(true);
-  const handleCancel = () => setIsModalVisible(false);
+  const handleCancel = () => {
+    setIsModalVisible(false);
+    setItemName("");
+    setItemDetails("");
+    setItemId("");
+    setItemIdMode("automatic");
+    form.resetFields();
+  };
 
     const exportToExcel = () => {
     setExportLoading(true);
@@ -1846,6 +1854,8 @@ const printPdf = async () => {
         userId,
         userName,
         status: initialStatus, // Add the calculated status
+        itemIdMode: itemIdMode, // Add itemId generation mode
+        ...(itemIdMode === "manual" && { manualItemId: itemId }), // Add manual itemId if manual mode
       };
 
       const response = await fetch("https://webnuls.onrender.com/add-inventory", {
@@ -1862,6 +1872,8 @@ const printPdf = async () => {
         setIsModalVisible(false);
         setItemName("");
         setItemDetails("");
+        setItemId("");
+        setItemIdMode("automatic");
         form.resetFields();
       } else {
         alert(result.error || "Failed to add item.");
@@ -2429,7 +2441,7 @@ useEffect(() => {
           }}
               />
 
-              <Select
+              {/* <Select
                 allowClear
                 showSearch
                 placeholder="Filter by Department"
@@ -2444,7 +2456,7 @@ useEffect(() => {
                     {dept.name}
                   </Option>
                 ))}
-              </Select>
+              </Select> */}
 
               <Select
                 allowClear
@@ -2618,6 +2630,64 @@ useEffect(() => {
               </Select>
             </Form.Item>
           </Col>
+        </Row>
+        </div>
+
+        <h3 style={{marginBottom: 25}}>Item ID Configuration</h3>
+        <div style={{ border: '1px solid #ececec', borderTopWidth: 0, borderRightWidth: 0, borderLeftWidth: 0, marginBottom: 25}}>
+        <Row gutter={16} style={{marginBottom: 20}}>
+          <Col xs={24} md={12}>
+            <Form.Item
+              name="itemIdMode"
+              label="Item ID Generation"
+              rules={[{ required: true, message: "Please select Item ID mode!" }]}
+            >
+              <Radio.Group 
+                value={itemIdMode} 
+                onChange={(e) => setItemIdMode(e.target.value)}
+                className="add-input"
+              >
+                <Radio value="automatic">Automatic Generation</Radio>
+                <Radio value="manual">Manual Entry</Radio>
+              </Radio.Group>
+            </Form.Item>
+          </Col>
+          
+          {itemIdMode === "manual" && (
+            <Col xs={24} md={12}>
+              <Form.Item
+                name="manualItemId"
+                label="Manual Item ID"
+                rules={[
+                  { required: true, message: "Please enter Item ID!" },
+                  { min: 3, message: "Item ID must be at least 3 characters!" },
+                  { max: 20, message: "Item ID must not exceed 20 characters!" },
+                  {
+                    pattern: /^[A-Z0-9]+$/,
+                    message: "Item ID must contain only uppercase letters and numbers!"
+                  }
+                ]}
+                tooltip="Enter a unique Item ID (uppercase letters and numbers only)"
+              >
+                <Input
+                  className="add-input"
+                  placeholder="Enter Item ID (e.g., CHEM01, EQP05)"
+                  value={itemId}
+                  onChange={(e) => {
+                    const value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, "");
+                    setItemId(value);
+                  }}
+                  onKeyDown={(e) => {
+                    const allowedKeys = ["Backspace", "Tab", "ArrowLeft", "ArrowRight", "Delete"];
+                    const isAlphanumeric = /^[A-Z0-9]$/.test(e.key);
+                    if (!isAlphanumeric && !allowedKeys.includes(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+              </Form.Item>
+            </Col>
+          )}
         </Row>
         </div>
           

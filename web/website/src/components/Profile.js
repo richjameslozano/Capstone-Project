@@ -484,6 +484,26 @@ const Profile = () => {
                     <strong className="title">Employee ID</strong>
                     </p>
                   </div>
+
+                  {(formData?.role === 'admin' || formData?.role === 'user') && (
+                    <div style={{ display: 'flex', gap: '20px', width: '100%' }}>
+                      <div className="info" style={{ flex: 1 }}>
+                        <UserOutlined className="profile-icon"/>
+                        <p className="text-display">
+                        0
+                        <strong className="title">Warning</strong>
+                        </p>
+                      </div>
+
+                      <div className="info" style={{ flex: 1 }}>
+                        <UserOutlined className="profile-icon"/>
+                        <p className="text-display">
+                        0
+                        <strong className="title">Violation</strong>
+                        </p>
+                      </div>
+                    </div>
+                  )}
                   
                 </div>
               )}

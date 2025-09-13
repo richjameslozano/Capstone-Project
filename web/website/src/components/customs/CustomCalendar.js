@@ -321,7 +321,8 @@
 
 
 import React, { useEffect, useState } from "react";
-import { Calendar, Badge, Modal, List, Descriptions, Select } from "antd";
+import { Calendar, Badge, Modal, List, Descriptions, Select, Button } from "antd";
+import { useNavigate } from "react-router-dom";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/customsStyle/CalendarModal.css";
@@ -334,6 +335,11 @@ const CustomCalendar = ({ onSelectDate }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterProgram, setFilterProgram] = useState("all");
+  
+  // Get current user role
+  const userRole = localStorage.getItem("userPosition")?.toLowerCase();
+  const isSuperUser = userRole === "super-user";
+  const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = onSnapshot(
@@ -487,7 +493,26 @@ const CustomCalendar = ({ onSelectDate }) => {
       <Modal
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
-        footer={null}
+        footer={isSuperUser ? (
+          <div style={{ textAlign: 'right' }}>
+            <Button 
+              type="primary" 
+              style={{ 
+                backgroundColor: '#1890ff', 
+                borderColor: '#1890ff',
+                borderRadius: '6px',
+                fontWeight: '500'
+              }}
+              onClick={() => {
+                // Close the modal and navigate to Borrow Catalog
+                setIsModalVisible(false);
+                navigate("/main/borrow-catalog");
+              }}
+            >
+              Go to Borrow Catalog
+            </Button>
+          </div>
+        ) : null}
         width={700}
         zIndex={1027}
       >
