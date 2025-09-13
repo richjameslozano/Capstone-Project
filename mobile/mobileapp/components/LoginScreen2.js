@@ -582,7 +582,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           });
 
           // Success – show modal with temporary password and email verification info
-          const message = `Successfully registered!\n\nYour temporary password is: ${temporaryPassword}\n\n📧 Please check your email and verify your email address.\n\nAfter email verification, please wait for admin approval before you can log in.`;
+          const message = `Successfully registered!\n\n📧 Please check your email and verify your email address.\n\nAfter email verification, please wait for admin approval before you can log in.`;
           setModalMessage(message);
           setIsModalVisible(true);
 
