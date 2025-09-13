@@ -244,6 +244,26 @@ export default function ProfileScreen({ navigation }) {
         <Text style={styles.label}>Employee ID</Text>
         </View>
       </View>
+
+      {(user?.role === 'admin' || user?.role === 'user') && (
+        <View style={{flexDirection: 'row', gap: 10, width: '100%'}}>
+          <View style={[styles.info, {flex: 1}]}>
+            <Icon name='alert-circle-outline' size={20} color='#6e9fc1'/>
+            <View>
+              <Text style={{fontSize: 15, fontWeight: 'light'}}>0</Text>
+              <Text style={styles.label}>Warning</Text>
+            </View>
+          </View>
+
+          <View style={[styles.info, {flex: 1}]}>
+            <Icon name='alert-octagon-outline' size={20} color='#6e9fc1'/>
+            <View>
+              <Text style={{fontSize: 15, fontWeight: 'light'}}>0</Text>
+              <Text style={styles.label}>Violation</Text>
+            </View>
+          </View>
+        </View>
+      )}
       </View>
       </View>
 
