@@ -22,6 +22,7 @@ const RequisitionRequestModal = ({
   editableItems,
   setEditableItems,
   checkedItems = {},
+  userViolationCounts = {},
 }) => {
   const [checkedItemIds, setCheckedItemIds] = useState([]);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
@@ -162,6 +163,30 @@ const RequisitionRequestModal = ({
                 <div><strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p></div>
                 <div><strong>Date Needed:</strong><p>{selectedRequest.dateRequired}</p></div>
                 <div><strong>Time Needed:</strong><p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p></div>
+
+                {/* Display violation count if user has violations */}
+                {userViolationCounts[selectedRequest.userName] > 0 && (
+                  <div style={{ 
+                    marginTop: 20, 
+                    padding: '12px 16px', 
+                    backgroundColor: '#fff2f0', 
+                    border: '1px solid #ffccc7', 
+                    borderRadius: 6,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8
+                  }}>
+                    <span style={{ fontSize: 18 }}>⚠️</span>
+                    <div>
+                      <strong style={{ color: '#ff4d4f', fontSize: 16 }}>
+                        User has {userViolationCounts[selectedRequest.userName]} violation{userViolationCounts[selectedRequest.userName] > 1 ? 's' : ''}
+                      </strong>
+                      <p style={{ margin: 0, color: '#666', fontSize: 14 }}>
+                        This user has previous violations on record.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="right-slip">
