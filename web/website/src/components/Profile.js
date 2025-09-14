@@ -261,6 +261,8 @@ const Profile = () => {
   const [formData, setFormData] = useState(null);
   const [imageUrl, setImageUrl] = useState(null);
   const [userDocRef, setUserDocRef] = useState(null);
+  const [warningCount, setWarningCount] = useState(0);
+  const [violationCount, setViolationCount] = useState(0);
   const fileInputRef = useRef();
 
   useEffect(() => {
@@ -283,6 +285,10 @@ const Profile = () => {
           const userData = userDoc.data();
           setUserDocRef(userDoc.ref);
           setFormData(userData);
+          
+          // Set warning and violation counts from user data, default to 0 if not set
+          setWarningCount(userData.warningCount || 0);
+          setViolationCount(userData.violationCount || 0);
 
           if (userData.profileImage) {
             // Add cache-busting parameter to force reload
@@ -490,7 +496,7 @@ const Profile = () => {
                       <div className="info" style={{ flex: 1 }}>
                         <UserOutlined className="profile-icon"/>
                         <p className="text-display">
-                        0
+                        {warningCount}
                         <strong className="title">Warning</strong>
                         </p>
                       </div>
@@ -498,7 +504,7 @@ const Profile = () => {
                       <div className="info" style={{ flex: 1 }}>
                         <UserOutlined className="profile-icon"/>
                         <p className="text-display">
-                        0
+                        {violationCount}
                         <strong className="title">Violation</strong>
                         </p>
                       </div>

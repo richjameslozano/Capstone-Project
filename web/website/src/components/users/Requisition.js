@@ -57,6 +57,7 @@ const Requisition = () => {
   const [showPolicies, setShowPolicies] = useState(false);
   const [isWarningModalVisible, setIsWarningModalVisible] = useState(false);
   const [daysDifference, setDaysDifference] = useState(0);
+  const [isWarningFromDateSelection, setIsWarningFromDateSelection] = useState(false);
   const [mergedData, setMergedData] = useState([]);
   const [finalizeLoading, setFinalizeLoading] = useState(false);
   const [cancelLoading, setCancelLoading] = useState(false);
@@ -90,6 +91,47 @@ const Requisition = () => {
     const today = moment().startOf('day');
     const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
     return selected.diff(today, 'days');
+  };
+
+  // Function to increment warning count for user
+  const incrementWarningCount = async () => {
+    try {
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) return;
+
+      const q = query(
+        collection(db, "accounts"),
+        where("email", "==", userEmail)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        const currentWarningCount = userData.warningCount || 0;
+        const currentViolationCount = userData.violationCount || 0;
+        
+        const newWarningCount = currentWarningCount + 1;
+        
+        // Check if warnings reach 3, then convert to violation
+        if (newWarningCount >= 3) {
+          // Reset warnings to 0 and increment violations by 1
+          await updateDoc(userDoc.ref, {
+            warningCount: 0,
+            violationCount: currentViolationCount + 1
+          });
+          console.log('Warning count reached 3, converted to violation for user:', userEmail);
+        } else {
+          // Just increment warning count
+          await updateDoc(userDoc.ref, {
+            warningCount: newWarningCount
+          });
+          console.log('Warning count incremented for user:', userEmail);
+        }
+      }
+    } catch (error) {
+      console.error('Error incrementing warning count:', error);
+    }
   };
   const auth = getAuth();
 
@@ -2408,6 +2450,7 @@ const Requisition = () => {
                       if (dateString && checkDateWarning(dateString)) {
                         const daysDiff = getDaysDifference(dateString);
                         setDaysDifference(daysDiff);
+                        setIsWarningFromDateSelection(true); // Mark this as from date selection
                         console.log('Showing warning modal for date:', dateString, 'days difference:', daysDiff);
                         setIsWarningModalVisible(true);
                       }
@@ -2687,6 +2730,7 @@ const Requisition = () => {
                         if (checkDateWarning(dateRequired)) {
                           const daysDiff = getDaysDifference(dateRequired);
                           setDaysDifference(daysDiff);
+                          setIsWarningFromDateSelection(false); // Mark this as from finalize
                           setIsWarningModalVisible(true);
                           return;
                         }
@@ -2771,6 +2815,11 @@ const Requisition = () => {
           visible={isWarningModalVisible}
           onOk={async () => {
             setIsWarningModalVisible(false);
+            
+            // Only increment warning count when user proceeds from finalize, not from date selection
+            if (!isWarningFromDateSelection) {
+              await incrementWarningCount();
+            }
             
             // Check all the same validations as the Finalize button
             const hasConflict = await isRoomTimeConflict(room, timeFrom, timeTo, dateRequired);
