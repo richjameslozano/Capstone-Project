@@ -23,6 +23,7 @@ const sanitizeInput = (input) =>
   
 const { Content } = Layout;
 const { Title } = Typography;
+const { Option } = Select;
 
 const Requisition = () => {
   const [requestList, setRequestList] = useState([]);
@@ -2479,22 +2480,25 @@ const Requisition = () => {
 
                   <div className="program-container">
                     <strong>Program:</strong>
-                    <select
-                      value={program}
-                      onChange={(e) => setProgram(e.target.value)}
-                      style={{
-                        width: "100%",
-                        padding: "8px",
-                        borderRadius: "4px",
-                        border: "1px solid #ccc",
-                        marginTop: "8px",
-                      }}
-                    >
-                      <option value="">Select a Program</option>
-                      <option value="SAM - BSMT">SAM - BSMT</option>
-                      <option value="SAH - BSN">SAH - BSN</option>
-                      <option value="SHS">SHS</option>
-                    </select>
+                        <Select
+                          value={program || undefined}
+                          onChange={(value) => setProgram(value)}
+                          showSearch
+                          placeholder="Select or type a program"
+                          style={{
+                            width: "100%",
+                            marginTop: "8px",
+                          }}
+                          optionFilterProp="children"
+                          filterOption={(input, option) =>
+                            option?.children.toLowerCase().includes(input.toLowerCase())
+                          }
+                        >
+                          <Option value="SAM - BSMT">SAH - Medical Technology</Option>
+                          <Option value="SAH - BSN">SAH - Nursing</Option>
+                          <Option value="SAS - Psychology">SAS - Psychology</Option>
+                          <Option value="SHS">SHS</Option>
+                        </Select>
 
                     {programError && (
                       <p style={{ color: "red", marginTop: "5px" }}>
@@ -2598,32 +2602,34 @@ const Requisition = () => {
                   <div className="program-container">
                 
                     <strong>Course Code:</strong>
-                    <select
-                        value={course}
-                        onChange={(e) => {
-                          setCourse(e.target.value);
-                          setCourseDescription(courseDescriptions[e.target.value] || "");
-                        }}
-                        style={{
-                          width: "100%",
-                          padding: "8px",
-                          borderRadius: "4px",
-                          border: "1px solid #ccc",
-                          marginTop: "8px",
-                        }}
-                    >
-                      <option value="">Select a Course Code</option>
-                      <option value="MLSACHML">MLSACHML</option> 
-                      <option value="MLSBIEPC">MLSBIEPC</option>
-                      <option value="MLSAUBFC">MLSAUBFC</option>
-                      <option value="MLSHEM2L">MLSHEM2L</option>
-                      <option value="MLSHPATL">MLSHPATL</option>
-                      <option value="MLSIMHEL">MLSIMHEL</option>
-                      <option value="MLSMOLBL">MLSMOLBL</option>
-                      <option value="MLSMYVIL">MLSMYVIL</option>
-                       <option value="MLSPARAL">MLSPARAL</option>
-                        <option value="MLSPML2L">MLSPML2L</option>
-                    </select>
+                 <Select
+                    value={course || undefined}
+                    onChange={(value) => {
+                      setCourse(value);
+                      setCourseDescription(courseDescriptions[value] || "");
+                    }}
+                    showSearch
+                    placeholder="Select or type a Course Code"
+                    style={{
+                      width: "100%",
+                      marginTop: "8px",
+                    }}
+                    optionFilterProp="children"
+                    filterOption={(input, option) =>
+                      option?.children.toLowerCase().includes(input.toLowerCase())
+                    }
+                  >
+                    <Option value="MLSACHML">MLSACHML</Option>
+                    <Option value="MLSBIEPC">MLSBIEPC</Option>
+                    <Option value="MLSAUBFC">MLSAUBFC</Option>
+                    <Option value="MLSHEM2L">MLSHEM2L</Option>
+                    <Option value="MLSHPATL">MLSHPATL</Option>
+                    <Option value="MLSIMHEL">MLSIMHEL</Option>
+                    <Option value="MLSMOLBL">MLSMOLBL</Option>
+                    <Option value="MLSMYVIL">MLSMYVIL</Option>
+                    <Option value="MLSPARAL">MLSPARAL</Option>
+                    <Option value="MLSPML2L">MLSPML2L</Option>
+                  </Select>
 
                     {courseError && (
                       <p style={{ color: "red", marginTop: "5px" }}>

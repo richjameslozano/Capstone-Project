@@ -10,6 +10,7 @@
   justify-content: center;  
   align-items: center;  
   z-index: 1000;  
+  
 }  
 
 
@@ -21,21 +22,28 @@
   max-width: 600px;
   width: 90%;  
   position: relative;  
+  
 }  
 
-.modal-container {  
+.modal-container-policy {  
   display: flex;  
   flex-direction: column;  
+  padding-top: 60px;
+  
 }  
 
 
-.modal-header {  
+.modal-header-policy {  
   display: flex;  
   justify-content: center;  
   align-items: center;  
-  position: relative;  
-  padding-bottom: 10px;  
-  border-bottom: 2px solid #f0f0f0;  
+  position: absolute;  
+  background-color: #134b5f;
+  left: 0;
+  top: 0;
+  right: 0;
+  height: 60px;
+  border-radius: 8px 8px 0 0;
 }  
 
 
@@ -66,7 +74,6 @@
 
   
 .modal-body {  
-  margin-top: 40px;  
   font-size: 15px;  
   color: #444;  
   line-height: 1.6;  
@@ -77,7 +84,7 @@
   
 .modal-footer {  
   display: flex;  
-  justify-content: space-between;  
+  justify-content: flex-end;
   align-items: center;  
   margin-top: 20px;  
 }  
@@ -101,6 +108,7 @@
   color: white;
   padding: 12px 24px;
   border-radius: 6px;
+  align-self: flex-end;
   border: none;
   font-size: 16px;
   cursor: pointer;
