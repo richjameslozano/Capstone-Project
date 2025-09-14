@@ -36,3 +36,7 @@ yarn-error.*
 
 # typescript
 *.tsbuildinfo
+
+# Google Services Files
+android/app/google-services-mobile.json
+ios/NULSMOA/GoogleService-Info.plist
