@@ -399,7 +399,7 @@ const others = filteredCatalog.filter((item) => {
     {filteredCatalog
       .filter(
         (item) =>
-          ["For Release", "For Deployment"].includes(item.status) &&
+          ["For Release", "Borrowed"].includes(item.status) &&
           (() => {
             const today = new Date();
             const required = new Date(item.dateRequired);
@@ -429,7 +429,7 @@ const others = filteredCatalog.filter((item) => {
       ))}
     {filteredCatalog.filter(
       (item) =>
-        ["For Release", "For Deployment"].includes(item.status) &&
+        ["For Release", "Borrowed"].includes(item.status) &&
         (() => {
           const today = new Date();
           const required = new Date(item.dateRequired);
@@ -445,7 +445,7 @@ const others = filteredCatalog.filter((item) => {
     {filteredCatalog
       .filter(
         (item) =>
-          ["For Release", "For Deployment"].includes(item.status) &&
+          ["For Release", "Borrowed"].includes(item.status) &&
           (() => {
             const today = new Date();
             const required = new Date(item.dateRequired);
@@ -475,7 +475,7 @@ const others = filteredCatalog.filter((item) => {
       ))}
     {filteredCatalog.filter(
       (item) =>
-        ["For Release", "For Deployment"].includes(item.status) &&
+        ["For Release", "Borrowed"].includes(item.status) &&
         (() => {
           const today = new Date();
           const required = new Date(item.dateRequired);
