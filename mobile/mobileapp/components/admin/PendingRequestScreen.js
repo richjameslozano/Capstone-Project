@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { View, FlatList, TouchableOpacity, Text, Modal, TextInput, Alert, ScrollView, StatusBar,Image, ActivityIndicator } from 'react-native';
 import { Card } from 'react-native-paper';
-import { collection, getDocs, doc, updateDoc, getDoc, collectionGroup, onSnapshot } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, getDoc, collectionGroup, onSnapshot, query, where } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { useAuth } from '../contexts/AuthContext';
 import styles from '../styles/adminStyle/PendingRequestStyle';
@@ -18,6 +18,7 @@ export default function PendingRequestScreen() {
   const [selectedFilter, setSelectedFilter] = useState('All'); // or 'All' if you want a default
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('all'); // 'all' or 'pastDue'
+  const [userViolationCounts, setUserViolationCounts] = useState({});
 
   const navigation = useNavigation()
 
@@ -34,6 +35,27 @@ export default function PendingRequestScreen() {
       setIsNote(false)
     }
   }
+
+  // Function to fetch violation count for a user
+  const fetchUserViolationCount = async (userName) => {
+    try {
+      const q = query(
+        collection(db, "accounts"),
+        where("name", "==", userName)
+      );
+      const querySnapshot = await getDocs(q);
+      
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        return userData.violationCount || 0;
+      }
+      return 0;
+    } catch (error) {
+      console.error('Error fetching user violation count:', error);
+      return 0;
+    }
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -106,6 +128,17 @@ useEffect(() => {
         }
 
         setPendingRequests(fetched);
+
+        // Fetch violation counts for all unique users
+        const uniqueUserNames = [...new Set(fetched.map(req => req.userName).filter(Boolean))];
+        const violationCounts = {};
+        
+        for (const userName of uniqueUserNames) {
+          const violationCount = await fetchUserViolationCount(userName);
+          violationCounts[userName] = violationCount;
+        }
+        
+        setUserViolationCounts(violationCounts);
       } catch (err) {
         console.error('Error processing requests:', err);
 
@@ -470,6 +503,38 @@ const categorizedRequests = groupByDueDateCategory(filteredRequests);
                 <Text style={styles.modalText}>Requested On: {selectedRequest.timestamp?.toDate().toLocaleString() || 'N/A'}</Text>
                 <Text style={styles.modalText}>Status: {selectedRequest.status || 'Pending'}</Text>
                 <Text style={styles.modalText}>Reason: {selectedRequest.reason}</Text>
+
+                {/* Display violation count if user has violations */}
+                {userViolationCounts[selectedRequest.userName] > 0 && (
+                  <View style={{
+                    marginTop: 15,
+                    padding: 12,
+                    backgroundColor: '#fff2f0',
+                    borderWidth: 1,
+                    borderColor: '#ffccc7',
+                    borderRadius: 6,
+                    flexDirection: 'row',
+                    alignItems: 'center'
+                  }}>
+                    <Text style={{ fontSize: 18, marginRight: 8 }}>⚠️</Text>
+                    <View style={{ flex: 1 }}>
+                      <Text style={{
+                        color: '#ff4d4f',
+                        fontSize: 16,
+                        fontWeight: 'bold'
+                      }}>
+                        User has {userViolationCounts[selectedRequest.userName]} violation{userViolationCounts[selectedRequest.userName] > 1 ? 's' : ''}
+                      </Text>
+                      <Text style={{
+                        margin: 0,
+                        color: '#666',
+                        fontSize: 14
+                      }}>
+                        This user has previous violations on record.
+                      </Text>
+                    </View>
+                  </View>
+                )}
 
                 <Text style={[styles.modalTitle, { marginTop: 10 }]}>Requested Items:</Text>
 
