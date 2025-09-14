@@ -84,6 +84,8 @@
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px; /* space between cards */
   margin-top: 20px;
+  margin-bottom: 20px;
+  
 }
 
 .catalog-card {
@@ -120,8 +122,8 @@
 .status {
   font-size: 0.85rem;
   font-weight: 600;
-  padding: 4px 10px;
-  border-radius: 12px;
+  padding: 2px 10px;
+  border-radius: 3px;
   text-transform: capitalize;
 }
 
@@ -131,6 +133,8 @@
 .status.returned { background: #ffeeba; color: #856404; }
 .status.deployed { background: #f8d7da; color: #721c24; }
 .status.released { background: #d1ecf1; color: #0c5460; }
+.status.for-release { background: #f1c2ff; color: #3c1277;}
+.status.return-approved { background: #cff8d6; color: #4a8d28;}
 
 .card-body p {
   margin: 6px 0;
@@ -141,4 +145,116 @@
 .card-body strong {
   color: #222;
 }
+
+/* Remove the bottom border under the tab buttons */
+.ant-tabs-nav {
+  margin-bottom: 0 !important;
+}
+
+.ant-tabs-nav::before {
+  border: none !important;
+}
+
+/* Active tab blends with content */
+
+/* Content area */
+.ant-tabs-content-holder {
+  background: #fff;
+  border-radius: 0 0 8px 8px;
+  padding: 16px;
+  border-top: none !important;
+  border: solid 1px #e9ecee;
+}
+
+/* Default card */
+.catalog-card {
+  border: 1px solid #ddd;  /* fallback */
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+/* Hover effect (optional) */
+.catalog-card:hover {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.ant-tabs-tabpane {
+  min-height: 700px;
+}
+
+
+/* Inactive tab */
+.ant-tabs-tab {
+  background-color: #0f3c4c !important;
+  color: #fff;
+  border-radius: 8px 8px 0 0;
+  padding: 8px 16px;
+  margin-right: 4px;
+  /* border: solid 1px #0f3c4c !important; */
+}
+
+/* Make sure text inside is white */
+.ant-tabs-tab .ant-tabs-tab-btn {
+  color: #fff !important;
+}
+
+/* Active tab */
+.ant-tabs-tab-active {
+  background-color: #fff !important;
+  color: #0f3c4c !important;
+  /* border: solid 1px #0f3c4c !important;
+  border-bottom: none !important; */
+}
+
+/* Active tab text */
+.ant-tabs-tab-active .ant-tabs-tab-btn {
+  color: #0f3c4c !important;
+  
+}
+
+
+/* .status.for-release { 
+  background: #f1c2ff; 
+}
+.status.borrowed {
+  background: #abd7fc; 
+}
+
+.status.released {
+  background: #722ed1; 
+}
+.status.returned {
+  background: #f5222d; 
+}
+
+.status.unclaimed {
+  background: #595959; 
+} */
+
+/* Use those colors for card borders */
+.catalog-card:has(.status.for-release) {
+  border-color: #f1c2ff;
+}
+.catalog-card:has(.status.borrowed) {
+  border-color: #b7deff;
+}
+.catalog-card:has(.status.deployed) {
+  border-color: #f8d7da ;
+}
+.catalog-card:has(.status.released) {
+  border-color: #d1ecf1;
+}
+.catalog-card:has(.status.returned) {
+  border-color: #ffeeba;
+}
+.catalog-card:has(.status.return-approved) {
+  border-color: #cff8d6;
+}
+.catalog-card:has(.status.unclaimed) {
+  border-color: #595959;
+}
+
 

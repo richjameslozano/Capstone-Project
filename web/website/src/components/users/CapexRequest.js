@@ -808,8 +808,8 @@ const CapexRequest = () => {
 
               <Form.Item
                 name="brand"
-                label="Brand"
-                rules={[{ required: true, message: "Please enter the brand!" }]}
+                label="Brand (Optional)"
+                rules={[{ required: false, message: "Please enter the brand!" }]}
               >
                 <Input placeholder="Enter brand name" />
               </Form.Item>

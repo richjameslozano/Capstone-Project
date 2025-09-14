@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo  } from "react";
 import { Layout, Row, Col, Table, Input, Typography, Select, Tabs } from "antd";
+import { DotChartOutlined, DropboxOutlined, EllipsisOutlined, FontSizeOutlined, StarOutlined } from '@ant-design/icons';
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import "../styles/adminStyle/BorrowCatalog.css";
@@ -346,40 +347,6 @@ const others = filteredCatalog.filter((item) => {
     <Layout style={{ minHeight: "100vh" }}>
       <Layout>
         <Content style={{ margin: "20px" }}>
-          <Row justify="space-between" style={{ marginBottom: 16 }}>
-            <Col span={8}>
-             <Search
-                  placeholder="Search"
-                  allowClear
-                  enterButton
-                  value={searchQuery}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
-                    setSearchQuery(sanitized);
-                  }}
-                  onSearch={handleSearch}
-                />
-
-            </Col>
-
-            {/* <Col>
-              <Select
-                value={statusFilter}
-                onChange={handleStatusFilter}
-                onClear={() => handleStatusFilter("All")}
-                allowClear
-                style={{ width: 200 }}
-                placeholder="Select Status"
-              >
-                {statusOptions.map((status) => (
-                  <Option key={status} value={status}>
-                    {status}
-                  </Option>
-                ))}
-              </Select>
-            </Col> */}
-          </Row>
 
           {/* <Table
             className="borrow-catalog-table"
@@ -393,11 +360,69 @@ const others = filteredCatalog.filter((item) => {
 <Tabs defaultActiveKey="1" type="card">
   {/* Tab 1: For Release + For Deployment */}
 <TabPane tab="For Release / Deployment" key="1">
-  {/* Section: Next 7 days */}
-  <h2>Scheduled for deployment/releasing within the next seven (7) days.</h2>
-  <div className="catalog-cards">
-    {filteredCatalog
-      .filter(
+  <div style={{ borderRadius: "8px" }}>
+    {/* Section: Next 7 days */}
+    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+          <div style={{display: 'flex'}}>
+    <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
+    <div style={{marginLeft: 10}}>
+      <h2>Scheduled for deployment/releasing within the next seven (7) days.</h2>
+      {/* <p>All "Deployed" requisitions must be returned by faculty after use. By the end of each day, there should be no requisitions remaining in "Deployed" status.</p> */}
+      </div>
+      </div>
+
+                   <Search
+                   style={{width: 600, marginLeft: 20, justifySelf: 'flex-end'}}
+                  placeholder="Search"
+                  allowClear
+                  enterButton
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
+                    setSearchQuery(sanitized);
+                  }}
+                  onSearch={handleSearch}
+                />
+      </div>
+    
+    <div className="catalog-cards">
+      {filteredCatalog
+        .filter(
+          (item) =>
+            ["For Release", "Borrowed"].includes(item.status) &&
+            (() => {
+              const today = new Date();
+              const required = new Date(item.dateRequired);
+              const diffDays = (required - today) / (1000 * 60 * 60 * 24);
+              return diffDays >= 0 && diffDays <= 7;
+            })()
+        )
+        .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+        .map((item) => (
+          <div
+            key={item.id}
+            className="catalog-card"
+            onClick={() => handleViewDetails(item)}
+          >
+            <div className="card-header">
+              <h3>{item.requestor}</h3>
+              <span 
+  className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}
+>
+                {item.status}
+              </span>
+            </div>
+            <div className="card-body">
+              <p><strong>Course:</strong> {item.course}</p>
+              <p><strong>Description:</strong> {item.courseDescription}</p>
+              <div style={{display: 'flex', padding: '10px 10px ', backgroundColor: '#e9ecee', borderRadius: 5}}>
+              <p style={{margin: 0}}><strong>Date Required:</strong> {item.dateRequired}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      {filteredCatalog.filter(
         (item) =>
           ["For Release", "Borrowed"].includes(item.status) &&
           (() => {
@@ -406,44 +431,53 @@ const others = filteredCatalog.filter((item) => {
             const diffDays = (required - today) / (1000 * 60 * 60 * 24);
             return diffDays >= 0 && diffDays <= 7;
           })()
-      )
-      .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
-      .map((item) => (
-        <div
-          key={item.id}
-          className="catalog-card"
-          onClick={() => handleViewDetails(item)}
-        >
-          <div className="card-header">
-            <h3>{item.requestor}</h3>
-            <span className={`status ${item.status.toLowerCase()}`}>
-              {item.status}
-            </span>
-          </div>
-          <div className="card-body">
-            <p><strong>Course:</strong> {item.course}</p>
-            <p><strong>Description:</strong> {item.courseDescription}</p>
-            <p><strong>Date Required:</strong> {item.dateRequired}</p>
-          </div>
-        </div>
-      ))}
-    {filteredCatalog.filter(
-      (item) =>
-        ["For Release", "Borrowed"].includes(item.status) &&
-        (() => {
-          const today = new Date();
-          const required = new Date(item.dateRequired);
-          const diffDays = (required - today) / (1000 * 60 * 60 * 24);
-          return diffDays >= 0 && diffDays <= 7;
-        })()
-    ).length === 0 && <p>No requests within the next 7 days.</p>}
-  </div>
+      ).length === 0 && <p>No requests within the next 7 days.</p>}
+    </div>
 
-  {/* Section: Later */}
+    {/* Section: Later */}
+      <div style={{display: 'flex'}}>
+    <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
+    <div style={{marginLeft: 10}}>
   <h2>Other Requisitions with later dates.</h2>
-  <div className="catalog-cards">
-    {filteredCatalog
-      .filter(
+  {/* <p>All "Deployed" requisitions must be returned by faculty after use. By the end of each day, there should be no requisitions remaining in "Deployed" status.</p> */}
+  </div>
+  </div>
+    
+    <div className="catalog-cards">
+      {filteredCatalog
+        .filter(
+          (item) =>
+            ["For Release", "Borrowed"].includes(item.status) &&
+            (() => {
+              const today = new Date();
+              const required = new Date(item.dateRequired);
+              const diffDays = (required - today) / (1000 * 60 * 60 * 24);
+              return diffDays > 7;
+            })()
+        )
+        .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
+        .map((item) => (
+          <div
+            key={item.id}
+            className="catalog-card"
+            onClick={() => handleViewDetails(item)}
+          >
+            <div className="card-header">
+              <h3>{item.requestor}</h3>
+              <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
+                {item.status}
+              </span>
+            </div>
+            <div className="card-body">
+              <p><strong>Course:</strong> {item.course}</p>
+              <p><strong>Description:</strong> {item.courseDescription}</p>
+              <div style={{display: 'flex', padding: '10px 10px ', backgroundColor: '#e9ecee', borderRadius: 5}}>
+              <p style={{margin: 0}}><strong>Date Required:</strong> {item.dateRequired}</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      {filteredCatalog.filter(
         (item) =>
           ["For Release", "Borrowed"].includes(item.status) &&
           (() => {
@@ -452,43 +486,38 @@ const others = filteredCatalog.filter((item) => {
             const diffDays = (required - today) / (1000 * 60 * 60 * 24);
             return diffDays > 7;
           })()
-      )
-      .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
-      .map((item) => (
-        <div
-          key={item.id}
-          className="catalog-card"
-          onClick={() => handleViewDetails(item)}
-        >
-          <div className="card-header">
-            <h3>{item.requestor}</h3>
-            <span className={`status ${item.status.toLowerCase()}`}>
-              {item.status}
-            </span>
-          </div>
-          <div className="card-body">
-            <p><strong>Course:</strong> {item.course}</p>
-            <p><strong>Description:</strong> {item.courseDescription}</p>
-            <p><strong>Date Required:</strong> {item.dateRequired}</p>
-          </div>
-        </div>
-      ))}
-    {filteredCatalog.filter(
-      (item) =>
-        ["For Release", "Borrowed"].includes(item.status) &&
-        (() => {
-          const today = new Date();
-          const required = new Date(item.dateRequired);
-          const diffDays = (required - today) / (1000 * 60 * 60 * 24);
-          return diffDays > 7;
-        })()
-    ).length === 0 && <p>No other requests.</p>}
+      ).length === 0 && <p>No other requests.</p>}
+    </div>
   </div>
 </TabPane>
 
 
+
   {/* Tab 2: Deployed + Released */}
   <TabPane tab="Deployed / Released" key="2">
+  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+  <div style={{display: 'flex'}}>
+    <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
+    <div style={{marginLeft: 10}}>
+  <h2 style={{margin:0}}>Requisitions deployed/released today.</h2>
+  <p>All "Deployed" requisitions must be returned by faculty after use. By the end of each day, there should be no requisitions remaining in "Deployed" status.</p>
+  </div>
+  </div>
+
+                  <Search
+                   style={{width: 600, marginLeft: 20, justifySelf: 'flex-end'}}
+                  placeholder="Search"
+                  allowClear
+                  enterButton
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
+                    setSearchQuery(sanitized);
+                  }}
+                  onSearch={handleSearch}
+                />
+  </div>
     <div className="catalog-cards">
       {filteredCatalog
         .filter((item) =>
@@ -503,14 +532,16 @@ const others = filteredCatalog.filter((item) => {
           >
             <div className="card-header">
               <h3>{item.requestor}</h3>
-              <span className={`status ${item.status.toLowerCase()}`}>
+              <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
                 {item.status}
               </span>
             </div>
             <div className="card-body">
               <p><strong>Course:</strong> {item.course}</p>
               <p><strong>Description:</strong> {item.courseDescription}</p>
-              <p><strong>Date Required:</strong> {item.dateRequired}</p>
+              <div style={{display: 'flex', padding: '10px 10px ', backgroundColor: '#e9ecee', borderRadius: 5}}>
+              <p style={{margin: 0}}><strong>Date Required:</strong> {item.dateRequired}</p>
+              </div>
             </div>
           </div>
         ))}
@@ -519,6 +550,30 @@ const others = filteredCatalog.filter((item) => {
 
   {/* Tab 3: Returned */}
   <TabPane tab="Returned" key="3">
+    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+      <div style={{display: 'flex'}}>
+    <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
+    <div style={{marginLeft: 10}}>
+      <h2 style={{margin: 0}}>Returned Items</h2>
+      <p>All returned items must be reviewed and approved by laboratory personnel before the requisition can be marked as complete.</p>
+      </div>
+      </div>
+
+                  <Search
+                   style={{width: 600, marginLeft: 20, justifySelf: 'flex-end'}}
+                  placeholder="Search"
+                  allowClear
+                  enterButton
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
+                    setSearchQuery(sanitized);
+                  }}
+                  onSearch={handleSearch}
+                />
+      </div>
+
     <div className="catalog-cards">
       {filteredCatalog
         .filter((item) => item.status === "Returned")
@@ -531,14 +586,16 @@ const others = filteredCatalog.filter((item) => {
           >
             <div className="card-header">
               <h3>{item.requestor}</h3>
-              <span className={`status ${item.status.toLowerCase()}`}>
+              <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
                 {item.status}
               </span>
             </div>
             <div className="card-body">
               <p><strong>Course:</strong> {item.course}</p>
               <p><strong>Description:</strong> {item.courseDescription}</p>
-              <p><strong>Date Required:</strong> {item.dateRequired}</p>
+              <div style={{display: 'flex', padding: '10px 10px ', backgroundColor: '#e9ecee', borderRadius: 5}}>
+              <p style={{margin: 0}}><strong>Date Required:</strong> {item.dateRequired}</p>
+              </div>
             </div>
           </div>
         ))}
@@ -547,6 +604,29 @@ const others = filteredCatalog.filter((item) => {
 
   {/* Tab 4: Return Approved */}
   <TabPane tab="Return Approved" key="4">
+    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+      <div style={{display: 'flex'}}>
+    <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
+    <div style={{marginLeft: 10}}>
+      <h2>Completed Requisitions</h2>
+      {/* <p>All returned items must be reviewed and approved by laboratory personnel before the requisition can be marked as complete.</p> */}
+      </div>
+      </div>
+                  <Search
+                   style={{width: 600, marginLeft: 20, justifySelf: 'flex-end'}}
+                  placeholder="Search"
+                  allowClear
+                  enterButton
+                  value={searchQuery}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
+                    setSearchQuery(sanitized);
+                  }}
+                  onSearch={handleSearch}
+                />
+      </div>   
+
     <div className="catalog-cards">
       {filteredCatalog
         .filter((item) => item.status === "Return Approved")
@@ -559,14 +639,16 @@ const others = filteredCatalog.filter((item) => {
           >
             <div className="card-header">
               <h3>{item.requestor}</h3>
-              <span className={`status ${item.status.toLowerCase()}`}>
+              <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
                 {item.status}
               </span>
             </div>
             <div className="card-body">
               <p><strong>Course:</strong> {item.course}</p>
               <p><strong>Description:</strong> {item.courseDescription}</p>
-              <p><strong>Date Required:</strong> {item.dateRequired}</p>
+              <div style={{display: 'flex', padding: '10px 10px ', backgroundColor: '#e9ecee', borderRadius: 5}}>
+              <p style={{margin: 0}}><strong>Date Required:</strong> {item.dateRequired}</p>
+              </div>
             </div>
           </div>
         ))}
@@ -587,14 +669,16 @@ const others = filteredCatalog.filter((item) => {
         >
           <div className="card-header">
             <h3>{item.requestor}</h3>
-            <span className={`status ${item.status.toLowerCase()}`}>
+            <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
               {item.status}
             </span>
           </div>
           <div className="card-body">
             <p><strong>Course:</strong> {item.course}</p>
             <p><strong>Description:</strong> {item.courseDescription}</p>
-            <p><strong>Date Required:</strong> {item.dateRequired}</p>
+            <div style={{display: 'flex', padding: '10px 10px ', backgroundColor: '#e9ecee', borderRadius: 5}}>
+              <p style={{margin: 0}}><strong>Date Required:</strong> {item.dateRequired}</p>
+              </div>
           </div>
         </div>
       ))}
