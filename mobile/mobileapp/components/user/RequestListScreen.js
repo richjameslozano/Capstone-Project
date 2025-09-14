@@ -715,7 +715,7 @@ import {
   ScrollView,
   StatusBar,
 } from 'react-native';
-import { collection, getDocs, deleteDoc, doc, onSnapshot, Timestamp, setDoc, addDoc, getDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, deleteDoc, doc, onSnapshot, Timestamp, setDoc, addDoc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '../../backend/firebase/FirebaseConfig';
 import { getFunctions, httpsCallable } from 'firebase/functions';
 import { useAuth } from '../contexts/AuthContext';
@@ -864,6 +864,11 @@ const RequestListScreen = ({}) => {
     ) {
       Alert.alert('Missing Info', 'Please go back and fill the required borrowing details.');
       return;
+    }
+
+    // Check for 7-day warning and increment warning count if needed
+    if (checkDateWarning(metadata.dateRequired)) {
+      await incrementWarningCount();
     }
   
     // Show the confirmation modal with the metadata details
@@ -1063,6 +1068,54 @@ const RequestListScreen = ({}) => {
     
     // If mixed categories, show unified statement
     return "I am responsible for the proper use, care, and timely return of all borrowed laboratory items. I accept liability for any loss, damage, or improper use.";
+  };
+
+  // Function to check if selected date is less than 7 days from today
+  const checkDateWarning = (selectedDate) => {
+    if (!selectedDate) return false;
+    
+    const today = new Date();
+    const selected = new Date(selectedDate);
+    const timeDiff = selected.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    return daysDiff < 7;
+  };
+
+  // Function to increment warning count for user
+  const incrementWarningCount = async () => {
+    try {
+      if (!user?.id) return;
+
+      const userDocRef = doc(db, "accounts", user.id);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const currentWarningCount = userData.warningCount || 0;
+        const currentViolationCount = userData.violationCount || 0;
+        
+        const newWarningCount = currentWarningCount + 1;
+        
+        // Check if warnings reach 3, then convert to violation
+        if (newWarningCount >= 3) {
+          // Reset warnings to 0 and increment violations by 1
+          await updateDoc(userDocRef, {
+            warningCount: 0,
+            violationCount: currentViolationCount + 1
+          });
+          console.log('Warning count reached 3, converted to violation for user:', user.id);
+        } else {
+          // Just increment warning count
+          await updateDoc(userDocRef, {
+            warningCount: newWarningCount
+          });
+          console.log('Warning count incremented for user:', user.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error incrementing warning count:', error);
+    }
   };
   
 

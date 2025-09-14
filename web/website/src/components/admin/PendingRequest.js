@@ -18,6 +18,7 @@ const PendingRequest = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [checkedItems, setCheckedItems] = useState({});
   const [approvedRequests, setApprovedRequests] = useState([]);
+  const [userViolationCounts, setUserViolationCounts] = useState({});
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [isNotificationVisible, setIsNotificationVisible] = useState(false);
@@ -75,6 +76,27 @@ const getCollegeByDepartment = async (departmentName) => {
     return snapshot.docs[0].data().college || null;
   }
   return null;
+};
+
+// Function to fetch violation count for a user
+const fetchUserViolationCount = async (userName) => {
+  try {
+    const q = query(
+      collection(db, "accounts"),
+      where("name", "==", userName)
+    );
+    const querySnapshot = await getDocs(q);
+    
+    if (!querySnapshot.empty) {
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
+      return userData.violationCount || 0;
+    }
+    return 0;
+  } catch (error) {
+    console.error('Error fetching user violation count:', error);
+    return 0;
+  }
 };
 
 // useEffect(() => {
@@ -273,6 +295,17 @@ const getCollegeByDepartment = async (departmentName) => {
         setRequests(fetched);
         setFirstRequestMap(simpleFirstRequestMap);
         setRequestOrderMap(requestPositionMap);
+
+        // Fetch violation counts for all unique users
+        const uniqueUserNames = [...new Set(fetched.map(req => req.userName).filter(Boolean))];
+        const violationCounts = {};
+        
+        for (const userName of uniqueUserNames) {
+          const violationCount = await fetchUserViolationCount(userName);
+          violationCounts[userName] = violationCount;
+        }
+        
+        setUserViolationCounts(violationCounts);
 
         setLoading(false); // End loading
       },
@@ -4821,6 +4854,7 @@ useEffect(() => {
           editableItems={editableItems}
           setEditableItems={setEditableItems}
           checkedItems={checkedItems}
+          userViolationCounts={userViolationCounts}
         />
 
         <ApprovedRequestModal

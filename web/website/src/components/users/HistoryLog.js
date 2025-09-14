@@ -16,7 +16,7 @@ import {
 } from "antd";
 import dayjs from 'dayjs';
 import { AppstoreAddOutlined, CloseOutlined, ExperimentOutlined, FileSearchOutlined, LikeOutlined, SendOutlined, TeamOutlined } from "@ant-design/icons";
-import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where, addDoc, serverTimestamp, collectionGroup } from "firebase/firestore";
+import { collection, deleteDoc, doc, getDoc, getDocs, onSnapshot, query, setDoc, where, addDoc, serverTimestamp, collectionGroup, updateDoc } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/usersStyle/ActivityLog.css";
 import { getAuth } from "firebase/auth";
@@ -136,6 +136,47 @@ const sanitizeInput = (input) =>
     const today = moment().startOf('day');
     const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
     return selected.diff(today, 'days');
+  };
+
+  // Function to increment warning count for user
+  const incrementWarningCount = async () => {
+    try {
+      const userEmail = localStorage.getItem("userEmail");
+      if (!userEmail) return;
+
+      const q = query(
+        collection(db, "accounts"),
+        where("email", "==", userEmail)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        const userDoc = querySnapshot.docs[0];
+        const userData = userDoc.data();
+        const currentWarningCount = userData.warningCount || 0;
+        const currentViolationCount = userData.violationCount || 0;
+        
+        const newWarningCount = currentWarningCount + 1;
+        
+        // Check if warnings reach 3, then convert to violation
+        if (newWarningCount >= 3) {
+          // Reset warnings to 0 and increment violations by 1
+          await updateDoc(userDoc.ref, {
+            warningCount: 0,
+            violationCount: currentViolationCount + 1
+          });
+          console.log('Warning count reached 3, converted to violation for user:', userEmail);
+        } else {
+          // Just increment warning count
+          await updateDoc(userDoc.ref, {
+            warningCount: newWarningCount
+          });
+          console.log('Warning count incremented for user:', userEmail);
+        }
+      }
+    } catch (error) {
+      console.error('Error incrementing warning count:', error);
+    }
   };
 
   const fetchUserName = async () => {
@@ -2532,8 +2573,12 @@ const handlePrint = () => {
       {/* Warning Modal for 7-day notice */}
       <WarningModal
         visible={isWarningModalVisible}
-        onOk={() => {
+        onOk={async () => {
           setIsWarningModalVisible(false);
+          
+          // Increment warning count when user proceeds with date < 7 days
+          await incrementWarningCount();
+          
           // Continue with the reorder process - the form validation will be handled by the submit button
         }}
         onCancel={() => setIsWarningModalVisible(false)}
