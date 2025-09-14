@@ -357,7 +357,7 @@ const others = filteredCatalog.filter((item) => {
             pagination={{ pageSize: 10 }}
           /> */}
 
-<Tabs defaultActiveKey="1" type="card">
+<Tabs defaultActiveKey="1" type="card" className="requisition-tabs">
   {/* Tab 1: For Release + For Deployment */}
 <TabPane tab="For Release / Deployment" key="1">
   <div style={{ borderRadius: "8px" }}>

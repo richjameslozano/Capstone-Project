@@ -2428,7 +2428,7 @@ const Requisition = () => {
           <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 50}}>
           <FormOutlined style={{fontSize: 25, color: '#1e7898'}}/>
           <div style={{display: 'flex', flexDirection: 'column', gap: 5}}>
-          <h1 style={{margin: 0, padding: 0, color: '#1e7898'}}>Requsition Form</h1>
+          <h1 style={{margin: 0, padding: 0, color: '#1e7898'}}>Requisition Form</h1>
           <p style={{padding: 0 , margin: 0, fontSize: 15}}>Kindly complete and submit the form to process the requisition.</p>
           </div>
           </div>

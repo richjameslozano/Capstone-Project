@@ -147,18 +147,16 @@
 }
 
 /* Remove the bottom border under the tab buttons */
-.ant-tabs-nav {
+.requisition-tabs .ant-tabs-nav {
   margin-bottom: 0 !important;
 }
 
-.ant-tabs-nav::before {
+.requisition-tabs .ant-tabs-nav::before {
   border: none !important;
 }
 
-/* Active tab blends with content */
-
 /* Content area */
-.ant-tabs-content-holder {
+.requisition-tabs .ant-tabs-content-holder {
   background: #fff;
   border-radius: 0 0 8px 8px;
   padding: 16px;
@@ -167,7 +165,7 @@
 }
 
 /* Default card */
-.catalog-card {
+.requisition-tabs .catalog-card {
   border: 1px solid #ddd;  /* fallback */
   border-radius: 8px;
   padding: 12px;
@@ -177,43 +175,39 @@
 }
 
 /* Hover effect (optional) */
-.catalog-card:hover {
+.requisition-tabs .catalog-card:hover {
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
-.ant-tabs-tabpane {
+.requisition-tabs .ant-tabs-tabpane {
   min-height: 700px;
 }
 
-
 /* Inactive tab */
-.ant-tabs-tab {
+.requisition-tabs .ant-tabs-tab {
   background-color: #0f3c4c !important;
   color: #fff;
   border-radius: 8px 8px 0 0;
   padding: 8px 16px;
   margin-right: 4px;
-  /* border: solid 1px #0f3c4c !important; */
 }
 
 /* Make sure text inside is white */
-.ant-tabs-tab .ant-tabs-tab-btn {
+.requisition-tabs .ant-tabs-tab .ant-tabs-tab-btn {
   color: #fff !important;
 }
 
 /* Active tab */
-.ant-tabs-tab-active {
+.requisition-tabs .ant-tabs-tab-active {
   background-color: #fff !important;
   color: #0f3c4c !important;
-  /* border: solid 1px #0f3c4c !important;
-  border-bottom: none !important; */
 }
 
 /* Active tab text */
-.ant-tabs-tab-active .ant-tabs-tab-btn {
+.requisition-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
   color: #0f3c4c !important;
-  
 }
+
 
 
 /* .status.for-release { 
