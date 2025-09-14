@@ -362,7 +362,7 @@ const others = filteredCatalog.filter((item) => {
 <TabPane tab="For Release / Deployment" key="1">
   <div style={{ borderRadius: "8px" }}>
     {/* Section: Next 7 days */}
-    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+    <div style={{display: 'flex', justifyContent: 'space-between'}}>
           <div style={{display: 'flex'}}>
     <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
     <div style={{marginLeft: 10}}>
@@ -495,7 +495,7 @@ const others = filteredCatalog.filter((item) => {
 
   {/* Tab 2: Deployed + Released */}
   <TabPane tab="Deployed / Released" key="2">
-  <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+  <div style={{display: 'flex', justifyContent: 'space-between'}}>
   <div style={{display: 'flex'}}>
     <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
     <div style={{marginLeft: 10}}>
@@ -550,7 +550,7 @@ const others = filteredCatalog.filter((item) => {
 
   {/* Tab 3: Returned */}
   <TabPane tab="Returned" key="3">
-    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+    <div style={{display: 'flex', justifyContent: 'space-between'}}>
       <div style={{display: 'flex'}}>
     <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
     <div style={{marginLeft: 10}}>
@@ -604,7 +604,7 @@ const others = filteredCatalog.filter((item) => {
 
   {/* Tab 4: Return Approved */}
   <TabPane tab="Return Approved" key="4">
-    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+    <div style={{display: 'flex', justifyContent: 'space-between'}}>
       <div style={{display: 'flex'}}>
     <StarOutlined style={{fontSize: 20, color: '#0f3c4c', alignSelf: 'flex-start', marginTop: 8}}/>
     <div style={{marginLeft: 10}}>
