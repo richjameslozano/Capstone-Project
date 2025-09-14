@@ -430,24 +430,24 @@ const superUserMenuItems = [
     label: "Borrow Catalog",
   },
   {
-    key: "/main/admin-activity-log",
-    icon: <HistoryOutlined />,
-    label: "Activity Log",
-  },
-  {
     key: "/main/request-log",
     icon: <HistoryOutlined />,
     label: "Request Log",
   },
   {
     key: "/main/lab-room",
-    icon: <HistoryOutlined />,
+    icon: <HomeOutlined />,
     label: "Stock Room Details",
   },
   {
     key: "/main/restock-requests",
-    icon: <HistoryOutlined />,
+    icon: <ShoppingCartOutlined />,
     label: "Restock Requests",
+  },
+    {
+    key: "/main/admin-activity-log",
+    icon: <HistoryOutlined />,
+    label: "Activity Log",
   },
   {
     key: "policy",

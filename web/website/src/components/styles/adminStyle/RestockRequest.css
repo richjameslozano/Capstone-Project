@@ -1,4 +1,4 @@
-.restock-layout {
+/* .restock-layout {
   min-height: 100vh;
   background-color: #f5f7fa;
 }
@@ -40,18 +40,18 @@
 }
 
 .restock-table .ant-table-tbody > tr:nth-child(odd) > td {
-  background-color: #fafafa; /* Light gray */
+  background-color: #fafafa; 
 }
 
 .restock-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #ffffff; /* White */
+  background-color: #ffffff; 
 }
 
 .restock-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
+  background-color: #e6f7ff; 
 }
 
-/* Mobile Responsive Styles */
+
 @media (max-width: 768px) {
   .restock-content {
     margin: 10px;
@@ -102,7 +102,7 @@
     position: relative;
   }
 
-  /* Make table horizontally scrollable on mobile */
+
   .restock-table {
     min-width: 600px;
   }
@@ -123,7 +123,7 @@
     overflow-x: visible;
   }
 
-  /* Force table to be scrollable */
+
   .table-responsive-wrapper .ant-table {
     width: max-content !important;
     min-width: 600px !important;
@@ -137,7 +137,7 @@
     overflow-x: visible !important;
   }
 
-  /* Adjust table cell padding for mobile */
+
   .restock-table .ant-table-tbody > tr > td {
     padding: 8px 4px;
     font-size: 12px;
@@ -148,7 +148,7 @@
     font-size: 12px;
   }
 
-  /* Modal responsive adjustments */
+
   .ant-modal {
     margin: 10px;
     max-width: calc(100vw - 20px);
@@ -159,13 +159,13 @@
     overflow-y: auto;
   }
 
-  /* Button adjustments for mobile */
+
   .ant-btn {
     min-height: 40px;
     font-size: 14px;
   }
 
-  /* Input adjustments for mobile */
+
   .ant-input,
   .ant-select-selector,
   .ant-input-number {
@@ -173,7 +173,7 @@
     font-size: 14px;
   }
 
-  /* Textarea adjustments */
+
   textarea {
     min-height: 80px;
     font-size: 14px;
@@ -210,3 +210,295 @@
     max-height: calc(100vh - 10px);
   }
 }
+ */
+
+ /* RestockRequest.css - Updated with new color scheme */
+
+.restock-layout {
+  background: linear-gradient(135deg, #bee0ec 0%, #ffffff 100%) !important;
+  min-height: 100vh;
+}
+
+.restock-layout .ant-layout-content {
+  background: transparent !important;
+}
+
+.restock-content {
+  /* padding: 24px; */
+  max-width: 1400px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.restock-header {
+  margin-bottom: 24px;
+}
+
+.restock-header .ant-typography h2 {
+  color: white !important;
+  margin: 0;
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.export-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.export-buttons .ant-btn {
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.export-buttons .ant-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.filter-row {
+  margin-bottom: 24px;
+}
+
+.filter-select .ant-select-selector {
+  border-radius: 8px !important;
+  border: 2px solid #e2e8f0 !important;
+  transition: all 0.2s ease !important;
+}
+
+.filter-select .ant-select-selector:hover {
+  border-color: #2596be !important;
+}
+
+.filter-select .ant-select-focused .ant-select-selector {
+  border-color: #2596be !important;
+  box-shadow: 0 0 0 2px rgba(37, 150, 190, 0.1) !important;
+}
+
+.restock-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.restock-table .ant-table {
+  border-radius: 12px;
+}
+
+.restock-table .ant-table-thead > tr > th {
+  background: #fafafa !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  padding: 16px !important;
+}
+
+.restock-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f3f4f6 !important;
+  padding: 16px !important;
+  transition: all 0.2s ease;
+}
+
+.restock-table .ant-table-tbody > tr:hover > td {
+  background: #f8fafc !important;
+  transform: scale(1.001);
+}
+
+.restock-table .ant-table-tbody > tr {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.table-responsive-wrapper {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+
+.ant-card {
+  transition: all 0.3s ease !important;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+
+.ant-card:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.12) !important;
+}
+
+.ant-card-body {
+  border-radius: 12px;
+}
+
+
+.ant-card.ant-card-hoverable {
+  border-radius: 12px !important;
+  background: white !important;
+}
+
+
+.ant-modal-header {
+  border-bottom: 1px solid #f0f0f0 !important;
+  border-radius: 8px 8px 0 0 !important;
+}
+
+.ant-modal-content {
+  border-radius: 12px !important;
+}
+
+.ant-modal-footer {
+  border-top: 1px solid #f0f0f0 !important;
+  border-radius: 0 0 8px 8px !important;
+}
+
+.ant-modal-footer .ant-btn {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+}
+
+
+.ant-btn-primary {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: all 0.2s ease !important;
+}
+
+.ant-btn-primary:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(37, 150, 190, 0.3) !important;
+}
+
+.ant-btn-danger:hover {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(211, 47, 47, 0.3) !important;
+}
+
+
+.ant-tag {
+  border-radius: 16px !important;
+  font-weight: 500 !important;
+  padding: 4px 12px !important;
+  border: none !important;
+}
+
+
+.ant-badge-count {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  min-width: 24px !important;
+  height: 24px !important;
+  line-height: 24px !important;
+}
+
+
+.ant-spin-container {
+  border-radius: 12px;
+}
+
+.ant-spin-dot-item {
+  background-color: #2596be !important;
+}
+
+
+.ant-select-dropdown {
+  border-radius: 8px !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15) !important;
+}
+
+
+.ant-pagination {
+  padding: 16px 24px !important;
+  border-top: 1px solid #f0f0f0 !important;
+}
+
+.ant-pagination-item {
+  border-radius: 6px !important;
+}
+
+.ant-pagination-item-active {
+  background: #2596be !important;
+  border-color: #2596be !important;
+}
+
+.ant-pagination-item-active a {
+  color: white !important;
+}
+
+.ant-input-number {
+  border-radius: 6px !important;
+  border-color: #d9d9d9 !important;
+}
+
+.ant-input-number:hover {
+  border-color: #2596be !important;
+}
+
+.ant-input-number-focused {
+  border-color: #2596be !important;
+  box-shadow: 0 0 0 2px rgba(37, 150, 190, 0.1) !important;
+}
+
+
+textarea {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+  font-size: 14px !important;
+}
+
+textarea:focus {
+  border-color: #2596be !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(37, 150, 190, 0.1) !important;
+}
+
+@media (max-width: 768px) {
+  .restock-content {
+    padding: 16px;
+  }
+  
+  .restock-header .ant-typography h2 {
+    font-size: 2rem !important;
+  }
+  
+  .export-buttons {
+    justify-content: center;
+    margin-top: 16px;
+  }
+  
+  .ant-table-tbody > tr > td {
+    padding: 12px 8px !important;
+  }
+  
+  .ant-table-thead > tr > th {
+    padding: 12px 8px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .restock-header .ant-typography h2 {
+    font-size: 1.75rem !important;
+  }
+  
+  .ant-modal {
+    margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+    height: 100% !important;
+  }
+  
+  .ant-modal-content {
+    border-radius: 0 !important;
+    height: 100% !important;
+  }
+}
+
+.header-section {
+  width: 100%;
+  padding: 32px;
+  margin-bottom: 24px;
+  border-radius: 16px; /* or keep 16px if you want rounded edges */
+  background: linear-gradient(135deg, #0b2d39 0%, #1a6985 100%);
+  color: white;
+}
+
