@@ -4,7 +4,7 @@ import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import styles from '../styles/userStyle/ProfileStyle';
 import { useAuth } from '../contexts/AuthContext';  
 import { Avatar } from 'react-native-paper'; 
-import { addDoc, collection, serverTimestamp, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { addDoc, collection, serverTimestamp, doc, updateDoc, getDocs, query, where } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL,getStorage,uploadBytesResumable, uploadString } from 'firebase/storage';
 import { db, storage } from '../../backend/firebase/FirebaseConfig';
 import * as ImagePicker from 'expo-image-picker';
@@ -17,24 +17,31 @@ export default function ProfileScreen({ navigation }) {
   const [uploading, setUploading] = useState(false);
   const [headerHeight, setHeaderHeight] = useState(0);
   const [profileImage, setProfileImage] = useState(null);
-  const [isPolicy, setIsPolicy] = useState(false)
+  const [isPolicy, setIsPolicy] = useState(false);
+  const [warningCount, setWarningCount] = useState(0);
+  const [violationCount, setViolationCount] = useState(0);
 
   useEffect(() => {
-    const fetchProfileImage = async () => {
+    const fetchProfileData = async () => {
       try {
         if (!user?.id) return;
         const userDoc = await getDocs(collection(db, "accounts"));
         const userData = userDoc.docs.find(doc => doc.id === user.id)?.data();
+        
         if (userData?.profileImage) {
           setProfileImage(userData.profileImage);
         }
+        
+        // Set warning and violation counts from user data, default to 0 if not set
+        setWarningCount(userData?.warningCount || 0);
+        setViolationCount(userData?.violationCount || 0);
 
       } catch (error) {
-        console.error("Error fetching profile image:", error);
+        console.error("Error fetching profile data:", error);
       }
     };
 
-    fetchProfileImage();
+    fetchProfileData();
   }, [isFocused]);
 
   const capitalizeInitials = (name) =>
@@ -250,7 +257,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={[styles.info, {flex: 1}]}>
             <Icon name='alert-circle-outline' size={20} color='#6e9fc1'/>
             <View>
-              <Text style={{fontSize: 15, fontWeight: 'light'}}>0</Text>
+              <Text style={{fontSize: 15, fontWeight: 'light'}}>{warningCount}</Text>
               <Text style={styles.label}>Warning</Text>
             </View>
           </View>
@@ -258,7 +265,7 @@ export default function ProfileScreen({ navigation }) {
           <View style={[styles.info, {flex: 1}]}>
             <Icon name='alert-octagon-outline' size={20} color='#6e9fc1'/>
             <View>
-              <Text style={{fontSize: 15, fontWeight: 'light'}}>0</Text>
+              <Text style={{fontSize: 15, fontWeight: 'light'}}>{violationCount}</Text>
               <Text style={styles.label}>Violation</Text>
             </View>
           </View>

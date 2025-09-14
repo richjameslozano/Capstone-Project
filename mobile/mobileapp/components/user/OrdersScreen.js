@@ -718,6 +718,42 @@ export default function RequestScreen() {
     return daysDiff;
   };
 
+  // Function to increment warning count for user
+  const incrementWarningCount = async () => {
+    try {
+      if (!user?.id) return;
+
+      const userDocRef = doc(db, "accounts", user.id);
+      const userDoc = await getDoc(userDocRef);
+      
+      if (userDoc.exists()) {
+        const userData = userDoc.data();
+        const currentWarningCount = userData.warningCount || 0;
+        const currentViolationCount = userData.violationCount || 0;
+        
+        const newWarningCount = currentWarningCount + 1;
+        
+        // Check if warnings reach 3, then convert to violation
+        if (newWarningCount >= 3) {
+          // Reset warnings to 0 and increment violations by 1
+          await updateDoc(userDocRef, {
+            warningCount: 0,
+            violationCount: currentViolationCount + 1
+          });
+          console.log('Warning count reached 3, converted to violation for user:', user.id);
+        } else {
+          // Just increment warning count
+          await updateDoc(userDocRef, {
+            warningCount: newWarningCount
+          });
+          console.log('Warning count incremented for user:', user.id);
+        }
+      }
+    } catch (error) {
+      console.error('Error incrementing warning count:', error);
+    }
+  };
+
       const handleStatus =(item)=>{
       if(item.status === 'PENDING') return 'orange';
       if(item.action === 'APPROVED') return '#134b5f';
@@ -1867,9 +1903,11 @@ const renderDeployed = ({ item }) => {
       {/* Warning Modal for dates less than 7 days */}
       <WarningModal
         visible={isWarningModalVisible}
-        onOk={() => {
+        onOk={async () => {
           setIsWarningModalVisible(false);
-          // User chose to continue anyway, no additional action needed
+          
+          // Increment warning count when user proceeds with date < 7 days
+          await incrementWarningCount();
         }}
         onCancel={() => {
           setIsWarningModalVisible(false);
