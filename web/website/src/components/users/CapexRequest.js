@@ -10,7 +10,7 @@ import {
   Select,
   InputNumber,
 } from "antd";
-import { PlusOutlined, CheckOutlined, CloseOutlined, FileTextFilled, UploadOutlined, CheckCircleOutlined, PrinterOutlined } from "@ant-design/icons";
+import { PlusOutlined, CheckOutlined, CloseOutlined, FileTextFilled, UploadOutlined, CheckCircleOutlined, PrinterOutlined, EditOutlined } from "@ant-design/icons";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import { collection, addDoc, doc, setDoc, serverTimestamp, onSnapshot, deleteDoc, getDocs, writeBatch } from "firebase/firestore"; 
 import "../styles/usersStyle/CapexRequest.css";
@@ -590,7 +590,7 @@ const CapexRequest = () => {
             onClick={() => editRow(record)}
             style={{ marginRight: 8 }}
           >
-            ✏️
+            <EditOutlined/>
           </Button>
 
           <Popconfirm
@@ -600,7 +600,7 @@ const CapexRequest = () => {
             cancelText="No"
           >
             <Button type="link" danger loading={deleteLoading} disabled={saveLoading || submitLoading}>
-            ❌
+            <CloseOutlined/>
             </Button>
           </Popconfirm>
         </>
