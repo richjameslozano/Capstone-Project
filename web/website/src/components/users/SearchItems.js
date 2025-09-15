@@ -660,8 +660,8 @@ const SearchItems = () => {
 
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Layout className="site-layout">
+    <Layout style={{ height: 'auto' }}>
+      <Layout>
         <Content className="search-content">
 
                  <div className="header-section" style={{marginBottom: 0}}>

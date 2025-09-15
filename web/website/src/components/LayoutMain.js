@@ -523,7 +523,7 @@ const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDT
 
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    <Layout style={{ }}>
       {/* Mobile backdrop overlay */}
       {isMobile && mobileOpen && (
         <div 
@@ -612,7 +612,7 @@ const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDT
 
       <Layout style={{ 
         marginLeft: isMobile ? 0 : (collapsed ? 80 : 250),
-        transition: 'margin-left 0.3s ease-in-out'
+        transition: 'margin-left 0.3s ease-in-out',
       }}>
         <Header
           style={{
