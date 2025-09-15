@@ -71,7 +71,37 @@
 }
 
 .search-table {
+  border-radius: 12px;
+  overflow: hidden;
   width: 100%;
+}
+
+.search-table .ant-table {
+  border-radius: 12px;
+}
+
+.search-table .ant-table-thead > tr > th {
+  background: #fafafa !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  padding: 16px !important;
+}
+
+.search-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f3f4f6 !important;
+  padding: 16px !important;
+  transition: all 0.2s ease;
+}
+
+.search-table .ant-table-tbody > tr:hover > td {
+  background: #f8fafc !important;
+  transform: scale(1.001);
+}
+
+.search-table .ant-table-tbody > tr {
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 /* Mobile responsive styles for table */
@@ -236,30 +266,55 @@
 /* Mobile responsive styles for search/filter section */
 .search-filter-section {
   display: flex;
-  width: 50%;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  width: 100%;
   gap: 20px;
+  background-color: #fff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-radius: 10px;
 }
 
+/* Input takes full width by default */
+.search-input {
+  flex: 1;
+  min-width: 220px;
+}
+
+/* Selects have flexible width */
+.filter-space {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.filter-select {
+  height: 43px;
+  flex: 1;
+}
+
+/* Tablet */
 @media (max-width: 768px) {
   .search-filter-section {
-    width: 100%;
     flex-direction: column;
     gap: 15px;
   }
-  
-  .search-filter-section .ant-select {
+
+  .search-input,
+  .filter-select {
     width: 100% !important;
   }
 }
 
+/* Mobile */
 @media (max-width: 480px) {
   .search-filter-section {
-    width: 100%;
-    flex-direction: column;
     gap: 10px;
   }
-  
-  .search-filter-section .ant-select {
+
+  .search-input,
+  .filter-select {
     width: 100% !important;
   }
 }

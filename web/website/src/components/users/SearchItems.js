@@ -445,6 +445,8 @@ import {
   Space,
   Modal,
   Descriptions,
+  Row,
+  Col,
 } from "antd";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
@@ -459,7 +461,7 @@ import {
 } from "@ant-design/icons";
 
 const { Content } = Layout;
-const { Title } = Typography;
+const { Title, Text } = Typography;
 const { Option } = Select;
 
   const handleColor = (item) => {
@@ -662,63 +664,81 @@ const SearchItems = () => {
       <Layout className="site-layout">
         <Content className="search-content">
 
-            
-            <div className="description-section">
-            <div style={{display: 'flex', marginBottom: 10, gap: 10}}>
-            <SearchOutlined style={{fontSize: 25}}/>
-            <h1 style={{margin: 0}}>Inventory Search</h1>
-            </div>
-            <p style={{ fontSize: 15}}>Use the <b>search feature</b> below to quickly find and access medical technology supplies available in the school's inventory. Filter by item name, category, or availability to locate the equipment or materials you need for classes, labs, or training sessions. Each item includes key details such as quantity in stock, condition, and storage location to help you manage resources efficiently.</p>
-            </div>
+                 <div className="header-section" style={{marginBottom: 0}}>
+  <Row justify="space-between" align="middle">
+    <Col xs={24} sm={24} md={14} lg={16}>
+      <Title 
+        level={1} 
+        style={{ color: "white", margin: 0, fontSize: "2.5rem", fontWeight: 700 }}
+      >
+        Search Inventory
+      </Title>
+      <Text 
+        style={{ color: "rgba(255,255,255,0.85)", fontSize: "16px", marginTop: "8px", display: "block" }}
+      >
+        Use the <b>search feature</b> below to quickly find and access medical technology supplies available in the school's inventory. Filter by item name, category, or availability to locate the equipment or materials you need for classes, labs, or training sessions.
+      </Text>
+    </Col>
+    <Col xs={24} sm={24} md={10} lg={8}>
+      <Space size="middle" style={{ width: "100%", justifyContent: "flex-end", flexWrap: "wrap" }}>
+      </Space>
+    </Col>
+  </Row>
+</div>
+
      
 
 
-            <div className="search-filter-section">
-            <Input
-              placeholder="Search by item description..."
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              allowClear
-              prefix={<SearchOutlined />}
-              className="search-input"
-            />
+<div className="search-filter-section">
+  <Input
+    placeholder="Search by item description..."
+    value={searchText}
+    onChange={(e) => setSearchText(e.target.value)}
+    allowClear
+    prefix={<SearchOutlined />}
+    className="search-input"
+  />
 
-            <Space style={{}} wrap>
-              <Select
-                placeholder="Filter by Status"
-                allowClear
-                showSearch
-                style={{ width: 200 }}
-                onChange={(value) => setStatusFilter(value)}
-                value={statusFilter}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                <Option value="Available">Available</Option>
-                <Option value="Out of Stock">Out of Stock</Option>
-                <Option value="In Use">In Use</Option>
-              </Select>
+  <div style={{display: 'flex', gap: 20, justifyItems: 'space-between'}}>
+    <Select
+      placeholder="Filter by Status"
+      allowClear
+      showSearch
+      onChange={(value) => setStatusFilter(value)}
+      value={statusFilter}
+      className="filter-select"
+      filterOption={(input, option) =>
+        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      }
+    >
+      <Option value="Available">Available</Option>
+      <Option value="Out of Stock">Out of Stock</Option>
+      <Option value="In Use">In Use</Option>
+    </Select>
 
-              <Select
-                placeholder="Filter by Category"
-                allowClear
-                showSearch
-                style={{ width: 200 }}
-                onChange={(value) => setCategoryFilter(value)}
-                value={categoryFilter}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                <Option value="Chemical">Chemical</Option>
-                <Option value="Reagent">Reagent</Option>
-                <Option value="Materials">Materials</Option>
-                <Option value="Equipment">Equipment</Option>
-                <Option value="Glasswares">Glasswares</Option>
-              </Select>
-            </Space>
-            </div>
+    <Select
+      placeholder="Filter by Category"
+      allowClear
+      showSearch
+      onChange={(value) => setCategoryFilter(value)}
+      value={categoryFilter}
+      className="filter-select"
+      filterOption={(input, option) =>
+        option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+      }
+    >
+      <Option value="Chemical">Chemical</Option>
+      <Option value="Reagent">Reagent</Option>
+      <Option value="Materials">Materials</Option>
+      <Option value="Equipment">Equipment</Option>
+      <Option value="Glasswares">Glasswares</Option>
+    </Select>
+  </div>
+</div>
+
+
+
+
           <div className="pending-main">
             <Table
               columns={columns}
