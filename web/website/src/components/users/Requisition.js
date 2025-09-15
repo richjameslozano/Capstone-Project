@@ -570,10 +570,11 @@ const Requisition = () => {
       }
 
       try {
-        // Get start and end of today for timestamp comparison
+        // Get today's date in YYYY-MM-DD format
         const today = new Date();
-        const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
-        const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1);
+        const todayStr = today.toISOString().split('T')[0];
+        
+        console.log("Today's date string:", todayStr);
         
         // Query user's approved requests from historylog collection
         const historyLogRef = collection(db, `accounts/${userId}/historylog`);
@@ -581,44 +582,27 @@ const Requisition = () => {
         const querySnapshot = await getDocs(q);
         
         console.log("Total approved requests found in historylog:", querySnapshot.size);
-        console.log("Start of day:", startOfDay);
-        console.log("End of day:", endOfDay);
         
         let todayCount = 0;
         
-        // Check approved requests from historylog
+        // Check approved requests from historylog for required date
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          console.log("HistoryLog - Request timestamp:", data.timestamp);
-          if (data.timestamp) {
-            // Handle both Firestore Timestamp and regular Date objects
-            let requestDate;
-            if (data.timestamp.toDate) {
-              // Firestore Timestamp
-              requestDate = data.timestamp.toDate();
-            } else if (data.timestamp.seconds) {
-              // Firestore Timestamp with seconds property
-              requestDate = new Date(data.timestamp.seconds * 1000);
-            } else {
-              // Regular Date object
-              requestDate = new Date(data.timestamp);
-            }
-            
-            console.log("HistoryLog - Parsed request date:", requestDate);
-            console.log("HistoryLog - Is today?", requestDate >= startOfDay && requestDate < endOfDay);
-            
-            if (requestDate >= startOfDay && requestDate < endOfDay) {
-              todayCount++;
-            }
+          console.log("HistoryLog - Required date:", data.dateRequired);
+          
+          // Check if the required date is today
+          if (data.dateRequired === todayStr) {
+            console.log("Found request with required date today:", data.dateRequired);
+            todayCount++;
           }
         });
         
         setTodayRequestCount(todayCount);
         
-        console.log("Today's request count:", todayCount);
+        console.log("Today's request count (based on required date):", todayCount);
         console.log("Login success state:", location.state?.loginSuccess);
         
-        // Show modal if user has made requests today and just logged in
+        // Show modal if user has requests required today and just logged in
         if (todayCount > 0 && location.state?.loginSuccess) {
           console.log("Showing today's request modal");
           // Delay the modal to show after login success modal
