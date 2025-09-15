@@ -122,33 +122,6 @@
   text-align: right;
 }
 
-.capex-history-table {
-  padding-top: 20px;
-}
-
-.capex-history-table .ant-table-tbody > tr:nth-child(odd) > td {
-  background-color: #fafafa; /* Light gray */
-}
-
-.capex-history-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #ffffff; /* White */
-}
-
-.capex-history-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
-}
-
-.capex-table .ant-table-tbody > tr:nth-child(odd) > td {
-  background-color: #fafafa; /* Light gray */
-}
-
-.capex-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #ffffff; /* White */
-}
-
-.capex-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
-}
 
 .capex-modal-table .ant-table-tbody > tr:nth-child(odd) > td {
   background-color: #fafafa; /* Light gray */
@@ -357,4 +330,104 @@
   .ant-input-number-input {
     height: 34px;
   }
+}
+
+.ant-input-number-group-addon {
+  padding: 0 10px;       /* adjust left/right spacing */
+  display: flex;
+  align-items: center;   /* vertically center ₱ */
+  background: #f5f5f5;   /* optional: match input style */
+  border-radius: 8px 0 0 8px; /* rounded corners left */
+  border: 2px solid #a8d5e5;
+  border-right: none;
+  height: 40px;          /* ✅ force same height as input */
+}
+
+.capex-list-table {
+  border-radius: 12px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.capex-list-table .ant-table {
+  border-radius: 12px;
+}
+
+.capex-list-table .ant-table-thead > tr > th {
+  background: #fafafa !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  padding: 16px !important;
+}
+
+.capex-list-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f3f4f6 !important;
+  padding: 16px !important;
+  transition: all 0.2s ease;
+}
+
+.capex-list-table .ant-table-tbody > tr:hover > td {
+  background: #f8fafc !important;
+  transform: scale(1.001);
+}
+
+.capex-list-table .ant-table-tbody > tr {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* Mobile responsive styles for table */
+@media (max-width: 768px) {
+  .capex-list-table {
+    font-size: 14px;
+  }
+  
+  .capex-list-table .ant-table-thead > tr > th {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+  
+  .capex-list-table .ant-table-tbody > tr > td {
+    padding: 8px 4px;
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .capex-list-table {
+    font-size: 12px;
+  }
+  
+  .capex-list-table .ant-table-thead > tr > th {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+  
+  .capex-list-table .ant-table-tbody > tr > td {
+    padding: 6px 2px;
+    font-size: 11px;
+  }
+  
+  /* Make table horizontally scrollable on very small screens */
+  .capex-list-table .ant-table-container {
+    overflow-x: auto;
+  }
+}
+
+
+.capex-list-table .ant-table-tbody > tr:nth-child(odd) > td {
+  background-color: #fafafa; /* Light gray */
+}
+
+.capex-list-table .ant-table-tbody > tr:nth-child(even) > td {
+  background-color: #ffffff; /* White */
+}
+
+.capex-list-table .ant-table-tbody > tr:hover > td {
+  background-color: #e6f7ff; /* Light blue highlight */
+}
+
+.capex-list-table .ant-table-placeholder {
+  display: none !important;
 }
