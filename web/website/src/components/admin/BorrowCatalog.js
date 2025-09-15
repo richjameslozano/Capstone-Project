@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo  } from "react";
-import { Layout, Row, Col, Table, Input, Typography, Select, Tabs } from "antd";
+import { Layout, Row, Col, Table, Input, Typography, Select, Tabs, Checkbox, Button, Modal } from "antd";
 import { DotChartOutlined, DropboxOutlined, EllipsisOutlined, FontSizeOutlined, StarOutlined } from '@ant-design/icons';
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
@@ -18,6 +18,9 @@ const BorrowCatalog = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  const [isUnclaimedModalVisible, setIsUnclaimedModalVisible] = useState(false);
+  const [unclaimedComment, setUnclaimedComment] = useState("");
   const statusOptions = [
     'All',
     'Borrowed',
@@ -308,6 +311,58 @@ const others = filteredCatalog.filter((item) => {
     setSelectedRequest(null);
   };
 
+  const handleCheckboxChange = (itemId, checked) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(itemId);
+      } else {
+        newSet.delete(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleMarkAsUnclaimed = () => {
+    if (selectedItems.size === 0) {
+      // You could add a notification here
+      return;
+    }
+    
+    // Show confirmation modal
+    setIsUnclaimedModalVisible(true);
+  };
+
+  const handleConfirmUnclaimed = async () => {
+    try {
+      // Here you would typically update the status in your database
+      console.log('Marking items as unclaimed:', Array.from(selectedItems));
+      console.log('Comment:', unclaimedComment);
+      
+      // You would add your database update logic here
+      // Example: await updateItemStatus(Array.from(selectedItems), 'Unclaimed', unclaimedComment);
+      
+      // Clear selected items and comment after processing
+      setSelectedItems(new Set());
+      setUnclaimedComment("");
+      
+      // Close modal
+      setIsUnclaimedModalVisible(false);
+      
+    } catch (error) {
+      console.error('Error marking items as unclaimed:', error);
+    }
+  };
+
+  const handleCancelUnclaimed = () => {
+    setIsUnclaimedModalVisible(false);
+    setUnclaimedComment(""); // Clear comment when canceling
+  };
+
+  const getSelectedItemsData = () => {
+    return catalog.filter(item => selectedItems.has(item.id));
+  };
+
   const formatDate = (timestamp) => {
     if (!timestamp) return "N/A";
   
@@ -371,19 +426,31 @@ const others = filteredCatalog.filter((item) => {
       </div>
       </div>
 
-                   <Search
-                   style={{width: 600, marginLeft: 20, justifySelf: 'flex-end'}}
-                  placeholder="Search"
-                  allowClear
-                  enterButton
-                  value={searchQuery}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
-                    setSearchQuery(sanitized);
-                  }}
-                  onSearch={handleSearch}
-                />
+      <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+        <Button
+          type="primary"
+          danger
+          onClick={handleMarkAsUnclaimed}
+          disabled={selectedItems.size === 0}
+          className="unclaimed-button"
+        >
+          Mark as Unclaimed ({selectedItems.size})
+        </Button>
+
+        <Search
+          style={{width: 600}}
+          placeholder="Search"
+          allowClear
+          enterButton
+          value={searchQuery}
+          onChange={(e) => {
+            const value = e.target.value;
+            const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
+            setSearchQuery(sanitized);
+          }}
+          onSearch={handleSearch}
+        />
+      </div>
       </div>
     
     <div className="catalog-cards">
@@ -402,16 +469,30 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
               <h3>{item.requestor}</h3>
-              <span 
-  className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}
->
-                {item.status}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selectedItems.has(item.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleCheckboxChange(item.id, e.target.checked);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  />
+                </div>
+                <span 
+                  className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}
+                >
+                  {item.status}
+                </span>
+              </div>
             </div>
             <div className="card-body">
               <p><strong>Course:</strong> {item.course}</p>
@@ -459,14 +540,26 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
               <h3>{item.requestor}</h3>
-              <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
-                {item.status}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Checkbox
+                  checked={selectedItems.has(item.id)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleCheckboxChange(item.id, e.target.checked);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                />
+                <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
+                  {item.status}
+                </span>
+              </div>
             </div>
             <div className="card-body">
               <p><strong>Course:</strong> {item.course}</p>
@@ -527,7 +620,7 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
@@ -581,7 +674,7 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
@@ -634,7 +727,7 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
@@ -698,6 +791,97 @@ const others = filteredCatalog.filter((item) => {
               columns={columns}
               formatDate={formatDate}
             />
+
+            {/* Unclaimed Confirmation Modal */}
+            <Modal
+              title="Confirm Mark as Unclaimed"
+              open={isUnclaimedModalVisible}
+              onOk={handleConfirmUnclaimed}
+              onCancel={handleCancelUnclaimed}
+              okText="Mark as Unclaimed"
+              zIndex={1015}
+              cancelText="Cancel"
+              okButtonProps={{
+                danger: true,
+                style: {
+                  backgroundColor: '#ff4d4f',
+                  borderColor: '#ff4d4f'
+                }
+              }}
+              width={600}
+            >
+              <div style={{ marginBottom: '16px' }}>
+                <p style={{ fontSize: '16px', marginBottom: '16px' }}>
+                  Are you sure you want to mark the following <strong>{selectedItems.size}</strong> item(s) as unclaimed?
+                </p>
+                
+                <div style={{ 
+                  maxHeight: '300px', 
+                  overflowY: 'auto', 
+                  border: '1px solid #d9d9d9', 
+                  borderRadius: '6px',
+                  padding: '12px',
+                  backgroundColor: '#fafafa'
+                }}>
+                  {getSelectedItemsData().map((item, index) => (
+                    <div key={item.id} style={{
+                      padding: '8px 0',
+                      borderBottom: index < getSelectedItemsData().length - 1 ? '1px solid #e8e8e8' : 'none',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#333' }}>
+                          {item.requestor}
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#666' }}>
+                          {item.course} - {item.courseDescription}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#999' }}>
+                          Date Required: {item.dateRequired}
+                        </div>
+                      </div>
+                      <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
+                        {item.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div style={{ marginTop: '16px' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontWeight: '500',
+                    color: '#333'
+                  }}>
+                    Comment (Optional)
+                  </label>
+                  <Input.TextArea
+                    value={unclaimedComment}
+                    onChange={(e) => setUnclaimedComment(e.target.value)}
+                    placeholder="Add a reason or note for marking these items as unclaimed..."
+                    rows={3}
+                    maxLength={500}
+                    showCount
+                    style={{
+                      borderRadius: '6px',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#ff4d4f', 
+                  marginTop: '12px',
+                  fontStyle: 'italic'
+                }}>
+                  ⚠️ This action cannot be undone. Items will be moved to the "Unclaimed" status.
+                </p>
+              </div>
+            </Modal>
         </Content>
       </Layout>
     </Layout>
