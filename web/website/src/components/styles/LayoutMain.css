@@ -116,6 +116,8 @@
   /* Content adjustments */
   .ant-layout-content {
     padding: 12px !important;
+    min-height: 100% !important;
+    height: auto !important;
   }
 }
 
