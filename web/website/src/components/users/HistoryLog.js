@@ -1541,7 +1541,6 @@ console.log(deployedData);
   );
 };
 
-
 const renderReturnedTab = () => {
   const returnedData = filteredData.filter((item) => item.action === 'Returned' || item.action === 'Released');
 
