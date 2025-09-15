@@ -51,6 +51,14 @@ const Login = () => {
   });
   const [passwordResetError, setPasswordResetError] = useState("");
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+  const [passwordResetValidation, setPasswordResetValidation] = useState({
+    hasLength: false,
+    hasUppercase: false,
+    hasLowercase: false,
+    hasNumber: false,
+    hasSpecial: false,
+    matches: false
+  });
   const [signUpData, setSignUpData] = useState({
     
     name: "",
@@ -1434,6 +1442,14 @@ const Login = () => {
       // Success - close modal and show success message
       setIsPasswordResetModalVisible(false);
       setPasswordResetData({ newPassword: "", confirmNewPassword: "" });
+      setPasswordResetValidation({
+        hasLength: false,
+        hasUppercase: false,
+        hasLowercase: false,
+        hasNumber: false,
+        hasSpecial: false,
+        matches: false
+      });
       setModalMessage("Password set successfully! You can now log in with your new password.");
       setIsModalVisible(true);
 
@@ -1962,6 +1978,16 @@ const Login = () => {
                   onChange={(e) => {
                     const value = e.target.value.replace(/\s/g, "");
                     setPasswordResetData(prev => ({ ...prev, newPassword: value }));
+                    
+                    // Real-time password validation
+                    setPasswordResetValidation({
+                      hasLength: value.length >= 8,
+                      hasUppercase: /[A-Z]/.test(value),
+                      hasLowercase: /[a-z]/.test(value),
+                      hasNumber: /\d/.test(value),
+                      hasSpecial: /[@$!%*#?&]/.test(value),
+                      matches: passwordResetData.confirmNewPassword ? value === passwordResetData.confirmNewPassword : false
+                    });
                   }}
                   onKeyDown={(e) => {
                     if (e.key === " ") {
@@ -1989,6 +2015,12 @@ const Login = () => {
                   onChange={(e) => {
                     const value = e.target.value.replace(/\s/g, "");
                     setPasswordResetData(prev => ({ ...prev, confirmNewPassword: value }));
+                    
+                    // Update password match validation
+                    setPasswordResetValidation(prev => ({
+                      ...prev,
+                      matches: value === passwordResetData.newPassword
+                    }));
                   }}
                   onKeyDown={(e) => {
                     if (e.key === " ") {
@@ -2007,6 +2039,73 @@ const Login = () => {
               </div>
             </div>
 
+            {/* Password Validation Indicators */}
+            {passwordResetData.newPassword && (
+              <div className="password-validation" style={{
+                marginTop: "10px",
+                padding: "10px",
+                backgroundColor: "#f8f9fa",
+                borderRadius: "5px",
+                border: "1px solid #e9ecef"
+              }}>
+                <p style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "500", color: "#495057" }}>
+                  Password Requirements:
+                </p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: passwordResetValidation.hasLength ? "#28a745" : "#dc3545" }}>
+                      {passwordResetValidation.hasLength ? "✓" : "✗"}
+                    </span>
+                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasLength ? "#28a745" : "#6c757d" }}>
+                      At least 8 characters
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: passwordResetValidation.hasUppercase ? "#28a745" : "#dc3545" }}>
+                      {passwordResetValidation.hasUppercase ? "✓" : "✗"}
+                    </span>
+                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasUppercase ? "#28a745" : "#6c757d" }}>
+                      One uppercase letter
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: passwordResetValidation.hasLowercase ? "#28a745" : "#dc3545" }}>
+                      {passwordResetValidation.hasLowercase ? "✓" : "✗"}
+                    </span>
+                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasLowercase ? "#28a745" : "#6c757d" }}>
+                      One lowercase letter
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: passwordResetValidation.hasNumber ? "#28a745" : "#dc3545" }}>
+                      {passwordResetValidation.hasNumber ? "✓" : "✗"}
+                    </span>
+                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasNumber ? "#28a745" : "#6c757d" }}>
+                      One number
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span style={{ color: passwordResetValidation.hasSpecial ? "#28a745" : "#dc3545" }}>
+                      {passwordResetValidation.hasSpecial ? "✓" : "✗"}
+                    </span>
+                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasSpecial ? "#28a745" : "#6c757d" }}>
+                      One special character (@$!%*#?&)
+                    </span>
+                  </div>
+                  {passwordResetData.confirmNewPassword && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <span style={{ color: passwordResetValidation.matches ? "#28a745" : "#dc3545" }}>
+                        {passwordResetValidation.matches ? "✓" : "✗"}
+                      </span>
+                      <span style={{ fontSize: "13px", color: passwordResetValidation.matches ? "#28a745" : "#6c757d" }}>
+                        Passwords match
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
             {passwordResetError && (
               <p className="error-message">{passwordResetError}</p>
             )}
@@ -2015,7 +2114,7 @@ const Login = () => {
               <button 
                 onClick={handlePasswordReset} 
                 className="modal-btn-send"
-                disabled={passwordResetLoading}
+                disabled={passwordResetLoading || !passwordResetValidation.hasLength || !passwordResetValidation.hasUppercase || !passwordResetValidation.hasLowercase || !passwordResetValidation.hasNumber || !passwordResetValidation.hasSpecial || !passwordResetValidation.matches}
               >
                 {passwordResetLoading ? "Setting Password..." : "Set Password"}
               </button>
@@ -2024,6 +2123,14 @@ const Login = () => {
                   setIsPasswordResetModalVisible(false);
                   setPasswordResetData({ newPassword: "", confirmNewPassword: "" });
                   setPasswordResetError("");
+                  setPasswordResetValidation({
+                    hasLength: false,
+                    hasUppercase: false,
+                    hasLowercase: false,
+                    hasNumber: false,
+                    hasSpecial: false,
+                    matches: false
+                  });
                   // Clear localStorage and redirect to login
                   localStorage.clear();
                 }}

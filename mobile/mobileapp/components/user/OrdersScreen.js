@@ -939,6 +939,22 @@ const renderItem = ({ item }) => {
             </Text>
           </View>
         </View>
+
+        {/* Unclaimed Comment */}
+        {item.action === 'UNCLAIMED' && data.unclaimedComment && (
+          <View style={{
+            padding: 10,
+            backgroundColor: '#f5f5f5',
+            marginTop: 5,
+            borderRadius: 5,
+            borderWidth: 1,
+            borderColor: '#d9d9d9'
+          }}>
+            <Text style={{ fontSize: 13, fontWeight: '500', color: '#333' }}>
+              <Text style={{ fontWeight: 'bold' }}>Reason:</Text> {data.unclaimedComment}
+            </Text>
+          </View>
+        )}
       </TouchableOpacity>
 
       {/* Reorder Button for Completed Orders */}
@@ -1454,6 +1470,14 @@ const renderDeployed = ({ item }) => {
 
           <Text style={styles.modalLabel}>Date Required:</Text>
           <Text style={styles.modalValue}>{selectedLog?.dateRequired || 'N/A'}</Text>
+
+          {/* Unclaimed Comment */}
+          {selectedLog?.action === 'Unclaimed' && selectedLog?.unclaimedComment && (
+            <>
+              <Text style={styles.modalLabel}>Unclaimed Reason:</Text>
+              <Text style={styles.modalValue}>{selectedLog.unclaimedComment}</Text>
+            </>
+          )}
         </View>
 
 <Text style={styles.modalSubtitle}>Items</Text>

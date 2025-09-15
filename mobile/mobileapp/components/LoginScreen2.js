@@ -66,6 +66,14 @@ export default function LoginScreen({navigation}) {
   });
   const [passwordResetError, setPasswordResetError] = useState("");
   const [passwordResetLoading, setPasswordResetLoading] = useState(false);
+  const [passwordResetValidation, setPasswordResetValidation] = useState({
+    hasLength: false,
+    hasUppercase: false,
+    hasLowercase: false,
+    hasNumber: false,
+    hasSpecial: false,
+    matches: false
+  });
 
   const [focusStates, setFocusStates] = useState({
   name: false,
@@ -703,6 +711,14 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
           userRole: "",
           userJobTitle: ""
         });
+        setPasswordResetValidation({
+          hasLength: false,
+          hasUppercase: false,
+          hasLowercase: false,
+          hasNumber: false,
+          hasSpecial: false,
+          matches: false
+        });
         setModalMessage("Password set successfully! You can now log in with your new password.");
         setIsModalVisible(true);
 
@@ -1276,6 +1292,16 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     onChangeText={(text) => {
                       const value = text.replace(/\s/g, "");
                       setPasswordResetData(prev => ({ ...prev, newPassword: value }));
+                      
+                      // Real-time password validation
+                      setPasswordResetValidation({
+                        hasLength: value.length >= 8,
+                        hasUppercase: /[A-Z]/.test(value),
+                        hasLowercase: /[a-z]/.test(value),
+                        hasNumber: /\d/.test(value),
+                        hasSpecial: /[@$!%*#?&]/.test(value),
+                        matches: passwordResetData.confirmNewPassword ? value === passwordResetData.confirmNewPassword : false
+                      });
                     }}
                     secureTextEntry={!showPassword}
                     mode="outlined"
@@ -1302,6 +1328,12 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                     onChangeText={(text) => {
                       const value = text.replace(/\s/g, "");
                       setPasswordResetData(prev => ({ ...prev, confirmNewPassword: value }));
+                      
+                      // Update password match validation
+                      setPasswordResetValidation(prev => ({
+                        ...prev,
+                        matches: value === passwordResetData.newPassword
+                      }));
                     }}
                     secureTextEntry={!showPassword}
                     mode="outlined"
@@ -1320,6 +1352,121 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                   />
                 </Animated.View>
 
+                {/* Password Validation Indicators */}
+                {passwordResetData.newPassword && (
+                  <View style={{
+                    marginTop: 15,
+                    padding: 15,
+                    backgroundColor: '#f8f9fa',
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#e9ecef'
+                  }}>
+                    <Text style={{ 
+                      marginBottom: 10, 
+                      fontSize: 14, 
+                      fontWeight: '600', 
+                      color: '#495057' 
+                    }}>
+                      Password Requirements:
+                    </Text>
+                    <View style={{ gap: 6 }}>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ 
+                          color: passwordResetValidation.hasLength ? '#28a745' : '#dc3545',
+                          marginRight: 8,
+                          fontSize: 16
+                        }}>
+                          {passwordResetValidation.hasLength ? '✓' : '✗'}
+                        </Text>
+                        <Text style={{ 
+                          fontSize: 13, 
+                          color: passwordResetValidation.hasLength ? '#28a745' : '#6c757d' 
+                        }}>
+                          At least 8 characters
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ 
+                          color: passwordResetValidation.hasUppercase ? '#28a745' : '#dc3545',
+                          marginRight: 8,
+                          fontSize: 16
+                        }}>
+                          {passwordResetValidation.hasUppercase ? '✓' : '✗'}
+                        </Text>
+                        <Text style={{ 
+                          fontSize: 13, 
+                          color: passwordResetValidation.hasUppercase ? '#28a745' : '#6c757d' 
+                        }}>
+                          One uppercase letter
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ 
+                          color: passwordResetValidation.hasLowercase ? '#28a745' : '#dc3545',
+                          marginRight: 8,
+                          fontSize: 16
+                        }}>
+                          {passwordResetValidation.hasLowercase ? '✓' : '✗'}
+                        </Text>
+                        <Text style={{ 
+                          fontSize: 13, 
+                          color: passwordResetValidation.hasLowercase ? '#28a745' : '#6c757d' 
+                        }}>
+                          One lowercase letter
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ 
+                          color: passwordResetValidation.hasNumber ? '#28a745' : '#dc3545',
+                          marginRight: 8,
+                          fontSize: 16
+                        }}>
+                          {passwordResetValidation.hasNumber ? '✓' : '✗'}
+                        </Text>
+                        <Text style={{ 
+                          fontSize: 13, 
+                          color: passwordResetValidation.hasNumber ? '#28a745' : '#6c757d' 
+                        }}>
+                          One number
+                        </Text>
+                      </View>
+                      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ 
+                          color: passwordResetValidation.hasSpecial ? '#28a745' : '#dc3545',
+                          marginRight: 8,
+                          fontSize: 16
+                        }}>
+                          {passwordResetValidation.hasSpecial ? '✓' : '✗'}
+                        </Text>
+                        <Text style={{ 
+                          fontSize: 13, 
+                          color: passwordResetValidation.hasSpecial ? '#28a745' : '#6c757d' 
+                        }}>
+                          One special character (@$!%*#?&)
+                        </Text>
+                      </View>
+                      {passwordResetData.confirmNewPassword && (
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                          <Text style={{ 
+                            color: passwordResetValidation.matches ? '#28a745' : '#dc3545',
+                            marginRight: 8,
+                            fontSize: 16
+                          }}>
+                            {passwordResetValidation.matches ? '✓' : '✗'}
+                          </Text>
+                          <Text style={{ 
+                            fontSize: 13, 
+                            color: passwordResetValidation.matches ? '#28a745' : '#6c757d' 
+                          }}>
+                            Passwords match
+                          </Text>
+                        </View>
+                      )}
+                    </View>
+                  </View>
+                )}
+
                 {passwordResetError && (
                   <Text style={{ color: 'red', marginTop: 10, marginBottom: 10, textAlign: 'center' }}>
                     {passwordResetError}
@@ -1329,7 +1476,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 20 }}>
                   <TouchableOpacity
                     style={{
-                      backgroundColor: '#134b5f',
+                      backgroundColor: (!passwordResetValidation.hasLength || !passwordResetValidation.hasUppercase || !passwordResetValidation.hasLowercase || !passwordResetValidation.hasNumber || !passwordResetValidation.hasSpecial || !passwordResetValidation.matches) ? '#ccc' : '#134b5f',
                       padding: 12,
                       borderRadius: 8,
                       flex: 1,
@@ -1337,7 +1484,7 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                       alignItems: 'center'
                     }}
                     onPress={handlePasswordReset}
-                    disabled={passwordResetLoading}
+                    disabled={passwordResetLoading || !passwordResetValidation.hasLength || !passwordResetValidation.hasUppercase || !passwordResetValidation.hasLowercase || !passwordResetValidation.hasNumber || !passwordResetValidation.hasSpecial || !passwordResetValidation.matches}
                   >
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>
                       {passwordResetLoading ? "Setting Password..." : "Set Password"}
@@ -1366,6 +1513,14 @@ const confirmPasswordBorderColor = confirmPasswordBorderAnim.interpolate({
                         userJobTitle: ""
                       });
                       setPasswordResetError("");
+                      setPasswordResetValidation({
+                        hasLength: false,
+                        hasUppercase: false,
+                        hasLowercase: false,
+                        hasNumber: false,
+                        hasSpecial: false,
+                        matches: false
+                      });
                     }}
                   >
                     <Text style={{ color: 'white', fontWeight: 'bold' }}>Cancel</Text>

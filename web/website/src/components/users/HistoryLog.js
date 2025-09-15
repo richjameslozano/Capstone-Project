@@ -1541,7 +1541,6 @@ console.log(deployedData);
   );
 };
 
-
 const renderReturnedTab = () => {
   const returnedData = filteredData.filter((item) => item.action === 'Returned' || item.action === 'Released');
 
@@ -1836,6 +1835,15 @@ const renderUnclaimedTab = () => {
                       )}
                     </div>
                   </div>
+
+                  {/* Unclaimed Comment */}
+                  {item.fullData.unclaimedComment && (
+                    <div style={{ marginTop: 10, padding: 10, backgroundColor: "#f5f5f5", borderRadius: 6, border: "1px solid #d9d9d9" }}>
+                      <p style={{ margin: 0, fontSize: 14, fontWeight: "500", color: "#333" }}>
+                        <strong>Reason:</strong> {item.fullData.unclaimedComment}
+                      </p>
+                    </div>
+                  )}
 
                   {/* Contact Info */}
                   <div style={{ marginTop: 10, textAlign: "center", padding: 10, backgroundColor: "#fff0e6", borderRadius: 6 }}>
@@ -2624,6 +2632,12 @@ const handlePrint = () => {
   {selectedLog.action !== 'Request Rejected' && (
     <Descriptions.Item label="Note">
       {selectedLog.reason || 'N/A'}
+    </Descriptions.Item>
+  )}
+
+  {selectedLog.action === 'Unclaimed' && selectedLog.unclaimedComment && (
+    <Descriptions.Item label="Unclaimed Reason">
+      {selectedLog.unclaimedComment}
     </Descriptions.Item>
   )}
 </Descriptions>
