@@ -527,7 +527,7 @@ useEffect(() => {
             } else if (isConsumable(category)) {
               if (quantity <= finalCriticalLevel) newStatus = "low stock";
               else newStatus = "in stock";
-            } else if (category && category.toLowerCase() === "equipment") {
+            } else if (category && category.toLowerCase() === "equipment" || category.toLowerCase() === "glasswares") {
               // Equipment items should always be "available" when quantity > 0
               if (
                 availabilityThresholdOut != null &&
@@ -1832,7 +1832,7 @@ const printPdf = async () => {
         } else {
           initialStatus = "in stock";
         }
-      } else if (category === "equipment") {
+      } else if (category === "equipment" || category === "glasswares") {
         // Equipment items should be "available" when quantity > 0
         initialStatus = "available";
       } else if (isDurable(category)) {
