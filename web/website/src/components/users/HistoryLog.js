@@ -1949,51 +1949,54 @@ const renderRejectedTab = () => {
                   </div>
 
                   {/* Info Section */}
-                  <div
-                    className="card-info-section"
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      padding: 10,
-                      backgroundColor: "#fef2f2",
-                      borderRadius: 7,
-                      paddingBottom: 0,
-                    }}
-                  >
-                    <div className="card-info-left" key={index}>
-                      <p>
-                        <strong>Requester:</strong> {item.fullData.userName}
-                      </p>
-                      <p>
-                        <strong>Date Required:</strong> {item.dateRequired}
-                      </p>
-                    </div>
+<div
+  className="card-info-section"
+  style={{
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+    gap: 16,
+    padding: 10,
+    backgroundColor: "#fef2f2",
+    borderRadius: 7,
+  }}
+>
+  {/* Left */}
+  <div>
+    <p>
+      <strong>Requester:</strong> {item.fullData.userName}
+    </p>
+    <p>
+      <strong>Date Required:</strong> {item.dateRequired}
+    </p>
+  </div>
 
-                    <div className="card-info-center">
-                      <p>
-                        <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
-                      </p>
-                      <p>
-                        <strong>Room:</strong> {item.room}
-                      </p>
-                    </div>
+  {/* Center */}
+  <div>
+    <p>
+      <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
+    </p>
+    <p>
+      <strong>Room:</strong> {item.room}
+    </p>
+  </div>
 
-                    <div className="card-info-right" style={{ width: 250 }}>
-                      {item.requestList && item.requestList.length > 0 && (
-                        <div>
-                          <strong>Requested Items:</strong>
-                          <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
-                            {item.requestList.map((req, idx) => (
-                              <li key={idx}>
-                                {req.itemName} - {req.department}
-                                <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: 13 }}></ul>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+  {/* Right */}
+  <div>
+    {item.requestList?.length > 0 && (
+      <div>
+        <strong>Requested Items:</strong>
+        <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+          {item.requestList.map((req, idx) => (
+            <li key={idx}>
+              {req.itemName} - {req.department}
+            </li>
+          ))}
+        </ul>
+      </div>
+    )}
+  </div>
+</div>
+
 
                   {/* Rejection Info */}
                   <div style={{ marginTop: 10, textAlign: "center", padding: 10, backgroundColor: "#fee2e2", borderRadius: 6 }}>
@@ -2511,6 +2514,44 @@ const handlePrint = () => {
 
   return (
     <Layout style={{ minHeight: "100vh"}}>
+                 <div style={{
+            background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+            borderRadius: "16px",
+            padding: "32px",
+            margin: '20px',
+            marginBottom: "20px",
+            boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px"
+            }}>
+              <div>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Submitted Requisitions
+                </h1>
+                <p style={{
+                  color: "#a8d5e5",
+                  fontSize: "16px",
+                  margin: "0",
+                  fontWeight: "500"
+                }}>
+                  Monitor and track your requisitions on this page.
+                </p>
+              </div>
+            </div>
+          </div>
+
 <Tabs
   activeKey={activeTabKey}
   onChange={(key) => setActiveTabKey(key)}
@@ -2519,65 +2560,70 @@ const handlePrint = () => {
     {
       key: "pending",
       label: (
-        <>
-          <ClockCircleOutlined style={{ marginRight: 8 }} />
+        <span className="tab-label">
+          <ClockCircleOutlined style={{ marginRight: 6, color: "#f59e0b" }} />
           Step 1: Pending
-        </>
+        </span>
       ),
-      children: renderPendingTab(),  
+      children: <div className="tab-content">{renderPendingTab()}</div>,
     },
     {
       key: "approved",
       label: (
-        <>
-          <CheckCircleOutlined style={{ marginRight: 8 }} />
+        <span className="tab-label">
+          <LikeOutlined style={{ marginRight: 6, color: "#1c325aff" }} />
           Step 2: Approved
-        </>
+        </span>
       ),
-      children: renderApprovedTab(),  
+      children: <div className="tab-content">{renderApprovedTab()}</div>,
     },
     {
-      key: 'deployed',
-      label: (        
-        <>
-        <CheckCircleOutlined style={{ marginRight: 8 }} />
-        Step 3: Deployed
-        </>
-      ),
-      children: renderDeployedTab(),
-    },
-     {
-      key: 'completed',
+      key: "deployed",
       label: (
-        <>
-        <CheckCircleOutlined style={{ marginRight: 8 }} />
-        Step 4: Released & Completed
-        </>
+        <span className="tab-label">
+          <SendOutlined style={{ marginRight: 6, color: "#0284c7" }} />
+          Step 3: Deployed
+        </span>
       ),
-      children: renderReturnedTab(),
+      children: <div className="tab-content">{renderDeployedTab()}</div>,
     },
     {
-      key: 'unclaimed',
+      key: "completed",
       label: (
-        <>
-          <ClockCircleOutlined style={{ marginRight: 8, color: "#ff6b35" }} />
+        <span className="tab-label">
+          <CheckCircleOutlined style={{ marginRight: 6, color: "#0d9488" }} />
+          Step 4: Released & Completed
+        </span>
+      ),
+      children: <div className="tab-content">{renderReturnedTab()}</div>,
+    },
+    {
+      key: "unclaimed",
+      label: (
+        <span className="tab-label">
+          <ClockCircleOutlined style={{ marginRight: 6, color: "#f97316" }} />
           Unclaimed
-        </>
+        </span>
       ),
-      children: renderUnclaimedTab(),
+      children: <div className="tab-content">{renderUnclaimedTab()}</div>,
     },
     {
-      key: 'rejected',
+      key: "rejected",
       label: (
-        <>
-          <CloseOutlined style={{ marginRight: 8, color: "#dc2626" }} />
+        <span className="tab-label">
+          <CloseOutlined style={{ marginRight: 6, color: "#dc2626" }} />
           Rejected
-        </>
+        </span>
       ),
-      children: renderRejectedTab(),
+      children: <div className="tab-content">{renderRejectedTab()}</div>,
     },
   ]}
 />
+
+
+
+
+
 
      
       <Modal

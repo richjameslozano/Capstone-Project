@@ -1,190 +1,12 @@
 /* General Layout */
 .pending-content, .activity-content {
-  padding: 10px;
   background: linear-gradient(135deg, #ffffff, #ffffff);
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
-/* Headers */
-.pending-header, .activity-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
 
-.activity-title {
-  font-size: 28px !important;
-  font-weight: 700 !important;
-  color: #012257;
-  margin-bottom: 12px;
-}
-.icon-activity {
-  font-size: 26px;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-.icon-pending {
-  font-size: 22px;
-  margin-right: 8px;
-  
-}
-.activity-filter {
-  width: 200px;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.activity-search {
-  flex: 1;
-  min-width: 350px;
-  max-width: 100%;
-  border-radius: 10px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-.activity-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  width: 100%;
-  max-width: 900px;
-}
-
-/* Search Bar */
-.search-container {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.pending-search,
-.activity-search {
-  max-width: 550px;
-  width: 100%;
-  border-radius: 10px;
-  padding: 6px 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-/* Table Styling */
-.pending-table, .activity-table {
-  background: white;
-  border-radius: 16px;
-  overflow: hidden;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
-}
-
-.ant-table-thead > tr > th {
-  background-color: #081538 !important;
-  color: #fff !important;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.ant-table-tbody > tr:hover {
-  background-color: #e6f7ff !important;
-}
-
-.ant-table-tbody > tr:nth-child(odd) {
-  background-color: #fafafa;
-}
-
-.ant-table-tbody > tr:nth-child(even) {
-  background-color: #ffffff;
-}
-
-/* Buttons */
-.status-btn {
-  font-weight: bold;
-  color: #012257;
-  background-color: #e6f4ff;
-  border-radius: 6px;
-  padding: 4px 10px;
-}
-
-/* Modal Enhancements */
-.request-list-modal .ant-modal-content {
-  /* background: #fffae4; */
-  border-radius: 12px;
-  padding: 24px;
-
-}
-/* 
-.pending-modal-header {
-  position: absolute;
-  top: 20px;
-  left: 24px;
-  background-color: orange;
-} */
-
-.request-details-whole {
-  display: flex;
-  justify-content: space-between;
-  background: none !important;
-  background-color: transparent;
-  padding: 20px !important;
-  margin-top: 20px !important;
-}
-
-.request-details-left,
-.request-details-right {
-  align-items: center !important;
-  justify-content: center !important;
-  padding-left: 10px !important;
-}
-
-.request-details-left p,
-.request-details-right p {
-  margin: 0;
-  padding: 4px 0;
-}
-
-.details-table {
-  background: white;
-  padding: 16px;
-  border-radius: 12px;
-}
-
-.other-modal .ant-modal-content{
-  padding: 35px !important;
-}
-
-/* Responsive Design */
-/* Mobile First Approach */
-
-/* Large screens (desktop) - default styles above */
-
-/* Tablet and smaller desktop */
-@media screen and (max-width: 1024px) {
-  .pending-content, .activity-content {
-    padding: 8px;
-    gap: 20px;
-  }
-  
-  .activity-controls {
-    max-width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .activity-search {
-    min-width: 100%;
-    max-width: 100%;
-  }
-  
-  .activity-filter {
-    width: 100%;
-    max-width: 300px;
-  }
-
-  /* Reorder form tablet */
-  .reorder-form-grid {
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
-}
 
 /* Tablet */
 @media screen and (max-width: 768px) {
@@ -202,9 +24,6 @@
     width: 100%;
   }
 
-  .ant-table {
-    font-size: 13px;
-  }
 
   .pending-header,
   .activity-header {
@@ -252,39 +71,6 @@
     width: 100% !important;
   }
 
-  /* Tabs responsive */
-  .two-step-tabs {
-    padding: 8px 12px;
-    margin-bottom: 16px;
-  }
-
-  .two-step-tabs .ant-tabs-nav {
-    padding: 12px 0;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .two-step-tabs .ant-tabs-tab {
-    padding: 8px 16px;
-    font-size: 14px;
-    margin-right: 4px;
-    margin-bottom: 4px;
-    min-width: auto;
-    flex: 1;
-    text-align: center;
-  }
-
-  .two-step-tabs .ant-tabs-tab::after {
-    display: block; /* Show arrows on tablet */
-    right: -20px;
-    font-size: 16px;
-  }
-
-  .two-step-tabs .ant-tabs-tab-btn {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 
   /* Modal responsive */
   .request-list-modal .ant-modal-content,
@@ -381,43 +167,6 @@
 
   .card-info-right {
     width: 100% !important;
-  }
-
-  /* Tabs mobile */
-  .two-step-tabs {
-    padding: 6px 8px;
-    margin-bottom: 12px;
-  }
-
-  .two-step-tabs .ant-tabs-nav {
-    padding: 8px 0;
-  }
-
-  .two-step-tabs .ant-tabs-tab {
-    padding: 6px 8px;
-    font-size: 11px;
-    border-radius: 20px;
-    margin-right: 2px;
-    margin-bottom: 2px;
-    flex: 1;
-    min-width: 0;
-  }
-
-  .two-step-tabs .ant-tabs-tab-btn {
-    font-size: 11px;
-    padding: 0 4px;
-  }
-
-  .two-step-tabs .ant-tabs-tab .anticon {
-    font-size: 12px;
-    margin-right: 4px;
-  }
-
-  /* Show arrows on mobile with smaller size */
-  .two-step-tabs .ant-tabs-tab::after {
-    display: block !important;
-    right: -15px;
-    font-size: 14px;
   }
 
   /* Modal mobile */
@@ -671,125 +420,72 @@
 }
 
 
-/* .custom-tabs .ant-tabs-nav {
-  background: white;
-  padding: 8px 16px;
-  border-radius: 12px;
-  margin-bottom: 20px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
+/* Container spacing */
+.two-step-tabs {
+  margin: 20px;
 }
 
 
-.custom-tabs .ant-tabs-tab {
-  font-size: 16px;
-  font-weight: 600;
-  color: #012257;
-  padding: 10px 20px;
-  margin-right: 12px;
-  border-radius: 8px;
-  transition: background 0.3s, color 0.3s;
-}
-
-.custom-tabs .ant-tabs-tab:hover {
-  background-color: #f0f4ff;
-  color: #012257;
-}
-
-
-.custom-tabs .ant-tabs-tab-active {
-  background-color: #012257;
-  color: white !important;
-}
-
-.custom-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: white !important;
-}
-
-
-.custom-tabs .ant-tabs-ink-bar {
-  background: transparent;
-} */
-
-/* Tabs wrapper */
-.two-step-tabs .ant-tabs-nav {
-  background-color: transparent;
-  display: flex;
-  justify-content: center;
-  margin-bottom: 20px;
-  position: relative;
-  padding: 16px 0;
-}
-
-/* Tab items */
 .two-step-tabs .ant-tabs-tab {
-  background-color: #edf2ff;
-  color: #012257;
-  border-radius: 30px;
-  padding: 10px 24px;
-  font-weight: bold;
-  position: relative;
-  z-index: 1;
-  transition: background 0.3s, color 0.3s;
-  margin-right: 8px;
+  background: #f9fafb;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+  /* margin-right: 8px !important; */
+  padding: 12px 24px !important;
+  transition: all 0.2s ease-in-out;
+  font-weight: 500;
+  color: #1c4f6d;
+  border: 1px solid #e5e7eb;
+}
+
+.two-step-tabs .ant-tabs-tab:hover {
+  background: #f3f4f6;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
 }
 
 /* Active tab */
 .two-step-tabs .ant-tabs-tab-active {
-  background-color: #012257 !important;
-  color: white !important;
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
+  color: #111827 !important;
 }
 
-.two-step-tabs .ant-tabs-tab-active .ant-tabs-tab-btn {
-  color: white !important;
+/* Tab label styling */
+.tab-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
 }
 
-/* Add arrow → between tabs */
-/* .two-step-tabs .ant-tabs-tab:nth-child(1)::after {
-  content: "➝";
-  color: gray;
-  font-weight: bold;
-  font-size: 18px;
-  position: absolute;
-  right: -30px;
-  top: 50%;
-  transform: translateY(-50%);
-} */
-
-.two-step-tabs .ant-tabs-tab::after{
-  color: gray;
-  font-weight: bold;
-  font-size: 18px;
-  position: absolute;
-  right: -30px;
-  top: 50%;
-  transform: translateY(-50%);
+/* Content box */
+.tab-content {
+  background: white;
+  border-bottom-left-radius: 10px;
+  border-bottom-right-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  padding: 20px;
+  min-height: 200px;
+  border: 1px solid #e9ecee;
+  border-top: 0px;
 }
 
-.two-step-tabs .ant-tabs-tab:nth-child(1)::after{
-    content: "➝";
+/* Tabs container */
+.two-step-tabs .ant-tabs-nav-list {
+  display: flex;
+  width: 100%;
 }
 
-.two-step-tabs .ant-tabs-tab:nth-child(2)::after{
-    content: "➝";
+.two-step-tabs .ant-tabs-nav{
+  margin: 0px !important;
 }
 
-.two-step-tabs .ant-tabs-tab:nth-child(3)::after{
-    content: "➝";
+/* Push the 5th tab ("Unclaimed") and everything after it to the right */
+.two-step-tabs .ant-tabs-tab:nth-child(5) {
+  margin-left: auto !important;
 }
 
-/* Remove default underline */
-.two-step-tabs .ant-tabs-ink-bar {
-  display: none;
-}
 
-/* Optional: reduce gray space if needed */
-.two-step-tabs {
-  background: #f8f8f8; /* Or change this to your desired background */
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.05);
-  margin-bottom: 24px;
-}
 
 .modal-header{
   position: absolute;
