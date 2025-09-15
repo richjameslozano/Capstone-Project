@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo  } from "react";
-import { Layout, Row, Col, Table, Input, Typography, Select, Tabs, Checkbox, Button, Modal } from "antd";
+import { Layout, Row, Col, Table, Input, Typography, Select, Tabs, Checkbox, Button, Modal, notification } from "antd";
 import { DotChartOutlined, DropboxOutlined, EllipsisOutlined, FontSizeOutlined, StarOutlined } from '@ant-design/icons';
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc, query, where, getDocs, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import "../styles/adminStyle/BorrowCatalog.css";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
@@ -275,6 +275,10 @@ const others = filteredCatalog.filter((item) => {
             color = "#d97706"; // amber
             break;
 
+          case "Unclaimed":
+            color = "#595959"; // dark gray
+            break;
+
           default:
             color = "black";
         }
@@ -335,12 +339,94 @@ const others = filteredCatalog.filter((item) => {
 
   const handleConfirmUnclaimed = async () => {
     try {
-      // Here you would typically update the status in your database
-      console.log('Marking items as unclaimed:', Array.from(selectedItems));
+      const selectedItemsArray = Array.from(selectedItems);
+      console.log('Marking items as unclaimed:', selectedItemsArray);
       console.log('Comment:', unclaimedComment);
       
-      // You would add your database update logic here
-      // Example: await updateItemStatus(Array.from(selectedItems), 'Unclaimed', unclaimedComment);
+      // Get current user info
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName");
+      
+      if (!userId || !userName) {
+        notification.error({
+          message: "Authentication Error",
+          description: "User information not found. Please log in again.",
+        });
+        return;
+      }
+
+      // Process each selected item
+      for (const itemId of selectedItemsArray) {
+        const selectedItem = catalog.find(item => item.id === itemId);
+        if (!selectedItem) continue;
+
+        console.log('Processing item:', selectedItem);
+
+        // 1. Update borrowcatalog status to "Unclaimed"
+        const borrowDocRef = doc(db, "borrowcatalog", itemId);
+        await updateDoc(borrowDocRef, { 
+          status: "Unclaimed",
+          unclaimedComment: unclaimedComment || "No comment provided",
+          unclaimedBy: userName,
+          unclaimedAt: serverTimestamp()
+        });
+
+        // 2. Find and remove the "Request Approved" entry from user's history log
+        const historyLogQuery = query(
+          collection(db, `accounts/${selectedItem.accountId}/historylog`),
+          where("action", "==", "Request Approved")
+        );
+
+        const historyLogSnapshot = await getDocs(historyLogQuery);
+        
+        for (const historyDoc of historyLogSnapshot.docs) {
+          const historyData = historyDoc.data();
+          
+          // Check if this history entry matches the current request
+          // Match by timestamp, room, and request details
+          const matchesRequest = (
+            historyData.room === selectedItem.room &&
+            historyData.dateRequired === selectedItem.dateRequired &&
+            historyData.course === selectedItem.course &&
+            historyData.userName === selectedItem.userName
+          );
+
+          if (matchesRequest) {
+            console.log('Found matching Request Approved entry, removing it:', historyDoc.id);
+            await deleteDoc(historyDoc.ref);
+            
+            // 3. Add new "Unclaimed" entry to history log
+            await addDoc(collection(db, `accounts/${selectedItem.accountId}/historylog`), {
+              action: "Unclaimed",
+              userName: selectedItem.userName,
+              timestamp: serverTimestamp(),
+              requestList: selectedItem.requestList || [],
+              program: selectedItem.program,
+              room: selectedItem.room,
+              dateRequired: selectedItem.dateRequired,
+              timeFrom: selectedItem.timeFrom,
+              timeTo: selectedItem.timeTo,
+              approvedBy: userName,
+              usageType: selectedItem.usageType || "N/A",
+              course: selectedItem.course || "N/A",
+              courseDescription: selectedItem.courseDescription || "N/A",
+              reason: selectedItem.reason || "N/A",
+              unclaimedComment: unclaimedComment || "No comment provided",
+              unclaimedBy: userName,
+              originalTimestamp: historyData.timestamp, // Keep reference to original approval time
+            });
+            
+            console.log('Added Unclaimed entry to history log');
+            break; // Only process the first matching entry
+          }
+        }
+      }
+      
+      // Show success notification
+      notification.success({
+        message: "Items Marked as Unclaimed",
+        description: `${selectedItemsArray.length} item(s) have been successfully marked as unclaimed.`,
+      });
       
       // Clear selected items and comment after processing
       setSelectedItems(new Set());
@@ -351,6 +437,10 @@ const others = filteredCatalog.filter((item) => {
       
     } catch (error) {
       console.error('Error marking items as unclaimed:', error);
+      notification.error({
+        message: "Error",
+        description: "Failed to mark items as unclaimed. Please try again.",
+      });
     }
   };
 
