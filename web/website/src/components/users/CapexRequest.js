@@ -830,11 +830,11 @@ const CapexRequest = () => {
                 icon={<CheckOutlined />}
                 onClick={() => setIsFinalizeModalVisible(true)}
                 style={{
-                  background: "linear-gradient(135deg, #3ba1c5 0%, #165a72 100%)",
+                  background: "#165a72",
                   border: "none",
                   borderRadius: "10px",
-                  height: "48px",
-                  padding: "0 24px",
+                  height: "40px",
+                  padding: "0 20px",
                   fontSize: "16px",
                   fontWeight: "600",
                   boxShadow: "0 4px 16px rgba(59, 161, 197, 0.3)",

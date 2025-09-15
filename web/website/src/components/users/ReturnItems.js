@@ -156,7 +156,7 @@ const ReturnItems = () => {
       key: "approvedBy",
     },
     {
-      title: "",
+      title: "Action",
       key: "action",
       render: (_, record) => (
         <a href="#" className="view-details" onClick={() => handleViewDetails(record)}>
@@ -473,35 +473,45 @@ const ReturnItems = () => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout style={{backgroundColor: 'white'}}>
-        <Content style={{ margin: "20px"}}>
-          <div style={{ marginBottom: 16 }}>
-            {/* <Button
-              type={filterStatus === "All" ? "primary" : "default"}
-              onClick={() => setFilterStatus("All")}
-              style={{ marginRight: 8 }}
-            >
-              All
-            </Button>
-
-            <Button
-            className="approved-status-button"
-              type={filterStatus === "Approved" ? "primary" : "default"}
-              onClick={() => setFilterStatus("Approved")}
-              style={{ marginRight: 8 }}
-            >
-              Approved
-            </Button> */}
-{/* 
-            <Button
-              className="print-all-button"
-              type={filterStatus === "Deployed" ? "primary" : "default"}
-              onClick={() => setFilterStatus("Deployed")}
-            >
-              Deployed
-            </Button> */}
+        <Content style={{padding: 16}}>
+                             <div style={{
+            background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+            borderRadius: "16px",
+            padding: "32px",
+            marginBottom: "20px",
+            boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px"
+            }}>
+              <div>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Return Items
+                </h1>
+                <p style={{
+                  color: "#a8d5e5",
+                  fontSize: "16px",
+                  margin: "0",
+                  fontWeight: "500"
+                }}>
+                  All items borrowed from the stockroom are required to be returned after use. <br/>To proceed, please select the corresponding requisition by clicking 'View Details' and complete the return process.
+                </p>
+              </div>
+            </div>
           </div>
 
-                <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
+                {/* <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
         <RollbackOutlined style={{ fontSize: 28, color: "#37c225ff", paddingTop: 10 }} />
         <div>
           <h1 style={{ color: "#37c225ff", margin: 0, padding: 0, textDecoration: "none" }}>
@@ -509,34 +519,21 @@ const ReturnItems = () => {
           </h1>
           <p style={{marginTop: 10}}>All items borrowed from the stockroom are required to be returned after use. To proceed, please select the corresponding requisition by clicking 'View Details' and complete the return process.</p>
         </div>
-      </div>
+      </div> */}
 
     <div className="custom-table-container">
-  <table className="custom-table">
-    <thead>
-      <tr>
-        {columns.map((col) => (
-          <th key={col.key || col.dataIndex}>{col.title}</th>
-        ))}
-      </tr>
-    </thead>
-    <tbody>
-      {filteredData.map((row, rowIndex) => (
-        <tr
-          key={row.id || rowIndex}
-          onClick={() => console.log("Row clicked:", row)}
-        >
-          {columns.map((col) => (
-            <td key={col.key || col.dataIndex}>
-              {col.render
-                ? col.render(row[col.dataIndex], row, rowIndex)
-                : row[col.dataIndex]}
-            </td>
-          ))}
-        </tr>
-      ))}
-    </tbody>
-  </table>
+<Table
+  className="return-table"
+  columns={columns}
+  dataSource={filteredData}
+  rowKey={(row, index) => row.id || index} // ensures unique keys
+  onRow={(row) => ({
+    onClick: () => console.log("Row clicked:", row), // same row click logic
+  })}
+  pagination={false} // disable pagination (optional, remove if you want pagination)
+  bordered // adds borders
+  locale={{ emptyText: "No Items to Return" }}
+/>
 </div>
 
 
