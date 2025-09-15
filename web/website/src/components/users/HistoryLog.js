@@ -961,6 +961,10 @@ const getBGColor = (modalBG) => {
       return "#0e7490"
     case "Returned":
       return "#056625ff"
+    case "Unclaimed":
+      return "#ff6b35"
+    case "Request Rejected":
+      return "#dc2626"
   }
 }
 
@@ -974,6 +978,10 @@ const getLabel = (modalLabel) => {
       return "RELEASED"
     case "Returned":
       return "COMPLETED"
+    case "Unclaimed":
+      return "UNCLAIMED"
+    case "Request Rejected":
+      return "REJECTED"
   }
 }
 const getIcon = (modalIcon) => {
@@ -986,6 +994,10 @@ const getIcon = (modalIcon) => {
       return <CheckCircleOutlined style={{fontSize: 23, color: 'white'}}/>
     case "Returned":
       return <CheckCircleOutlined style={{fontSize: 23, color: 'white'}}/>
+    case "Unclaimed":
+      return <ClockCircleOutlined style={{fontSize: 23, color: 'white'}}/>
+    case "Request Rejected":
+      return <CloseOutlined style={{fontSize: 23, color: 'white'}}/>
   }
 }
 
@@ -1695,6 +1707,306 @@ console.log(returnedData);
   );
 };
 
+const renderUnclaimedTab = () => {
+  const unclaimedData = filteredData.filter((item) => item.action === 'Unclaimed');
+
+  return (
+    <Content className="pending-content">
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
+        <ClockCircleOutlined style={{ fontSize: 28, color: "#ff6b35", paddingTop: 10 }} />
+        <div>
+          <h1 style={{ color: "#ff6b35", margin: 0, padding: 0, textDecoration: "none" }}>
+            Unclaimed Requisitions
+          </h1>
+          <p>These requisitions have been approved but not yet claimed by the requester. Please contact the stockroom to claim your items.</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <div className="approved-cards">
+          {unclaimedData.length > 0 ? (
+            unclaimedData.map((item, index) => {
+              return (
+                <div
+                  key={item.id || index}
+                  className="request-card"
+                  onClick={() => handleRowClick(item)}
+                  style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "12px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                    cursor: "pointer",
+                    transition: "0.2s ease-in-out",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Status + Date */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderBottom: "1px solid #e1e1e1",
+                      paddingBottom: 10,
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: "bold",
+                        backgroundColor: "#ff6b35",
+                        margin: 0,
+                        paddingTop: 4,
+                        paddingBottom: 4,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        color: "white",
+                        borderRadius: 3,
+                        fontSize: 15,
+                      }}
+                    >
+                      UNCLAIMED
+                    </p>
+                    <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
+                      <strong>Approved by:</strong> {item.fullData.approvedBy}
+                    </p>
+                  </div>
+
+                  {/* Usage Type */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      marginBottom: 10,
+                      marginTop: 10,
+                    }}
+                  >
+                    {getUsageIcon(item.fullData.usageType)}
+                    <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.fullData.usageType}</h3>
+                  </div>
+
+                  {/* Info Section */}
+                  <div
+                    className="card-info-section"
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: 10,
+                      backgroundColor: "#fff5f0",
+                      borderRadius: 7,
+                      paddingBottom: 0,
+                    }}
+                  >
+                    <div className="card-info-left" key={index}>
+                      <p>
+                        <strong>Requester:</strong> {item.fullData.userName}
+                      </p>
+                      <p>
+                        <strong>Date Required:</strong> {item.dateRequired}
+                      </p>
+                    </div>
+
+                    <div className="card-info-center">
+                      <p>
+                        <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
+                      </p>
+                      <p>
+                        <strong>Room:</strong> {item.room}
+                      </p>
+                    </div>
+
+                    <div className="card-info-right" style={{ width: 250 }}>
+                      {item.requestList && item.requestList.length > 0 && (
+                        <div>
+                          <strong>Requested Items:</strong>
+                          <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+                            {item.requestList.map((req, idx) => (
+                              <li key={idx}>
+                                {req.itemName} - {req.department}
+                                <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: 13 }}></ul>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Contact Info */}
+                  <div style={{ marginTop: 10, textAlign: "center", padding: 10, backgroundColor: "#fff0e6", borderRadius: 6 }}>
+                    <p style={{ margin: 0, fontSize: 14, color: "#d84315", fontWeight: "500" }}>
+                      📞 Please contact the stockroom to claim your items
+                    </p>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="empty-row">
+              <span>No unclaimed requisitions found.</span>
+            </div>
+          )}
+        </div>
+      )}
+    </Content>
+  );
+};
+
+const renderRejectedTab = () => {
+  const rejectedData = filteredData.filter((item) => item.action === 'Request Rejected');
+
+  return (
+    <Content className="pending-content">
+      <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
+        <CloseOutlined style={{ fontSize: 28, color: "#dc2626", paddingTop: 10 }} />
+        <div>
+          <h1 style={{ color: "#dc2626", margin: 0, padding: 0, textDecoration: "none" }}>
+            Rejected Requisitions
+          </h1>
+          <p>These requisitions have been rejected by the stockroom personnels/laboratory technicians. Please review the rejection reasons and submit a new request if needed.</p>
+        </div>
+      </div>
+
+      {loading ? (
+        <Spin size="large" />
+      ) : (
+        <div className="approved-cards">
+          {rejectedData.length > 0 ? (
+            rejectedData.map((item, index) => {
+              return (
+                <div
+                  key={item.id || index}
+                  className="request-card"
+                  onClick={() => handleRowClick(item)}
+                  style={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "12px",
+                    padding: "16px",
+                    marginBottom: "16px",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.08)",
+                    cursor: "pointer",
+                    transition: "0.2s ease-in-out",
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  {/* Status + Date */}
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      borderBottom: "1px solid #e1e1e1",
+                      paddingBottom: 10,
+                    }}
+                  >
+                    <p
+                      style={{
+                        fontWeight: "bold",
+                        backgroundColor: "#dc2626",
+                        margin: 0,
+                        paddingTop: 4,
+                        paddingBottom: 4,
+                        paddingLeft: 10,
+                        paddingRight: 10,
+                        color: "white",
+                        borderRadius: 3,
+                        fontSize: 15,
+                      }}
+                    >
+                      REJECTED
+                    </p>
+                    <p style={{ padding: 0, margin: 0, fontSize: 15, fontWeight: 300 }}>
+                      <strong>Rejected by:</strong> {item.fullData.rejectedBy}
+                    </p>
+                  </div>
+
+                  {/* Usage Type */}
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 5,
+                      marginBottom: 10,
+                      marginTop: 10,
+                    }}
+                  >
+                    {getUsageIcon(item.fullData.usageType)}
+                    <h3 style={{ marginBottom: "8px", margin: 0, padding: 0 }}>{item.fullData.usageType}</h3>
+                  </div>
+
+                  {/* Info Section */}
+                  <div
+                    className="card-info-section"
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      padding: 10,
+                      backgroundColor: "#fef2f2",
+                      borderRadius: 7,
+                      paddingBottom: 0,
+                    }}
+                  >
+                    <div className="card-info-left" key={index}>
+                      <p>
+                        <strong>Requester:</strong> {item.fullData.userName}
+                      </p>
+                      <p>
+                        <strong>Date Required:</strong> {item.dateRequired}
+                      </p>
+                    </div>
+
+                    <div className="card-info-center">
+                      <p>
+                        <strong>Time Needed:</strong> {item.fullData.timeFrom} - {item.fullData.timeTo}
+                      </p>
+                      <p>
+                        <strong>Room:</strong> {item.room}
+                      </p>
+                    </div>
+
+                    <div className="card-info-right" style={{ width: 250 }}>
+                      {item.requestList && item.requestList.length > 0 && (
+                        <div>
+                          <strong>Requested Items:</strong>
+                          <ul style={{ margin: "6px 0 0 16px", padding: 0 }}>
+                            {item.requestList.map((req, idx) => (
+                              <li key={idx}>
+                                {req.itemName} - {req.department}
+                                <ul style={{ margin: "4px 0 0 16px", padding: 0, fontSize: 13 }}></ul>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Rejection Info */}
+                  <div style={{ marginTop: 10, textAlign: "center", padding: 10, backgroundColor: "#fee2e2", borderRadius: 6 }}>
+                    <p style={{ margin: 0, fontSize: 14, color: "#dc2626", fontWeight: "500" }}>
+                      ❌ Request was rejected. Click to view rejection details.
+                    </p>
+                  </div>
+                </div>
+              );
+            })
+          ) : (
+            <div className="empty-row">
+              <span>No rejected requisitions found.</span>
+            </div>
+          )}
+        </div>
+      )}
+    </Content>
+  );
+};
+
 // const ProcessedTab = () => {
 //   const [activeTab, setActiveTab] = useState('APPROVED');
 
@@ -2235,6 +2547,26 @@ const handlePrint = () => {
         </>
       ),
       children: renderReturnedTab(),
+    },
+    {
+      key: 'unclaimed',
+      label: (
+        <>
+          <ClockCircleOutlined style={{ marginRight: 8, color: "#ff6b35" }} />
+          Unclaimed
+        </>
+      ),
+      children: renderUnclaimedTab(),
+    },
+    {
+      key: 'rejected',
+      label: (
+        <>
+          <CloseOutlined style={{ marginRight: 8, color: "#dc2626" }} />
+          Rejected
+        </>
+      ),
+      children: renderRejectedTab(),
     },
   ]}
 />

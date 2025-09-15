@@ -1515,25 +1515,48 @@ try {
           };
         })
       );
-  
-      const auth = getAuth();
-      const currentUser = auth.currentUser;
-      const userEmail = currentUser.email;
-  
-      // Fetch the user name from Firestore
-      let userName = "Unknown";
-      try {
-        const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-        const userSnapshot = await getDocs(userQuery);
-  
-        if (!userSnapshot.empty) {
-          const userDoc = userSnapshot.docs[0];
-          const userData = userDoc.data();
-          userName = userData.name || "Unknown";
-        }
 
-      } catch (error) {
+      // const auth = getAuth();
+      // const currentUser = auth.currentUser;
+      // const userEmail = currentUser.email;
+  
+      // // Fetch the user name from Firestore
+      // let userName = "Unknown";
+      // try {
+      //   const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+      //   const userSnapshot = await getDocs(userQuery);
+  
+      //   if (!userSnapshot.empty) {
+      //     const userDoc = userSnapshot.docs[0];
+      //     const userData = userDoc.data();
+      //     userName = userData.name || "Unknown";
+      //   }
+
+      // } catch (error) {
        
+      // }
+
+      // Get user info from localStorage (since we're using backend authentication)
+      const userEmail = localStorage.getItem("userEmail");
+      const userName = localStorage.getItem("userName") || "Unknown";
+
+      // If userName is not available in localStorage, try to fetch from Firestore
+      if (!userName || userName === "Unknown") {
+        try {
+          const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+          const userSnapshot = await getDocs(userQuery);
+
+          if (!userSnapshot.empty) {
+            const userDoc = userSnapshot.docs[0];
+            const userData = userDoc.data();
+            const fetchedUserName = userData.name || "Unknown";
+            // Update localStorage with the fetched name
+            localStorage.setItem("userName", fetchedUserName);
+          }
+
+        } catch (error) {
+          console.error("Error fetching user name from Firestore:", error);
+        }
       }
 
       // const approvedItems = mergedRequestList.filter((item, index) => {
@@ -1597,6 +1620,7 @@ try {
         rejectedBy: userName,
         program: selectedRequest.program,
         usageType: selectedRequest.usageType || "N/A",  
+        reason: selectedRequest.reason || "No reason provided",
       };
   
       const logRequestOrReturn = async (
@@ -2927,24 +2951,27 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
       })
     );
 
-    const auth = getAuth();
-    const currentUser = auth.currentUser;
-    const userEmail = currentUser.email;
+    // Get user info from localStorage (since we're using backend authentication)
+    const userEmail = localStorage.getItem("userEmail");
+    const userName = localStorage.getItem("userName") || "Unknown";
 
-    // Fetch the user name from Firestore
-    let userName = "Unknown";
-    try {
-      const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
-      const userSnapshot = await getDocs(userQuery);
+    // If userName is not available in localStorage, try to fetch from Firestore
+    if (!userName || userName === "Unknown") {
+      try {
+        const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+        const userSnapshot = await getDocs(userQuery);
 
-      if (!userSnapshot.empty) {
-        const userDoc = userSnapshot.docs[0];
-        const userData = userDoc.data();
-        userName = userData.name || "Unknown";
+        if (!userSnapshot.empty) {
+          const userDoc = userSnapshot.docs[0];
+          const userData = userDoc.data();
+          const fetchedUserName = userData.name || "Unknown";
+          // Update localStorage with the fetched name
+          localStorage.setItem("userName", fetchedUserName);
+        }
+
+      } catch (error) {
+        console.error("Error fetching user name from Firestore:", error);
       }
-
-    } catch (error) {
-
     }
 
     const requestLogEntry = {
