@@ -385,9 +385,9 @@ btnContainer:{
 },
 
 timelineBtn:{
-  padding: 10,
+  padding: 8,
   backgroundColor: 'white',
-  width: '25%',
+  width: '16.66%',
   alignItems: 'center'
 },
 activeBtn: {
@@ -397,7 +397,7 @@ activeBtn: {
   },
 
 timeText:{
-  fontSize: 13,
+  fontSize: 11,
   fontWeight: 400,
   color: '#165a72'
 },

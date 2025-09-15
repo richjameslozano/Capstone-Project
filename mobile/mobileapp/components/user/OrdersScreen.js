@@ -761,6 +761,8 @@ export default function RequestScreen() {
       if(item.action === 'COMPLETED') return '#18b933ff';
       if(item.action === 'Returned') return '#18b933ff';
       if(item.action === 'Released') return '#28a745';
+      if(item.action === 'UNCLAIMED') return '#ff6b35';
+      if(item.action === 'REJECTED') return '#dc2626';
       if(item.category === 'Glasswares') return '#fff2ce';
     }
 
@@ -785,6 +787,22 @@ const filteredApproved = activityData
   .map(req => ({
     ...req,
     action: req.action, // Keep the original action (Returned or Released)
+    items: req.items || req.requestList || [] // ensure array exists
+  }));
+
+  const filteredUnclaimed = activityData
+  .filter(req => req.action === 'Unclaimed')
+  .map(req => ({
+    ...req,
+    action: 'UNCLAIMED', // just for UI
+    items: req.items || req.requestList || [] // ensure array exists
+  }));
+
+  const filteredRejected = activityData
+  .filter(req => req.action === 'Request Rejected')
+  .map(req => ({
+    ...req,
+    action: 'REJECTED', // just for UI
     items: req.items || req.requestList || [] // ensure array exists
   }));
 
@@ -1161,6 +1179,18 @@ const renderDeployed = ({ item }) => {
       <Icon name={activePage === 3 ? "check-circle":"check-circle-outline"} size={20} color="#165a72" />
       <Text style={styles.timeText}>Completed</Text>
     </TouchableOpacity>
+
+    <TouchableOpacity style={[styles.timelineBtn, activePage === 4 && styles.activeBtn]}
+    onPress={()=>handleButtonPress(4)}>
+      <Icon name={activePage === 4 ? "clock-alert":"clock-alert-outline"} size={20} color="#ff6b35" />
+      <Text style={styles.timeText}>Unclaimed</Text>
+    </TouchableOpacity>
+
+    <TouchableOpacity style={[styles.timelineBtn, activePage === 5 && styles.activeBtn]}
+    onPress={()=>handleButtonPress(5)}>
+      <Icon name={activePage === 5 ? "close-circle":"close-circle-outline"} size={20} color="#dc2626" />
+      <Text style={styles.timeText}>Rejected</Text>
+    </TouchableOpacity>
   </View>
 
       <PagerView
@@ -1502,6 +1532,38 @@ const renderDeployed = ({ item }) => {
 
         <FlatList
           data={filteredReturned} // Approved items from the right collection
+          keyExtractor={(item) => item.id || item.key || Math.random().toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+        </View>
+      </View>
+
+      <View key="5" style={styles.page}>
+                  <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='clock-alert-outline' size={23} color='#ff6b35'/>
+                    <Text style={{color: '#ff6b35', fontSize: 15, fontWeight: 'bold'}}>Unclaimed Orders</Text>
+                  </View>
+
+        <FlatList
+          data={filteredUnclaimed} // Unclaimed items from the right collection
+          keyExtractor={(item) => item.id || item.key || Math.random().toString()}
+          renderItem={renderItem}
+          contentContainerStyle={styles.listContainer}
+        />
+        </View>
+      </View>
+
+      <View key="6" style={styles.page}>
+                  <View style={{flex: 1, backgroundColor: '#fff', padding: 10}}>
+          <View style={{flexDirection: 'row', width: '100%', alignItems: 'center', gap: 5, borderBottomWidth: 1, paddingBottom: 5, borderColor: '#e9ecee'}}>
+                    <Icon name='close-circle-outline' size={23} color='#dc2626'/>
+                    <Text style={{color: '#dc2626', fontSize: 15, fontWeight: 'bold'}}>Rejected Orders</Text>
+                  </View>
+
+        <FlatList
+          data={filteredRejected} // Rejected items from the right collection
           keyExtractor={(item) => item.id || item.key || Math.random().toString()}
           renderItem={renderItem}
           contentContainerStyle={styles.listContainer}

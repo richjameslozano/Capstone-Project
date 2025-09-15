@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo  } from "react";
-import { Layout, Row, Col, Table, Input, Typography, Select, Tabs } from "antd";
+import { Layout, Row, Col, Table, Input, Typography, Select, Tabs, Checkbox, Button, Modal, notification } from "antd";
 import { DotChartOutlined, DropboxOutlined, EllipsisOutlined, FontSizeOutlined, StarOutlined } from '@ant-design/icons';
-import { collection, onSnapshot } from "firebase/firestore";
+import { collection, onSnapshot, doc, updateDoc, addDoc, query, where, getDocs, deleteDoc, serverTimestamp } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
 import "../styles/adminStyle/BorrowCatalog.css";
 import ApprovedRequestModal from "../customs/ApprovedRequestModal";
@@ -18,6 +18,9 @@ const BorrowCatalog = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedItems, setSelectedItems] = useState(new Set());
+  const [isUnclaimedModalVisible, setIsUnclaimedModalVisible] = useState(false);
+  const [unclaimedComment, setUnclaimedComment] = useState("");
   const statusOptions = [
     'All',
     'Borrowed',
@@ -272,6 +275,10 @@ const others = filteredCatalog.filter((item) => {
             color = "#d97706"; // amber
             break;
 
+          case "Unclaimed":
+            color = "#595959"; // dark gray
+            break;
+
           default:
             color = "black";
         }
@@ -306,6 +313,144 @@ const others = filteredCatalog.filter((item) => {
   const handleCancel = () => {
     setIsModalVisible(false);
     setSelectedRequest(null);
+  };
+
+  const handleCheckboxChange = (itemId, checked) => {
+    setSelectedItems(prev => {
+      const newSet = new Set(prev);
+      if (checked) {
+        newSet.add(itemId);
+      } else {
+        newSet.delete(itemId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleMarkAsUnclaimed = () => {
+    if (selectedItems.size === 0) {
+      // You could add a notification here
+      return;
+    }
+    
+    // Show confirmation modal
+    setIsUnclaimedModalVisible(true);
+  };
+
+  const handleConfirmUnclaimed = async () => {
+    try {
+      const selectedItemsArray = Array.from(selectedItems);
+      console.log('Marking items as unclaimed:', selectedItemsArray);
+      console.log('Comment:', unclaimedComment);
+      
+      // Get current user info
+      const userId = localStorage.getItem("userId");
+      const userName = localStorage.getItem("userName");
+      
+      if (!userId || !userName) {
+        notification.error({
+          message: "Authentication Error",
+          description: "User information not found. Please log in again.",
+        });
+        return;
+      }
+
+      // Process each selected item
+      for (const itemId of selectedItemsArray) {
+        const selectedItem = catalog.find(item => item.id === itemId);
+        if (!selectedItem) continue;
+
+        console.log('Processing item:', selectedItem);
+
+        // 1. Update borrowcatalog status to "Unclaimed"
+        const borrowDocRef = doc(db, "borrowcatalog", itemId);
+        await updateDoc(borrowDocRef, { 
+          status: "Unclaimed",
+          unclaimedComment: unclaimedComment || "No comment provided",
+          unclaimedBy: userName,
+          unclaimedAt: serverTimestamp()
+        });
+
+        // 2. Find and remove the "Request Approved" entry from user's history log
+        const historyLogQuery = query(
+          collection(db, `accounts/${selectedItem.accountId}/historylog`),
+          where("action", "==", "Request Approved")
+        );
+
+        const historyLogSnapshot = await getDocs(historyLogQuery);
+        
+        for (const historyDoc of historyLogSnapshot.docs) {
+          const historyData = historyDoc.data();
+          
+          // Check if this history entry matches the current request
+          // Match by timestamp, room, and request details
+          const matchesRequest = (
+            historyData.room === selectedItem.room &&
+            historyData.dateRequired === selectedItem.dateRequired &&
+            historyData.course === selectedItem.course &&
+            historyData.userName === selectedItem.userName
+          );
+
+          if (matchesRequest) {
+            console.log('Found matching Request Approved entry, removing it:', historyDoc.id);
+            await deleteDoc(historyDoc.ref);
+            
+            // 3. Add new "Unclaimed" entry to history log
+            await addDoc(collection(db, `accounts/${selectedItem.accountId}/historylog`), {
+              action: "Unclaimed",
+              userName: selectedItem.userName,
+              timestamp: serverTimestamp(),
+              requestList: selectedItem.requestList || [],
+              program: selectedItem.program,
+              room: selectedItem.room,
+              dateRequired: selectedItem.dateRequired,
+              timeFrom: selectedItem.timeFrom,
+              timeTo: selectedItem.timeTo,
+              approvedBy: userName,
+              usageType: selectedItem.usageType || "N/A",
+              course: selectedItem.course || "N/A",
+              courseDescription: selectedItem.courseDescription || "N/A",
+              reason: selectedItem.reason || "N/A",
+              unclaimedComment: unclaimedComment || "No comment provided",
+              unclaimedBy: userName,
+              originalTimestamp: historyData.timestamp, // Keep reference to original approval time
+            });
+            
+            console.log('Added Unclaimed entry to history log');
+            break; // Only process the first matching entry
+          }
+        }
+      }
+      
+      // Show success notification
+      notification.success({
+        message: "Items Marked as Unclaimed",
+        description: `${selectedItemsArray.length} item(s) have been successfully marked as unclaimed.`,
+      });
+      
+      // Clear selected items and comment after processing
+      setSelectedItems(new Set());
+      setUnclaimedComment("");
+      
+      // Close modal
+      setIsUnclaimedModalVisible(false);
+      
+    } catch (error) {
+      console.error('Error marking items as unclaimed:', error);
+      notification.error({
+        message: "Error",
+        description: "Failed to mark items as unclaimed. Please try again.",
+      });
+    }
+  };
+
+  const handleCancelUnclaimed = () => {
+    setIsUnclaimedModalVisible(false);
+    setUnclaimedComment(""); // Clear comment when canceling
+  };
+
+  const getSelectedItemsData = () => {
+    return catalog.filter(item => selectedItems.has(item.id));
   };
 
   const formatDate = (timestamp) => {
@@ -371,19 +516,31 @@ const others = filteredCatalog.filter((item) => {
       </div>
       </div>
 
-                   <Search
-                   style={{width: 600, marginLeft: 20, justifySelf: 'flex-end'}}
-                  placeholder="Search"
-                  allowClear
-                  enterButton
-                  value={searchQuery}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
-                    setSearchQuery(sanitized);
-                  }}
-                  onSearch={handleSearch}
-                />
+      <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
+        <Button
+          type="primary"
+          danger
+          onClick={handleMarkAsUnclaimed}
+          disabled={selectedItems.size === 0}
+          className="unclaimed-button"
+        >
+          Mark as Unclaimed ({selectedItems.size})
+        </Button>
+
+        <Search
+          style={{width: 600}}
+          placeholder="Search"
+          allowClear
+          enterButton
+          value={searchQuery}
+          onChange={(e) => {
+            const value = e.target.value;
+            const sanitized = value.trim().replace(/[^a-zA-Z0-9\s-]/g, "");
+            setSearchQuery(sanitized);
+          }}
+          onSearch={handleSearch}
+        />
+      </div>
       </div>
     
     <div className="catalog-cards">
@@ -402,16 +559,30 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
               <h3>{item.requestor}</h3>
-              <span 
-  className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}
->
-                {item.status}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={selectedItems.has(item.id)}
+                    onChange={(e) => {
+                      e.stopPropagation();
+                      handleCheckboxChange(item.id, e.target.checked);
+                    }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                    }}
+                  />
+                </div>
+                <span 
+                  className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}
+                >
+                  {item.status}
+                </span>
+              </div>
             </div>
             <div className="card-body">
               <p><strong>Course:</strong> {item.course}</p>
@@ -459,14 +630,26 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
               <h3>{item.requestor}</h3>
-              <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
-                {item.status}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <Checkbox
+                  checked={selectedItems.has(item.id)}
+                  onChange={(e) => {
+                    e.stopPropagation();
+                    handleCheckboxChange(item.id, e.target.checked);
+                  }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                  }}
+                />
+                <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
+                  {item.status}
+                </span>
+              </div>
             </div>
             <div className="card-body">
               <p><strong>Course:</strong> {item.course}</p>
@@ -527,7 +710,7 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
@@ -581,7 +764,7 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
@@ -634,7 +817,7 @@ const others = filteredCatalog.filter((item) => {
         .map((item) => (
           <div
             key={item.id}
-            className="catalog-card"
+            className={`catalog-card ${selectedItems.has(item.id) ? 'selected' : ''}`}
             onClick={() => handleViewDetails(item)}
           >
             <div className="card-header">
@@ -698,6 +881,97 @@ const others = filteredCatalog.filter((item) => {
               columns={columns}
               formatDate={formatDate}
             />
+
+            {/* Unclaimed Confirmation Modal */}
+            <Modal
+              title="Confirm Mark as Unclaimed"
+              open={isUnclaimedModalVisible}
+              onOk={handleConfirmUnclaimed}
+              onCancel={handleCancelUnclaimed}
+              okText="Mark as Unclaimed"
+              zIndex={1015}
+              cancelText="Cancel"
+              okButtonProps={{
+                danger: true,
+                style: {
+                  backgroundColor: '#ff4d4f',
+                  borderColor: '#ff4d4f'
+                }
+              }}
+              width={600}
+            >
+              <div style={{ marginBottom: '16px' }}>
+                <p style={{ fontSize: '16px', marginBottom: '16px' }}>
+                  Are you sure you want to mark the following <strong>{selectedItems.size}</strong> item(s) as unclaimed?
+                </p>
+                
+                <div style={{ 
+                  maxHeight: '300px', 
+                  overflowY: 'auto', 
+                  border: '1px solid #d9d9d9', 
+                  borderRadius: '6px',
+                  padding: '12px',
+                  backgroundColor: '#fafafa'
+                }}>
+                  {getSelectedItemsData().map((item, index) => (
+                    <div key={item.id} style={{
+                      padding: '8px 0',
+                      borderBottom: index < getSelectedItemsData().length - 1 ? '1px solid #e8e8e8' : 'none',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <div style={{ fontWeight: '600', color: '#333' }}>
+                          {item.requestor}
+                        </div>
+                        <div style={{ fontSize: '14px', color: '#666' }}>
+                          {item.course} - {item.courseDescription}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#999' }}>
+                          Date Required: {item.dateRequired}
+                        </div>
+                      </div>
+                      <span className={`status ${item.status.toLowerCase().replace(/\s+/g, "-")}`}>
+                        {item.status}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                
+                <div style={{ marginTop: '16px' }}>
+                  <label style={{ 
+                    display: 'block', 
+                    marginBottom: '8px', 
+                    fontWeight: '500',
+                    color: '#333'
+                  }}>
+                    Comment (Optional)
+                  </label>
+                  <Input.TextArea
+                    value={unclaimedComment}
+                    onChange={(e) => setUnclaimedComment(e.target.value)}
+                    placeholder="Add a reason or note for marking these items as unclaimed..."
+                    rows={3}
+                    maxLength={500}
+                    showCount
+                    style={{
+                      borderRadius: '6px',
+                      resize: 'vertical'
+                    }}
+                  />
+                </div>
+                
+                <p style={{ 
+                  fontSize: '14px', 
+                  color: '#ff4d4f', 
+                  marginTop: '12px',
+                  fontStyle: 'italic'
+                }}>
+                  ⚠️ This action cannot be undone. Items will be moved to the "Unclaimed" status.
+                </p>
+              </div>
+            </Modal>
         </Content>
       </Layout>
     </Layout>
