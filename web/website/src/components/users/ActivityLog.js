@@ -162,13 +162,13 @@ const ActivityLog = () => {
       <Layout className="site-layout">
         <Content className="activity-content">
       
-
           <Table
+          style={{boxShadow: '0px 4px 5px rgba(0,0,0,0.1)'}}
             columns={columns}
             dataSource={filteredData}
             pagination={{ pageSize: 10 }}
             bordered
-            className="activity-table"
+            className="return-table"
             rowClassName="activity-row"
             onRow={(record) => ({
               onClick: () => handleRowClick(record),
