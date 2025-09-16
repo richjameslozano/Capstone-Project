@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import {Layout,Table,Input,Button,Select,Form,Row,Col,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
+import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined, SearchOutlined, FilterOutlined} from '@ant-design/icons'; 
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -2506,13 +2506,98 @@ useEffect(() => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
 
-      <Layout style={{paddingTop: 0}}>
-        <Content className="content inventory-container" style={{paddingTop: 0, paddingBottom: 150}}>
+      <Layout style={{paddingTop: 0, gap: 0}}>
+        <Content className="content inventory-container" style={{paddingTop: 0, paddingBottom: 150, gap: 0}}>
     
           
+<div className="inventory-header">
+  <div className="filter-header" style={{marginBottom: 0}}>
+  <FilterOutlined className="filter-icon" style={{color: '#2596be'}}/>
+  <span className="filter-title">Filter & Search</span>
+</div>
 
-          <div className="inventory-header">
-              
+<div className="inventory-filter-section">
+  <Input.Search
+    placeholder='Search Items'
+    className="search-bar"
+    allowClear
+    onInput={(e) => {
+      const sanitized = sanitizeInput(e.target.value);
+      e.target.value = sanitized;
+      setSearchText(sanitized);
+    }}
+  />
+
+  <Select
+    allowClear
+    showSearch
+    placeholder="Filter by Category"
+    className="filter-select"
+    onChange={(value) => setFilterCategory(value)}
+    filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+    <Option value="Chemical">Chemical</Option>
+    <Option value="Reagent">Reagent</Option>
+    <Option value="Materials">Materials</Option>
+    <Option value="Equipment">Equipment</Option>
+    <Option value="Glasswares">Glasswares</Option>
+  </Select>
+
+  <Select
+    allowClear
+    showSearch
+    placeholder="Filter by Item Type"
+    className="filter-select"
+    onChange={(value) => setFilterItemType(value)}
+    filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+    <Option value="Fixed">Fixed</Option>
+    <Option value="Consumable">Consumable</Option>
+  </Select>
+
+  <Button
+    className="reset-filters-button"
+    onClick={() => {
+      setFilterCategory(null);
+      setFilterItemType(null);
+      setSearchText('');
+    }}
+  >
+    Reset Filters
+  </Button>
+</div>
+</div> 
+
+
+      <div style={{padding: 12, flexWrap: 'wrap', background: '#fff', borderRadius: 8, boxShadow: '0px 4px 5px rgba(0,0,0,0.1)'}}>
+          <Table
+            dataSource={filteredData}
+            columns={columns}
+            rowKey={(record) => record.itemId}
+            bordered
+            pagination={{pageSize: 12}}
+            className="inventory-table"
+            loading={{ spinning: loading, tip: "Loading inventory data..." }}
+            onRow={(record) => {
+              return {
+                onClick: () => {
+                  setIsRowModalVisible(false);
+                  setSelectedRow(null);
+
+                  // Ensure state updates flush before reopening
+                  setTimeout(() => {
+                    setSelectedRow(record);
+                    setIsRowModalVisible(true);
+                  }, 100);
+                },
+              };
+            }}
+          />
+      </div>
 
           {!isModalVisible && (
             <div style={{backgroundColor: 'red'}}>
@@ -2598,122 +2683,6 @@ useEffect(() => {
           </div>
             )
           }
-              <Input.Search
-                placeholder="Search"
-                className="search-bar"
-                style={{
-                  height: '100%',              // Stretch to parent
-                  display: 'flex',             // Flex container
-                  alignItems: 'center'         // Center internal input
-                }}
-                
-                allowClear
-                onInput={(e) => {
-                  const sanitized = sanitizeInput(e.target.value);
-                  e.target.value = sanitized;
-                  setSearchText(sanitized);
-          }}
-              />
-
-              {/* <Select
-                allowClear
-                showSearch
-                placeholder="Filter by Department"
-                style={{ height: '80%', flex: 1}}
-                onChange={(value) => setFilterDepartment(value)}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                {departmentsAll.map((dept) => (
-                  <Option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </Option>
-                ))}
-              </Select> */}
-
-              <Select
-                allowClear
-                showSearch
-                placeholder="Filter by Category"
-                style={{flex:1,  height: '80%' }}
-                onChange={(value) => setFilterCategory(value)}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                <Option value="Chemical">Chemical</Option>
-                <Option value="Reagent">Reagent</Option>
-                <Option value="Materials">Materials</Option>
-                <Option value="Equipment">Equipment</Option>
-                <Option value="Glasswares">Glasswares</Option>
-              </Select>
-
-              <Select
-                allowClear
-                showSearch
-                placeholder="Filter by Item Type"
-                style={{flex:1,  height: '80%' }}
-                onChange={(value) => setFilterItemType(value)}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                <Option value="Fixed">Fixed</Option>
-                <Option value="Consumable">Consumable</Option>
-              </Select>
-
-              <Button
-                className="reset-filters-button"
-                onClick={() => {
-                  setFilterCategory(null);
-                  setFilterItemType(null);
-                  // setFilterUsageType(null);
-                  setSearchText('');
-                }}
-              >
-                Reset Filters
-              </Button>
-            
-            {/* <div style={{display: 'flex', flex: 1, height: '100%', alignItems: 'center', gap: 10}}>
-              <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
-                Export to Excel
-              </Button>
-
-              <Button className="save-pdf-button" type="primary" onClick={saveAsPdf}>
-                Save as PDF
-              </Button>
-
-              <Button className="print-pdf-button" type="primary" onClick={printPdf}>
-                Print PDF
-              </Button>
-            </div> */}
-  
-          </div> 
-
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            rowKey={(record) => record.itemId}
-            bordered
-            pagination={{pageSize: 12}}
-            className="inventory-table"
-            loading={{ spinning: loading, tip: "Loading inventory data..." }}
-            onRow={(record) => {
-              return {
-                onClick: () => {
-                  setIsRowModalVisible(false);
-                  setSelectedRow(null);
-
-                  // Ensure state updates flush before reopening
-                  setTimeout(() => {
-                    setSelectedRow(record);
-                    setIsRowModalVisible(true);
-                  }, 100);
-                },
-              };
-            }}
-          />
 
              <Modal
       className="add-modal"
@@ -3836,27 +3805,6 @@ useEffect(() => {
                   <div>
                     <h2>Stock Log</h2>
 
-                    {/* <table className="delivery-table">
-                    <thead>
-                      <tr>
-                        <th>Date</th>
-                        <th>No. of Items</th>
-                        <th>Delivery #</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>2025-05-30</td>
-                        <td>10</td>
-                        <td>DLV-00123</td>
-                      </tr>
-                      <tr>
-                        <td>2025-05-29</td>
-                        <td>7</td>
-                        <td>DLV-00122</td>
-                      </tr>
-                    </tbody>
-                  </table> */}
                   <StockLog inventoryDocId={selectedRow?.docId} />
                   </div>
               </div>
