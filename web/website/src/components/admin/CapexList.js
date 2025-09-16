@@ -9,6 +9,12 @@ import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import "../styles/adminStyle/CapexList.css";
 import { getAuth } from "firebase/auth";
+import {
+  FileExcelOutlined,
+  FilePdfOutlined,
+  FileTextOutlined,
+  PrinterOutlined,
+} from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Title, Text } = Typography;
@@ -500,67 +506,141 @@ const CapexList = () => {
   return (
     <Layout style={{ minHeight: "100vh" }} className="capex-list-layout">
       <Content style={{ margin: "20px" }} className="capex-list-content">
+
+                   <div style={{
+            background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+            borderRadius: "16px",
+            padding: "32px",
+            marginBottom: "32px",
+            boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px"
+            }}>
+              <div>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  CAPEX Request for Materials
+                </h1>
+                <p style={{
+                  color: "#a8d5e5",
+                  fontSize: "16px",
+                  margin: "0",
+                  fontWeight: "500"
+                }}>
+                  Academic Year {yearRange}
+                </p>
+              </div>
+              
+               <div
+    style={{
+      display: "flex",
+      justifyContent: "space-between",
+      alignItems: "center",
+    }}
+  >
+
+    {/* Action Buttons */}
+<div style={{ display: "flex", gap: 12 }}>
+  {/* Excel Button */}
+  <Button
+    className="export-excel-button"
+    icon={<FileExcelOutlined />}
+    onClick={exportToExcel}
+    loading={exportLoading}
+    disabled={pdfLoading || printLoading}
+    style={{
+      background: "#92cbdf",
+      color: "#134b5f",
+      border: "1px solid #2596be",
+      borderRadius: 6,
+      height: 40,
+      padding: "0 18px",
+      fontWeight: 500,
+    }}
+  >
+    Export Excel
+  </Button>
+
+  {/* Save PDF Button */}
+  <Button
+    className="save-pdf-button"
+    icon={<FilePdfOutlined />}
+    onClick={saveAsPdf}
+    loading={pdfLoading}
+    disabled={exportLoading || printLoading}
+    style={{
+      background: "#2596be",
+      color: "#fff",
+      border: "none",
+      borderRadius: 6,
+      height: 40,
+      padding: "0 18px",
+      fontWeight: 500,
+    }}
+  >
+    Save PDF
+  </Button>
+
+  {/* Print Button */}
+  <Button
+    className="print-pdf-button"
+    icon={<PrinterOutlined />}
+    onClick={printPdf}
+    loading={printLoading}
+    disabled={exportLoading || pdfLoading}
+    style={{
+      background: "#134b5f",
+      color: "#fff",
+      border: "none",
+      borderRadius: 6,
+      height: 40,
+      padding: "0 18px",
+      fontWeight: 500,
+    }}
+  >
+    Print
+  </Button>
+</div>
+  </div>
+            </div>
+          </div>
         <Row gutter={24}>
           <Col span={24}>
-            <h2>CAPEX Request for Materials Year {yearRange}</h2>
 
-            <Title level={4}>List of Requests</Title>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                marginBottom: 16,
-              }}
-            >
-              <Select
-                allowClear
-                style={{ width: 200 }}
-                placeholder="Filter by Subject"
-                value={subjectFilter}
-                onChange={handleFilter}
-              >
-                {subjectOptions.map((subject, index) => (
-                  <Option key={index} value={subject}>
-                    {subject}
-                  </Option>
-                ))}
-              </Select>
 
-              <div>
-                <Button
-                  className="export-excel-button"
-                  onClick={exportToExcel}
-                  loading={exportLoading}
-                  disabled={pdfLoading || printLoading}
-                >
-                  Export to Excel
-                </Button>
-                <Button
-                  className="save-pdf-button"
-                  type="primary"
-                  onClick={saveAsPdf}
-                  loading={pdfLoading}
-                  disabled={exportLoading || printLoading}
-                  style={{ marginRight: 8, marginLeft: 8 }}
-                >
-                  Save as PDF
-                </Button>
+     <div
+        style={{
+          background: "#fff",
+          borderRadius: 12,
+          padding: 20,
+          boxShadow: "0px 4px 10px rgba(0,0,0,0.08)",
+          display: "flex",
+          flexDirection: "row",
+          justifyContent: 'space-between',
+          marginBottom: 20,
+        }}
+      >
 
-                <Button
-                  className="print-pdf-button"
-                  onClick={printPdf}
-                  loading={printLoading}
-                  disabled={exportLoading || pdfLoading}
-                  style={{ marginRight: 8 }}
-                >
-                  Print
-                </Button>
-              </div>
+            <Title level={4} style={{ margin: 0 }}>
+            <FileTextOutlined/> List of CAPEX Requests
+          </Title>
+
+
+              <div style={{ textAlign: "right"}}>
+              <Text strong style={{fontSize: 20}}> Total Cost: ₱{totalCost.toLocaleString()} </Text>
             </div>
-
-            <div style={{ textAlign: "right", marginBottom: 16 }}>
-              <Text strong> Total Cost: ₱{totalCost.toLocaleString()} </Text>
             </div>
 
             <div className="table-scroll-wrapper">
