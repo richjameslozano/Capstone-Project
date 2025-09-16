@@ -1,385 +1,764 @@
+/* LabRoom.css */
+
+/* Main Container */
 .labroom-container {
-  text-align: center;
-  padding: 1rem;
-  background-color: #f0f4f8;
+  padding: 24px;
+  background: #e9ecee;
   min-height: 100vh;
-  font-family: 'Segoe UI', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 }
 
-/* Mobile responsiveness */
-@media (max-width: 768px) {
-  .labroom-container {
-    padding: 0.5rem;
-  }
+/* Header Section */
+.labroom-header-section {
+  background: linear-gradient(135deg, #0b2d39 0%, #165a72 100%);
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  box-shadow: 0 8px 32px rgba(11, 45, 57, 0.15);
+}
+
+.labroom-header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.labroom-header-icon {
+  font-size: 36px;
+  color: #7cc0d8;
+  margin-right: 16px;
 }
 
 .labroom-header {
-  font-size: 32px;
-  font-weight: bold;
-  margin-bottom: 2rem;
-  color: #2e2e2e;
-}
-
-/* Mobile responsiveness for header */
-@media (max-width: 768px) {
-  .labroom-header {
-    font-size: 24px;
-    margin-bottom: 1rem;
-  }
-}
-
-/* NEW: Room Wrapper */
-.labroom-table-wrapper {
-  margin: 2rem auto;
-  max-width: 95%;
-  padding: 1rem;
-  border: 1px solid #ddd;
-  border-radius: 12px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-/* Mobile responsiveness for table wrapper */
-@media (max-width: 768px) {
-  .labroom-table-wrapper {
-    margin: 1rem auto;
-    max-width: 100%;
-    padding: 0.5rem;
-    border-radius: 8px;
-  }
-}
-
-/* NEW: Room Title */
-.labroom-title {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 1rem;
-  color: #2a2a2a;
-  text-align: left;
-}
-
-/* Mobile responsiveness for title */
-@media (max-width: 768px) {
-  .labroom-title {
-    font-size: 18px;
-    margin-bottom: 0.5rem;
-  }
-}
-
-/* NEW: QR Cell Content */
-.labroom-qr-cell {
-  vertical-align: middle;
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
   text-align: center;
-  padding: 1rem;
 }
 
-/* Mobile responsiveness for QR cell */
-@media (max-width: 768px) {
-  .labroom-qr-cell {
-    padding: 0.5rem;
-  }
+.labroom-search-container {
+  display: flex;
+  justify-content: center;
 }
 
-/* QR + Button Layout */
-.labroom-qr {
+.labroom-search {
+  max-width: 500px;
+  width: 100%;
+}
+
+.labroom-search .ant-input-affix-wrapper {
+  border-radius: 12px;
+  border: 2px solid #2596be;
+  background: #ffffff;
+  padding: 12px 16px;
+  font-size: 16px;
+}
+
+.labroom-search .ant-input-affix-wrapper:hover,
+.labroom-search .ant-input-affix-wrapper:focus {
+  border-color: #7cc0d8;
+  box-shadow: 0 0 0 3px rgba(124, 192, 216, 0.1);
+}
+
+/* No Results */
+.labroom-no-results {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 64px 32px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 16px rgba(11, 45, 57, 0.08);
+  margin-bottom: 24px;
+}
+
+.labroom-no-results-content {
+  text-align: center;
+  color: #165a72;
+}
+
+.labroom-no-results-icon {
+  font-size: 48px;
+  color: #2596be;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.labroom-no-results p {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0 0 8px 0;
+  color: #0b2d39;
+}
+
+.labroom-no-results span {
+  font-size: 14px;
+  color: #165a72;
+}
+
+/* Content Area */
+.labroom-content {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 0.5rem;
+  gap: 24px;
 }
 
-/* Mobile responsiveness for QR layout */
-@media (max-width: 768px) {
-  .labroom-qr {
-    gap: 0.25rem;
-  }
+/* Card Design */
+.labroom-card {
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 6px 24px rgba(11, 45, 57, 0.08);
+  border: 1px solid #e9f5f9;
+  overflow: hidden;
+  transition: all 0.3s ease;
 }
 
-/* Download QR Button */
-.labroom-download-button {
-  padding: 8px 18px;
-  font-size: 14px;
-  background-color: #0a66c2;
-  color: white;
-  border: none;
-  border-radius: 6px;
+.labroom-card:hover {
+  box-shadow: 0 12px 32px rgba(11, 45, 57, 0.12);
+  transform: translateY(-2px);
+  border-color: #0b2d39;
+}
+
+/* Card Header */
+.labroom-card-header {
+  /* background: linear-gradient(135deg, #2596be 0%, #165a72 100%); */
+  padding: 20px 24px;
   cursor: pointer;
-  margin-top: 0.5rem;
-  transition: background-color 0.3s ease;
-  white-space: nowrap;
-}
-
-.labroom-download-button:hover {
-  background-color: #004a9f;
-}
-
-.labroom-download-button:disabled {
-  background-color: #ccc;
-  cursor: not-allowed;
-}
-
-/* Mobile responsiveness for download button */
-@media (max-width: 768px) {
-  .labroom-download-button {
-    padding: 6px 12px;
-    font-size: 12px;
-    margin-top: 0.25rem;
-  }
-}
-
-/* Responsive Table Container */
-.labroom-table-container {
-  overflow-x: auto;
-  margin-top: 1rem;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: #ccc #f1f1f1;
-}
-
-/* Custom scrollbar for webkit browsers */
-.labroom-table-container::-webkit-scrollbar {
-  height: 8px;
-}
-
-.labroom-table-container::-webkit-scrollbar-track {
-  background: #f1f1f1;
-  border-radius: 4px;
-}
-
-.labroom-table-container::-webkit-scrollbar-thumb {
-  background: #ccc;
-  border-radius: 4px;
-}
-
-.labroom-table-container::-webkit-scrollbar-thumb:hover {
-  background: #999;
-}
-
-/* Mobile responsiveness for table container */
-@media (max-width: 768px) {
-  .labroom-table-container {
-    margin-top: 0.5rem;
-    border-radius: 8px;
-  }
-}
-
-/* Main Table Styling */
-.labroom-table {
-  width: 100%;
-  min-width: 800px; /* Ensure table has minimum width for horizontal scroll */
-  border-collapse: collapse;
-  margin-top: 1rem;
-  font-size: 14px;
-}
-
-.labroom-table th,
-.labroom-table td {
-  border: 1px solid #ddd;
-  padding: 10px 14px;
-  text-align: center;
-  white-space: nowrap; /* Prevent text wrapping in cells */
-}
-
-.labroom-table th {
-  background-color: #f0f0f0;
-  font-weight: 600;
-  color: #333;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.labroom-table tr:nth-child(even) {
-  background-color: #f9f9f9;
-}
-
-.labroom-table tr:hover {
-  background-color: #f1f1f1;
-}
-
-/* Mobile responsiveness for table */
-@media (max-width: 768px) {
-  .labroom-table {
-    font-size: 12px;
-    min-width: 600px;
-  }
-  
-  .labroom-table th,
-  .labroom-table td {
-    padding: 8px 6px;
-  }
-  
-  /* Make QR code column wider on mobile */
-  .labroom-table th:first-child,
-  .labroom-table td:first-child {
-    min-width: 120px;
-  }
-}
-
-.labroom-card,
-.labroom-card:hover,
-.labroom-item-card,
-.labroom-item-card h4,
-.labroom-item-card p {
-  all: unset;
-}
-
-.labroom-title-wrapper {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  cursor: pointer;
-  padding: 0.5rem 1rem;
-  background-color: #f5f7fa;
-  border-radius: 8px;
-  transition: background-color 0.2s ease;
-}
-
-.labroom-title-wrapper:hover {
-  background-color: #e1e7ef;
-}
-
-.dropdown-arrow {
-  font-size: 20px;
-  color: #888;
-  margin-left: 1rem;
-}
-
-/* Mobile responsiveness for title wrapper */
-@media (max-width: 768px) {
-  .labroom-title-wrapper {
-    padding: 0.5rem;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
+  transition: all 0.3s ease;
   
-  .dropdown-arrow {
-    font-size: 16px;
-    margin-left: 0.5rem;
-  }
 }
 
-.labroom-table {
-  margin-top: 1rem;
-  width: 100%;
-  border-collapse: collapse;
+.labroom-card-header:hover {
+  background: #e9ecee;
+  border-color: #0b2d39;
+  transition: ease-in 0.1s;
 }
 
-.labroom-table th,
-.labroom-table td {
-  padding: 0.75rem;
-  text-align: left;
-  border-bottom: 1px solid #ddd;
+.labroom-title-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-.labroom-table th {
-  background-color: #f0f4f8;
+.labroom-room-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.labroom-room-label {
+  color: #165a72;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.labroom-room-number {
+  color: #165a72;
+  font-size: 24px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 8px 16px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.labroom-room-input {
+  background: #ffffff;
+  border: 2px solid #7cc0d8;
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 20px;
+  font-weight: 700;
+  color: #0b2d39;
+  width: 120px;
+}
+
+.labroom-edit-button {
+  background: #165a72;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #ffffff;
+  backdrop-filter: blur(10px);
   font-weight: 600;
 }
 
-/* Additional mobile optimizations */
-@media (max-width: 480px) {
-  .labroom-container {
-    padding: 0.25rem;
-  }
+.labroom-edit-button:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #ffffff;
+}
+
+.labroom-expand-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.labroom-item-count {
+  color: #165a72;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px;
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.labroom-expand-arrow {
+  color: #165a72;
+  font-size: 16px;
+  transition: transform 0.3s ease;
+}
+
+.labroom-expand-arrow.expanded {
+  transform: rotate(180deg);
+}
+
+/* Card Content */
+.labroom-card-content {
+  padding: 24px;
+}
+
+.labroom-search-section {
+  margin-bottom: 24px;
+}
+
+.labroom-item-search .ant-input-affix-wrapper {
+  border-radius: 8px;
+  border: 1px solid #7cc0d8;
+  padding: 8px 12px;
+}
+
+.labroom-item-search .ant-input-affix-wrapper:hover,
+.labroom-item-search .ant-input-affix-wrapper:focus {
+  border-color: #2596be;
+  box-shadow: 0 0 0 2px rgba(37, 150, 190, 0.1);
+}
+
+/* Tabs */
+.labroom-tabs-container {
+  background: #f8fdfe;
+  border-radius: 12px;
+  padding: 16px;
+  border: 1px solid #e9f5f9;
+}
+
+.labroom-tabs .ant-tabs-nav {
+  margin-bottom: 24px;
+}
+
+.labroom-tabs .ant-tabs-tab {
+  background: #ffffff;
+  border: 1px solid #e9f5f9;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  margin-right: 8px;
+  font-weight: 600;
+  padding: 10px;
+}
+
+.labroom-tabs .ant-tabs-tab-active {
   
+  color: #ffffff !important;
+  border-color: #2596be;
+}
+
+.labroom-tabs .ant-tabs-ink-bar {
+  display: none;
+}
+
+/* Table Wrapper */
+.labroom-table-wrapper {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(11, 45, 57, 0.06);
+  border: 1px solid #e9f5f9;
+}
+
+.labroom-table-container {
+  overflow-x: auto;
+}
+
+/* Table Styles */
+.labroom-table {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.labroom-table .ant-table {
+  border-radius: 12px;
+}
+
+.labroom-table .ant-table-thead > tr > th {
+  background: #d3eaf2 !important;
+  font-weight: 600 !important;
+  color: #1f2937 !important;
+  border-bottom: 2px solid #e5e7eb !important;
+  padding: 16px !important;
+}
+
+.labroom-table .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #f3f4f6 !important;
+  padding: 16px !important;
+  transition: all 0.2s ease;
+}
+
+.labroom-table .ant-table-tbody > tr:hover > td {
+  background: #f8fafc !important;
+  transform: scale(1.001);
+}
+
+.labroom-table .ant-table-tbody > tr {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+/* QR Code Cell */
+.labroom-qr-cell {
+  text-align: center;
+  background: #ffffff;
+  border-right: 2px solid #e9f5f9;
+}
+
+.labroom-qr-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  padding: 16px;
+}
+
+.labroom-qr-code {
+  background: #ffffff;
+  padding: 12px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(11, 45, 57, 0.08);
+  border: 2px solid #e9f5f9;
+}
+
+.labroom-download-button {
+  background: linear-gradient(135deg, #2596be 0%, #165a72 100%);
+  border: none;
+  color: #ffffff;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  transition: all 0.3s ease;
+}
+
+.labroom-download-button:hover {
+  background: linear-gradient(135deg, #7cc0d8 0%, #2596be 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(37, 150, 190, 0.3);
+}
+
+/* Table Content Styling */
+.labroom-item-name {
+  font-weight: 600;
+  color: #0b2d39;
+}
+
+.labroom-item-details {
+  color: #165a72;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.labroom-category-tag {
+  background: linear-gradient(135deg, #7cc0d8 0%, #2596be 100%);
+  color: #ffffff;
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.labroom-condition-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.condition-excellent {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.condition-good {
+  background: #d1ecf1;
+  color: #0c5460;
+  border: 1px solid #b8daff;
+}
+
+.condition-fair {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.condition-poor {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.labroom-quantity {
+  font-weight: 700;
+  color: #0b2d39;
+  text-align: center;
+}
+
+.labroom-status-badge {
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-available {
+  background: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.status-in-use {
+  background: #fff3cd;
+  color: #856404;
+  border: 1px solid #ffeaa7;
+}
+
+.status-maintenance {
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.status-out-of-order {
+  background: #f8f9fa;
+  color: #6c757d;
+  border: 1px solid #dee2e6;
+}
+
+/* Shelves Container */
+.labroom-shelves-container {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(11, 45, 57, 0.06);
+  border: 1px solid #e9f5f9;
+}
+
+.labroom-no-selection {
+  text-align: center;
+  padding: 48px 24px;
+  color: #165a72;
+}
+
+.labroom-no-selection-icon {
+  font-size: 48px;
+  color: #2596be;
+  margin-bottom: 16px;
+  display: block;
+}
+
+.shelves-placeholder {
+  padding: 24px;
+  background: #f8fdfe;
+  border-radius: 8px;
+  border: 2px dashed #7cc0d8;
+  text-align: center;
+  color: #165a72;
+  font-style: italic;
+}
+
+/* Modal Styles */
+.labroom-confirm-modal .ant-modal-content {
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.labroom-modal-content p {
+  font-size: 16px;
+  line-height: 1.6;
+  color: #165a72;
+}
+
+.labroom-old-number {
+  color: #dc3545;
+  background: #f8d7da;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.labroom-new-number {
+  color: #28a745;
+  background: #d4edda;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.labroom-qr-modal .ant-modal-content {
+  border-radius: 16px;
+  text-align: center;
+}
+
+.labroom-qr-modal-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 0;
+}
+
+.labroom-qr-modal-code {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(11, 45, 57, 0.12);
+  border: 2px solid #e9f5f9;
+}
+
+.labroom-qr-modal-download {
+  background: linear-gradient(135deg, #2596be 0%, #165a72 100%);
+  border: none;
+  font-weight: 600;
+  height: 48px;
+  min-width: 180px;
+}
+
+.labroom-qr-modal-download:hover {
+  background: linear-gradient(135deg, #7cc0d8 0%, #2596be 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(37, 150, 190, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .labroom-container {
+    padding: 16px;
+  }
+
+  .labroom-header-section {
+    padding: 24px 16px;
+  }
+
+  .labroom-header {
+    font-size: 24px;
+  }
+
+  .labroom-header-icon {
+    font-size: 28px;
+  }
+
+  .labroom-card-header {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .labroom-expand-section {
+    align-self: flex-end;
+  }
+
+  .labroom-room-number {
+    font-size: 20px;
+  }
+
+  .labroom-table-container {
+    overflow-x: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .labroom-table {
+    min-width: 800px;
+  }
+
+  .labroom-table th,
+  .labroom-table td {
+    padding: 12px 8px;
+    font-size: 12px;
+  }
+
+  .labroom-qr-container {
+    padding: 12px;
+  }
+
+  .labroom-qr-code svg {
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .labroom-download-button {
+    font-size: 11px;
+    padding: 6px 8px;
+  }
+
+  .labroom-card-content {
+    padding: 16px;
+  }
+
+  .labroom-tabs-container {
+    padding: 12px;
+  }
+
+  .labroom-no-results {
+    padding: 48px 16px;
+  }
+
+  .labroom-no-results-icon {
+    font-size: 36px;
+  }
+}
+
+@media (max-width: 480px) {
   .labroom-header {
     font-size: 20px;
   }
-  
-  .labroom-table-wrapper {
-    padding: 0.25rem;
-    margin: 0.5rem auto;
+
+  .labroom-header-content {
+    flex-direction: column;
+    gap: 16px;
   }
-  
-  .labroom-table {
-    font-size: 11px;
-    min-width: 500px;
+
+  .labroom-card-header {
+    padding: 16px;
   }
-  
+
+  .labroom-title-section {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .labroom-room-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .labroom-room-number {
+    font-size: 18px;
+    padding: 6px 12px;
+  }
+
+  .labroom-expand-section {
+    align-self: center;
+  }
+
   .labroom-table th,
   .labroom-table td {
-    padding: 4px 3px;
-  }
-  
-  .labroom-title {
-    font-size: 16px;
-  }
-  
-  .labroom-download-button {
-    padding: 4px 8px;
-    font-size: 11px;
-  }
-  
-  /* Improve touch targets on mobile */
-  .labroom-title-wrapper {
-    min-height: 44px; /* iOS recommended touch target size */
-  }
-  
-  .labroom-download-button {
-    min-height: 32px;
-    min-width: 60px;
-  }
-}
-
-/* Tablet responsiveness */
-@media (min-width: 769px) and (max-width: 1024px) {
-  .labroom-table {
-    min-width: 700px;
-  }
-  
-  .labroom-table th,
-  .labroom-table td {
-    padding: 8px 10px;
-  }
-}
-
-/* Ant Design Table responsiveness within labroom-table-container */
-.labroom-table-container .ant-table {
-  min-width: 100%;
-}
-
-.labroom-table-container .ant-table-thead > tr > th {
-  white-space: nowrap;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  background-color: #fafafa;
-}
-
-.labroom-table-container .ant-table-tbody > tr > td {
-  white-space: nowrap;
-}
-
-/* Mobile responsiveness for Ant Design tables */
-@media (max-width: 768px) {
-  .labroom-table-container .ant-table {
-    font-size: 12px;
-  }
-  
-  .labroom-table-container .ant-table-thead > tr > th,
-  .labroom-table-container .ant-table-tbody > tr > td {
     padding: 8px 6px;
-  }
-  
-  .labroom-table-container .ant-btn {
     font-size: 11px;
-    padding: 4px 8px;
   }
-}
 
-@media (max-width: 480px) {
-  .labroom-table-container .ant-table {
-    font-size: 11px;
+  .labroom-qr-code svg {
+    width: 80px !important;
+    height: 80px !important;
   }
-  
-  .labroom-table-container .ant-table-thead > tr > th,
-  .labroom-table-container .ant-table-tbody > tr > td {
-    padding: 6px 4px;
-  }
-  
-  .labroom-table-container .ant-btn {
+
+  .labroom-category-tag,
+  .labroom-condition-badge,
+  .labroom-status-badge {
     font-size: 10px;
     padding: 3px 6px;
+  }
+}
+
+/* Animation Enhancements */
+.labroom-card {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.labroom-table-row {
+  animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Loading States */
+.labroom-download-button[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.labroom-qr-modal-download[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* Accessibility Improvements */
+.labroom-card-header:focus {
+  outline: 2px solid #7cc0d8;
+  outline-offset: 2px;
+}
+
+.labroom-edit-button:focus,
+.labroom-download-button:focus,
+.labroom-qr-modal-download:focus {
+  outline: 2px solid #7cc0d8;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .labroom-card {
+    border: 2px solid #0b2d39;
+  }
+  
+  .labroom-table th {
+    border: 1px solid #ffffff;
+  }
+  
+  .labroom-table td {
+    border: 1px solid #0b2d39;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .labroom-card,
+  .labroom-table-row,
+  .labroom-expand-arrow {
+    animation: none;
+    transition: none;
+  }
+  
+  .labroom-card:hover {
+    transform: none;
+  }
+  
+  .labroom-download-button:hover,
+  .labroom-qr-modal-download:hover {
+    transform: none;
   }
 }
