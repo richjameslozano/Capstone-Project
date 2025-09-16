@@ -59,8 +59,13 @@ const StockLog = ({ inventoryDocId, editingItem, setDataSource }) => {
     const deductedQty = Number(selectedRow.noOfItems) || 0;
     const itemMeta = editingItem || selectedRow;
 
-    if (!itemMeta || !itemMeta.itemId) {
-      console.error("Missing editingItem metadata");
+    // Try to get itemId from different possible sources
+    const itemId = itemMeta?.itemId || itemMeta?.itemID || itemMeta?.id;
+    
+    if (!itemMeta || !itemId) {
+      console.error("Missing editingItem metadata - cannot proceed with deletion");
+      console.error("Available itemMeta:", itemMeta);
+      alert("Error: Missing item information. Please refresh the page and try again.");
       setConfirmVisible(false);
       return;
     }
@@ -72,7 +77,7 @@ const StockLog = ({ inventoryDocId, editingItem, setDataSource }) => {
         userName,
         values: {
           quantity: deductedQty,
-          editingItem: itemMeta,
+          editingItem: { ...itemMeta, itemId: itemId },
           logId: selectedRow.key, 
         },
       });
@@ -85,7 +90,7 @@ const StockLog = ({ inventoryDocId, editingItem, setDataSource }) => {
         if (setDataSource) {
           setDataSource(prev =>
             prev.map(item => {
-              if (item.itemId === editingItem.itemId) {
+              if (item.itemId === itemId) {
                 return {
                   ...item,
                   quantity: (item.quantity || 0) - deductedQty,

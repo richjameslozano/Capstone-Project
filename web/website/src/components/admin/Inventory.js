@@ -2600,96 +2600,60 @@ useEffect(() => {
           </div>
             )
           }
-              <Input.Search
-                placeholder="Search"
-                className="search-bar"
-                style={{
-                  height: '100%',              // Stretch to parent
-                  display: 'flex',             // Flex container
-                  alignItems: 'center'         // Center internal input
-                }}
-                
-                allowClear
-                onInput={(e) => {
-                  const sanitized = sanitizeInput(e.target.value);
-                  e.target.value = sanitized;
-                  setSearchText(sanitized);
-          }}
-              />
+           <div className="inventory-filter-section">
+  <Input.Search
+    placeholder='Search Items'
+    className="search-bar"
+    allowClear
+    onInput={(e) => {
+      const sanitized = sanitizeInput(e.target.value);
+      e.target.value = sanitized;
+      setSearchText(sanitized);
+    }}
+  />
 
-              {/* <Select
-                allowClear
-                showSearch
-                placeholder="Filter by Department"
-                style={{ height: '80%', flex: 1}}
-                onChange={(value) => setFilterDepartment(value)}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                {departmentsAll.map((dept) => (
-                  <Option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </Option>
-                ))}
-              </Select> */}
+  <Select
+    allowClear
+    showSearch
+    placeholder="Filter by Category"
+    className="filter-select"
+    onChange={(value) => setFilterCategory(value)}
+    filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+    <Option value="Chemical">Chemical</Option>
+    <Option value="Reagent">Reagent</Option>
+    <Option value="Materials">Materials</Option>
+    <Option value="Equipment">Equipment</Option>
+    <Option value="Glasswares">Glasswares</Option>
+  </Select>
 
-              <Select
-                allowClear
-                showSearch
-                placeholder="Filter by Category"
-                style={{flex:1,  height: '80%' }}
-                onChange={(value) => setFilterCategory(value)}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                <Option value="Chemical">Chemical</Option>
-                <Option value="Reagent">Reagent</Option>
-                <Option value="Materials">Materials</Option>
-                <Option value="Equipment">Equipment</Option>
-                <Option value="Glasswares">Glasswares</Option>
-              </Select>
+  <Select
+    allowClear
+    showSearch
+    placeholder="Filter by Item Type"
+    className="filter-select"
+    onChange={(value) => setFilterItemType(value)}
+    filterOption={(input, option) =>
+      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+    }
+  >
+    <Option value="Fixed">Fixed</Option>
+    <Option value="Consumable">Consumable</Option>
+  </Select>
 
-              <Select
-                allowClear
-                showSearch
-                placeholder="Filter by Item Type"
-                style={{flex:1,  height: '80%' }}
-                onChange={(value) => setFilterItemType(value)}
-                filterOption={(input, option) =>
-                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-                }
-              >
-                <Option value="Fixed">Fixed</Option>
-                <Option value="Consumable">Consumable</Option>
-              </Select>
-
-              <Button
-                className="reset-filters-button"
-                onClick={() => {
-                  setFilterCategory(null);
-                  setFilterItemType(null);
-                  // setFilterUsageType(null);
-                  setSearchText('');
-                }}
-              >
-                Reset Filters
-              </Button>
-            
-            {/* <div style={{display: 'flex', flex: 1, height: '100%', alignItems: 'center', gap: 10}}>
-              <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
-                Export to Excel
-              </Button>
-
-              <Button className="save-pdf-button" type="primary" onClick={saveAsPdf}>
-                Save as PDF
-              </Button>
-
-              <Button className="print-pdf-button" type="primary" onClick={printPdf}>
-                Print PDF
-              </Button>
-            </div> */}
+  <Button
+    className="reset-filters-button"
+    onClick={() => {
+      setFilterCategory(null);
+      setFilterItemType(null);
+      setSearchText('');
+    }}
+  >
+    Reset Filters
+  </Button>
+</div>
   
           </div> 
 
@@ -3910,7 +3874,11 @@ useEffect(() => {
                       </tr>
                     </tbody>
                   </table> */}
-                  <StockLog inventoryDocId={selectedRow?.docId} />
+                  <StockLog 
+                    inventoryDocId={selectedRow?.docId} 
+                    editingItem={selectedRow}
+                    setDataSource={setDataSource}
+                  />
                   </div>
               </div>
             )}
