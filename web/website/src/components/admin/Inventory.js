@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import {Layout,Table,Input,Button,Select,Form,Row,Col,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined, SearchOutlined, FilterOutlined} from '@ant-design/icons'; 
+import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -1842,10 +1842,12 @@ const printPdf = async () => {
 
 
   // BACKEND WITH CRITICAL LEVEL
-  const handleAdd = async (values) => {
+  // ===========================
+// HANDLE ADD
+// ===========================
+const handleAdd = async (values) => {
   setLoading(true);
   try {
-    // Basic client validation (unchanged)
     if (!itemName || !itemDetails) {
       alert("Please fill up the form!");
       return;
@@ -1856,31 +1858,43 @@ const printPdf = async () => {
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName");
 
-    // Dates → strings (or null). Some servers 500 on undefined.
     const formattedEntryDate  = values.entryDate  ? values.entryDate.format("YYYY-MM-DD") : null;
     const formattedExpiryDate = values.expiryDate ? values.expiryDate.format("YYYY-MM-DD") : null;
 
-    // ---- NEW: compute base quantity safely ----
     const parseNum = (v) => {
       const n = Number(v);
       return Number.isFinite(n) ? n : 0;
     };
 
-    const quantityMode = values.quantityMode || (values.containerCount || values.containerCapacity ? "container" : "direct");
-    const baseUom = values.baseUom || (["Chemical","Reagent"].includes(values.category) ? "ml" : "pcs");
+    // ---- quantity logic (containers only for Chemical/Reagent) ----
+    const cat = (values.category || "").toLowerCase();
+    const isChemOrReagent = cat === "chemical" || cat === "reagent";
 
-    let qtyBase = 0;
-    if (quantityMode === "direct") {
-      const direct = values.quantityDirect ?? values.quantity; // fallback for backward compat
-      qtyBase = parseNum(direct);
-    } else {
-      const count = parseNum(values.containerCount);
-      let capacity = parseNum(values.containerCapacity);
-      // Optional: if you have presets available in values.uomPresets
-      if (!capacity && values.containerKind && values.uomPresets?.[values.containerKind]?.multiplier) {
-        capacity = parseNum(values.uomPresets[values.containerKind].multiplier);
+    let qtyBase = 0;                  // value saved as `quantity`
+    let unit = isChemOrReagent ? (values.baseUom || "ml") : "pcs";
+    let quantityMode = "direct";      // recorded for reference
+    let baseUom = unit;
+
+    if (isChemOrReagent) {
+      quantityMode =
+        values.quantityMode ||
+        (values.containerCount || values.containerCapacity ? "container" : "direct");
+      baseUom = values.baseUom || "ml";
+
+      if (quantityMode === "direct") {
+        const direct = values.quantityDirect ?? values.quantity;
+        qtyBase = parseNum(direct);
+      } else {
+        const count = parseNum(values.containerCount);
+        let capacity = parseNum(values.containerCapacity);
+        if (!capacity && values.containerKind && values.uomPresets?.[values.containerKind]?.multiplier) {
+          capacity = parseNum(values.uomPresets[values.containerKind].multiplier);
+        }
+        qtyBase = count * capacity; // ml, g, etc.
       }
-      qtyBase = count * capacity;
+    } else {
+      // everything else: direct pcs only
+      qtyBase = parseNum(values.quantityDirect ?? values.quantity ?? values.qty);
     }
 
     if (!Number.isFinite(qtyBase) || qtyBase < 0) {
@@ -1888,30 +1902,26 @@ const printPdf = async () => {
       return;
     }
 
-    // ---- Status logic based on qtyBase (unchanged in spirit) ----
-    const category = (values.category || "").toLowerCase();
+    // ---- status logic ----
     const criticalLevel = parseNum(values.criticalLevel);
+    const isConsumable = (c) => ["chemical", "reagent", "materials"].includes(c);
+    const isDurable    = (c) => ["equipment", "glasswares"].includes(c);
 
     let initialStatus;
-    const isConsumable = (c) => ["chemical","reagent","materials"].includes(c);
-    const isDurable    = (c) => ["equipment","glasswares"].includes(c);
-
     if (qtyBase === 0) {
-      initialStatus = isConsumable(category) ? "out of stock" : (isDurable(category) ? "unavailable" : "out of stock");
-    } else if (isConsumable(category)) {
+      initialStatus = isConsumable(cat) ? "out of stock" : (isDurable(cat) ? "unavailable" : "out of stock");
+    } else if (isConsumable(cat)) {
       initialStatus = qtyBase <= criticalLevel ? "low stock" : "in stock";
-    } else if (category === "equipment" || category === "glasswares") {
+    } else if (cat === "equipment" || cat === "glasswares") {
       initialStatus = "available";
-    } else if (isDurable(category)) {
+    } else if (isDurable(cat)) {
       initialStatus = "in stock";
     } else {
       initialStatus = "in stock";
     }
 
-    // ---- Keep server-facing fields minimal (prune extras) ----
-    // Many 500s come from unexpected keys or wrong types.
+    // ---- payload ----
     const basePayload = {
-      // existing fields your server likely expects:
       itemName: trimmedName,
       itemDetails: trimmedDetails,
       category: values.category,
@@ -1921,65 +1931,53 @@ const printPdf = async () => {
       userId,
       userName,
       status: initialStatus,
-      itemIdMode: itemIdMode,
+      itemIdMode,
       ...(itemIdMode === "manual" && { manualItemId: itemId }),
 
-      // IMPORTANT: keep old "quantity" for backward compatibility
       quantity: qtyBase,
+      unit,
 
-      // If your server expects "unit" for chemicals/reagents, send it:
-      unit: values.baseUom || (["Chemical","Reagent"].includes(values.category) ? "ml" : "pcs"),
-
-      // other known fields from your form that backend already handles:
       labRoom: values.labRoom ?? null,
       shelves: values.shelves ?? null,
       row: values.row ?? null,
       type: values.type ?? null,
-      criticalLevel: isNaN(criticalLevel) ? null : criticalLevel,
+      criticalLevel: Number.isFinite(criticalLevel) ? criticalLevel : null,
       availabilityThreshold: values.availabilityThreshold != null ? Number(values.availabilityThreshold) : null,
     };
 
-    // Put all the “new” UI fields under one nested object.
-    // Server can ignore this safely if it doesn’t know it.
-    basePayload.quantityInput = {
-      mode: quantityMode,                 // "direct" | "container"
-      baseUom,
-      direct: values.quantityDirect ?? null,
-      container: {
-        kind: values.containerKind ?? null,   // "bottle" | "pack" | "custom"
-        count: values.containerCount ?? null, // numeric string OK
-        capacity: values.containerCapacity ?? null, // numeric string OK
-      },
-    };
+    // keep the UI input structure for reference / future parsing
+    basePayload.quantityInput = isChemOrReagent
+      ? {
+          mode: quantityMode,           // "direct" | "container"
+          baseUom,
+          direct: values.quantityDirect ?? null,
+          container: {
+            kind: values.containerKind ?? null,
+            count: values.containerCount ?? null,
+            capacity: values.containerCapacity ?? null,
+          },
+        }
+      : {
+          mode: "direct",
+          baseUom: "pcs",
+          direct: values.quantityDirect ?? values.quantity ?? null,
+          container: null,
+        };
 
-    // Optional: quick client log so you can compare with server logs
-    console.table({
-      qtyBase,
-      quantityMode,
-      baseUom,
-      containerCount: values.containerCount,
-      containerCapacity: values.containerCapacity,
-    });
-
-    // ---- Send request with robust error parsing ----
+    // ---- send ----
     const response = await fetch("https://webnuls.onrender.com/add-inventory", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(basePayload),
     });
 
-    // Some servers return non-JSON on 500. Try parse JSON, else text.
     let result;
     const text = await response.text();
     try { result = text ? JSON.parse(text) : {}; } catch { result = { raw: text }; }
 
     if (!response.ok) {
       console.error("Add Inventory failed:", { status: response.status, result });
-      const msg =
-        result?.error ||
-        result?.message ||
-        result?.raw ||
-        `Server error (${response.status}). Check server logs.`;
+      const msg = result?.error || result?.message || result?.raw || `Server error (${response.status}). Check server logs.`;
       alert(msg);
       return;
     }
@@ -2204,6 +2202,9 @@ const printPdf = async () => {
 // };
 
 // FRONTEND-ONLY SOLUTION
+// ===========================
+// UPDATE ITEM (frontend-only payload build)
+// ===========================
 const updateItem = async (values) => {
   setUpdateStockLoading(true);
 
@@ -2217,34 +2218,38 @@ const updateItem = async (values) => {
       return;
     }
 
-    // ---- parse/compute base quantity from direct or container mode ----
     const parseNum = (v) => {
       const n = Number(v);
       return Number.isFinite(n) ? n : 0;
     };
 
-    // Prefer new fields; fallback to legacy `values.quantity`
-    const quantityMode =
-      values.quantityMode ||
-      (values.containerCount || values.containerCapacity ? "container" : "direct");
-
-    // If caller didn’t pass baseUom, infer from item/category
-    const baseUom =
-      values.baseUom ||
-      (["Chemical", "Reagent"].includes(editingItem?.category) ? "ml" : "pcs");
+    // category check
+    const cat = (editingItem.category || "").toLowerCase();
+    const isChemOrReagent = cat === "chemical" || cat === "reagent";
 
     let qtyBase = 0;
-    if (quantityMode === "direct") {
-      const direct = values.quantityDirect ?? values.quantity;
-      qtyBase = parseNum(direct);
-    } else {
-      const count = parseNum(values.containerCount);
-      let capacity = parseNum(values.containerCapacity);
-      // Optional preset support: values.uomPresets?.[containerKind]?.multiplier
-      if (!capacity && values.containerKind && values.uomPresets?.[values.containerKind]?.multiplier) {
-        capacity = parseNum(values.uomPresets[values.containerKind].multiplier);
+    let quantityMode = "direct";
+    let baseUom = isChemOrReagent ? (values.baseUom || "ml") : "pcs";
+
+    if (isChemOrReagent) {
+      quantityMode =
+        values.quantityMode ||
+        (values.containerCount || values.containerCapacity ? "container" : "direct");
+
+      if (quantityMode === "direct") {
+        const direct = values.quantityDirect ?? values.quantity;
+        qtyBase = parseNum(direct);
+      } else {
+        const count = parseNum(values.containerCount);
+        let capacity = parseNum(values.containerCapacity);
+        if (!capacity && values.containerKind && values.uomPresets?.[values.containerKind]?.multiplier) {
+          capacity = parseNum(values.uomPresets[values.containerKind].multiplier);
+        }
+        qtyBase = count * capacity; // ml/g etc.
       }
-      qtyBase = count * capacity;
+    } else {
+      // non-chemical/reagent
+      qtyBase = parseNum(values.quantityDirect ?? values.quantity ?? values.qty);
     }
 
     if (!Number.isFinite(qtyBase) || qtyBase < 0) {
@@ -2254,33 +2259,36 @@ const updateItem = async (values) => {
     }
 
     const expiryDate =
-      values.expiryDate?.isValid?.() ? values.expiryDate.format("YYYY-MM-DD") : null;
+      isChemOrReagent && values.expiryDate?.isValid?.()
+        ? values.expiryDate.format("YYYY-MM-DD")
+        : null;
 
-    const isConditionTracked = ["Equipment", "Glasswares", "Materials"].includes(
-      editingItem.category
-    );
+    const isConditionTracked = ["equipment", "glasswares", "materials"].includes(cat);
 
-    // ---- server payload: keep legacy shape, add new details under quantityInput ----
     const serverPayload = {
       userId,
       userName,
       values: {
-        // legacy fields your backend already handles:
-        quantity: qtyBase,         // <— authoritative delta in base units
+        quantity: qtyBase,
         expiryDate,
-        editingItem,               // includes itemId, category, etc.
-
-        // NEW (safe to ignore server-side if not parsed):
-        quantityInput: {
-          mode: quantityMode,                 // "direct" | "container"
-          baseUom,
-          direct: values.quantityDirect ?? null,
-          container: {
-            kind: values.containerKind ?? null,     // "bottle" | "pack" | "custom"
-            count: values.containerCount ?? null,   // raw input OK
-            capacity: values.containerCapacity ?? null,
-          },
-        },
+        editingItem,
+        quantityInput: isChemOrReagent
+          ? {
+              mode: quantityMode,
+              baseUom,
+              direct: values.quantityDirect ?? null,
+              container: {
+                kind: values.containerKind ?? null,
+                count: values.containerCount ?? null,
+                capacity: values.containerCapacity ?? null,
+              },
+            }
+          : {
+              mode: "direct",
+              baseUom: "pcs",
+              direct: values.quantityDirect ?? values.quantity ?? null,
+              container: null,
+            },
       },
     };
 
@@ -2295,11 +2303,8 @@ const updateItem = async (values) => {
       return;
     }
 
-    // ---- Local optimistic update (if backend already wrote, this just mirrors it) ----
-    let updatedItem = {
-      ...editingItem,
-      ...(expiryDate && { expiryDate }),
-    };
+    // optimistic UI sync (kept from your code)
+    let updatedItem = { ...editingItem, ...(expiryDate && { expiryDate }) };
 
     if (isConditionTracked) {
       try {
@@ -2318,7 +2323,6 @@ const updateItem = async (values) => {
             condition: currentData.condition,
           };
         } else {
-          // fallback if query somehow empty
           const prevQty = Number(editingItem.quantity) || 0;
           updatedItem.quantity = prevQty + qtyBase;
           const currentCondition =
@@ -2330,7 +2334,6 @@ const updateItem = async (values) => {
         }
       } catch (err) {
         console.error("Error fetching updated data:", err);
-        // Fallback optimistic update
         const prevQty = Number(editingItem.quantity) || 0;
         updatedItem.quantity = prevQty + qtyBase;
         const currentCondition =
@@ -2341,13 +2344,12 @@ const updateItem = async (values) => {
         };
       }
     } else {
-      // Non-condition-tracked: simple add
       const prevQty = Number(editingItem.quantity) || 0;
       updatedItem.quantity = prevQty + qtyBase;
     }
 
     setDataSource((prev) =>
-      prev.map((item) => (item.itemId === editingItem.itemId ? updatedItem : item))
+      prev.map((it) => (it.itemId === editingItem.itemId ? updatedItem : it))
     );
 
     setNotificationMessage("Item updated successfully!");
@@ -2506,98 +2508,13 @@ useEffect(() => {
   return (
     <Layout style={{ minHeight: "100vh" }}>
 
-      <Layout style={{paddingTop: 0, gap: 0}}>
-        <Content className="content inventory-container" style={{paddingTop: 0, paddingBottom: 150, gap: 0}}>
+      <Layout style={{paddingTop: 0}}>
+        <Content className="content inventory-container" style={{paddingTop: 0, paddingBottom: 150}}>
     
           
-<div className="inventory-header">
-  <div className="filter-header" style={{marginBottom: 0}}>
-  <FilterOutlined className="filter-icon" style={{color: '#2596be'}}/>
-  <span className="filter-title">Filter & Search</span>
-</div>
 
-<div className="inventory-filter-section">
-  <Input.Search
-    placeholder='Search Items'
-    className="search-bar"
-    allowClear
-    onInput={(e) => {
-      const sanitized = sanitizeInput(e.target.value);
-      e.target.value = sanitized;
-      setSearchText(sanitized);
-    }}
-  />
-
-  <Select
-    allowClear
-    showSearch
-    placeholder="Filter by Category"
-    className="filter-select"
-    onChange={(value) => setFilterCategory(value)}
-    filterOption={(input, option) =>
-      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-    }
-  >
-    <Option value="Chemical">Chemical</Option>
-    <Option value="Reagent">Reagent</Option>
-    <Option value="Materials">Materials</Option>
-    <Option value="Equipment">Equipment</Option>
-    <Option value="Glasswares">Glasswares</Option>
-  </Select>
-
-  <Select
-    allowClear
-    showSearch
-    placeholder="Filter by Item Type"
-    className="filter-select"
-    onChange={(value) => setFilterItemType(value)}
-    filterOption={(input, option) =>
-      option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
-    }
-  >
-    <Option value="Fixed">Fixed</Option>
-    <Option value="Consumable">Consumable</Option>
-  </Select>
-
-  <Button
-    className="reset-filters-button"
-    onClick={() => {
-      setFilterCategory(null);
-      setFilterItemType(null);
-      setSearchText('');
-    }}
-  >
-    Reset Filters
-  </Button>
-</div>
-</div> 
-
-
-      <div style={{padding: 12, flexWrap: 'wrap', background: '#fff', borderRadius: 8, boxShadow: '0px 4px 5px rgba(0,0,0,0.1)'}}>
-          <Table
-            dataSource={filteredData}
-            columns={columns}
-            rowKey={(record) => record.itemId}
-            bordered
-            pagination={{pageSize: 12}}
-            className="inventory-table"
-            loading={{ spinning: loading, tip: "Loading inventory data..." }}
-            onRow={(record) => {
-              return {
-                onClick: () => {
-                  setIsRowModalVisible(false);
-                  setSelectedRow(null);
-
-                  // Ensure state updates flush before reopening
-                  setTimeout(() => {
-                    setSelectedRow(record);
-                    setIsRowModalVisible(true);
-                  }, 100);
-                },
-              };
-            }}
-          />
-      </div>
+          <div className="inventory-header">
+              
 
           {!isModalVisible && (
             <div style={{backgroundColor: 'red'}}>
@@ -2683,6 +2600,122 @@ useEffect(() => {
           </div>
             )
           }
+              <Input.Search
+                placeholder="Search"
+                className="search-bar"
+                style={{
+                  height: '100%',              // Stretch to parent
+                  display: 'flex',             // Flex container
+                  alignItems: 'center'         // Center internal input
+                }}
+                
+                allowClear
+                onInput={(e) => {
+                  const sanitized = sanitizeInput(e.target.value);
+                  e.target.value = sanitized;
+                  setSearchText(sanitized);
+          }}
+              />
+
+              {/* <Select
+                allowClear
+                showSearch
+                placeholder="Filter by Department"
+                style={{ height: '80%', flex: 1}}
+                onChange={(value) => setFilterDepartment(value)}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                {departmentsAll.map((dept) => (
+                  <Option key={dept.id} value={dept.name}>
+                    {dept.name}
+                  </Option>
+                ))}
+              </Select> */}
+
+              <Select
+                allowClear
+                showSearch
+                placeholder="Filter by Category"
+                style={{flex:1,  height: '80%' }}
+                onChange={(value) => setFilterCategory(value)}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                <Option value="Chemical">Chemical</Option>
+                <Option value="Reagent">Reagent</Option>
+                <Option value="Materials">Materials</Option>
+                <Option value="Equipment">Equipment</Option>
+                <Option value="Glasswares">Glasswares</Option>
+              </Select>
+
+              <Select
+                allowClear
+                showSearch
+                placeholder="Filter by Item Type"
+                style={{flex:1,  height: '80%' }}
+                onChange={(value) => setFilterItemType(value)}
+                filterOption={(input, option) =>
+                  option.children.toLowerCase().indexOf(input.toLowerCase()) >= 0
+                }
+              >
+                <Option value="Fixed">Fixed</Option>
+                <Option value="Consumable">Consumable</Option>
+              </Select>
+
+              <Button
+                className="reset-filters-button"
+                onClick={() => {
+                  setFilterCategory(null);
+                  setFilterItemType(null);
+                  // setFilterUsageType(null);
+                  setSearchText('');
+                }}
+              >
+                Reset Filters
+              </Button>
+            
+            {/* <div style={{display: 'flex', flex: 1, height: '100%', alignItems: 'center', gap: 10}}>
+              <Button className="export-excel-button" type="primary" onClick={exportToExcel}>
+                Export to Excel
+              </Button>
+
+              <Button className="save-pdf-button" type="primary" onClick={saveAsPdf}>
+                Save as PDF
+              </Button>
+
+              <Button className="print-pdf-button" type="primary" onClick={printPdf}>
+                Print PDF
+              </Button>
+            </div> */}
+  
+          </div> 
+
+          <Table
+            dataSource={filteredData}
+            columns={columns}
+            rowKey={(record) => record.itemId}
+            bordered
+            pagination={{pageSize: 12}}
+            className="inventory-table"
+            loading={{ spinning: loading, tip: "Loading inventory data..." }}
+            onRow={(record) => {
+              return {
+                onClick: () => {
+                  setIsRowModalVisible(false);
+                  setSelectedRow(null);
+
+                  // Ensure state updates flush before reopening
+                  setTimeout(() => {
+                    setSelectedRow(record);
+                    setIsRowModalVisible(true);
+                  }, 100);
+                },
+              };
+            }}
+          />
 
              <Modal
       className="add-modal"
@@ -2840,230 +2873,281 @@ useEffect(() => {
           )}
         </Row>
         </div>
+
+         <Form.Item noStyle shouldUpdate={(p, c) => p.category !== c.category}>
+    {({ getFieldValue, setFieldsValue }) => {
+      const cat = getFieldValue("category");
+      const chemLike = ["Chemical", "Reagent"].includes(cat);
+
+      const curMode = getFieldValue("quantityMode");
+      const curUom  = getFieldValue("baseUom");
+
+      if (chemLike) {
+        if (!curUom || !["ml", "g"].includes(curUom)) {
+          setFieldsValue({ baseUom: "ml" });
+        }
+        if (!curMode) {
+          setFieldsValue({ quantityMode: "direct" });
+        }
+      } else {
+        const needsReset =
+          curMode !== "direct" ||
+          curUom !== "pcs" ||
+          !!getFieldValue("containerKind") ||
+          !!getFieldValue("containerCount") ||
+          !!getFieldValue("containerCapacity");
+
+        if (needsReset) {
+          setFieldsValue({
+            quantityMode: "direct",
+            baseUom: "pcs",
+            containerKind: undefined,
+            containerCount: undefined,
+            containerCapacity: undefined,
+          });
+        }
+      }
+      return null; // renders nothing
+    }}
+  </Form.Item>
           
         <h3 style={{ marginBottom: 25 }}>Inventory Information</h3>
 
-<Row gutter={16}>
-  {/* ---- Quantity Mode ---- */}
-  <Col xs={24} md={8}>
-    <Form.Item
-      name="quantityMode"
-      label="Quantity Input"
-      initialValues="direct"
-      rules={[{ required: true, message: "Please choose a quantity input mode!" }]}
-    >
-      <Radio.Group className="add-input">
-        <Radio value="direct">Direct (base units)</Radio>
-        <Radio value="container">By Container</Radio>
-      </Radio.Group>
-    </Form.Item>
-  </Col>
+{/* Show different UI depending on category */}
+<Form.Item noStyle shouldUpdate={(p, c) => p.category !== c.category}>
+  {({ getFieldValue, setFieldsValue }) => {
+    const cat = getFieldValue("category");
+    const chemLike = ["Chemical", "Reagent"].includes(cat);
 
-  {/* ---- Base UOM (depends on category) ---- */}
-  <Col xs={24} md={8}>
-    <Form.Item
-      shouldUpdate={(prev, cur) => prev.category !== cur.category}
-      noStyle
-    >
-      {({ getFieldValue, setFieldsValue }) => {
-        const cat = getFieldValue("category");
-        const chemLike = ["Chemical", "Reagent"].includes(cat);
-        // default UOM based on category
-        const defaultUom = chemLike ? "ml" : "pcs";
+    return (
+      <>
+        <Row gutter={16}>
+          {/* Quantity Input Mode — only visible for Chemical/Reagent */}
+          {chemLike ? (
+            <Col xs={24} md={8}>
+              <Form.Item
+                name="quantityMode"
+                label="Quantity Input"
+                rules={[{ required: true, message: "Please choose a quantity input mode!" }]}
+              >
+                <Radio.Group className="add-input">
+                  <Radio value="direct">Direct (base units)</Radio>
+                  <Radio value="container">By Container</Radio>
+                </Radio.Group>
+              </Form.Item>
+            </Col>
+          ) : null}
 
-        // ensure baseUom initialized
-        if (!getFieldValue("baseUom")) {
-          setFieldsValue({ baseUom: defaultUom });
-        }
-
-        return (
-          <Form.Item
-            name="baseUom"
-            label="Base Unit"
-            rules={[{ required: true, message: "Please select the base unit!" }]}
-          >
-            <Select
-              className="add-input"
-              placeholder="Select unit"
-              options={
-                chemLike
-                  ? [
-                      { value: "ml", label: "ml" },
-                      { value: "g", label: "g" },
-                    ]
-                  : [{ value: "pcs", label: "pcs" }]
-              }
-            />
-          </Form.Item>
-        );
-      }}
-    </Form.Item>
-  </Col>
-
-  {/* ---- DIRECT MODE ---- */}
-  <Col xs={24} md={8}>
-    <Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode || p.baseUom !== c.baseUom}>
-      {({ getFieldValue }) =>
-        (getFieldValue("quantityMode") || "direct") === "direct" ? (
-          <Form.Item
-            name="quantityDirect"
-            label="Quantity (in base unit)"
-            rules={[
-              { required: true, message: "Please enter quantity!" },
-              {
-                validator: (_, v) => {
-                  if (v === undefined || v === null || v === "") return Promise.reject("Required");
-                  const n = Number(v);
-                  return Number.isFinite(n) && n >= 0
-                    ? Promise.resolve()
-                    : Promise.reject("Must be a number ≥ 0");
-                },
-              },
-            ]}
-          >
-            <Input
-              className="add-input"
-              inputMode="decimal"
-              placeholder="e.g., 1000"
-              onInput={(e) => {
-                // allow decimals
-                e.target.value = e.target.value.replace(/[^\d.]/g, "");
-              }}
-              addonAfter={getFieldValue("baseUom") || "pcs"}
-            />
-          </Form.Item>
-        ) : null
-      }
-    </Form.Item>
-  </Col>
-</Row>
-
-{/* ---- CONTAINER MODE FIELDS ---- */}
-<Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode}>
-  {({ getFieldValue }) =>
-    (getFieldValue("quantityMode") || "direct") === "container" ? (
-      <Row gutter={16}>
-        <Col xs={24} md={8}>
-          <Form.Item
-            name="containerKind"
-            label="Container"
-            rules={[{ required: true, message: "Please choose a container type!" }]}
-          >
-            <Select
-              className="add-input"
-              placeholder="Select"
-              options={[
-                { value: "bottle", label: "Bottle" },
-                { value: "pack", label: "Pack" },
-                { value: "custom", label: "Custom" },
-              ]}
-            />
-          </Form.Item>
-        </Col>
-
-        <Col xs={24} md={8}>
-          <Form.Item
-            name="containerCount"
-            label="Number of Containers"
-            rules={[
-              { required: true, message: "Please enter number of containers!" },
-              {
-                validator: (_, v) => {
-                  const n = Number(v);
-                  return Number.isInteger(n) && n >= 0
-                    ? Promise.resolve()
-                    : Promise.reject("Must be an integer ≥ 0");
-                },
-              },
-            ]}
-          >
-            <Input
-              className="add-input"
-              inputMode="numeric"
-              placeholder="e.g., 10"
-              onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
-            />
-          </Form.Item>
-        </Col>
-
-        <Col xs={24} md={8}>
-          <Form.Item
-            shouldUpdate={(p, c) =>
-              p.baseUom !== c.baseUom || p.containerKind !== c.containerKind || p.quantityMode !== c.quantityMode
-            }
-            noStyle
-          >
-            {({ getFieldValue }) => {
-              const baseUom = getFieldValue("baseUom") || "pcs";
-              return (
-                <Form.Item
-                  name="containerCapacity"
-                  label={`Capacity per Container (${baseUom})`}
-                  tooltip="If you leave this blank and you have presets in code, the preset multiplier will apply."
-                  rules={[
-                    { required: true, message: "Please enter capacity per container!" },
-                    {
-                      validator: (_, v) => {
-                        const n = Number(v);
-                        return Number.isFinite(n) && n >= 0
-                          ? Promise.resolve()
-                          : Promise.reject("Must be a number ≥ 0");
-                      },
-                    },
+          {/* Base Unit selector — only visible for Chemical/Reagent (ml/g) */}
+          {chemLike ? (
+            <Col xs={24} md={8}>
+              <Form.Item
+                name="baseUom"
+                label="Base Unit"
+                rules={[{ required: true, message: "Please select the base unit!" }]}
+              >
+                <Select
+                  className="add-input"
+                  placeholder="Select unit"
+                  options={[
+                    { value: "ml", label: "ml" },
+                    { value: "g", label: "g" },
                   ]}
-                >
-                  <Input
-                    className="add-input"
-                    inputMode="decimal"
-                    placeholder="e.g., 100"
-                    onInput={(e) => (e.target.value = e.target.value.replace(/[^\d.]/g, ""))}
-                    addonAfter={baseUom}
-                  />
-                </Form.Item>
-              );
-            }}
-          </Form.Item>
-        </Col>
+                />
+              </Form.Item>
+            </Col>
+          ) : null}
 
-        {/* Live preview: count × capacity = total base units */}
-        <Col span={24}>
-          <Form.Item
-            noStyle
-            shouldUpdate={(p, c) =>
-              p.containerCount !== c.containerCount ||
-              p.containerCapacity !== c.containerCapacity ||
-              p.baseUom !== c.baseUom
+          {/* DIRECT MODE (chem-like) */}
+          {chemLike ? (
+            <Col xs={24} md={8}>
+              <Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode || p.baseUom !== c.baseUom}>
+                {({ getFieldValue }) =>
+                  (getFieldValue("quantityMode") || "direct") === "direct" ? (
+                    <Form.Item
+                      name="quantityDirect"
+                      label="Quantity (in base unit)"
+                      rules={[
+                        { required: true, message: "Please enter quantity!" },
+                        {
+                          validator: (_, v) => {
+                            if (v === undefined || v === null || v === "") return Promise.reject("Required");
+                            const n = Number(v);
+                            return Number.isFinite(n) && n >= 0
+                              ? Promise.resolve()
+                              : Promise.reject("Must be a number ≥ 0");
+                          },
+                        },
+                      ]}
+                    >
+                      <Input
+                        className="add-input"
+                        inputMode="decimal"
+                        placeholder="e.g., 1000"
+                        onInput={(e) => (e.target.value = e.target.value.replace(/[^\d.]/g, ""))}
+                        addonAfter={getFieldValue("baseUom") || "ml"}
+                      />
+                    </Form.Item>
+                  ) : null
+                }
+              </Form.Item>
+            </Col>
+          ) : null}
+
+          {/* DIRECT MODE (non-chem) — simple pcs integer, always shown for non-chem */}
+          {!chemLike ? (
+            <Col xs={24} md={8}>
+              <Form.Item
+                name="quantityDirect"
+                label="Quantity (pcs)"
+                rules={[
+                  { required: true, message: "Please enter quantity!" },
+                  {
+                    validator: (_, v) => {
+                      const n = Number(v);
+                      return Number.isInteger(n) && n >= 0
+                        ? Promise.resolve()
+                        : Promise.reject("Must be an integer ≥ 0");
+                    },
+                  },
+                ]}
+              >
+                <Input
+                  className="add-input"
+                  inputMode="numeric"
+                  placeholder="e.g., 25"
+                  onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                  addonAfter="pcs"
+                />
+              </Form.Item>
+            </Col>
+          ) : null}
+        </Row>
+
+        {/* CONTAINER MODE — visible ONLY when Chemical/Reagent AND quantityMode === container */}
+        {chemLike ? (
+          <Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode || p.baseUom !== c.baseUom}>
+            {({ getFieldValue }) =>
+              (getFieldValue("quantityMode") || "direct") === "container" ? (
+                <>
+                  <Row gutter={16}>
+                    <Col xs={24} md={8}>
+                      <Form.Item
+                        name="containerKind"
+                        label="Container"
+                        rules={[{ required: true, message: "Please choose a container type!" }]}
+                      >
+                        <Select
+                          className="add-input"
+                          placeholder="Select"
+                          options={[
+                            { value: "bottle", label: "Bottle" },
+                            { value: "pack", label: "Pack" },
+                            { value: "custom", label: "Custom" },
+                          ]}
+                        />
+                      </Form.Item>
+                    </Col>
+
+                    <Col xs={24} md={8}>
+                      <Form.Item
+                        name="containerCount"
+                        label="Number of Containers"
+                        rules={[
+                          { required: true, message: "Please enter number of containers!" },
+                          {
+                            validator: (_, v) => {
+                              const n = Number(v);
+                              return Number.isInteger(n) && n >= 0
+                                ? Promise.resolve()
+                                : Promise.reject("Must be an integer ≥ 0");
+                            },
+                          },
+                        ]}
+                      >
+                        <Input
+                          className="add-input"
+                          inputMode="numeric"
+                          placeholder="e.g., 10"
+                          onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                        />
+                      </Form.Item>
+                    </Col>
+
+                    <Col xs={24} md={8}>
+                      <Form.Item noStyle shouldUpdate={(p, c) => p.baseUom !== c.baseUom}>
+                        {({ getFieldValue }) => (
+                          <Form.Item
+                            name="containerCapacity"
+                            label={`Capacity per Container (${getFieldValue("baseUom") || "ml"})`}
+                            rules={[
+                              { required: true, message: "Please enter capacity per container!" },
+                              {
+                                validator: (_, v) => {
+                                  const n = Number(v);
+                                  return Number.isFinite(n) && n >= 0
+                                    ? Promise.resolve()
+                                    : Promise.reject("Must be a number ≥ 0");
+                                },
+                              },
+                            ]}
+                          >
+                            <Input
+                              className="add-input"
+                              inputMode="decimal"
+                              placeholder="e.g., 100"
+                              onInput={(e) => (e.target.value = e.target.value.replace(/[^\d.]/g, ""))}
+                              addonAfter={getFieldValue("baseUom") || "ml"}
+                            />
+                          </Form.Item>
+                        )}
+                      </Form.Item>
+                    </Col>
+                  </Row>
+
+                  {/* Live preview */}
+                  <Form.Item
+                    noStyle
+                    shouldUpdate={(p, c) =>
+                      p.containerCount !== c.containerCount ||
+                      p.containerCapacity !== c.containerCapacity ||
+                      p.baseUom !== c.baseUom
+                    }
+                  >
+                    {({ getFieldValue }) => {
+                      const count = Number(getFieldValue("containerCount") || 0);
+                      const cap = Number(getFieldValue("containerCapacity") || 0);
+                      const uom = getFieldValue("baseUom") || "ml";
+                      const total = Number.isFinite(count * cap) ? count * cap : 0;
+                      return (
+                        <div
+                          style={{
+                            marginTop: -8,
+                            marginBottom: 16,
+                            padding: "10px 12px",
+                            border: "1px dashed #d9d9d9",
+                            borderRadius: 8,
+                            background: "#fafafa",
+                            fontSize: 13,
+                          }}
+                        >
+                          <b>Quantity Preview:</b>{" "}
+                          {count && cap ? `${count} × ${cap} ${uom} = ` : ""}
+                          <b>{total}</b> {uom}
+                        </div>
+                      );
+                    }}
+                  </Form.Item>
+                </>
+              ) : null
             }
-          >
-            {({ getFieldValue }) => {
-              const count = Number(getFieldValue("containerCount") || 0);
-              const cap = Number(getFieldValue("containerCapacity") || 0);
-              const uom = getFieldValue("baseUom") || "pcs";
-              const total = Number.isFinite(count * cap) ? count * cap : 0;
-              return (
-                <div
-                  style={{
-                    marginTop: -8,
-                    marginBottom: 16,
-                    padding: "10px 12px",
-                    border: "1px dashed #d9d9d9",
-                    borderRadius: 8,
-                    background: "#fafafa",
-                    fontSize: 13,
-                  }}
-                >
-                  <b>Quantity Preview:</b>{" "}
-                  {count && cap ? `${count} × ${cap} ${uom} = ` : ""}
-                  <b>{total}</b> {uom}
-                </div>
-              );
-            }}
           </Form.Item>
-        </Col>
-      </Row>
-    ) : null
-  }
+        ) : null}
+      </>
+    );
+  }}
 </Form.Item>
+
 
 {/* ---- Rest of your section (Entry/Expiry, Critical/Availability) ---- */}
 <Row gutter={16}>
@@ -3805,6 +3889,27 @@ useEffect(() => {
                   <div>
                     <h2>Stock Log</h2>
 
+                    {/* <table className="delivery-table">
+                    <thead>
+                      <tr>
+                        <th>Date</th>
+                        <th>No. of Items</th>
+                        <th>Delivery #</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>2025-05-30</td>
+                        <td>10</td>
+                        <td>DLV-00123</td>
+                      </tr>
+                      <tr>
+                        <td>2025-05-29</td>
+                        <td>7</td>
+                        <td>DLV-00122</td>
+                      </tr>
+                    </tbody>
+                  </table> */}
                   <StockLog inventoryDocId={selectedRow?.docId} />
                   </div>
               </div>
@@ -3845,33 +3950,33 @@ useEffect(() => {
       onFinish={updateItem}
       initialValues={{
         quantityMode: "direct",
-        baseUom:
-          ["Chemical", "Reagent"].includes(editingItem?.category) ? "ml" : "pcs",
+        baseUom: ["Chemical", "Reagent"].includes(editingItem?.category) ? "ml" : "pcs",
         expiryDate: editingItem?.expiryDate ? dayjs(editingItem.expiryDate) : undefined,
       }}
       onValuesChange={(changed, all) => {
-        // compute total in base units from Direct or Container
+        const chemLike = ["Chemical", "Reagent"].includes(editingItem?.category);
         const parseNum = (v) => {
           const n = Number(v);
           return Number.isFinite(n) ? n : 0;
         };
-        const mode = all.quantityMode || "direct";
+
+        // compute total (base units)
         let total = 0;
-        if (mode === "direct") {
-          total = parseNum(all.quantityDirect ?? all.quantity); // legacy fallback
+        if (chemLike) {
+          const mode = all.quantityMode || "direct";
+          total =
+            mode === "direct"
+              ? parseNum(all.quantityDirect ?? all.quantity) // legacy fallback
+              : parseNum(all.containerCount) * parseNum(all.containerCapacity);
         } else {
-          const count = parseNum(all.containerCount);
-          const capacity = parseNum(all.containerCapacity);
-          total = count * capacity;
+          total = parseNum(all.quantityDirect ?? all.quantity); // pcs only
         }
 
-        // If category tracks condition, auto-set Good = total, others 0
+        // auto-set condition for tracked categories
         const conditionTracked = ["Equipment", "Glasswares", "Materials"].includes(
           editingItem?.category
         );
-
         if (conditionTracked) {
-          // Delay to ensure AntD internal state settles
           setTimeout(() => {
             editForm.setFieldsValue({
               condition: { Good: total, Defect: 0, Damage: 0, Lost: 0 },
@@ -3880,196 +3985,230 @@ useEffect(() => {
         }
       }}
     >
+      {/* ---------- Quantity UI ---------- */}
       <Row gutter={16}>
-        {/* Quantity Mode */}
-        <Col span={12}>
-          <Form.Item
-            name="quantityMode"
-            label="Quantity Input"
-            rules={[{ required: true, message: "Please choose a quantity input mode" }]}
-          >
-            <Radio.Group>
-              <Radio value="direct">Direct (base units)</Radio>
-              <Radio value="container">By Container</Radio>
-            </Radio.Group>
-          </Form.Item>
-        </Col>
+        {/* Quantity Mode: only for Chemical/Reagent */}
+        {["Chemical", "Reagent"].includes(editingItem?.category) && (
+          <Col span={12}>
+            <Form.Item
+              name="quantityMode"
+              label="Quantity Input"
+              rules={[{ required: true, message: "Please choose a quantity input mode" }]}
+            >
+              <Radio.Group>
+                <Radio value="direct">Direct (base units)</Radio>
+                <Radio value="container">By Container</Radio>
+              </Radio.Group>
+            </Form.Item>
+          </Col>
+        )}
 
-        {/* Base Unit */}
-        <Col span={12}>
-          <Form.Item
-            name="baseUom"
-            label="Base Unit"
-            rules={[{ required: true, message: "Please select the base unit" }]}
-          >
-            <Select
-              options={
-                ["Chemical", "Reagent"].includes(editingItem?.category)
-                  ? [
-                      { value: "ml", label: "ml" },
-                      { value: "g", label: "g" },
-                    ]
-                  : [{ value: "pcs", label: "pcs" }]
-              }
-            />
-          </Form.Item>
-        </Col>
+        {/* Base Unit: only selectable for Chemical/Reagent; non-chem is implicitly pcs */}
+        {["Chemical", "Reagent"].includes(editingItem?.category) && (
+          <Col span={12}>
+            <Form.Item
+              name="baseUom"
+              label="Base Unit"
+              rules={[{ required: true, message: "Please select the base unit" }]}
+            >
+              <Select
+                options={[
+                  { value: "ml", label: "ml" },
+                  { value: "g", label: "g" },
+                ]}
+              />
+            </Form.Item>
+          </Col>
+        )}
       </Row>
 
-      {/* DIRECT MODE */}
-      <Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode || p.baseUom !== c.baseUom}>
-        {({ getFieldValue }) =>
-          (getFieldValue("quantityMode") || "direct") === "direct" ? (
-            <Row gutter={16}>
-              <Col span={12}>
-                <Form.Item
-                  name="quantityDirect"
-                  label="Quantity (in base unit)"
-                  rules={[
-                    { required: true, message: "Please enter quantity" },
-                    {
-                      validator: (_, v) => {
-                        if (v === undefined || v === null || v === "") {
-                          return Promise.reject("Required");
-                        }
-                        const n = Number(v);
-                        return Number.isFinite(n) && n >= 0
-                          ? Promise.resolve()
-                          : Promise.reject("Must be a number ≥ 0");
-                      },
-                    },
-                  ]}
-                >
-                  <Input
-                    inputMode="decimal"
-                    placeholder="e.g., 1000"
-                    onInput={(e) => (e.target.value = e.target.value.replace(/[^\d.]/g, ""))}
-                    addonAfter={getFieldValue("baseUom") || "pcs"}
-                    disabled={updateStockLoading}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          ) : null
-        }
-      </Form.Item>
-
-      {/* CONTAINER MODE */}
-      <Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode}>
-        {({ getFieldValue }) =>
-          (getFieldValue("quantityMode") || "direct") === "container" ? (
-            <>
+      {/* DIRECT MODE for Chemical/Reagent */}
+      {["Chemical", "Reagent"].includes(editingItem?.category) && (
+        <Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode || p.baseUom !== c.baseUom}>
+          {({ getFieldValue }) =>
+            (getFieldValue("quantityMode") || "direct") === "direct" ? (
               <Row gutter={16}>
-                <Col span={8}>
+                <Col span={12}>
                   <Form.Item
-                    name="containerKind"
-                    label="Container"
-                    rules={[{ required: true, message: "Please choose container type" }]}
-                  >
-                    <Select
-                      options={[
-                        { value: "bottle", label: "Bottle" },
-                        { value: "pack", label: "Pack" },
-                        { value: "custom", label: "Custom" },
-                      ]}
-                      disabled={updateStockLoading}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={8}>
-                  <Form.Item
-                    name="containerCount"
-                    label="Number of Containers"
+                    name="quantityDirect"
+                    label="Quantity (in base unit)"
                     rules={[
-                      { required: true, message: "Please enter number of containers" },
+                      { required: true, message: "Please enter quantity" },
                       {
                         validator: (_, v) => {
+                          if (v === undefined || v === null || v === "") return Promise.reject("Required");
                           const n = Number(v);
-                          return Number.isInteger(n) && n >= 0
+                          return Number.isFinite(n) && n >= 0
                             ? Promise.resolve()
-                            : Promise.reject("Must be an integer ≥ 0");
+                            : Promise.reject("Must be a number ≥ 0");
                         },
                       },
                     ]}
                   >
                     <Input
-                      inputMode="numeric"
-                      placeholder="e.g., 10"
-                      onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                      inputMode="decimal"
+                      placeholder="e.g., 1000"
+                      onInput={(e) => (e.target.value = e.target.value.replace(/[^\d.]/g, ""))}
+                      addonAfter={getFieldValue("baseUom") || "ml"}
                       disabled={updateStockLoading}
                     />
                   </Form.Item>
                 </Col>
-                <Col span={8}>
-                  <Form.Item noStyle shouldUpdate={(p, c) => p.baseUom !== c.baseUom}>
-                    {({ getFieldValue }) => (
-                      <Form.Item
-                        name="containerCapacity"
-                        label={`Capacity per Container (${getFieldValue("baseUom") || "pcs"})`}
-                        rules={[
-                          { required: true, message: "Please enter capacity per container" },
-                          {
-                            validator: (_, v) => {
-                              const n = Number(v);
-                              return Number.isFinite(n) && n >= 0
-                                ? Promise.resolve()
-                                : Promise.reject("Must be a number ≥ 0");
-                            },
-                          },
-                        ]}
-                      >
-                        <Input
-                          inputMode="decimal"
-                          placeholder="e.g., 100"
-                          onInput={(e) => (e.target.value = e.target.value.replace(/[^\d.]/g, ""))}
-                          addonAfter={getFieldValue("baseUom") || "pcs"}
-                          disabled={updateStockLoading}
-                        />
-                      </Form.Item>
-                    )}
-                  </Form.Item>
-                </Col>
               </Row>
+            ) : null
+          }
+        </Form.Item>
+      )}
 
-              {/* Live preview */}
-              <Form.Item
-                noStyle
-                shouldUpdate={(p, c) =>
-                  p.containerCount !== c.containerCount ||
-                  p.containerCapacity !== c.containerCapacity ||
-                  p.baseUom !== c.baseUom
-                }
-              >
-                {({ getFieldValue }) => {
-                  const count = Number(getFieldValue("containerCount") || 0);
-                  const cap = Number(getFieldValue("containerCapacity") || 0);
-                  const uom = getFieldValue("baseUom") || "pcs";
-                  const total = Number.isFinite(count * cap) ? count * cap : 0;
-                  return (
-                    <div
-                      style={{
-                        marginTop: -8,
-                        marginBottom: 16,
-                        padding: "10px 12px",
-                        border: "1px dashed #d9d9d9",
-                        borderRadius: 8,
-                        background: "#fafafa",
-                        fontSize: 13,
-                      }}
+      {/* DIRECT MODE for NON-Chemical/Reagent (simple pcs) */}
+      {!["Chemical", "Reagent"].includes(editingItem?.category) && (
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item
+              name="quantityDirect"
+              label="Quantity (pcs)"
+              rules={[
+                { required: true, message: "Please enter quantity" },
+                {
+                  validator: (_, v) => {
+                    const n = Number(v);
+                    return Number.isInteger(n) && n >= 0
+                      ? Promise.resolve()
+                      : Promise.reject("Must be an integer ≥ 0");
+                  },
+                },
+              ]}
+            >
+              <Input
+                inputMode="numeric"
+                placeholder="e.g., 25"
+                onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                addonAfter="pcs"
+                disabled={updateStockLoading}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+      )}
+
+      {/* CONTAINER MODE — ONLY for Chemical/Reagent */}
+      {["Chemical", "Reagent"].includes(editingItem?.category) && (
+        <Form.Item noStyle shouldUpdate={(p, c) => p.quantityMode !== c.quantityMode || p.baseUom !== c.baseUom}>
+          {({ getFieldValue }) =>
+            (getFieldValue("quantityMode") || "direct") === "container" ? (
+              <>
+                <Row gutter={16}>
+                  <Col span={8}>
+                    <Form.Item
+                      name="containerKind"
+                      label="Container"
+                      rules={[{ required: true, message: "Please choose container type" }]}
                     >
-                      <b>Quantity Preview:</b>{" "}
-                      {count && cap ? `${count} × ${cap} ${uom} = ` : ""}
-                      <b>{total}</b> {uom}
-                    </div>
-                  );
-                }}
-              </Form.Item>
-            </>
-          ) : null
-        }
-      </Form.Item>
+                      <Select
+                        options={[
+                          { value: "bottle", label: "Bottle" },
+                          { value: "pack", label: "Pack" },
+                          { value: "custom", label: "Custom" },
+                        ]}
+                        disabled={updateStockLoading}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item
+                      name="containerCount"
+                      label="Number of Containers"
+                      rules={[
+                        { required: true, message: "Please enter number of containers" },
+                        {
+                          validator: (_, v) => {
+                            const n = Number(v);
+                            return Number.isInteger(n) && n >= 0
+                              ? Promise.resolve()
+                              : Promise.reject("Must be an integer ≥ 0");
+                          },
+                        },
+                      ]}
+                    >
+                      <Input
+                        inputMode="numeric"
+                        placeholder="e.g., 10"
+                        onInput={(e) => (e.target.value = e.target.value.replace(/\D/g, ""))}
+                        disabled={updateStockLoading}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    <Form.Item noStyle shouldUpdate={(p, c) => p.baseUom !== c.baseUom}>
+                      {({ getFieldValue }) => (
+                        <Form.Item
+                          name="containerCapacity"
+                          label={`Capacity per Container (${getFieldValue("baseUom") || "ml"})`}
+                          rules={[
+                            { required: true, message: "Please enter capacity per container" },
+                            {
+                              validator: (_, v) => {
+                                const n = Number(v);
+                                return Number.isFinite(n) && n >= 0
+                                  ? Promise.resolve()
+                                  : Promise.reject("Must be a number ≥ 0");
+                              },
+                            },
+                          ]}
+                        >
+                          <Input
+                            inputMode="decimal"
+                            placeholder="e.g., 100"
+                            onInput={(e) => (e.target.value = e.target.value.replace(/[^\d.]/g, ""))}
+                            addonAfter={getFieldValue("baseUom") || "ml"}
+                            disabled={updateStockLoading}
+                          />
+                        </Form.Item>
+                      )}
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-      {/* Expiry (if applicable) */}
+                {/* Live preview */}
+                <Form.Item
+                  noStyle
+                  shouldUpdate={(p, c) =>
+                    p.containerCount !== c.containerCount ||
+                    p.containerCapacity !== c.containerCapacity ||
+                    p.baseUom !== c.baseUom
+                  }
+                >
+                  {({ getFieldValue }) => {
+                    const count = Number(getFieldValue("containerCount") || 0);
+                    const cap = Number(getFieldValue("containerCapacity") || 0);
+                    const uom = getFieldValue("baseUom") || "ml";
+                    const total = Number.isFinite(count * cap) ? count * cap : 0;
+                    return (
+                      <div
+                        style={{
+                          marginTop: -8,
+                          marginBottom: 16,
+                          padding: "10px 12px",
+                          border: "1px dashed #d9d9d9",
+                          borderRadius: 8,
+                          background: "#fafafa",
+                          fontSize: 13,
+                        }}
+                      >
+                        <b>Quantity Preview:</b>{" "}
+                        {count && cap ? `${count} × ${cap} ${uom} = ` : ""}
+                        <b>{total}</b> {uom}
+                      </div>
+                    );
+                  }}
+                </Form.Item>
+              </>
+            ) : null
+          }
+        </Form.Item>
+      )}
+
+      {/* ---------- Expiry (if applicable) ---------- */}
       {hasExpiryDate && (
         <Row gutter={16}>
           <Col span={12}>
@@ -4084,7 +4223,7 @@ useEffect(() => {
         </Row>
       )}
 
-      {/* Optional: show condition fields if your UI needs to display them */}
+      {/* ---------- Condition (auto-filled for tracked categories) ---------- */}
       {["Equipment", "Glasswares", "Materials"].includes(editingItem?.category) && (
         <>
           <h4 style={{ marginTop: 8 }}>Condition (auto from quantity)</h4>
@@ -4115,7 +4254,6 @@ useEffect(() => {
     </Form>
   </Spin>
 </Modal>
-
 
           <Modal
             title="Request Item Restock"
