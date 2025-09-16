@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Button, Typography, Table } from "antd";
+import { Modal, Button, Typography, Table, Descriptions, Alert } from "antd";
 import { collection, addDoc, serverTimestamp, doc, updateDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import "../styles/adminStyle/PendingRequest.css";
 import NotificationModal from "./NotificationModal";
-
+import { CalendarOutlined, ClockCircleOutlined, FileTextOutlined } from '@ant-design/icons';
 const { Title } = Typography;
 
 const RequisitionRequestModal = ({
@@ -115,9 +115,14 @@ const RequisitionRequestModal = ({
   return (
     <>
       <Modal
+        title={
+              <div style={{position: 'absolute', height: 60, background:'#134b5f', top: 0, left: 0, right: 0, display: 'flex', alignItems: 'center', borderTopLeftRadius: 8, borderTopRightRadius: 8, paddingLeft: 16}}>
+              <h2 style={{color: 'white', margin: 0}}><FileTextOutlined/> Requisition Slip</h2>
+            </div>
+        }
         open={isModalVisible}
         onCancel={handleCancel}
-        width={800}
+        width={1000}
         zIndex={1022}
         closable={false}
         footer={[
@@ -153,54 +158,68 @@ const RequisitionRequestModal = ({
         ]}
       >
         {selectedRequest && (
-          <>
-            <div className="requisition-slip-title">
-              <strong>Requisition Slip</strong>
-            </div>
-            <div className="whole-slip">
-              <div className="left-slip">
-                <div><strong>Requestor:</strong><p>{selectedRequest.userName}</p></div>
-                <div><strong>Date Submitted:</strong><p>{formatDate(selectedRequest.timestamp)}</p></div>
-                <div><strong>Date Needed:</strong><p>{selectedRequest.dateRequired}</p></div>
-                <div><strong>Time Needed:</strong><p>{selectedRequest.timeFrom} - {selectedRequest.timeTo}</p></div>
+          <div style={{paddingTop: 50}}>
 
-                {/* Display violation count if user has violations */}
-                {userViolationCounts[selectedRequest.userName] > 0 && (
-                  <div style={{ 
-                    marginTop: 20, 
-                    padding: '12px 16px', 
-                    backgroundColor: '#fff2f0', 
-                    border: '1px solid #ffccc7', 
-                    borderRadius: 6,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8
-                  }}>
-                    <span style={{ fontSize: 18 }}>⚠️</span>
-                    <div>
-                      <strong style={{ color: '#ff4d4f', fontSize: 16 }}>
-                        User has {userViolationCounts[selectedRequest.userName]} violation{userViolationCounts[selectedRequest.userName] > 1 ? 's' : ''}
-                      </strong>
-                      <p style={{ margin: 0, color: '#666', fontSize: 14 }}>
-                        This user has previous violations on record.
-                      </p>
-                    </div>
-                  </div>
-                )}
-              </div>
+<Descriptions
+  title="Request Details"
+  bordered
+  column={2}
+  size="middle"
+>
+  <Descriptions.Item label="Requestor">
+    {selectedRequest.userName}
+  </Descriptions.Item>
 
-              <div className="right-slip">
-                <div><strong>Room:</strong><p>{selectedRequest.room}</p></div>
-                <div><strong>Course Code:</strong><p>{selectedRequest.course}</p></div>
-                <div><strong>Course Description:</strong><p>{selectedRequest.courseDescription}</p></div>
-                <div><strong>Program:</strong><p>{selectedRequest.program}</p></div>
-                <div><strong>Usage Type:</strong><p>{selectedRequest.usageType}</p></div>
-              </div>
-            </div>
+  <Descriptions.Item label="Date Submitted">
+    {formatDate(selectedRequest.timestamp)}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Date Needed">
+    {selectedRequest.dateRequired}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Time Needed">
+    {selectedRequest.timeFrom} - {selectedRequest.timeTo}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Room">
+    {selectedRequest.room}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Course Code">
+    {selectedRequest.course}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Course Description" span={2}>
+    {selectedRequest.courseDescription}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Program">
+    {selectedRequest.program}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Usage Type">
+    {selectedRequest.usageType}
+  </Descriptions.Item>
+</Descriptions>
+
+{/* Show violation alert if needed */}
+{userViolationCounts[selectedRequest.userName] > 0 && (
+  <Alert
+    style={{ marginTop: 20 }}
+    message={`⚠️ User has ${userViolationCounts[selectedRequest.userName]} violation${
+      userViolationCounts[selectedRequest.userName] > 1 ? "s" : ""
+    }`}
+    description="This user has previous violations on record."
+    type="error"
+    showIcon
+  />
+)}
 
             <Title level={5} style={{ marginTop: 20 }}>Requested Items:</Title>
 
             <Table
+              className="pending-modal-table"
               dataSource={selectedRequest.requestList}
               columns={columns}
               rowKey={(record, index) => `row-${index}`}
@@ -219,7 +238,7 @@ const RequisitionRequestModal = ({
                 </p>
               </div>
             )}
-          </>
+          </div>
         )}
       </Modal>
 
