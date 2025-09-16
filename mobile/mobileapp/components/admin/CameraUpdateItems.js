@@ -261,35 +261,68 @@ const CameraUpdateItems = ({ onClose }) => {
 //   }
 // };
 
-const handleAddQuantity = async (addedQuantity, expiryDate) => {
+const handleAddQuantity = async (submitData) => {
   const { itemId, itemName, labRoom: roomNumber, category } = currentItem;
-  const isChemicalOrReagent = category === "Chemical" || category === "Reagent";
+  
+  // Parse quantity as number
+  const parseNum = (v) => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : 0;
+  };
+
+  // Extract data from submitData object
+  const qtyBase = parseNum(submitData.qtyBase);
+  const expiryDate = submitData.expiryDate;
+  
+  if (!Number.isFinite(qtyBase) || qtyBase < 0) {
+    Alert.alert("Error", "Invalid quantity!");
+    return;
+  }
+
+  // Category checks following web component logic
+  const cat = (category || "").toLowerCase();
+  const isChemOrReagent = cat === "chemical" || cat === "reagent";
+  const isConditionTracked = ["equipment", "glasswares", "materials"].includes(cat);
 
   try {
-    // 🔄 Update inventory
+    // 🔄 Update inventory collection
     const inventoryQuery = query(collection(db, 'inventory'), where('itemId', '==', itemId));
     const snapshot = await getDocs(inventoryQuery);
 
-    snapshot.forEach(async docSnap => {
+    if (snapshot.empty) {
+      Alert.alert("Error", `Item ${itemId} not found in inventory.`);
+      return;
+    }
+
+    for (const docSnap of snapshot.docs) {
       const ref = doc(db, 'inventory', docSnap.id);
       const data = docSnap.data();
 
-      // ✅ Compute updated quantity and condition
-      const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
-      const newCondition = {
-        Good: prevCondition.Good + addedQuantity,
-        Defect: prevCondition.Defect,
-        Damage: prevCondition.Damage,
-        Lost: prevCondition.Lost,
+      // Compute updated quantity and condition following web component logic
+      const prevQty = Number(data.quantity) || 0;
+      const newQty = prevQty + qtyBase;
+
+      let updatedData = {
+        quantity: newQty,
       };
 
-      const updatedData = {
-        quantity: (Number(data.quantity) || 0) + addedQuantity,
-        condition: isChemicalOrReagent ? prevCondition : newCondition,
-      };
+      // Handle condition tracking for equipment, glasswares, materials
+      if (isConditionTracked) {
+        const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
+        const newCondition = {
+          ...prevCondition,
+          Good: (prevCondition.Good || 0) + qtyBase,
+        };
+        updatedData.condition = newCondition;
+      }
+
+      // Handle expiry date for chemicals and reagents
+      if (isChemOrReagent && expiryDate) {
+        updatedData.expiryDate = expiryDate;
+      }
 
       await updateDoc(ref, updatedData);
-      console.log(`✅ Inventory updated: quantity → ${updatedData.quantity}${!isChemicalOrReagent ? `, condition.Good → ${newCondition.Good}` : ''}`);
+      console.log(`✅ Inventory updated: quantity → ${newQty}${isConditionTracked ? `, condition.Good → ${updatedData.condition.Good}` : ''}`);
 
       // ➕ Add stock log entry
       const stockLogRef = collection(db, "inventory", docSnap.id, "stockLog");
@@ -308,18 +341,18 @@ const handleAddQuantity = async (addedQuantity, expiryDate) => {
 
       const logData = {
         date: new Date().toISOString().split("T")[0],
-        noOfItems: addedQuantity,
+        noOfItems: qtyBase,
         deliveryNumber: newDeliveryNumber,
         createdAt: serverTimestamp(),
       };
 
-      if (isChemicalOrReagent && expiryDate) {
+      if (isChemOrReagent && expiryDate) {
         logData.expiryDate = expiryDate;
       }
 
       await addDoc(stockLogRef, logData);
       console.log(`✅ New stock log added with delivery number: ${newDeliveryNumber}`);
-    });
+    }
 
     // 🔄 Update labRoom subcollection
     const labRoomQuery = query(collection(db, 'labRoom'), where('roomNumber', '==', roomNumber));
@@ -339,26 +372,36 @@ const handleAddQuantity = async (addedQuantity, expiryDate) => {
       return;
     }
 
-    const data = itemDocSnap.data();
+    const roomData = itemDocSnap.data();
+    const prevRoomQty = Number(roomData.quantity) || 0;
+    const newRoomQty = prevRoomQty + qtyBase;
 
-    // ✅ Compute updated quantity and condition for labRoom
-    const prevCondition = data.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
-    const newCondition = {
-      Good: prevCondition.Good + addedQuantity,
-      Defect: prevCondition.Defect,
-      Damage: prevCondition.Damage,
-      Lost: prevCondition.Lost,
+    let updatedRoomData = {
+      quantity: newRoomQty,
     };
 
-    const updatedRoomData = {
-      quantity: (Number(data.quantity) || 0) + addedQuantity,
-      condition: isChemicalOrReagent ? prevCondition : newCondition,
-    };
+    // Handle condition tracking for labRoom items
+    if (isConditionTracked) {
+      const prevRoomCondition = roomData.condition || { Good: 0, Defect: 0, Damage: 0, Lost: 0 };
+      const newRoomCondition = {
+        ...prevRoomCondition,
+        Good: (prevRoomCondition.Good || 0) + qtyBase,
+      };
+      updatedRoomData.condition = newRoomCondition;
+    }
+
+    // Handle expiry date for labRoom items
+    if (isChemOrReagent && expiryDate) {
+      updatedRoomData.expiryDate = expiryDate;
+    }
 
     await updateDoc(itemDocRef, updatedRoomData);
-    console.log(`✅ labRoom updated: quantity → ${updatedRoomData.quantity}${!isChemicalOrReagent ? `, condition.Good → ${newCondition.Good}` : ''}`);
+    console.log(`✅ labRoom updated: quantity → ${newRoomQty}${isConditionTracked ? `, condition.Good → ${updatedRoomData.condition.Good}` : ''}`);
 
-    Alert.alert("Success", `Added ${addedQuantity} to "${itemName}"`);
+    // Log activity
+    await logRequestOrReturn(user.uid, user.displayName || "User", `Updated stock for ${itemName} (+${qtyBase})`);
+
+    Alert.alert("Success", `Added ${qtyBase} to "${itemName}"`);
 
   } catch (err) {
     console.error("Quantity update error:", err);
