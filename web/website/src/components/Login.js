@@ -2041,63 +2041,55 @@ const Login = () => {
 
             {/* Password Validation Indicators */}
             {passwordResetData.newPassword && (
-              <div className="password-validation" style={{
-                marginTop: "10px",
-                padding: "10px",
-                backgroundColor: "#f8f9fa",
-                borderRadius: "5px",
-                border: "1px solid #e9ecef"
-              }}>
-                <p style={{ margin: "0 0 8px 0", fontSize: "14px", fontWeight: "500", color: "#495057" }}>
-                  Password Requirements:
-                </p>
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: passwordResetValidation.hasLength ? "#28a745" : "#dc3545" }}>
+              <div className="password-validation">
+                <p>Password Requirements:</p>
+                <div className="validation-requirements">
+                  <div className="validation-item">
+                    <span style={{ color: passwordResetValidation.hasLength ? "#10b981" : "#ef4444" }}>
                       {passwordResetValidation.hasLength ? "✓" : "✗"}
                     </span>
-                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasLength ? "#28a745" : "#6c757d" }}>
+                    <span style={{ color: passwordResetValidation.hasLength ? "#10b981" : "#6b7280" }}>
                       At least 8 characters
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: passwordResetValidation.hasUppercase ? "#28a745" : "#dc3545" }}>
+                  <div className="validation-item">
+                    <span style={{ color: passwordResetValidation.hasUppercase ? "#10b981" : "#ef4444" }}>
                       {passwordResetValidation.hasUppercase ? "✓" : "✗"}
                     </span>
-                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasUppercase ? "#28a745" : "#6c757d" }}>
+                    <span style={{ color: passwordResetValidation.hasUppercase ? "#10b981" : "#6b7280" }}>
                       One uppercase letter
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: passwordResetValidation.hasLowercase ? "#28a745" : "#dc3545" }}>
+                  <div className="validation-item">
+                    <span style={{ color: passwordResetValidation.hasLowercase ? "#10b981" : "#ef4444" }}>
                       {passwordResetValidation.hasLowercase ? "✓" : "✗"}
                     </span>
-                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasLowercase ? "#28a745" : "#6c757d" }}>
+                    <span style={{ color: passwordResetValidation.hasLowercase ? "#10b981" : "#6b7280" }}>
                       One lowercase letter
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: passwordResetValidation.hasNumber ? "#28a745" : "#dc3545" }}>
+                  <div className="validation-item">
+                    <span style={{ color: passwordResetValidation.hasNumber ? "#10b981" : "#ef4444" }}>
                       {passwordResetValidation.hasNumber ? "✓" : "✗"}
                     </span>
-                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasNumber ? "#28a745" : "#6c757d" }}>
+                    <span style={{ color: passwordResetValidation.hasNumber ? "#10b981" : "#6b7280" }}>
                       One number
                     </span>
                   </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                    <span style={{ color: passwordResetValidation.hasSpecial ? "#28a745" : "#dc3545" }}>
+                  <div className="validation-item">
+                    <span style={{ color: passwordResetValidation.hasSpecial ? "#10b981" : "#ef4444" }}>
                       {passwordResetValidation.hasSpecial ? "✓" : "✗"}
                     </span>
-                    <span style={{ fontSize: "13px", color: passwordResetValidation.hasSpecial ? "#28a745" : "#6c757d" }}>
+                    <span style={{ color: passwordResetValidation.hasSpecial ? "#10b981" : "#6b7280" }}>
                       One special character (@$!%*#?&)
                     </span>
                   </div>
                   {passwordResetData.confirmNewPassword && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <span style={{ color: passwordResetValidation.matches ? "#28a745" : "#dc3545" }}>
+                    <div className="validation-item">
+                      <span style={{ color: passwordResetValidation.matches ? "#10b981" : "#ef4444" }}>
                         {passwordResetValidation.matches ? "✓" : "✗"}
                       </span>
-                      <span style={{ fontSize: "13px", color: passwordResetValidation.matches ? "#28a745" : "#6c757d" }}>
+                      <span style={{ color: passwordResetValidation.matches ? "#10b981" : "#6b7280" }}>
                         Passwords match
                       </span>
                     </div>
