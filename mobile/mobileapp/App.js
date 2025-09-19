@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Alert, SafeAreaView, StyleSheet, View, TouchableOpacity, Text, Pressable, StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { PaperProvider, Avatar, Title} from 'react-native-paper'; 
@@ -13,6 +13,8 @@ import { collection, addDoc, serverTimestamp, getDocs } from "firebase/firestore
 import Icon from 'react-native-vector-icons/Ionicons'; 
 import Icon2 from 'react-native-vector-icons/MaterialCommunityIcons'
 import { LogBox } from 'react-native';
+import { registerForPushNotificationsAsync } from './utils/RegisterPushToken';
+import notificationHandler from './utils/NotificationHandler';
 
 
 
@@ -471,6 +473,32 @@ const SuperUserDrawer = () => {
 // Authentication wrapper component
 function AppNavigator() {
   const { user } = useAuth();
+  const navigationRef = useRef();
+
+  // Initialize FCM when user logs in
+  useEffect(() => {
+    const initializeFCM = async () => {
+      if (user && user.id) {
+        try {
+          // Initialize notification handler
+          await notificationHandler.initialize();
+          
+          // Set navigation reference for deep linking
+          notificationHandler.setNavigationRef(navigationRef.current);
+          
+          // Register for push notifications
+          const tokenData = await registerForPushNotificationsAsync(user.id, user.role);
+          if (tokenData) {
+            console.log('FCM: Push notifications registered successfully');
+          }
+        } catch (error) {
+          console.error('FCM: Error initializing:', error);
+        }
+      }
+    };
+
+    initializeFCM();
+  }, [user]);
 
   const getCurrentScreen = () => {
     if (!user) {
@@ -492,7 +520,7 @@ function AppNavigator() {
   };
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Stack.Navigator>
         {getCurrentScreen()}
         {/* Always include ProfileScreen for navigation from drawers */}

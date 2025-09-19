@@ -1,99 +1,133 @@
-// import * as Notifications from 'expo-notifications';
-// import { getFirestore, doc, setDoc } from 'firebase/firestore';
-// import Constants from 'expo-constants';
-
-// export const registerForPushNotificationsAsync = async (userId) => {
-//   try {
-//     console.log("[PushToken] Starting registration...");
-
-//     if (!Constants.isDevice) {
-//       console.log("[PushToken] Not a real device.");
-//       return;
-//     }
-
-//     const { status: existingStatus } = await Notifications.getPermissionsAsync();
-//     let finalStatus = existingStatus;
-
-//     if (existingStatus !== 'granted') {
-//       const { status } = await Notifications.requestPermissionsAsync();
-//       finalStatus = status;
-//     }
-
-//     if (finalStatus !== 'granted') {
-//       console.log("[PushToken] Permission not granted");
-//       return;
-//     }
-
-//     const token = (await Notifications.getExpoPushTokenAsync()).data;
-//     console.log("[PushToken] Retrieved token:", token);
-
-//     const db = getFirestore();
-
-//     if (userId && token) {
-//       await setDoc(doc(db, 'pushTokens', userId), {
-//         expoPushToken: token,
-//       });
-//       console.log("[PushToken] Saved to Firestore");
-//     } else {
-//       console.log("[PushToken] Missing userId or token");
-//     }
-
-//     return token;
-//   } catch (error) {
-//     console.log("[PushToken] Error:", error.message);
-//   }
-// };
-
-import * as Notifications from 'expo-notifications';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
-import Constants from 'expo-constants';
+import messaging from '@react-native-firebase/messaging';
+import { getFirestore, doc, setDoc, updateDoc } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { Platform } from 'react-native';
+import * as Notifications from 'expo-notifications';
 
+/**
+ * Register for FCM push notifications
+ * This function handles both FCM and Expo notifications for maximum compatibility
+ */
 export const registerForPushNotificationsAsync = async (userDocId, role) => {
   try {
-    console.log("[PushToken] Starting registration...");
+    console.log("[FCM] Starting push notification registration...");
 
-    // if (!Constants.isDevice) {
-    //   console.log("[PushToken] Not a real device.");
-    //   return;
-    // }
-
-    const { status: existingStatus } = await Notifications.getPermissionsAsync();
-    let finalStatus = existingStatus;
-
-    if (existingStatus !== "granted") {
-      const { status } = await Notifications.requestPermissionsAsync();
-      finalStatus = status;
+    const currentUser = getAuth().currentUser;
+    if (!currentUser) {
+      console.log("[FCM] No authenticated user found");
+      return null;
     }
 
-    console.log("[PushToken] Final permission status:", finalStatus);
+    // Request FCM permissions
+    const authStatus = await messaging().requestPermission();
+    const enabled =
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+      authStatus === messaging.AuthorizationStatus.PROVISIONAL;
 
-    if (finalStatus !== "granted") {
-      console.log("[PushToken] Permission not granted");
-      return;
+    if (!enabled) {
+      console.log("[FCM] FCM permission not granted");
+      return null;
     }
 
-    const token = (await Notifications.getExpoPushTokenAsync()).data;
-    console.log("[PushToken] Retrieved token:", token);
+    // Get FCM token
+    const fcmToken = await messaging().getToken();
+    console.log("[FCM] FCM Token retrieved:", fcmToken);
+
+    // Get Expo push token as fallback
+    let expoToken = null;
+    try {
+      const { status } = await Notifications.getPermissionsAsync();
+      if (status === 'granted') {
+        const expoTokenData = await Notifications.getExpoPushTokenAsync();
+        expoToken = expoTokenData.data;
+        console.log("[FCM] Expo Token retrieved:", expoToken);
+      }
+    } catch (expoError) {
+      console.log("[FCM] Expo token error:", expoError.message);
+    }
 
     const db = getFirestore();
-    const currentUser = getAuth().currentUser;
+    const tokenData = {
+      fcmToken: fcmToken,
+      expoPushToken: expoToken,
+      userDocId: userDocId,
+      role: role || "User",
+      platform: Platform.OS,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
 
-    if (currentUser && token) {
-      await setDoc(doc(db, "pushTokens", currentUser.uid), {
-        expoPushToken: token,
-        userDocId,
-        role: role || "User", // <--- Save role
+    // Save to Firestore
+    await setDoc(doc(db, "pushTokens", currentUser.uid), tokenData);
+    console.log("[FCM] Tokens saved to Firestore for user:", currentUser.uid);
+
+    // Setup token refresh listener
+    messaging().onTokenRefresh(async (newToken) => {
+      console.log("[FCM] Token refreshed:", newToken);
+      await updateDoc(doc(db, "pushTokens", currentUser.uid), {
+        fcmToken: newToken,
+        updatedAt: new Date(),
       });
-      console.log("[PushToken] Saved to Firestore under UID:", currentUser.uid);
+    });
 
-    } else {
-      console.log("[PushToken] Missing user or token");
-    }
-
-    return token;
+    return {
+      fcmToken,
+      expoToken,
+      userId: currentUser.uid,
+    };
 
   } catch (error) {
-    console.log("[PushToken] Error:", error.message);
+    console.error("[FCM] Error during registration:", error.message);
+    return null;
+  }
+};
+
+/**
+ * Unregister push notifications
+ */
+export const unregisterPushNotifications = async () => {
+  try {
+    const currentUser = getAuth().currentUser;
+    if (!currentUser) return;
+
+    const db = getFirestore();
+    await updateDoc(doc(db, "pushTokens", currentUser.uid), {
+      fcmToken: null,
+      expoPushToken: null,
+      deletedAt: new Date(),
+    });
+
+    console.log("[FCM] Push notifications unregistered for user:", currentUser.uid);
+  } catch (error) {
+    console.error("[FCM] Error unregistering:", error.message);
+  }
+};
+
+/**
+ * Get current push token
+ */
+export const getCurrentPushToken = async () => {
+  try {
+    const currentUser = getAuth().currentUser;
+    if (!currentUser) return null;
+
+    const fcmToken = await messaging().getToken();
+    return fcmToken;
+  } catch (error) {
+    console.error("[FCM] Error getting current token:", error.message);
+    return null;
+  }
+};
+
+/**
+ * Check if push notifications are enabled
+ */
+export const isPushNotificationEnabled = async () => {
+  try {
+    const authStatus = await messaging().hasPermission();
+    return authStatus === messaging.AuthorizationStatus.AUTHORIZED;
+  } catch (error) {
+    console.error("[FCM] Error checking permission:", error.message);
+    return false;
   }
 };

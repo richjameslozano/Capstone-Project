@@ -19,7 +19,8 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false,
         "UIBackgroundModes": [
-          "remote-notification"
+          "remote-notification",
+          "background-fetch"
         ]
       }
     },
@@ -28,7 +29,13 @@
         "foregroundImage": "./components/images/NULS_Favicon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.nuls.numoa"
+      "package": "com.nuls.numoa",
+      "googleServicesFile": "./android/app/google-services.json",
+      "permissions": [
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.VIBRATE",
+        "android.permission.WAKE_LOCK"
+      ]
     },
     "web": {
       "favicon": "./components/images/NULS_Favicon.png"
@@ -38,6 +45,24 @@
       "eas": {
         "projectId": "ab29db21-d917-4e43-89ae-1c8e875dea34"
       }
+    },
+    "plugins": [
+      "@react-native-firebase/app",
+      "@react-native-firebase/messaging",
+      [
+        "expo-notifications",
+        {
+          "icon": "./components/images/NULS_Favicon.png",
+          "color": "#ffffff",
+          "defaultChannel": "default"
+        }
+      ]
+    ],
+    "notification": {
+      "icon": "./components/images/NULS_Favicon.png",
+      "color": "#ffffff",
+      "androidMode": "default",
+      "androidCollapsedTitle": "#{unread_notifications} new interactions"
     }
   }
 }
