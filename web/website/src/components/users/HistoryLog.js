@@ -585,12 +585,43 @@ const sanitizeInput = (input) =>
 
       // Add notification
       await addDoc(collection(db, "allNotifications"), {
-        action: `New requisition submitted by ${userName}`,
+        action: `New reorder request submitted by ${userName}`,
         userId: userId,
         userName: userName,
         read: false,
         timestamp: serverTimestamp()
       });
+
+      // 🔔 Send push notifications to admins for reorder
+      try {
+        console.log('🔔 Sending push notifications to admins for reorder via backend...');
+        
+        const response = await fetch('https://webnuls.onrender.com/api/notify-admins-request', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userName: userName,
+            userId: userId,
+            requestData: {
+              timestamp: new Date().toISOString(),
+              type: 'reorder_submitted'
+            }
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Backend notification response:', result);
+          console.log(`✅ Push notifications sent to ${result.successfulNotifications}/${result.totalAdmins} admins`);
+        } else {
+          const error = await response.json();
+          console.error('❌ Backend notification error:', error);
+        }
+      } catch (error) {
+        console.error('❌ Error calling backend notification API:', error);
+      }
 
       setReorderModalVisible(false);
       setSelectedCompletedOrder(null);

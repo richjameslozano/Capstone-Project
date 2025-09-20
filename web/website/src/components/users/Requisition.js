@@ -1357,44 +1357,35 @@ const Requisition = () => {
           setNotificationMessage("Requisition sent successfully!");
           setIsNotificationVisible(true);
 
-          // 🟡 Call this inside an async function (like onSubmit)
-          const functions = getFunctions();
-          const sendPush = httpsCallable(functions, "sendPushNotification");
-
+          // 🔔 Send push notifications to admins via backend API
           try {
-            // 1. Get all push tokens from Firestore
-            const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
-            const tokensToNotify = [];
-
-            pushTokenSnapshot.forEach((doc) => {
-              const data = doc.data();
-              if (
-                data?.expoPushToken &&
-                ["admin", "admin1", "admin2"].includes(data.role)
-              ) {
-                tokensToNotify.push(data.expoPushToken);
-              }
+            console.log('🔔 Sending push notifications to admins via backend...');
+            
+            const response = await fetch('https://webnuls.onrender.com/api/notify-admins-request', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                userName: userName,
+                userId: userId,
+                requestData: {
+                  timestamp: new Date().toISOString(),
+                  type: 'request_submitted'
+                }
+              }),
             });
 
-            console.log("📨 Tokens to notify:", tokensToNotify);
-
-            // 2. Send to each token
-            for (const token of tokensToNotify) {
-              const payload = {
-                token, // ✅ no nesting, matches Cloud Function expectations
-                title: "New Request",
-                body: `New requisition submitted by ${userName}`,
-              };
-
-              console.log("📦 Sending push payload:", payload);
-
-              const response = await sendPush(payload);
-
-              console.log("✅ Push sent, Cloud Function response:", response.data);
+            if (response.ok) {
+              const result = await response.json();
+              console.log('✅ Backend notification response:', result);
+              console.log(`✅ Push notifications sent to ${result.successfulNotifications}/${result.totalAdmins} admins`);
+            } else {
+              const error = await response.json();
+              console.error('❌ Backend notification error:', error);
             }
-
-          } catch (err) {
-            console.error("❌ Push notification error:", err.message || err);
+          } catch (error) {
+            console.error('❌ Error calling backend notification API:', error);
           }
 
           setIsFinalizeVisible(false);
