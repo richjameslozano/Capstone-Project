@@ -157,6 +157,19 @@ const BorrowCatalog = () => {
           });
 
           setCatalog(sortedCatalogData);
+          
+          // Debug: Log all catalog items
+          console.log('=== ALL CATALOG ITEMS ===');
+          sortedCatalogData.forEach((item, index) => {
+            console.log(`Item ${index + 1}:`, {
+              requestor: item.requestor,
+              dateRequired: item.dateRequired,
+              status: item.status,
+              course: item.course,
+              id: item.id
+            });
+          });
+          console.log('=== END CATALOG ITEMS ===');
         });
 
         // Cleanup listener when component unmounts
@@ -487,7 +500,85 @@ const others = filteredCatalog.filter((item) => {
       return "N/A";
     }
   };
+
+  // Helper function to normalize dates for comparison
+  const normalizeDate = (dateString) => {
+    if (!dateString) return null;
+    
+    try {
+      // Handle different date formats
+      let date;
+      
+      // If it's already a Date object
+      if (dateString instanceof Date) {
+        date = dateString;
+      }
+      // If it's a string, try to parse it
+      else if (typeof dateString === 'string') {
+        // Handle MM/DD/YYYY format
+        if (dateString.includes('/')) {
+          const parts = dateString.split('/');
+          if (parts.length === 3) {
+            date = new Date(parts[2], parts[0] - 1, parts[1]);
+          } else {
+            date = new Date(dateString);
+          }
+        }
+        // Handle YYYY-MM-DD format
+        else if (dateString.includes('-')) {
+          date = new Date(dateString);
+        }
+        // Default parsing
+        else {
+          date = new Date(dateString);
+        }
+      }
+      else {
+        date = new Date(dateString);
+      }
+      
+      // Set time to start of day for accurate comparison
+      date.setHours(0, 0, 0, 0);
+      return date;
+    } catch (e) {
+      console.error('Error normalizing date:', dateString, e);
+      return null;
+    }
+  };
+
+  // Helper function to check if date is within next 7 days
+  const isWithinNext7Days = (dateRequired) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to start of day
+    
+    const requiredDate = normalizeDate(dateRequired);
+    if (!requiredDate) {
+      console.log('Failed to normalize date:', dateRequired);
+      return false;
+    }
+    
+    const diffTime = requiredDate - today;
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    
+    console.log('Date comparison:', {
+      today: today.toDateString(),
+      todayISO: today.toISOString().split('T')[0],
+      required: requiredDate.toDateString(),
+      requiredISO: requiredDate.toISOString().split('T')[0],
+      diffDays: diffDays,
+      isWithinRange: diffDays >= 0 && diffDays <= 7
+    });
+    
+    return diffDays >= 0 && diffDays <= 7;
+  };
   
+  // Debug: Show today's date
+  console.log('=== TODAY\'S DATE DEBUG ===');
+  console.log('Today (local):', today.toDateString());
+  console.log('Today (ISO):', today.toISOString().split('T')[0]);
+  console.log('Today (MM/DD/YYYY):', (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear());
+  console.log('=== END TODAY DEBUG ===');
+
   return (
     <Layout style={{ minHeight: "100vh" }}>
       <Layout>
@@ -546,14 +637,17 @@ const others = filteredCatalog.filter((item) => {
     <div className="catalog-cards">
       {filteredCatalog
         .filter(
-          (item) =>
-            ["For Release", "Borrowed"].includes(item.status) &&
-            (() => {
-              const today = new Date();
-              const required = new Date(item.dateRequired);
-              const diffDays = (required - today) / (1000 * 60 * 60 * 24);
-              return diffDays >= 0 && diffDays <= 7;
-            })()
+          (item) => {
+            const hasCorrectStatus = ["For Release", "Borrowed"].includes(item.status);
+            const isWithinDateRange = isWithinNext7Days(item.dateRequired);
+            
+            // Debug logging
+            console.log('Debug - Item:', item.requestor, 'Date Required:', item.dateRequired, 'Status:', item.status);
+            console.log('Debug - Has correct status:', hasCorrectStatus, 'Is within date range:', isWithinDateRange);
+            console.log('Debug - Should show:', hasCorrectStatus && isWithinDateRange);
+            
+            return hasCorrectStatus && isWithinDateRange;
+          }
         )
         .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
         .map((item) => (
@@ -594,14 +688,11 @@ const others = filteredCatalog.filter((item) => {
           </div>
         ))}
       {filteredCatalog.filter(
-        (item) =>
-          ["For Release", "Borrowed"].includes(item.status) &&
-          (() => {
-            const today = new Date();
-            const required = new Date(item.dateRequired);
-            const diffDays = (required - today) / (1000 * 60 * 60 * 24);
-            return diffDays >= 0 && diffDays <= 7;
-          })()
+        (item) => {
+          const hasCorrectStatus = ["For Release", "Borrowed"].includes(item.status);
+          const isWithinDateRange = isWithinNext7Days(item.dateRequired);
+          return hasCorrectStatus && isWithinDateRange;
+        }
       ).length === 0 && <p>No requests within the next 7 days.</p>}
     </div>
 
@@ -617,14 +708,12 @@ const others = filteredCatalog.filter((item) => {
     <div className="catalog-cards">
       {filteredCatalog
         .filter(
-          (item) =>
-            ["For Release", "Borrowed"].includes(item.status) &&
-            (() => {
-              const today = new Date();
-              const required = new Date(item.dateRequired);
-              const diffDays = (required - today) / (1000 * 60 * 60 * 24);
-              return diffDays > 7;
-            })()
+          (item) => {
+            const hasCorrectStatus = ["For Release", "Borrowed"].includes(item.status);
+            const isLaterDate = !isWithinNext7Days(item.dateRequired);
+            
+            return hasCorrectStatus && isLaterDate;
+          }
         )
         .sort((a, b) => new Date(a.dateRequired) - new Date(b.dateRequired))
         .map((item) => (
@@ -661,14 +750,11 @@ const others = filteredCatalog.filter((item) => {
           </div>
         ))}
       {filteredCatalog.filter(
-        (item) =>
-          ["For Release", "Borrowed"].includes(item.status) &&
-          (() => {
-            const today = new Date();
-            const required = new Date(item.dateRequired);
-            const diffDays = (required - today) / (1000 * 60 * 60 * 24);
-            return diffDays > 7;
-          })()
+        (item) => {
+          const hasCorrectStatus = ["For Release", "Borrowed"].includes(item.status);
+          const isLaterDate = !isWithinNext7Days(item.dateRequired);
+          return hasCorrectStatus && isLaterDate;
+        }
       ).length === 0 && <p>No other requests.</p>}
     </div>
   </div>
