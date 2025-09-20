@@ -1433,6 +1433,39 @@ try {
         message: "Request Processed",
         description: "Approval and rejection have been logged successfully.",
       });
+
+      // 🔔 Send push notification to the requestor about rejection
+      try {
+        console.log('🔔 Sending rejection notification to user via backend...');
+        
+        const response = await fetch('https://webnuls.onrender.com/api/notify-user', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            userId: selectedRequest.accountId,
+            title: 'Request Rejected',
+            body: `Your requisition request has been rejected by ${userName}`,
+            data: {
+              type: 'request_rejected',
+              rejectedBy: userName,
+              requestId: selectedRequest.id,
+              screen: 'OrdersScreen'
+            }
+          }),
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          console.log('✅ Rejection notification sent:', result);
+        } else {
+          const error = await response.json();
+          console.error('❌ Rejection notification error:', error);
+        }
+      } catch (error) {
+        console.error('❌ Error sending rejection notification:', error);
+      }
   
     } catch (error) {
     
@@ -2224,6 +2257,39 @@ try {
           message: "Request Approved",
           description: "Request has been approved and logged.",
         });
+
+        // 🔔 Send push notification to the requestor
+        try {
+          console.log('🔔 Sending approval notification to user via backend...');
+          
+          const response = await fetch('https://webnuls.onrender.com/api/notify-user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              userId: selectedRequest.accountId,
+              title: 'Request Approved',
+              body: `Your requisition request has been approved by ${userName}`,
+              data: {
+                type: 'request_approved',
+                approvedBy: userName,
+                requestId: selectedRequest.id,
+                screen: 'OrdersScreen'
+              }
+            }),
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            console.log('✅ Approval notification sent:', result);
+          } else {
+            const error = await response.json();
+            console.error('❌ Approval notification error:', error);
+          }
+        } catch (error) {
+          console.error('❌ Error sending approval notification:', error);
+        }
 
       } catch (error) {
      
