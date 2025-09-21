@@ -782,6 +782,9 @@ const Dashboard = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // Get user role from localStorage
+  const userRole = localStorage.getItem("userPosition");
+
   /* ---------- Columns (kept minimal; you render with List mostly) ---------- */
   const expiryColumns = [
     { title: "Item Name", dataIndex: "itemName", key: "itemName" },
@@ -1161,10 +1164,26 @@ const Dashboard = () => {
 
   const summaryCards = [
     { title: "Pending Requests", count: pendingRequestCount, color: "#2596be", icon: <FileTextOutlined /> },
-    { title: "Borrow Catalog", count: borrowCatalogCount, color: "#165a72", icon: <ShoppingOutlined /> },
+    { 
+      title: userRole?.toLowerCase() === "admin" ? "Request Log" : "Borrow Catalog", 
+      count: userRole?.toLowerCase() === "admin" ? historyData : borrowCatalogCount, 
+      color: "#165a72", 
+      icon: <ShoppingOutlined /> 
+    },
     { title: "Critical Stocks", count: criticalStockList.length, color: "#0b2d39", icon: <UnorderedListOutlined /> },
     { title: "Expiring Items", count: expiringSoonItems.length, color: "#000000", icon: <DatabaseOutlined /> },
   ];
+
+  // Add ApprovalRequest card for admin users
+  const adminSummaryCards = [
+    { title: "Pending Requests", count: pendingRequestCount, color: "#2596be", icon: <FileTextOutlined /> },
+    { title: "Approval Request", count: borrowCatalogCount, color: "#8b5cf6", icon: <DatabaseOutlined /> },
+    { title: "Critical Stocks", count: criticalStockList.length, color: "#0b2d39", icon: <UnorderedListOutlined /> },
+    { title: "Expiring Items", count: expiringSoonItems.length, color: "#000000", icon: <DatabaseOutlined /> },
+  ];
+
+  // Use different card sets based on user role
+  const displayCards = userRole?.toLowerCase() === "admin" ? adminSummaryCards : summaryCards;
 
   const lightenColor = (hex, percent) => {
     // percent: 0.0 to 0.3 recommended
@@ -1196,7 +1215,7 @@ const Dashboard = () => {
       <Layout>
         {/* SUMMARY CARDS */}
         <div className="summary-card-whole">
-          {summaryCards.map((card, index) => {
+          {displayCards.map((card, index) => {
             const isHovered = index === hoveredIndex;
             const bgColor = isHovered ? lightenColor(card.color, 0.1) : card.color;
             return (
@@ -1209,6 +1228,10 @@ const Dashboard = () => {
                 onClick={() => {
                   if (card.title === "Pending Requests") navigate("/main/pending-request");
                   if (card.title === "Borrow Catalog") navigate("/main/borrow-catalog");
+                  if (card.title === "Approval Request") {
+                    // For admin role, navigate to ApprovalRequest component
+                    navigate("/main/approval-request");
+                  }
                   if (card.title === "Expiring Items") navigate("/main/inventory");
                   if (card.title === "Critical Stocks") navigate("/main/inventory");
                 }}
