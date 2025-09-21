@@ -2569,7 +2569,7 @@ const handlePrint = () => {
                   margin: "0 0 8px 0",
                   textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
                 }}>
-                  Submitted Requisitions
+                  Status Page
                 </h1>
                 <p style={{
                   color: "#a8d5e5",
@@ -2593,7 +2593,7 @@ const handlePrint = () => {
       label: (
         <span className="tab-label">
           <ClockCircleOutlined style={{ marginRight: 6, color: "#f59e0b" }} />
-          Step 1: Pending
+          Pending
         </span>
       ),
       children: <div className="tab-content">{renderPendingTab()}</div>,
@@ -2603,7 +2603,7 @@ const handlePrint = () => {
       label: (
         <span className="tab-label">
           <LikeOutlined style={{ marginRight: 6, color: "#1c325aff" }} />
-          Step 2: Approved
+          Approved
         </span>
       ),
       children: <div className="tab-content">{renderApprovedTab()}</div>,
@@ -2613,7 +2613,7 @@ const handlePrint = () => {
       label: (
         <span className="tab-label">
           <SendOutlined style={{ marginRight: 6, color: "#0284c7" }} />
-          Step 3: Deployed
+          Received
         </span>
       ),
       children: <div className="tab-content">{renderDeployedTab()}</div>,
@@ -2623,7 +2623,7 @@ const handlePrint = () => {
       label: (
         <span className="tab-label">
           <CheckCircleOutlined style={{ marginRight: 6, color: "#0d9488" }} />
-          Step 4: Released & Completed
+          Released & Completed
         </span>
       ),
       children: <div className="tab-content">{renderReturnedTab()}</div>,
