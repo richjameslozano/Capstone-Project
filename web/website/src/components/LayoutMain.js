@@ -193,9 +193,9 @@ const shouldShowSpinner = useMemo(() => {
         setPageTitle("Return Items");
         break;
 
-      case "/main/submitted-requisitions":
+      case "/main/status-page":
         setSelectedKey("14");
-        setPageTitle("Submitted Requisitions");
+        setPageTitle("Status Page");
         break;
 
       case "/main/request-log":
@@ -332,9 +332,9 @@ const shouldShowSpinner = useMemo(() => {
         label: "Requisition",
       },
       {
-        key: "/main/submitted-requisitions",
+        key: "/main/status-page",
         icon: <FileDoneOutlined />,
-        label: "Submitted Requisitions",
+        label: "Status Page",
       },
       {
         key: "/main/return-items",
@@ -469,9 +469,9 @@ const userMenuItems = [
     label: "Requisition",
   },
     {
-    key: "/main/submitted-requisitions",
+    key: "/main/status-page",
     icon: <FileDoneOutlined />,
-    label: "Submitted Requisitions",
+    label: "Status Page",
   },
     {
     key: "/main/return-items",
@@ -655,7 +655,7 @@ const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDT
             <Route element={<ProtectedRoute allowedRoles={["admin", "user", "super-admin", "super-user"]} />} >
               <Route path="/profile" element={<Profile />} />
               <Route path="/activity-log" element={<ActivityLog />} />
-              <Route path="/submitted-requisitions" element={<HistoryLog />} />
+              <Route path="/status-page" element={<HistoryLog />} />
             </Route>
 
             {/* Superadmin-only routes */}
