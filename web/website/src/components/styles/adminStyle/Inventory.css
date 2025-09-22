@@ -5,15 +5,15 @@
 
 .inventory-header {
   display: flex;
-  flex-direction: column;
-  flex-wrap: wrap; /* wrap on smaller screens */
+  flex-wrap: wrap;
   gap: 12px;
-  justify-content: center;
-  margin: 20px 0;
+  align-items: center;
   padding: 12px;
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;     /* higher than content below */
+  transition: all 0.3s ease;
 }
 
 .inventory-filter-section {
@@ -21,10 +21,18 @@
   flex-wrap: wrap; /* wrap on smaller screens */
   align-items: center;
   gap: 12px;
-  justify-content: center;
-  background-color: #fff;
-
+  justify-content: space-between;
+  background-color: #fff;;               /* position at the very top */
+  width: 100%;          /* take full width */
+  z-index: 100;         /* keep it above table/content */
 }
+
+.filter-header-inventory{
+  display: flex;
+  gap: 10px;
+  margin-right: 20px;
+}
+
 
 .modal-header{
   position: absolute;
@@ -131,10 +139,10 @@
   height: 40px;
 }
 
-.inventory-table {
-  border-radius: 12px;
-  overflow: hidden;
-}
+  /* .inventory-table {
+    border-radius: 12px;
+    overflow: hidden;
+  } */
 
 .inventory-table .ant-table {
   border-radius: 12px;
@@ -145,13 +153,14 @@
   font-weight: 600 !important;
   color: #fff !important;
   border-bottom: 2px solid #e5e7eb !important;
-  padding: 16px !important;
+  padding: 13px !important;
 }
 
 .inventory-table .ant-table-tbody > tr > td {
   border-bottom: 1px solid #f3f4f6 !important;
-  padding: 16px !important;
+  padding: 11px !important;
   transition: all 0.2s ease;
+  font-size: 15px;  
 }
 
 .inventory-table .ant-table-tbody > tr:hover > td {
@@ -184,76 +193,15 @@
   border: 1px solid #d9d9d9;
 }
 
-
-.inventory-table {
-  background-color: white;
-  border-radius: 8px;
-}
-
 .inventory-table .ant-table-tbody{
   font-size: 15px;
 }
 .inventory-table .ant-table-thead{
   font-size: 15px;
 }
-.inventory-table .ant-table-thead th:nth-child(1), 
-.inventory-table .ant-table-tbody td:nth-child(1) {
-  width: 20px;
-}
 
-.inventory-table .ant-table-thead th:nth-child(2), 
-.inventory-table .ant-table-tbody td:nth-child(2) {
-  width: 150px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(3), 
-.inventory-table .ant-table-tbody td:nth-child(3) {
-  width: 100px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(4), 
-.inventory-table .ant-table-tbody td:nth-child(4) {
-  width: 90px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(5), 
-.inventory-table .ant-table-tbody td:nth-child(5) {
-  width: 80px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(6), 
-.inventory-table .ant-table-tbody td:nth-child(6) {
-  width: 100px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(7), 
-.inventory-table .ant-table-tbody td:nth-child(7) {
-  width: 120px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(8), 
-.inventory-table .ant-table-tbody td:nth-child(8) {
-  width: 120px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(9), 
-.inventory-table .ant-table-tbody td:nth-child(9) {
-  width: 120px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(10), 
-.inventory-table .ant-table-tbody td:nth-child(10) {
-  width: 50px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(11), 
-.inventory-table .ant-table-tbody td:nth-child(11) {
-  width: 100px; 
-}
-
-.inventory-table .ant-table-thead th:nth-child(12), 
-.inventory-table .ant-table-tbody td:nth-child(12) {
-  width: 150px; 
+.inventory-table .ant-table-tbody > tr > td:nth-child(4){
+  width: 600px !important;
 }
 
 .inventory-table .ant-table-tbody > tr:nth-child(odd) > td {
@@ -268,7 +216,14 @@
   background-color: #e2eaee !important;
 }
 
-/* Styles for the "Add Item" button */
+
+.inventory-table .ant-table-thead > tr > th:nth-child(4),
+.inventory-table .ant-table-tbody > tr > td:nth-child(4) {
+  text-align: right !important;
+}
+
+
+
 .add-item-button {
   border-color: #263f5f !important;
   position: fixed; 
@@ -277,14 +232,11 @@
   width: auto;
   right: 150px;
   bottom: 80px;
-  /* border-radius: 50px !important; */
   padding: 4px; 
-  /* background-color: #6e9fc1; */
-  /* box-shadow: 0px 5px 14px rgba(0, 0, 0, 0.2); */
 }
 
 .inner-btn:hover {
-  background-color: #3c6397 !important; /* Lighter green on hover */
+  background-color: #3c6397 !important; 
   border-color: #3c6397 !important;
 }
 
@@ -391,9 +343,6 @@
     width: 100%;
   }
 
-  .inventory-table {
-    font-size: 12px;
-  }
 
   /* Horizontal scrollable table wrapper */
   .inventory-table .ant-table-container {
@@ -831,4 +780,11 @@
   border-radius: 0 6px 6px 0;
   margin: 0;
   padding: 0 12px;
+}
+
+.main-table-wrapper{
+  padding: 16px;
+  background: white;
+  border-radius: 15px;
+  box-shadow: 0px 4px 5px rgba(0, 0, 0, 0.1);
 }

@@ -4316,7 +4316,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import {Layout,Table,Input,Button,Select,Form,Row,Col,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
-import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined} from '@ant-design/icons'; 
+import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined, FilterOutlined} from '@ant-design/icons'; 
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
@@ -4334,6 +4334,7 @@ import axios from "axios";
 import autoTable from "jspdf-autotable";
 import { getAuth } from "firebase/auth";
 import { getDoc, doc as fsDoc } from "firebase/firestore"; 
+import Sider from "antd/es/layout/Sider.js";
 
 const { Content } = Layout;
 const { Option } = Select;
@@ -6870,16 +6871,18 @@ useEffect(() => {
   };  
 
   const columns = [
-    { title: "Item ID", dataIndex: "itemId", key: "itemId" },
+    { title: "Item ID", dataIndex: "itemId", key: "itemId", },
     { title: "Item Name", dataIndex: "itemName", key: "itemName", 
       sorter: (a, b) => a.itemName.localeCompare(b.itemName),
       sortDirections: ['ascend', 'descend'],
       defaultSortOrder: 'ascend', 
+      width: 200
     },
+      { title: "Item Description", dataIndex: "itemDetails", key: "itemDetails", width: 200 },
     { title: "Category", dataIndex: "category", key: "category", 
 
     },
-    { title: "Item Description", dataIndex: "itemDetails", key: "itemDetails" },
+
     {
       title: "Inventory Balance",
       dataIndex: "quantity",
@@ -6925,16 +6928,10 @@ useEffect(() => {
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
-
-      <Layout style={{paddingTop: 0}}>
+      <Layout style={{paddingTop: 0,}}>
         <Content className="content inventory-container" style={{paddingTop: 0, paddingBottom: 150}}>
     
-          
-
-          <div className="inventory-header">
-              
-
-          {!isModalVisible && (
+                    {!isModalVisible && (
             <div style={{backgroundColor: 'red'}}>
               <div className="add-item-button">
             <Button 
@@ -7018,7 +7015,17 @@ useEffect(() => {
           </div>
             )
           }
+
+
+
+          <div className="inventory-header">
            <div className="inventory-filter-section">
+          <div className="filter-header-inventory">
+            <FilterOutlined className="filter-icon" />
+            <span className="filter-title" style={{background: '#e9f5f9', padding: 10, borderRadius: 5}}>Filter & Search</span>
+          </div>
+
+
   <Input.Search
     placeholder='Search Items'
     className="search-bar"
@@ -7071,10 +7078,12 @@ useEffect(() => {
   >
     Reset Filters
   </Button>
+
 </div>
   
           </div> 
 
+        <div className="main-table-wrapper">
           <Table
             dataSource={filteredData}
             columns={columns}
@@ -7098,6 +7107,7 @@ useEffect(() => {
               };
             }}
           />
+          </div>
 
              <Modal
       className="add-modal"
