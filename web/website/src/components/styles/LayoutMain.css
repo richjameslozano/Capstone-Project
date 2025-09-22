@@ -19,12 +19,6 @@
 }
 
 /* Style the menu background (optional if Sider handles it) */
-.custom-menu {
-  background-color: transparent;
-  font-weight: 500;
-  border-right: none;
-}
-
 /* Top-level menu items and single items */
 .custom-menu > .ant-menu-item,
 .custom-menu > .ant-menu-submenu > .ant-menu-submenu-title {

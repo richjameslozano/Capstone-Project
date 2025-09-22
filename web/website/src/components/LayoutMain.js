@@ -542,73 +542,83 @@ const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDT
       )}
       
        <Sider
-         trigger={null}
-         collapsible
-         collapsed={!isMobile && collapsed}
-         collapsedWidth={COLLAPSED_WIDTH}
-         width={SIDEBAR_WIDTH}
-         className={`responsive-sider ${isMobile ? 'mobile-sider' : ''} ${isMobile && !mobileOpen ? 'mobile-hidden' : ''}`}
-         style={{
-           width: isMobile ? SIDEBAR_WIDTH : currentSiderWidth,
-           position: "fixed",
-           top: 0,
-           left: 0,
-           height: "100vh",
-           zIndex: 1000,
-           overflow: "auto",
-           padding: 0,
-           transition: 'transform 0.3s ease-in-out, width 0.3s ease-in-out',
-           transform: isMobile && !mobileOpen ? 'translateX(-100%)' : 'translateX(0)',
-         }}
-       >
+  trigger={null}
+  collapsible
+  collapsed={!isMobile && collapsed}
+  collapsedWidth={COLLAPSED_WIDTH}
+  width={SIDEBAR_WIDTH}
+  className={`responsive-sider ${isMobile ? 'mobile-sider' : ''} ${isMobile && !mobileOpen ? 'mobile-hidden' : ''}`}
+  style={{
+    width: isMobile ? SIDEBAR_WIDTH : currentSiderWidth,
+    position: "fixed",
+    top: 0,
+    left: 0,
+    height: "100vh",
+    zIndex: 1000,
+    overflow: "auto",
+    padding: 0,
+    transition: "transform 0.3s ease-in-out, width 0.3s ease-in-out",
+    transform: isMobile && !mobileOpen ? "translateX(-100%)" : "translateX(0)",
+  }}
+>
+  {/* Header / Logo Section */}
+  <div
+    className="sider-header"
+    style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: collapsed && !isMobile ? "center" : "flex-start",
+      gap: collapsed && !isMobile ? 0 : 20,
+      height: 64,
+      padding: collapsed && !isMobile ? "0" : "0 25px",
+      borderBottom: "1px solid gold",
+      marginBottom: 15
+    }}
+  >
+    
+<img
+  src={nulsLogo}
+  alt="NULS Logo"
+  style={{
+    maxHeight: collapsed && !isMobile ? 25:30,
+    maxWidth: 40,
+    width: "auto",
+    height: "auto",
+    objectFit: "contain",
+    borderRadius: 0, // 🚀 removes unwanted circle crop
+    display: "block", // avoids inline spacing issues
+  }}
+/>
 
 
-          <div className="demo-logo-vertical" />
-
-<div className="logo">
-  {!collapsed || isMobile ? (
-    <div style={{ display: 'flex', alignItems: 'center', maxHeight: 40, gap: 10 }}>
-      <img
-        src={nulsLogo}
-        alt="NULS Logo"
+    {(!collapsed || isMobile) && (
+      <h3
         style={{
-          maxHeight: '60px',
-          maxWidth: '60px',
-          objectFit: 'contain',
-          verticalAlign: 'middle', // Aligns image with text
+          margin: 0,
+          fontSize: 30,
+          fontWeight: 300,
+          color: "white",
+          lineHeight: 1,
+          // textAlign: 'center',
+          width: '100%'
         }}
-      />
-      <div style={{}}>
-        <h3 className="logo-title" style={{margin: 0, textAlign: 'left', color: 'white', fontWeight: 700, fontSize: 19}}>NU MOA</h3> {/* Remove default margin */}
-        <p className="logo-subtitle" style={{ margin: 0 , fontSize: 16}}>Laboratory System</p> {/* Remove default margin */}
-      </div>
-    </div>
-  ) : (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-      <img
-        src={nulsLogo}
-        alt="NULS Logo"
-        style={{
-          maxHeight: '50px',
-          maxWidth: '50px',
-          objectFit: 'contain',
-        }}
-      />
-    </div>
-  )}
-</div>
+      >
+        NULS MOA
+      </h3>
+    )}
+  </div>
 
+  {/* Menu */}
+  <Menu
+    theme="dark"
+    mode="inline"
+    selectedKeys={[location.pathname]}
+    onClick={handleMenuClick}
+    items={menuItems}
+    className="custom-menu"
+  />
+</Sider>
 
-          <Menu
-            theme="dark"
-            mode="inline"
-            selectedKeys={[location.pathname]}
-            onClick={handleMenuClick}
-            items={menuItems}
-            className='custom-menu'
-          />
-
-      </Sider>
 
       <Layout style={{ 
         marginLeft: isMobile ? 0 : (collapsed ? 80 : 250),
@@ -621,7 +631,7 @@ const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDT
             left: isMobile ? 0 : currentSiderWidth,
             right: 0,
             zIndex: 1001,
-            background: "#fff",
+            background: "#040f13",
             padding: 0,
             transition: 'left 0.3s ease-in-out',
             boxShadow: '0 2px 8px rgba(0,0,0,0.1)',

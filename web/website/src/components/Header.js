@@ -844,9 +844,15 @@ const notificationMenu = (
           onClick={onToggleSidebar}
           style={{ fontSize: "18px", marginRight: "16px" }}
         />
-        <h2 className={`header-title ${isMobile ? "title-mobile" : ""}`}>
-          {pageTitle}
+
+        <div className="title-wrapper">
+        <h2 className={`header-title ${isMobile ? "title-mobile" : ""}`}
+        style={{}}>
+          {/* {pageTitle} */}
+          National University Laboratory System <br></br>
         </h2>
+        <p style={{color: 'gray', margin: 0}}>Mall of Asia</p>
+        </div>
       </div>
 
       <div className="header-right">
