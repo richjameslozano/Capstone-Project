@@ -1817,6 +1817,70 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
       });
     };
 
+    // 🔧 Reserve individual QR codes for equipment items
+    let deployedQRCodes = [];
+    console.log("🔍 CHECKING ITEMS FOR EQUIPMENT TYPE:", enrichedItems.map(i => ({ itemName: i.itemName, itemType: i.itemType })));
+    
+    for (const item of enrichedItems) {
+      console.log(`🔍 CHECKING ITEM: ${item.itemName}, itemType: ${item.itemType}, category: ${item.category}`);
+      if (item.category === "Equipment") {
+        console.log(`✅ EQUIPMENT ITEM FOUND: ${item.itemName}`);
+        console.log("🔧 DEPLOYING EQUIPMENT ITEM IN PENDING REQUEST:", {
+          itemName: item.itemName,
+          selectedItemId: item.selectedItemId,
+          quantity: item.quantity,
+          userId: selectedRequest.accountId,
+          userName: selectedRequest.userName
+        });
+        
+        try {
+          // Fetch the actual itemId from the inventory document
+          const inventoryDocRef = doc(db, "inventory", item.selectedItemId);
+          const inventoryDocSnap = await getDoc(inventoryDocRef);
+
+          if (!inventoryDocSnap.exists()) {
+            console.error("❌ Inventory document not found for selectedItemId:", item.selectedItemId);
+            continue;
+          }
+          
+          const inventoryData = inventoryDocSnap.data();
+          const actualItemId = inventoryData.itemId;
+          
+          console.log("🔍 Found actual itemId:", actualItemId);
+          
+          // Instead of deploying, just reserve the QR codes as "Borrowed"
+          const reserveResponse = await fetch('https://webnuls.onrender.com/reserve-individual-qr-codes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              itemId: actualItemId,
+              quantity: item.quantity,
+              userId: selectedRequest.accountId,
+              userName: selectedRequest.userName,
+            }),
+          });
+
+          const reserveData = await reserveResponse.json();
+          console.log("📡 RESERVE RESPONSE:", reserveData);
+          
+          if (reserveResponse.ok) {
+            deployedQRCodes = [...deployedQRCodes, ...reserveData.reservedQRCodes];
+            console.log("✅ Reserved individual QR codes:", reserveData.reservedQRCodes);
+          } else {
+            console.error("❌ Failed to reserve individual QR codes:", reserveData.error);
+            setNotificationMessage(`Reservation Error: ${reserveData.error || "Failed to reserve individual items"}`);
+            setApproveLoading(false);
+            return;
+          }
+        } catch (error) {
+          console.error("❌ Error deploying individual QR codes:", error);
+          setNotificationMessage("Deployment Error: Failed to deploy individual items");
+          setApproveLoading(false);
+          return;
+        }
+      }
+    }
+
     // Log approved items
     await logRequestOrReturn(
       selectedRequest.accountId,     // user ID
@@ -2075,6 +2139,7 @@ try {
           reason: selectedRequest.reason || "No reason provided",
           program: selectedRequest.program,
           usageType: selectedRequest.usageType || "N/A",
+          deployedQRCodes: deployedQRCodes, // Add deployed individual QR codes
         };
   
         const userRequestLogEntry = {
@@ -2083,6 +2148,7 @@ try {
           approvedBy: userName,
           timestamp: selectedRequest.timestamp || "N/A",
           rawTimestamp: new Date(),
+          deployedQRCodes: deployedQRCodes,
         };
   
         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);

@@ -4027,11 +4027,33 @@ function getConditionSummary(conditionsArray) {
   const handleDeploy = async () => {
     setDeployLoading(true);
     console.log("🚀 Selected Record:", selectedApprovedRequest);
+    console.log("🔍 DEPLOYED QR CODES IN SELECTED REQUEST:", selectedApprovedRequest.deployedQRCodes);
 
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName");
 
     let requestorAccountId = selectedApprovedRequest.accountId;
+
+    // 🔧 Fetch the latest data from borrowcatalog to get deployedQRCodes
+    console.log("🔍 Fetching latest borrowcatalog data for ID:", selectedApprovedRequest.id);
+    const borrowDocRef = doc(db, "borrowcatalog", selectedApprovedRequest.id);
+    const borrowDocSnap = await getDoc(borrowDocRef);
+    
+    if (!borrowDocSnap.exists()) {
+      console.error("❌ Borrowcatalog document not found:", selectedApprovedRequest.id);
+      alert("Deployment Error: Request document not found");
+      setDeployLoading(false);
+      return;
+    }
+    
+    const latestBorrowData = borrowDocSnap.data();
+    console.log("🔍 LATEST BORROWCATALOG DATA:", latestBorrowData);
+    console.log("🔍 DEPLOYED QR CODES FROM BORROWCATALOG:", latestBorrowData.deployedQRCodes);
+    
+    // 🔧 Extract individualItemId from deployedQRCodes objects
+    const specificQRCodes = latestBorrowData.deployedQRCodes?.map(qr => qr.individualItemId || qr.id) || [];
+    console.log("🔍 EXTRACTED SPECIFIC QR CODES:", specificQRCodes);
+
 
     try {
       // Fallback: if accountId is missing, fetch it using userId
@@ -4132,8 +4154,13 @@ function getConditionSummary(conditionsArray) {
               body: JSON.stringify({
                 itemId: actualItemId,
                 quantity: item.quantity,
-                userId: userId,
-                userName: userName,
+                // userId: userId,
+                // userName: userName,
+                // userId: selectedApprovedRequest.accountId, // Use the user who requested, not the admin deploying
+                // userName: selectedApprovedRequest.userName,
+                userId: selectedApprovedRequest.accountId, // Use the user who requested, not the admin deploying
+                userName: selectedApprovedRequest.userName,
+                specificQRCodes: selectedApprovedRequest.deployedQRCodes || [],
               }),
             });
 
