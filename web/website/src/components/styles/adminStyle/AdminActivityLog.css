@@ -19,24 +19,18 @@
   color: #212121 !important;
 }
 
-.ant-table-tbody > tr:nth-child(odd) {
-  background-color: rgba(255, 255, 255, 0.4);
-}
-
-.ant-table-tbody > tr:nth-child(even) {
-  background-color: rgba(255, 255, 255, 0.6);
-}
-
 .activity-table .ant-table-tbody > tr:nth-child(odd) > td {
   background-color: #fafafa; /* Light gray */
+  padding: 10px !important;
 }
   
 .activity-table .ant-table-tbody > tr:nth-child(even) > td {
   background-color: #ffffff; /* White */
+  padding: 10px !important;
 }
   
 .activity-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
+  background-color: #e9ecee; /* Light blue highlight */
 }
 
 @media screen and (max-width: 768px) {

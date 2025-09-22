@@ -2304,12 +2304,34 @@ const Requisition = () => {
   return (
 
     
-    <Layout style={{ minHeight: "100vh", height: 'auto'}}>
-      <Layout className="site-layout-req" style={{minHeight: '120vh'}}>
-        
-    <div className="page-sections" style={{ display: "flex", flexDirection: "column", gap: "0", padding: "24px",height:"100vh" }}>
+    <Layout className="main-req-layout" style={{ minHeight: "120vh", height: 'auto', padding: 20}}>
+ 
+                         <div className="header-section" style={{            
+                  background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+                  borderRadius: "16px",
+                  padding: "32px",
+                  boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)"}}>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  // margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Requisition Page
+                </h1>
+      <p 
+        style={{ color: "#a8d5e5", fontSize: "16px", marginTop: "8px", display: "block", fontWeight: 500, marginBottom: 0 }}
+      >
+       Create and submit your requisitions for supplies or equipment through this page. You can also check the progress of your requests and keep track of past submissions on the Status Page.
+      </p>
+</div>
+    <div className="page-sections" style={{ display: "flex", flexDirection: "column", gap: "0",height:"100vh" }}>
 
          <div className="section requisition-form">
+
+          <div className="upper-requisition">
           <div style={{display: 'flex', alignItems: 'center', gap: 10}}>
           <PlusSquareFilled style={{fontSize: 25, color: '#1e7898'}}/>
           <h1 style={{margin: 0, padding: 0, color: '#1e7898'}}>Add items to your list</h1>
@@ -2323,7 +2345,7 @@ const Requisition = () => {
           </ul>
 
           <div className="request-details">
-  <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>
+            <div className="dropdowns" style={{ display: "flex", gap: "20px" }}>
                 {/* Category Dropdown */}
                 <select
                     value={searchCategory}
@@ -2351,34 +2373,6 @@ const Requisition = () => {
                     <option value="Equipment">Equipment</option>
                     <option value="Glasswares">Glasswares</option>
                   </select>
-
-                  {/* Department Dropdown from Firestore */}
-                  {/* <select
-                    value={searchDepartment}
-                    onChange={(e) => {
-                      const selectedDept = e.target.value;
-                      setSearchDepartment(selectedDept);
-                      if (selectedDept === "") {
-                        setFilteredItems(items);
-                      } else {
-                        const filteredData = items.filter(item => item.department === selectedDept);
-                        setFilteredItems(filteredData);
-                      }
-                    }}
-                    style={{
-                      width: "200px",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                    }}
-                  >
-                    <option value="">All Departments</option>
-                    {departmentsAll.map((dept) => (
-                      <option key={dept.id} value={dept.name}>
-                        {dept.name}
-                      </option>
-                    ))}
-                  </select> */}
                 </div>
 
                 <div style={{ overflow: "auto", marginBottom: 50}}>
@@ -2397,10 +2391,13 @@ const Requisition = () => {
                     >
                       Add Item Row
                     </Button>
-
                 </div>
+                </div>
+                   
 
          
+
+
           <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 50}}>
           <FormOutlined style={{fontSize: 25, color: '#1e7898'}}/>
           <div style={{display: 'flex', flexDirection: 'column', gap: 5}}>
@@ -2724,7 +2721,8 @@ const Requisition = () => {
                     </Button>
               </div>
             </div>
-          </div>
+                   </div>
+
 
     
           {/* <Table
@@ -3088,8 +3086,6 @@ const Requisition = () => {
         <PoliciesModal isOpen={showPolicies} onClose={closePolicies} />
       </Layout>
       
-      
-    </Layout>
     
     
   );

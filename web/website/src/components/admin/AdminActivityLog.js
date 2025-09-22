@@ -164,6 +164,27 @@ const AdminActivityLog = () => {
       <Layout className="site-layout">
         <Content className="activity-content">
 
+              <div className="header-section" style={{            
+                  background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+                  borderRadius: "16px",
+                  padding: "32px",
+                  boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)"}}>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  // margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Activity Log
+                </h1>
+      <p 
+        style={{ color: "#a8d5e5", fontSize: "16px", marginTop: "8px", display: "block", fontWeight: 500, marginBottom: 0 }}
+      >
+       Maintains a secure audit trail of all user and system activities for monitoring and compliance purposes.
+      </p>
+      </div>
           <Table
             columns={columns}
             dataSource={filteredData}

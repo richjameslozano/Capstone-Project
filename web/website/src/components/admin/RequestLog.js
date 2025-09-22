@@ -578,214 +578,10 @@ const RequestLog = () => {
   };
 
   return (
-    // <Layout style={{ minHeight: "100vh" }}>
-    //   <Layout>
-    //     <Content style={{ margin: "20px" }}>
-    //       <div style={{ marginBottom: 16 }}>
-    //         <DatePicker
-    //           picker="month"
-    //           value={selectedMonth}
-    //           onChange={(date) => setSelectedMonth(date)}
-    //           allowClear
-    //           style={{ marginRight: 8 }}
-    //           placeholder="Select Month"
-    //         />
-
-    //         <Button
-    //           type={filterStatus === "All" ? "primary" : "default"}
-    //           onClick={() => setFilterStatus("All")}
-    //           style={{ marginRight: 8 }}
-    //         >
-    //           All
-    //         </Button>
-
-    //         <Button
-    //           className="save-all-pdf-button"
-    //           type="primary"
-    //           onClick={saveAllAsPdf}
-    //           style={{ marginRight: 8 }}
-    //           loading={pdfLoading}
-    //           disabled={printLoading}
-    //         >
-    //           Save All as PDF
-    //         </Button>
-
-    //         <Button
-    //           className="print-all-button"
-    //           onClick={printAllPdf}
-    //           loading={printLoading}
-    //           disabled={pdfLoading}
-    //         >
-    //           Print All
-    //         </Button>
-
-    //         <Button
-    //           className="approved-status-button"
-    //           type={filterStatus === "Approved" ? "primary" : "default"}
-    //           onClick={() => setFilterStatus("Approved")}
-    //           style={{ marginRight: 8, marginLeft: 30 }}
-    //         >
-    //           Approved
-    //         </Button>
-
-    //         <Button
-    //           className="rejected-status-button"
-    //           type={filterStatus === "Rejected" ? "primary" : "default"}
-    //           onClick={() => setFilterStatus("Rejected")}
-    //           style={{ marginRight: 8 }}
-    //         >
-    //           Rejected
-    //         </Button>
-
-    //         <Button
-    //           className="returned-status-button"
-    //           type={filterStatus === "Returned" ? "primary" : "default"}
-    //           onClick={() => setFilterStatus("Returned")}
-    //         >
-    //           Returned
-    //         </Button>
-    //       </div>
-
-    //       <Table
-    //         className="request-log-table"
-    //         dataSource={filteredData}
-    //         columns={columns}
-    //         rowKey="id"
-    //         bordered
-    //         pagination={{ pageSize: 10 }}
-    //       />
-    //     </Content>
-
-    //     <Modal
-    //       title="📄 Requisition Slip"
-    //       visible={modalVisible}
-    //       onCancel={closeModal}
-    //       footer={[
-    //         <Button
-    //           className="save-all-pdf-button"
-    //           key="save"
-    //           type="primary"
-    //           onClick={saveAsPdf}
-    //           loading={pdfLoading}
-    //           disabled={printLoading}
-    //         >
-    //           Save as PDF
-    //         </Button>,
-    //         <Button
-    //           className="print-all-button"
-    //           type="primary"
-    //           key="print"
-    //           onClick={printPdf}
-    //           loading={printLoading}
-    //           disabled={pdfLoading}
-    //         >
-    //           Print
-    //         </Button>,
-    //         <Button key="close" onClick={closeModal}>
-    //           Back
-    //         </Button>,
-    //       ]}
-    //       width={800}
-    //       zIndex={1025}
-    //       bodyStyle={{ maxHeight: "65vh", overflowY: "auto" }}
-    //     >
-    //       {selectedRequest && (
-    //         <div ref={modalRef} style={{ padding: "10px" }}>
-    //           <Row gutter={[16, 16]}>
-    //             <Col span={12}>
-    //               <Text strong>Name:</Text> {selectedRequest.raw?.userName}
-    //             </Col>
-    //             <Col span={12}>
-    //               <Text strong>Room:</Text> {selectedRequest.raw?.room}
-    //             </Col>
-    //           </Row>
-
-    //           <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
-    //             <Col span={12}>
-    //               <Text strong>Request Date:</Text> {selectedRequest.timestamp}
-    //             </Col>
-    //             <Col span={12}>
-    //               <Text strong>Required Date:</Text> {selectedRequest.raw?.dateRequired}
-    //             </Col>
-    //           </Row>
-
-    //           <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
-    //             <Col span={12}>
-    //               <Text strong>Requested Items:</Text>{" "}
-    //               <Text style={{ color: "green" }}>({selectedRequest.status})</Text>
-    //             </Col>
-    //             <Col span={12}>
-    //               <Text strong>Time Needed: </Text>
-    //               <Text>
-    //                 {selectedRequest.timeFrom ? selectedRequest.timeFrom : "N/A"} -{" "}
-    //                 {selectedRequest.timeTo ? selectedRequest.timeTo : "N/A"}
-    //               </Text>
-    //             </Col>
-    //           </Row>
-
-    //           <Table
-    //             dataSource={(selectedRequest.raw?.requestList ?? []).map((item, index) => ({
-    //               key: index,
-    //               itemId: item.itemIdFromInventory,
-    //               itemDescription: item.itemName,
-    //               itemDetails: item.itemDetails,
-    //               quantity: item.quantity,
-    //               unit: item.unit,
-    //               rejectionReason:
-    //                 item.reason ||
-    //                 item.rejectionReason ||
-    //                 selectedRequest.raw?.reason ||
-    //                 selectedRequest.raw?.rejectionReason ||
-    //                 "N/A",
-    //             }))}
-    //             columns={[
-    //               { title: "Item ID", dataIndex: "itemId", key: "itemId" },
-    //               { title: "Item Name", dataIndex: "itemDescription", key: "itemDescription" },
-    //               { title: "Item Description", dataIndex: "itemDetails", key: "itemDetails" },
-    //               { title: "Quantity", dataIndex: "quantity", key: "quantity" },
-    //               { title: "Unit", dataIndex: "unit", key: "unit", render: (unit) => unit || "N/A" },
-    //               ...(selectedRequest.raw?.status === "Rejected"
-    //                 ? [{ title: "Reason of Rejection", dataIndex: "rejectionReason", key: "rejectionReason" }]
-    //                 : []),
-    //             ]}
-    //             pagination={{ pageSize: 10 }}
-    //             style={{ marginTop: 10 }}
-    //             size="small"
-    //           />
-
-    //           <Row gutter={[16, 8]} style={{ marginTop: 20 }}>
-    //             <Col span={12}>
-    //               <Text strong>Reason of Request:</Text>
-    //               <p>{selectedRequest.raw?.reason}</p>
-    //             </Col>
-
-    //             <Col span={12}>
-    //               <Text strong>Department:</Text>{" "}
-    //               {selectedRequest.raw?.requestList?.[0]?.department}
-    //               <br />
-    //               {["Approved", "Returned"].includes(selectedRequest.raw?.status) && (
-    //                 <>
-    //                   <Text strong>Approved By:</Text> {selectedRequest.raw?.approvedBy}
-    //                 </>
-    //               )}
-    //               {selectedRequest.raw?.status === "Rejected" && (
-    //                 <>
-    //                   <Text strong>Rejected By:</Text> {selectedRequest.raw?.rejectedBy || "N/A"}
-    //                 </>
-    //               )}
-    //             </Col>
-    //           </Row>
-    //         </div>
-    //       )}
-    //     </Modal>
-    //   </Layout>
-    // </Layout>
 
        <Layout className="request-log-container">
-      <Layout>
-        <Content className="request-log-content">
-
-                     <div style={{
+        
+            <div style={{
             background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
             borderRadius: "16px",
             padding: "32px",
@@ -821,6 +617,8 @@ const RequestLog = () => {
               </div>
             </div>
           </div>
+        <Content className="request-log-content">
+
 
 
           {/* Filters Section */}
@@ -1045,7 +843,6 @@ const RequestLog = () => {
           )}
         </Modal>
       </Layout>
-    </Layout>
   );
 };
 

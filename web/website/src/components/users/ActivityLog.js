@@ -161,7 +161,7 @@ const ActivityLog = () => {
     <Layout style={{ minHeight: "100vh" }}>
       <Layout className="site-layout">
         <Content className="activity-content">
-                       <div className="header-section" style={{            
+              <div className="header-section" style={{            
                   background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
                   borderRadius: "16px",
                   padding: "32px",
@@ -181,7 +181,7 @@ const ActivityLog = () => {
       >
        Maintains a secure audit trail of all user and system activities for monitoring and compliance purposes.
       </p>
-</div>
+      </div>
           <Table
           style={{boxShadow: '0px 4px 5px rgba(0,0,0,0.1)'}}
             columns={columns}
