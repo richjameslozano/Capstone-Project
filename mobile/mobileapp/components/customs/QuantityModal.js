@@ -249,6 +249,12 @@ const shouldShowCalendar = isChemicalOrReagent;
                       [expiryDate]: { selected: true, selectedColor: '#00796B' }
                     }}
                     minDate={today}
+                    maxDate="2030-12-31"
+                    enableSwipeMonths={false}
+                    hideExtraDays={true}
+                    disableMonthChange={false}
+                    disableArrowLeft={false}
+                    disableArrowRight={false}
                   />
                   <TouchableOpacity onPress={() => setCalendarVisible(false)} style={styles.closeButton}>
                     <Text style={{ color: 'white' }}>Close</Text>

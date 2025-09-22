@@ -8843,7 +8843,15 @@ useEffect(() => {
               name="expiryDate"
               rules={[{ required: true, message: "Please select expiry date" }]}
             >
-              <DatePicker style={{ width: "100%" }} disabled={updateStockLoading} />
+              <DatePicker 
+                style={{ width: "100%" }} 
+                disabled={updateStockLoading}
+                disabledDate={(current) => {
+                  // Disable previous dates and years
+                  return current && current < dayjs().startOf('day');
+                }}
+                showToday={false}
+              />
             </Form.Item>
           </Col>
         </Row>
