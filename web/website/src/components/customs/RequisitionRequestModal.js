@@ -110,7 +110,8 @@ const RequisitionRequestModal = ({
   const shouldShowAskApproval = requestCollege !== "SAH" && !isDeanOfSAH;
   
   // Check if any items are checked to disable reject button
-  const hasCheckedItems = Object.values(checkedItems).some((checked) => checked);
+  // const hasCheckedItems = Object.values(checkedItems).some((checked) => checked);
+  const hasCheckedItems = checkedItems ? Object.values(checkedItems).some((checked) => checked) : false;
 
   return (
     <>
@@ -129,7 +130,8 @@ const RequisitionRequestModal = ({
           <Button key="cancel" onClick={handleCancel} disabled={approveLoading || rejectLoading}>Cancel</Button>,
           <Button key="reject" type="default" onClick={handleReturn} loading={rejectLoading} disabled={approveLoading || hasCheckedItems}>Reject</Button>,
 
-          requestCollege !== null && shouldShowAskApproval && (
+          // requestCollege !== null && shouldShowAskApproval && (
+          requestCollege !== null && shouldShowAskApproval && selectedRequest && (
             <Button
               key="askApproval"
               type="dashed"
@@ -145,12 +147,20 @@ const RequisitionRequestModal = ({
             type="primary"
             onClick={handleApprove}
             loading={approveLoading}
+            // disabled={
+            //   rejectLoading ||
+            //   // If approvalRequested exists...
+            //   typeof selectedRequest?.approvalRequested !== "undefined"
+            //     ? selectedRequest.approvalRequested || selectedRequest.deanStatus !== "Approved by Dean"
+            //     : false // If approvalRequested does not exist, enable
+            // }
             disabled={
               rejectLoading ||
+              !selectedRequest ||
               // If approvalRequested exists...
-              typeof selectedRequest?.approvalRequested !== "undefined"
+              (typeof selectedRequest?.approvalRequested !== "undefined"
                 ? selectedRequest.approvalRequested || selectedRequest.deanStatus !== "Approved by Dean"
-                : false // If approvalRequested does not exist, enable
+                : false) // If approvalRequested does not exist, enable
             }
           >
             {allItemsChecked ? "Approve" : "Next"}
