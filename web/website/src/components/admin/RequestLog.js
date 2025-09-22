@@ -157,6 +157,11 @@ const RequestLog = () => {
       dataIndex: "processDate",
       key: "processDate",
     },
+       {
+      title: "Requestor",
+      dataIndex: "requestor",
+      key: "requestor",
+    },
     {
       title: "Status",
       dataIndex: "status",
@@ -178,11 +183,6 @@ const RequestLog = () => {
       ),
     },
     {
-      title: "Requestor",
-      dataIndex: "requestor",
-      key: "requestor",
-    },
-    {
       title: "By",
       key: "by",
       render: (_, record) => (
@@ -194,7 +194,7 @@ const RequestLog = () => {
       ),
     },
     {
-      title: "",
+      title: "Action",
       key: "action",
       render: (_, record) => (
         <a href="#" className="view-details" onClick={() => handleViewDetails(record)}>
@@ -578,88 +578,345 @@ const RequestLog = () => {
   };
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
+    // <Layout style={{ minHeight: "100vh" }}>
+    //   <Layout>
+    //     <Content style={{ margin: "20px" }}>
+    //       <div style={{ marginBottom: 16 }}>
+    //         <DatePicker
+    //           picker="month"
+    //           value={selectedMonth}
+    //           onChange={(date) => setSelectedMonth(date)}
+    //           allowClear
+    //           style={{ marginRight: 8 }}
+    //           placeholder="Select Month"
+    //         />
+
+    //         <Button
+    //           type={filterStatus === "All" ? "primary" : "default"}
+    //           onClick={() => setFilterStatus("All")}
+    //           style={{ marginRight: 8 }}
+    //         >
+    //           All
+    //         </Button>
+
+    //         <Button
+    //           className="save-all-pdf-button"
+    //           type="primary"
+    //           onClick={saveAllAsPdf}
+    //           style={{ marginRight: 8 }}
+    //           loading={pdfLoading}
+    //           disabled={printLoading}
+    //         >
+    //           Save All as PDF
+    //         </Button>
+
+    //         <Button
+    //           className="print-all-button"
+    //           onClick={printAllPdf}
+    //           loading={printLoading}
+    //           disabled={pdfLoading}
+    //         >
+    //           Print All
+    //         </Button>
+
+    //         <Button
+    //           className="approved-status-button"
+    //           type={filterStatus === "Approved" ? "primary" : "default"}
+    //           onClick={() => setFilterStatus("Approved")}
+    //           style={{ marginRight: 8, marginLeft: 30 }}
+    //         >
+    //           Approved
+    //         </Button>
+
+    //         <Button
+    //           className="rejected-status-button"
+    //           type={filterStatus === "Rejected" ? "primary" : "default"}
+    //           onClick={() => setFilterStatus("Rejected")}
+    //           style={{ marginRight: 8 }}
+    //         >
+    //           Rejected
+    //         </Button>
+
+    //         <Button
+    //           className="returned-status-button"
+    //           type={filterStatus === "Returned" ? "primary" : "default"}
+    //           onClick={() => setFilterStatus("Returned")}
+    //         >
+    //           Returned
+    //         </Button>
+    //       </div>
+
+    //       <Table
+    //         className="request-log-table"
+    //         dataSource={filteredData}
+    //         columns={columns}
+    //         rowKey="id"
+    //         bordered
+    //         pagination={{ pageSize: 10 }}
+    //       />
+    //     </Content>
+
+    //     <Modal
+    //       title="📄 Requisition Slip"
+    //       visible={modalVisible}
+    //       onCancel={closeModal}
+    //       footer={[
+    //         <Button
+    //           className="save-all-pdf-button"
+    //           key="save"
+    //           type="primary"
+    //           onClick={saveAsPdf}
+    //           loading={pdfLoading}
+    //           disabled={printLoading}
+    //         >
+    //           Save as PDF
+    //         </Button>,
+    //         <Button
+    //           className="print-all-button"
+    //           type="primary"
+    //           key="print"
+    //           onClick={printPdf}
+    //           loading={printLoading}
+    //           disabled={pdfLoading}
+    //         >
+    //           Print
+    //         </Button>,
+    //         <Button key="close" onClick={closeModal}>
+    //           Back
+    //         </Button>,
+    //       ]}
+    //       width={800}
+    //       zIndex={1025}
+    //       bodyStyle={{ maxHeight: "65vh", overflowY: "auto" }}
+    //     >
+    //       {selectedRequest && (
+    //         <div ref={modalRef} style={{ padding: "10px" }}>
+    //           <Row gutter={[16, 16]}>
+    //             <Col span={12}>
+    //               <Text strong>Name:</Text> {selectedRequest.raw?.userName}
+    //             </Col>
+    //             <Col span={12}>
+    //               <Text strong>Room:</Text> {selectedRequest.raw?.room}
+    //             </Col>
+    //           </Row>
+
+    //           <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
+    //             <Col span={12}>
+    //               <Text strong>Request Date:</Text> {selectedRequest.timestamp}
+    //             </Col>
+    //             <Col span={12}>
+    //               <Text strong>Required Date:</Text> {selectedRequest.raw?.dateRequired}
+    //             </Col>
+    //           </Row>
+
+    //           <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
+    //             <Col span={12}>
+    //               <Text strong>Requested Items:</Text>{" "}
+    //               <Text style={{ color: "green" }}>({selectedRequest.status})</Text>
+    //             </Col>
+    //             <Col span={12}>
+    //               <Text strong>Time Needed: </Text>
+    //               <Text>
+    //                 {selectedRequest.timeFrom ? selectedRequest.timeFrom : "N/A"} -{" "}
+    //                 {selectedRequest.timeTo ? selectedRequest.timeTo : "N/A"}
+    //               </Text>
+    //             </Col>
+    //           </Row>
+
+    //           <Table
+    //             dataSource={(selectedRequest.raw?.requestList ?? []).map((item, index) => ({
+    //               key: index,
+    //               itemId: item.itemIdFromInventory,
+    //               itemDescription: item.itemName,
+    //               itemDetails: item.itemDetails,
+    //               quantity: item.quantity,
+    //               unit: item.unit,
+    //               rejectionReason:
+    //                 item.reason ||
+    //                 item.rejectionReason ||
+    //                 selectedRequest.raw?.reason ||
+    //                 selectedRequest.raw?.rejectionReason ||
+    //                 "N/A",
+    //             }))}
+    //             columns={[
+    //               { title: "Item ID", dataIndex: "itemId", key: "itemId" },
+    //               { title: "Item Name", dataIndex: "itemDescription", key: "itemDescription" },
+    //               { title: "Item Description", dataIndex: "itemDetails", key: "itemDetails" },
+    //               { title: "Quantity", dataIndex: "quantity", key: "quantity" },
+    //               { title: "Unit", dataIndex: "unit", key: "unit", render: (unit) => unit || "N/A" },
+    //               ...(selectedRequest.raw?.status === "Rejected"
+    //                 ? [{ title: "Reason of Rejection", dataIndex: "rejectionReason", key: "rejectionReason" }]
+    //                 : []),
+    //             ]}
+    //             pagination={{ pageSize: 10 }}
+    //             style={{ marginTop: 10 }}
+    //             size="small"
+    //           />
+
+    //           <Row gutter={[16, 8]} style={{ marginTop: 20 }}>
+    //             <Col span={12}>
+    //               <Text strong>Reason of Request:</Text>
+    //               <p>{selectedRequest.raw?.reason}</p>
+    //             </Col>
+
+    //             <Col span={12}>
+    //               <Text strong>Department:</Text>{" "}
+    //               {selectedRequest.raw?.requestList?.[0]?.department}
+    //               <br />
+    //               {["Approved", "Returned"].includes(selectedRequest.raw?.status) && (
+    //                 <>
+    //                   <Text strong>Approved By:</Text> {selectedRequest.raw?.approvedBy}
+    //                 </>
+    //               )}
+    //               {selectedRequest.raw?.status === "Rejected" && (
+    //                 <>
+    //                   <Text strong>Rejected By:</Text> {selectedRequest.raw?.rejectedBy || "N/A"}
+    //                 </>
+    //               )}
+    //             </Col>
+    //           </Row>
+    //         </div>
+    //       )}
+    //     </Modal>
+    //   </Layout>
+    // </Layout>
+
+       <Layout className="request-log-container">
       <Layout>
-        <Content style={{ margin: "20px" }}>
-          <div style={{ marginBottom: 16 }}>
-            <DatePicker
-              picker="month"
-              value={selectedMonth}
-              onChange={(date) => setSelectedMonth(date)}
-              allowClear
-              style={{ marginRight: 8 }}
-              placeholder="Select Month"
-            />
+        <Content className="request-log-content">
 
-            <Button
-              type={filterStatus === "All" ? "primary" : "default"}
-              onClick={() => setFilterStatus("All")}
-              style={{ marginRight: 8 }}
-            >
-              All
-            </Button>
-
-            <Button
-              className="save-all-pdf-button"
-              type="primary"
-              onClick={saveAllAsPdf}
-              style={{ marginRight: 8 }}
-              loading={pdfLoading}
-              disabled={printLoading}
-            >
-              Save All as PDF
-            </Button>
-
-            <Button
-              className="print-all-button"
-              onClick={printAllPdf}
-              loading={printLoading}
-              disabled={pdfLoading}
-            >
-              Print All
-            </Button>
-
-            <Button
-              className="approved-status-button"
-              type={filterStatus === "Approved" ? "primary" : "default"}
-              onClick={() => setFilterStatus("Approved")}
-              style={{ marginRight: 8, marginLeft: 30 }}
-            >
-              Approved
-            </Button>
-
-            <Button
-              className="rejected-status-button"
-              type={filterStatus === "Rejected" ? "primary" : "default"}
-              onClick={() => setFilterStatus("Rejected")}
-              style={{ marginRight: 8 }}
-            >
-              Rejected
-            </Button>
-
-            <Button
-              className="returned-status-button"
-              type={filterStatus === "Returned" ? "primary" : "default"}
-              onClick={() => setFilterStatus("Returned")}
-            >
-              Returned
-            </Button>
+                     <div style={{
+            background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+            borderRadius: "16px",
+            padding: "32px",
+            marginBottom: "20px",
+            boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px"
+            }}>
+              <div>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Request Log
+                </h1>
+                <p style={{
+                  color: "#a8d5e5",
+                  fontSize: "16px",
+                  margin: "0",
+                  fontWeight: "500"
+                }}>
+                  Contains all requisition records that have been approved or rejected by Laboratory Personnel.<br/>
+                </p>
+              </div>
+            </div>
           </div>
 
-          <Table
-            className="request-log-table"
-            dataSource={filteredData}
-            columns={columns}
-            rowKey="id"
-            bordered
-            pagination={{ pageSize: 10 }}
-          />
+
+          {/* Filters Section */}
+          <div className="filters-section">
+            <div className="filters-row">
+              <DatePicker
+                className="date-picker"
+                picker="month"
+                value={selectedMonth}
+                onChange={(date) => setSelectedMonth(date)}
+                allowClear
+                placeholder="Select Month"
+              />
+
+              <div className="filter-buttons-group">
+                <Button
+                  type={filterStatus === "All" ? "primary" : "default"}
+                  onClick={() => setFilterStatus("All")}
+                >
+                  All
+                </Button>
+              </div>
+
+              <div className="action-buttons-group">
+                <Button
+                  className="save-all-pdf-button"
+                  type="primary"
+                  onClick={saveAllAsPdf}
+                  loading={pdfLoading}
+                  disabled={printLoading}
+                >
+                  Save All as PDF
+                </Button>
+
+                <Button
+                  className="print-all-button"
+                  onClick={printAllPdf}
+                  loading={printLoading}
+                  disabled={pdfLoading}
+                >
+                  Print All
+                </Button>
+              </div>
+
+              <div className="status-buttons-group">
+                <Button
+                  className="approved-status-button"
+                  type={filterStatus === "Approved" ? "primary" : "default"}
+                  onClick={() => setFilterStatus("Approved")}
+                >
+                  Approved
+                </Button>
+
+                <Button
+                  className="rejected-status-button"
+                  type={filterStatus === "Rejected" ? "primary" : "default"}
+                  onClick={() => setFilterStatus("Rejected")}
+                >
+                  Rejected
+                </Button>
+
+                <Button
+                  className="returned-status-button"
+                  type={filterStatus === "Returned" ? "primary" : "default"}
+                  onClick={() => setFilterStatus("Returned")}
+                >
+                  Returned
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Table Section */}
+ <div className="table-section">
+            <Table
+              className="request-log-table"
+              dataSource={filteredData}
+              columns={columns}
+              rowKey="id"
+              pagination={{ 
+                pageSize: 15,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
+              }}
+              scroll={{ x: 800 }}
+            />
+          </div>
         </Content>
 
+        {/* Modal */}
         <Modal
           title="📄 Requisition Slip"
           visible={modalVisible}
           onCancel={closeModal}
+          className="requisition-modal"
           footer={[
             <Button
               className="save-all-pdf-button"
@@ -687,35 +944,39 @@ const RequestLog = () => {
           ]}
           width={800}
           zIndex={1025}
-          bodyStyle={{ maxHeight: "65vh", overflowY: "auto" }}
         >
           {selectedRequest && (
-            <div ref={modalRef} style={{ padding: "10px" }}>
-              <Row gutter={[16, 16]}>
+            <div ref={modalRef} className="modal-content">
+              {/* Basic Information */}
+              <Row gutter={[16, 0]} className="info-row">
                 <Col span={12}>
-                  <Text strong>Name:</Text> {selectedRequest.raw?.userName}
+                  <Text className="info-label">Name:</Text>
+                  <Text>{selectedRequest.raw?.userName}</Text>
                 </Col>
                 <Col span={12}>
-                  <Text strong>Room:</Text> {selectedRequest.raw?.room}
-                </Col>
-              </Row>
-
-              <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
-                <Col span={12}>
-                  <Text strong>Request Date:</Text> {selectedRequest.timestamp}
-                </Col>
-                <Col span={12}>
-                  <Text strong>Required Date:</Text> {selectedRequest.raw?.dateRequired}
+                  <Text className="info-label">Room:</Text>
+                  <Text>{selectedRequest.raw?.room}</Text>
                 </Col>
               </Row>
 
-              <Row gutter={[16, 16]} style={{ marginTop: 10 }}>
+              <Row gutter={[16, 0]} className="info-row">
                 <Col span={12}>
-                  <Text strong>Requested Items:</Text>{" "}
-                  <Text style={{ color: "green" }}>({selectedRequest.status})</Text>
+                  <Text className="info-label">Request Date:</Text>
+                  <Text>{selectedRequest.timestamp}</Text>
                 </Col>
                 <Col span={12}>
-                  <Text strong>Time Needed: </Text>
+                  <Text className="info-label">Required Date:</Text>
+                  <Text>{selectedRequest.raw?.dateRequired}</Text>
+                </Col>
+              </Row>
+
+              <Row gutter={[16, 0]} className="info-row">
+                <Col span={12}>
+                  <Text className="info-label">Requested Items:</Text>
+                  <Text className="status-badge">({selectedRequest.status})</Text>
+                </Col>
+                <Col span={12}>
+                  <Text className="info-label">Time Needed:</Text>
                   <Text>
                     {selectedRequest.timeFrom ? selectedRequest.timeFrom : "N/A"} -{" "}
                     {selectedRequest.timeTo ? selectedRequest.timeTo : "N/A"}
@@ -723,7 +984,9 @@ const RequestLog = () => {
                 </Col>
               </Row>
 
+              {/* Items Table */}
               <Table
+                className="items-table"
                 dataSource={(selectedRequest.raw?.requestList ?? []).map((item, index) => ({
                   key: index,
                   itemId: item.itemIdFromInventory,
@@ -749,32 +1012,35 @@ const RequestLog = () => {
                     : []),
                 ]}
                 pagination={{ pageSize: 10 }}
-                style={{ marginTop: 10 }}
                 size="small"
               />
 
-              <Row gutter={[16, 8]} style={{ marginTop: 20 }}>
-                <Col span={12}>
-                  <Text strong>Reason of Request:</Text>
-                  <p>{selectedRequest.raw?.reason}</p>
-                </Col>
+              {/* Reason Section */}
+              <div className="reason-section">
+                <Text className="info-label">Reason of Request:</Text>
+                <p className="reason-text">{selectedRequest.raw?.reason}</p>
+              </div>
 
-                <Col span={12}>
-                  <Text strong>Department:</Text>{" "}
-                  {selectedRequest.raw?.requestList?.[0]?.department}
-                  <br />
+              {/* Department and Approval Section */}
+              <div className="department-section">
+                <Text className="info-label">Department:</Text>
+                <Text> {selectedRequest.raw?.requestList?.[0]?.department}</Text>
+                
+                <div className="approval-info">
                   {["Approved", "Returned"].includes(selectedRequest.raw?.status) && (
                     <>
-                      <Text strong>Approved By:</Text> {selectedRequest.raw?.approvedBy}
+                      <Text className="info-label">Approved By:</Text>
+                      <Text> {selectedRequest.raw?.approvedBy}</Text>
                     </>
                   )}
                   {selectedRequest.raw?.status === "Rejected" && (
                     <>
-                      <Text strong>Rejected By:</Text> {selectedRequest.raw?.rejectedBy || "N/A"}
+                      <Text className="info-label">Rejected By:</Text>
+                      <Text> {selectedRequest.raw?.rejectedBy || "N/A"}</Text>
                     </>
                   )}
-                </Col>
-              </Row>
+                </div>
+              </div>
             </div>
           )}
         </Modal>

@@ -3,7 +3,7 @@
   background-color: #f5f5f5;
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  /* gap: 20px; */
 }
 
 /* Mobile responsive styles */
@@ -162,27 +162,19 @@
   }
 }
 
-.ant-table-thead > tr > th {
-  background-color: #e6f7ff;
-  font-weight: bold;
-  text-align: center;
-}
-
-.ant-table-tbody > tr > td {
-  text-align: left;
-  padding: 10px;
-}
 
 .search-table .ant-table-tbody > tr:nth-child(odd) > td {
   background-color: #fafafa; /* Light gray */
+  padding: 10px !important;
 }
 
 .search-table .ant-table-tbody > tr:nth-child(even) > td {
   background-color: #ffffff; /* White */
+  padding: 10px !important;
 }
 
 .search-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
+  background-color: #e9ecee !important; /* Light blue highlight */
 }
 
 .search-modal-container .custom-descriptions .ant-descriptions-item-label {
@@ -274,6 +266,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   padding: 20px;
   border-radius: 10px;
+  margin-bottom: 20px;
 }
 
 /* Input takes full width by default */

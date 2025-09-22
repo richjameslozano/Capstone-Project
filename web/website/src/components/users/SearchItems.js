@@ -458,6 +458,7 @@ import {
   ClusterOutlined,
   ToolOutlined,
   BgColorsOutlined,
+  FilterOutlined,
 } from "@ant-design/icons";
 
 const { Content } = Layout;
@@ -571,7 +572,7 @@ const columns = [
     },
   },
   {
-    title: "Room Location",
+    title: "Stock Room",
     dataIndex: "room",
     key: "room",
     sorter: (a, b) => a.room.localeCompare(b.room),
@@ -660,36 +661,41 @@ const SearchItems = () => {
 
 
   return (
-    <Layout style={{ height: 'auto' }}>
-      <Layout>
+    <Layout style={{ height: 'auto', gap: 0 }}>
+      <Layout style={{gap: 0}}>
         <Content className="search-content">
 
-                 <div className="header-section" style={{marginBottom: 0}}>
-  <Row justify="space-between" align="middle">
-    <Col xs={24} sm={24} md={14} lg={16}>
-      <Title 
-        level={1} 
-        style={{ color: "white", margin: 0, fontSize: "2.5rem", fontWeight: 700 }}
+                 <div className="header-section" style={{            
+                  background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+                  borderRadius: "16px",
+                  padding: "32px",
+                  boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+                  border: "1px solid rgba(255, 255, 255, 0.1)"}}>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  // margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Search Items
+                </h1>
+      <p 
+        style={{ color: "#a8d5e5", fontSize: "16px", marginTop: "8px", display: "block", fontWeight: 500, marginBottom: 0 }}
       >
-        Search Inventory
-      </Title>
-      <Text 
-        style={{ color: "rgba(255,255,255,0.85)", fontSize: "16px", marginTop: "8px", display: "block" }}
-      >
-        Use the <b>search feature</b> below to quickly find and access medical technology supplies available in the school's inventory. Filter by item name, category, or availability to locate the equipment or materials you need for classes, labs, or training sessions.
-      </Text>
-    </Col>
-    <Col xs={24} sm={24} md={10} lg={8}>
-      <Space size="middle" style={{ width: "100%", justifyContent: "flex-end", flexWrap: "wrap" }}>
-      </Space>
-    </Col>
-  </Row>
+        Use the <b>search feature</b> below to quickly find and access medical technology supplies available in the school's inventory. <br/> Filter by item name, category, or availability to locate the equipment or materials you need for classes, labs, or training sessions.
+      </p>
 </div>
 
      
 
 
 <div className="search-filter-section">
+            <div className="filter-header-inventory">
+              <FilterOutlined className="filter-icon" />
+              <span className="filter-title" style={{background: '#e9f5f9', padding: 10, borderRadius: 5}}>Filter & Search</span>
+            </div>
+
   <Input
     placeholder="Search by item description..."
     value={searchText}

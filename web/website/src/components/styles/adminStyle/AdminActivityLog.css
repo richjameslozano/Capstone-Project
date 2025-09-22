@@ -15,8 +15,8 @@
 }
 
 .ant-table-thead > tr > th {
-  background-color: rgba(9, 38, 133, 0.8) !important;
-  color: #fff !important;
+  background-color: #e9ecee  !important;
+  color: #212121 !important;
 }
 
 .ant-table-tbody > tr:nth-child(odd) {
