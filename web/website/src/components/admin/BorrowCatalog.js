@@ -560,24 +560,24 @@ const others = filteredCatalog.filter((item) => {
     const diffTime = requiredDate - today;
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     
-    console.log('Date comparison:', {
-      today: today.toDateString(),
-      todayISO: today.toISOString().split('T')[0],
-      required: requiredDate.toDateString(),
-      requiredISO: requiredDate.toISOString().split('T')[0],
-      diffDays: diffDays,
-      isWithinRange: diffDays >= 0 && diffDays <= 7
-    });
+    // console.log('Date comparison:', {
+    //   today: today.toDateString(),
+    //   todayISO: today.toISOString().split('T')[0],
+    //   required: requiredDate.toDateString(),
+    //   requiredISO: requiredDate.toISOString().split('T')[0],
+    //   diffDays: diffDays,
+    //   isWithinRange: diffDays >= 0 && diffDays <= 7
+    // });
     
     return diffDays >= 0 && diffDays <= 7;
   };
   
   // Debug: Show today's date
-  console.log('=== TODAY\'S DATE DEBUG ===');
-  console.log('Today (local):', today.toDateString());
-  console.log('Today (ISO):', today.toISOString().split('T')[0]);
-  console.log('Today (MM/DD/YYYY):', (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear());
-  console.log('=== END TODAY DEBUG ===');
+  // console.log('=== TODAY\'S DATE DEBUG ===');
+  // console.log('Today (local):', today.toDateString());
+  // console.log('Today (ISO):', today.toISOString().split('T')[0]);
+  // console.log('Today (MM/DD/YYYY):', (today.getMonth() + 1) + '/' + today.getDate() + '/' + today.getFullYear());
+  // console.log('=== END TODAY DEBUG ===');
 
   return (
     <Layout style={{ minHeight: "100vh" }}>
@@ -642,9 +642,9 @@ const others = filteredCatalog.filter((item) => {
             const isWithinDateRange = isWithinNext7Days(item.dateRequired);
             
             // Debug logging
-            console.log('Debug - Item:', item.requestor, 'Date Required:', item.dateRequired, 'Status:', item.status);
-            console.log('Debug - Has correct status:', hasCorrectStatus, 'Is within date range:', isWithinDateRange);
-            console.log('Debug - Should show:', hasCorrectStatus && isWithinDateRange);
+            // console.log('Debug - Item:', item.requestor, 'Date Required:', item.dateRequired, 'Status:', item.status);
+            // console.log('Debug - Has correct status:', hasCorrectStatus, 'Is within date range:', isWithinDateRange);
+            // console.log('Debug - Should show:', hasCorrectStatus && isWithinDateRange);
             
             return hasCorrectStatus && isWithinDateRange;
           }
