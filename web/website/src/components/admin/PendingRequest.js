@@ -11613,6 +11613,894 @@ try {
   };
 
 // FRONTEND
+//  const handleApprove = async () => {  
+//   setApproveLoading(true);
+  
+//   const isChecked = Object.values(checkedItems).some((checked) => checked);
+
+//   if (!isChecked) {
+//     setNotificationMessage("No Items selected");
+//     setIsNotificationVisible(true);
+//     setApproveLoading(false);
+//     return;
+//   }
+
+//   if (selectedRequest) {
+
+//     try {
+//       const accountRef = doc(db, "accounts", selectedRequest.accountId);
+//       const accountSnap = await getDoc(accountRef);
+
+//       if (accountSnap.exists()) {
+//         const accountData = accountSnap.data();
+//         const isDisabled = accountData.disabled || false; // Adjust field name if different
+
+//         if (isDisabled) {
+//           setNotificationMessage("Cannot approve: The user's account is disabled.");
+//           setIsNotificationVisible(true);
+//           return;
+//         }
+        
+//       } else {
+      
+//       }
+
+//     } catch (error) {
+     
+//       setNotificationMessage("Error verifying account status. Please try again.");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+
+//     // Use the updated quantity from editableItems if available
+//     // const mergedRequestList = selectedRequest.requestList.map((item, index) => {
+//     //   const editedItem = editableItems?.[index];
+//     //   return editedItem ? { ...item, quantity: editedItem.quantity } : item;
+//     // });
+
+// const mergedRequestList = selectedRequest.requestList.map((item, index) => {
+//   const key = `${selectedRequest.id}-${index}`;
+//   const isChecked = checkedItems[key];
+//   const editedItem = editableItems?.[index];
+
+//   // Only update quantity for checked items
+//   if (isChecked && editedItem?.quantity !== undefined) {
+//     return { ...item, quantity: editedItem.quantity };
+//   }
+
+//   return item; // Leave unchecked items as original
+// });
+
+//     // Filter checked items and prepare for approval
+//     // const filteredItems = selectedRequest.requestList.filter((item, index) => {
+//     const filteredItems = mergedRequestList.filter((item, index) => {
+//       const key = `${selectedRequest.id}-${index}`;
+//       return checkedItems[key];
+//     });
+
+//     if (filteredItems.length === 0) {
+//       setNotificationMessage("No Items selected");
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+
+//     // 🔍 Check inventory quantities before approval
+//     const insufficientItems = [];
+    
+//     for (const item of filteredItems) {
+//       const inventoryId = item.selectedItemId;
+//       const requestedQty = Number(item.quantity);
+      
+//       if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+//         continue;
+//       }
+
+//       try {
+//         const inventoryRef = doc(db, "inventory", inventoryId);
+//         const inventorySnap = await getDoc(inventoryRef);
+        
+//         if (!inventorySnap.exists()) {
+//           insufficientItems.push({
+//             itemName: item.itemName || "Unknown Item",
+//             requested: requestedQty,
+//             available: 0,
+//             reason: "Item not found in inventory"
+//           });
+//           continue;
+//         }
+
+//         const data = inventorySnap.data();
+//         const availableQty = Number(data.quantity || 0);
+        
+//         if (availableQty < requestedQty) {
+//           insufficientItems.push({
+//             itemName: item.itemName || data.itemName || "Unknown Item",
+//             requested: requestedQty,
+//             available: availableQty,
+//             reason: "Insufficient quantity"
+//           });
+//         }
+//       } catch (error) {
+//         console.error("Error checking inventory for item:", item.itemName, error);
+//         insufficientItems.push({
+//           itemName: item.itemName || "Unknown Item",
+//           requested: requestedQty,
+//           available: 0,
+//           reason: "Error checking inventory"
+//         });
+//       }
+//     }
+
+//     // If there are insufficient items, show error and prevent approval
+//     if (insufficientItems.length > 0) {
+//       const errorMessage = insufficientItems.map(item => 
+//         `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
+//       ).join('\n');
+      
+//       setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
+//       setIsNotificationVisible(true);
+//       return;
+//     }
+
+//     const enrichedItems = await Promise.all(
+//     filteredItems.map(async (item) => {
+//     const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+//     let itemType = "Unknown";
+
+//     if (selectedItemId) {
+//       try {
+//         const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+//         if (inventoryDoc.exists()) {
+//           itemType = inventoryDoc.data().type || "Unknown";
+//         }
+//       } catch (err) {
+//         console.error("Failed to fetch inventory item:", err);
+//       }
+//     }
+
+//     return {
+//       ...item,
+//       selectedItemId,
+//       itemType,
+//     };
+//   })
+// );
+
+// console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: ${i.quantity}`));
+
+//  for (const item of enrichedItems) {
+//   const requestedQty = item.quantity;
+//   const itemId = item.selectedItemId;
+//   const itemName = item.itemName
+
+//   console.log("📦 Logging itemUsage for:", itemId);
+
+//   try {
+//     // 1. Log the usage
+//     await addDoc(collection(db, "itemUsage"), {
+//       itemId: itemId,
+//       usedQuantity: requestedQty,
+//       timestamp: serverTimestamp(),
+//       itemName:itemName
+//     });
+
+//     // 2. Fetch all past usage logs
+//     const usageQuery = query(
+//       collection(db, "itemUsage"),
+//       where("itemId", "==", itemId)
+//     );
+//     const usageSnap = await getDocs(usageQuery);
+
+//     let total = 0;
+//     const uniqueDates = new Set();
+
+//     usageSnap.forEach((doc) => {
+//       const data = doc.data();
+//       if (data.usedQuantity && data.timestamp?.toDate) {
+//         total += data.usedQuantity;
+//         const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
+//         uniqueDates.add(dateStr);
+//       }
+//     });
+
+//     const daysWithUsage = uniqueDates.size;
+//     const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
+
+//     // 🔄 Assumed buffer of 5 days for critical stock level
+//     const bufferDays = 7;
+//     const criticalLevel = average * bufferDays;
+
+//     // 3. Update inventory with new average and critical level
+//     const itemRef = doc(db, "inventory", itemId);
+//     await updateDoc(itemRef, {
+//       averageDailyUsage: average,
+//       criticalLevel: criticalLevel,
+//     });
+
+//     console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
+//   } catch (e) {
+//     console.error(`❌ Error processing usage for ${itemId}:`, e);
+//   }
+// }
+//     // Filter out unchecked items (for rejection)
+//     // const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
+//     const uncheckedItems = mergedRequestList.filter((item, index) => {
+//       const key = `${selectedRequest.id}-${index}`;
+//       return !checkedItems[key]; // This will get the unchecked items
+//     });
+
+//     // Define rejectionReason variable outside of the condition
+//     let rejectionReason = null;
+
+
+//     if (uncheckedItems.length > 0) {
+     
+//       setPendingApprovalData({
+//         enrichedItems,
+//         uncheckedItems,
+//         selectedRequest,
+//       });
+//       setIsMultiRejectModalVisible(true); // ✅ Show new modal for multiple items
+//       return;
+//     }
+
+//     // Process rejected items
+//     const rejectedItems = await Promise.all(
+//       uncheckedItems.map(async (item) => {
+//         const selectedItemId = item.selectedItemId || item.selectedItem?.value;
+//         let itemType = "Unknown";
+
+//         if (selectedItemId) {
+//           try {
+//             const inventoryDoc = await getDoc(doc(db, "inventory", selectedItemId));
+//             if (inventoryDoc.exists()) {
+//               itemType = inventoryDoc.data().type || "Unknown";
+//             }
+
+//           } catch (err) {
+        
+//           }
+//         }
+
+//         return {
+//           ...item,
+//           selectedItemId,
+//           itemType, 
+//           volume: item.volume ?? "N/A", // <-- add this
+//         };
+//       })
+//     );
+
+//     // Get user info from localStorage (since we're using backend authentication)
+//     const userEmail = localStorage.getItem("userEmail");
+//     const userName = localStorage.getItem("userName") || "Unknown";
+
+//     // If userName is not available in localStorage, try to fetch from Firestore
+//     if (!userName || userName === "Unknown") {
+//       try {
+//         const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+//         const userSnapshot = await getDocs(userQuery);
+
+//         if (!userSnapshot.empty) {
+//           const userDoc = userSnapshot.docs[0];
+//           const userData = userDoc.data();
+//           const fetchedUserName = userData.name || "Unknown";
+//           // Update localStorage with the fetched name
+//           localStorage.setItem("userName", fetchedUserName);
+//         }
+
+//       } catch (error) {
+//         console.error("Error fetching user name from Firestore:", error);
+//       }
+//     }
+
+//     const requestLogEntry = {
+//       accountId: selectedRequest.accountId || "N/A",
+//       userName: selectedRequest.userName || "N/A",
+//       room: selectedRequest.room || "N/A",
+//       course: selectedRequest.course || "N/A",
+//       courseDescription: selectedRequest.courseDescription || "N/A",
+//       dateRequired: selectedRequest.dateRequired || "N/A",
+//       timeFrom: selectedRequest.timeFrom || "N/A",  
+//       timeTo: selectedRequest.timeTo || "N/A",  
+//       timestamp: selectedRequest.timestamp || "N/A",
+//       rawTimestamp: new Date(),
+//       requestList: enrichedItems, 
+//       status: "Approved", 
+//       approvedBy: userName, 
+//       reason: selectedRequest.reason || "No reason provided",
+//       program: selectedRequest.program,
+//       usageType: selectedRequest.usageType || "N/A",  
+//     };
+
+//     const rejectLogEntry = {
+//       accountId: selectedRequest.accountId || "N/A",
+//       userName: selectedRequest.userName || "N/A",
+//       room: selectedRequest.room || "N/A",
+//       course: selectedRequest.couse || "N/A",
+//       courseDescription: selectedRequest.courseDescription || "N/A",
+//       dateRequired: selectedRequest.dateRequired || "N/A",
+//       timeFrom: selectedRequest.timeFrom || "N/A",  
+//       timeTo: selectedRequest.timeTo || "N/A",  
+//       timestamp: selectedRequest.timestamp || "N/A",
+//       rawTimestamp: new Date(),
+//       requestList: rejectedItems, 
+//       status: "Rejected", 
+//       rejectedBy: userName, 
+//       reason: rejectionReason || "No reason provided",  
+//       program: selectedRequest.program,
+//       usageType: selectedRequest.usageType || "N/A",  
+//     };
+
+//     // Log approved items in historylog subcollection
+//     const logRequestOrReturn = async (
+//       userId,
+//       userName,
+//       action,
+//       requestDetails,
+//       extraInfo = {} // for fields like dateRequired, approvedBy, etc.
+//     ) => {
+//       await addDoc(collection(db, `accounts/${userId}/historylog`), {
+//         action,
+//         userName,
+//         timestamp: serverTimestamp(),
+//         requestList: requestDetails,
+//         ...extraInfo, // merge additional data like dateRequired, reason, etc.
+//       });
+//     };
+
+//     // 🔧 Reserve individual QR codes for equipment items
+//     let deployedQRCodes = [];
+//     console.log("🔍 CHECKING ITEMS FOR EQUIPMENT TYPE:", enrichedItems.map(i => ({ itemName: i.itemName, itemType: i.itemType })));
+    
+//     for (const item of enrichedItems) {
+//       console.log(`🔍 CHECKING ITEM: ${item.itemName}, itemType: ${item.itemType}, category: ${item.category}`);
+//       if (item.category === "Equipment") {
+//         console.log(`✅ EQUIPMENT ITEM FOUND: ${item.itemName}`);
+//         console.log("🔧 DEPLOYING EQUIPMENT ITEM IN PENDING REQUEST:", {
+//           itemName: item.itemName,
+//           selectedItemId: item.selectedItemId,
+//           quantity: item.quantity,
+//           userId: selectedRequest.accountId,
+//           userName: selectedRequest.userName
+//         });
+        
+//         try {
+//           // Fetch the actual itemId from the inventory document
+//           const inventoryDocRef = doc(db, "inventory", item.selectedItemId);
+//           const inventoryDocSnap = await getDoc(inventoryDocRef);
+
+//           if (!inventoryDocSnap.exists()) {
+//             console.error("❌ Inventory document not found for selectedItemId:", item.selectedItemId);
+//             continue;
+//           }
+          
+//           const inventoryData = inventoryDocSnap.data();
+//           const actualItemId = inventoryData.itemId;
+          
+//           console.log("🔍 Found actual itemId:", actualItemId);
+          
+//           // Instead of deploying, just reserve the QR codes as "Borrowed"
+//           const reserveResponse = await fetch('https://webnuls.onrender.com/reserve-individual-qr-codes', {
+//             method: 'POST',
+//             headers: { 'Content-Type': 'application/json' },
+//             body: JSON.stringify({
+//               itemId: actualItemId,
+//               quantity: item.quantity,
+//               userId: selectedRequest.accountId,
+//               userName: selectedRequest.userName,
+//             }),
+//           });
+
+//           const reserveData = await reserveResponse.json();
+//           console.log("📡 RESERVE RESPONSE:", reserveData);
+          
+//           if (reserveResponse.ok) {
+//             deployedQRCodes = [...deployedQRCodes, ...reserveData.reservedQRCodes];
+//             console.log("✅ Reserved individual QR codes:", reserveData.reservedQRCodes);
+//           } else {
+//             console.error("❌ Failed to reserve individual QR codes:", reserveData.error);
+//             setNotificationMessage(`Reservation Error: ${reserveData.error || "Failed to reserve individual items"}`);
+//             setApproveLoading(false);
+//             return;
+//           }
+//         } catch (error) {
+//           console.error("❌ Error deploying individual QR codes:", error);
+//           setNotificationMessage("Deployment Error: Failed to deploy individual items");
+//           setApproveLoading(false);
+//           return;
+//         }
+//       }
+//     }
+
+//     // Log approved items
+//     await logRequestOrReturn(
+//       selectedRequest.accountId,     // user ID
+//       selectedRequest.userName,      // user name
+//       "Request Approved",            // action
+//       enrichedItems,                 // request list
+//       {
+//         approvedBy: userName, // whoever approved
+//         course: selectedRequest.course || "N/A",
+//         courseDescription: selectedRequest.courseDescription || "N/A",
+//         dateRequired: selectedRequest.dateRequired,
+//         reason: selectedRequest.reason,
+//         room: selectedRequest.room,
+//         program: selectedRequest.program,
+//         timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+//         timeTo: selectedRequest.timeTo || "N/A",  
+//         timestamp: selectedRequest.timestamp || "N/A",
+//         rawTimestamp: new Date(),
+//         usageType: selectedRequest.usageType || "N/A",  
+//       }
+//     );
+
+//     // Log rejected items
+//     if (rejectedItems.length > 0) {
+//       await logRequestOrReturn(
+//         selectedRequest.accountId,     // user ID
+//         selectedRequest.userName,      // user name
+//         "Request Rejected",            // action
+//         rejectedItems,                 // request list
+//         {
+//           rejectedBy: userName, // whoever rejected
+//           course: selectedRequest.course || "N/A",
+//           courseDescription: selectedRequest.courseDescription || "N/A",
+//           dateRequired: selectedRequest.dateRequired,
+//           reason: rejectionReason || "No reason provided",  // Reason for rejection
+//           room: selectedRequest.room,
+//           program: selectedRequest.program,
+//           timeFrom: selectedRequest.timeFrom || "N/A",  // Include timeFrom
+//           timeTo: selectedRequest.timeTo || "N/A",  
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//           usageType: selectedRequest.usageType || "N/A",  
+//         }
+//       );
+//     }
+
+
+// try {
+//         for (const item of enrichedItems) {
+//           const inventoryId = item.selectedItemId;
+//           const requestedQty = Number(item.quantity);
+//           const labRoomId = item.labRoom;
+
+//           if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
+        
+//             continue;
+//           }
+
+//           if (!labRoomId) {
+
+//             continue;
+//           }
+
+//           const inventoryRef = doc(db, "inventory", inventoryId);
+//           const inventorySnap = await getDoc(inventoryRef);
+//           if (!inventorySnap.exists()) {
+      
+//             continue;
+//           }
+
+//           const data = inventorySnap.data();
+//           const currentQty = Number(data.quantity || 0);
+//           const newQty = Math.max(currentQty - requestedQty, 0);
+//           await updateDoc(inventoryRef, { quantity: newQty });
+        
+
+//           // ⚙️ Update inventory condition breakdown
+//           let remaining = requestedQty;
+//           const good = data.condition?.Good ?? 0;
+//           const damage = data.condition?.Damage ?? 0;
+//           const defect = data.condition?.Defect ?? 0;
+//           const lost = data.condition?.Lost ?? 0;
+
+//           let newGood = good;
+//           let newDamage = damage;
+//           let newDefect = defect;
+//           let newLost = lost;
+
+//           if (remaining > 0) {
+//             const deductFromGood = Math.min(newGood, remaining);
+//             newGood -= deductFromGood;
+//             remaining -= deductFromGood;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromDamage = Math.min(newDamage, remaining);
+//             newDamage -= deductFromDamage;
+//             remaining -= deductFromDamage;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromDefect = Math.min(newDefect, remaining);
+//             newDefect -= deductFromDefect;
+//             remaining -= deductFromDefect;
+//           }
+
+//           if (remaining > 0) {
+//             const deductFromLost = Math.min(newLost, remaining);
+//             newLost -= deductFromLost;
+//             remaining -= deductFromLost;
+//           }
+
+//           await updateDoc(inventoryRef, {
+//             'condition.Good': newGood,
+//             'condition.Damage': newDamage,
+//             'condition.Defect': newDefect,
+//             'condition.Lost' : newLost,
+//           });
+
+//           // 🔁 Update labRoom item quantity
+//           const roomNumber = item.labRoom; // e.g. "0930"
+//           const labRoomCollectionRef = collection(db, "labRoom");
+//           const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+//           const querySnapshot = await getDocs(q);
+
+//           if (querySnapshot.empty) {
+          
+
+//             return;
+//           }
+
+//           // 2. Get Firestore doc ID of the labRoom
+//           const labRoomDoc = querySnapshot.docs[0];
+//           const labRoomDocId = labRoomDoc.id;
+
+//           // 3. Query items subcollection for item with matching itemId
+//           const itemId = data.itemId; // e.g. "DENT02"
+//           const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+//           const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
+//           const itemSnapshot = await getDocs(itemQuery);
+
+//           if (itemSnapshot.empty) {
+       
+//             return;
+//           }
+
+//           // 4. Get the Firestore doc ID of the item document
+//           const itemDoc = itemSnapshot.docs[0];
+//           const itemDocId = itemDoc.id;
+//           const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+//           const labData = itemDoc.data();
+
+//           const currentLabQty = Number(labData.quantity || 0);
+//           const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+//           await updateDoc(labRoomItemRef, { quantity: newLabQty });
+         
+
+//           // Update condition breakdown
+//           let labGood = labData.condition?.Good ?? 0;
+//           let labDamage = labData.condition?.Damage ?? 0;
+//           let labDefect = labData.condition?.Defect ?? 0;
+//           let labLost = labData.condition?.Lost ?? 0;
+
+//           let remainingLab = requestedQty;
+
+//           if (remainingLab > 0) {
+//             const deductFromLabGood = Math.min(labGood, remainingLab);
+//             labGood -= deductFromLabGood;
+//             remainingLab -= deductFromLabGood;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabDamage = Math.min(labDamage, remainingLab);
+//             labDamage -= deductFromLabDamage;
+//             remainingLab -= deductFromLabDamage;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabDefect = Math.min(labDefect, remainingLab);
+//             labDefect -= deductFromLabDefect;
+//             remainingLab -= deductFromLabDefect;
+//           }
+
+//           if (remainingLab > 0) {
+//             const deductFromLabLost = Math.min(labLost, remainingLab);
+//             labLost -= deductFromLabLost;
+//             remainingLab -= deductFromLabLost;
+//           }
+
+//           await updateDoc(labRoomItemRef, {
+//             'condition.Good': labGood,
+//             'condition.Damage': labDamage,
+//             'condition.Defect': labDefect,
+//             'condition.Lost' : labLost,
+//           });
+
+          
+//         }
+        
+//       } catch (err) {
+
+//       }
+    
+
+//     try {
+//       // Add to requestlog for approval
+//       await addDoc(collection(db, "requestlog"), requestLogEntry);
+
+//       // Add to requestlog for rejection
+//       if (rejectedItems.length > 0) {
+//         await addDoc(collection(db, "requestlog"), rejectLogEntry);
+//       }
+
+//       // Proceed with borrow catalog logic for approved items
+//       // Filter to get all "Fixed" items
+//       // Process Borrow Catalog
+//       const fixedItems = enrichedItems.filter(item => item.itemType === "Fixed");
+  
+//       if (fixedItems.length > 0) {
+//         const formattedItems = fixedItems.map(item => ({
+//           category: item.category || "N/A",
+//           condition: item.condition || "N/A",
+//           department: item.department || "N/A",
+//           itemName: item.itemName || "N/A",
+//           itemDetails: item.itemDetails || "N/A",
+//           itemId: item.itemIdFromInventory,
+//           quantity: item.quantity || "1",
+//           selectedItemId: item.selectedItemId || "N/A",
+//           status: item.status || "Available",
+//           program: item.program || "N/A",
+//           course: item.course || "N/A",
+//           courseDescription: item.courseDescription || "N/A",
+//           reason: item.reason || "No reason provided",
+//           labRoom: item.labRoom || "N/A",
+//           timeFrom: item.timeFrom || "N/A",
+//           timeTo: item.timeTo || "N/A",
+//           usageType: item.usageType || "N/A",
+//           scannedCount: 0,
+//         }));
+  
+//         const borrowCatalogEntry = {
+//           accountId: selectedRequest.accountId || "N/A",
+//           userName: selectedRequest.userName || "N/A",
+//           room: selectedRequest.room || "N/A",
+//           course: selectedRequest.course || "N/A",
+//           courseDescription: selectedRequest.courseDescription || "N/A",
+//           dateRequired: selectedRequest.dateRequired || "N/A",
+//           timeFrom: selectedRequest.timeFrom || "N/A",
+//           timeTo: selectedRequest.timeTo || "N/A",
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//           requestList: formattedItems,
+//           status: "Borrowed",
+//           // status: "For Deployment",
+//           approvedBy: userName,
+//           reason: selectedRequest.reason || "No reason provided",
+//           program: selectedRequest.program,
+//           usageType: selectedRequest.usageType || "N/A",
+//           deployedQRCodes: deployedQRCodes, // Add deployed individual QR codes
+//         };
+  
+//         const userRequestLogEntry = {
+//           ...requestLogEntry,
+//           status: "Approved",
+//           approvedBy: userName,
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//           deployedQRCodes: deployedQRCodes,
+//         };
+  
+//         await addDoc(collection(db, "borrowcatalog"), borrowCatalogEntry);
+  
+//         await addDoc(collection(db, "accounts", selectedRequest.accountId, "userrequestlog"), userRequestLogEntry);
+
+//         // ✅ Notify the user who submitted the request
+//         if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
+//           await addDoc(collection(db, `accounts/${selectedRequest.accountId}/userNotifications`), {
+//             action: `Approved request for ${selectedRequest.userName}`,
+//             requestId: selectedRequest.id,
+//             userName: selectedRequest.userName,
+//             read: false,
+//             timestamp: serverTimestamp(),
+//           });
+//         }
+
+//         // ✅ Send push to the user who submitted the request
+//         try {
+//           const functions = getFunctions();
+//           const sendPush = httpsCallable(functions, "sendPushNotification");
+
+//           const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+//           const tokensToNotify = [];
+
+//           pushTokenSnapshot.forEach((doc) => {
+//             const data = doc.data();
+//             if (
+//               data?.expoPushToken &&
+//               data.userId === selectedRequest.userId // 👈 This should match the request sender
+//             ) {
+//               tokensToNotify.push(data.expoPushToken);
+//             }
+//           });
+
+//           for (const token of tokensToNotify) {
+//             const payload = {
+//               token,
+//               title: "Request Update",
+//               body: `Your requisition has been approved.`, // or `rejected` if applicable
+//             };
+
+//             const response = await sendPush(payload);
+//             console.log("✅ Push sent to user:", response.data);
+//           }
+
+//         } catch (err) {
+//           console.error("❌ Push error (admin to user):", err.message || err);
+//         }
+//       }
+
+//       const consumableItems = enrichedItems.filter(item => item.itemType === "Consumable");
+
+//       if (consumableItems.length > 0) {
+//         const formattedItems = consumableItems.map(item => ({
+//           category: item.category || "N/A",
+//           condition: item.condition || "N/A",
+//           department: item.department || "N/A",
+//           itemName: item.itemName || "N/A",
+//           itemDetails: item.itemDetails || "N/A",
+//           itemId: item.itemIdFromInventory,
+//           quantity: item.quantity || "1",
+//           selectedItemId: item.selectedItemId || "N/A",
+//           status: item.status || "Available",
+//           program: item.program || "N/A",
+//           course: item.course || "N/A",
+//           courseDescription: item.courseDescription || "N/A",
+//           reason: item.reason || "No reason provided",
+//           labRoom: item.labRoom || "N/A",
+//           timeFrom: item.timeFrom || "N/A",
+//           timeTo: item.timeTo || "N/A",
+//           usageType: item.usageType || "N/A",
+//           scannedCount: 0,
+//         }));
+
+//         const consumableCatalogEntry = {
+//           accountId: selectedRequest.accountId || "N/A",
+//           userName: selectedRequest.userName || "N/A",
+//           room: selectedRequest.room || "N/A",
+//           course: selectedRequest.course || "N/A",
+//           courseDescription: selectedRequest.courseDescription || "N/A",
+//           dateRequired: selectedRequest.dateRequired || "N/A",
+//           timeFrom: selectedRequest.timeFrom || "N/A",
+//           timeTo: selectedRequest.timeTo || "N/A",
+//           timestamp: selectedRequest.timestamp || "N/A",
+//           rawTimestamp: new Date(),
+//           requestList: formattedItems,
+//           status: "For Release", // For Consumables
+//           approvedBy: userName,
+//           reason: selectedRequest.reason || "No reason provided",
+//           program: selectedRequest.program,
+//           usageType: selectedRequest.usageType || "N/A",
+//         };
+
+//         await addDoc(collection(db, "borrowcatalog"), consumableCatalogEntry);
+
+//         // ✅ Notify the user who submitted the request
+//               if (selectedRequest.accountId && selectedRequest.accountId !== "system") {
+//                 await addDoc(collection(db, `accounts/${selectedRequest.accountId}/userNotifications`), {
+//                   action: `Approved request for ${selectedRequest.userName}`,
+//                   requestId: selectedRequest.id,
+//                   userName: selectedRequest.userName,
+//                   read: false,
+//                   timestamp: serverTimestamp(),
+//                 });
+//               }
+
+//               // ✅ Send push to the user who submitted the request
+//               try {
+//                 const functions = getFunctions();
+//                 const sendPush = httpsCallable(functions, "sendPushNotification");
+
+//                 const pushTokenSnapshot = await getDocs(collection(db, "pushTokens"));
+//                 const tokensToNotify = [];
+
+//                 pushTokenSnapshot.forEach((doc) => {
+//                   const data = doc.data();
+//                   if (
+//                     data?.expoPushToken &&
+//                     data.userId === selectedRequest.userId // 👈 This should match the request sender
+//                   ) {
+//                     tokensToNotify.push(data.expoPushToken);
+//                   }
+//                 });
+
+//                 for (const token of tokensToNotify) {
+//                   const payload = {
+//                     token,
+//                     title: "Request Update",
+//                     body: `Your requisition has been approved.`, // or `rejected` if applicable
+//                   };
+
+//                   const response = await sendPush(payload);
+//                   console.log("✅ Push sent to user:", response.data);
+//                 }
+
+//               } catch (err) {
+//                 console.error("❌ Push error (admin to user):", err.message || err);
+//               }
+//       }
+
+//         await deleteDoc(doc(db, "userrequests", selectedRequest.id));
+
+//         // Cleanup the user requests subcollection
+//         const subCollectionRef = collection(db, "accounts", selectedRequest.accountId, "userRequests");
+//         const subDocsSnap = await getDocs(subCollectionRef);
+
+//         subDocsSnap.forEach(async (docSnap) => {
+//           const data = docSnap.data();
+//           const match = (
+//             data.timestamp?.seconds === selectedRequest.timestamp?.seconds &&
+//             data.filteredMergedData?.[0]?.selectedItemId === selectedRequest.filteredMergedData?.[0]?.selectedItemId
+//           );
+
+//           if (match) {
+       
+//             await deleteDoc(doc(db, "accounts", selectedRequest.accountId, "userRequests", docSnap.id));
+//           }
+//         });
+
+//         setApprovedRequests([...approvedRequests, requestLogEntry]);
+//         setRequests(requests.filter((req) => req.id !== selectedRequest.id));
+//         setCheckedItems({});
+//         setIsModalVisible(false);
+//         setSelectedRequest(null);
+//         setIsFinalizeModalVisible(false)
+
+//         setNotificationMessage("Request has been approved and logged successfully.");
+//         setIsNotificationVisible(true);
+
+//         notification.success({
+//           message: "Request Approved",
+//           description: "Request has been approved and logged.",
+//         });
+
+//         // 🔔 Send push notification to the requestor
+//         try {
+//           console.log('🔔 Sending approval notification to user via backend...');
+          
+//           const response = await fetch('https://webnuls.onrender.com/api/notify-user', {
+//             method: 'POST',
+//             headers: {
+//               'Content-Type': 'application/json',
+//             },
+//             body: JSON.stringify({
+//               userId: selectedRequest.accountId,
+//               title: 'Request Approved',
+//               body: `Your requisition request has been approved by ${userName}`,
+//               data: {
+//                 type: 'request_approved',
+//                 approvedBy: userName,
+//                 requestId: selectedRequest.id,
+//                 screen: 'OrdersScreen'
+//               }
+//             }),
+//           });
+
+//           if (response.ok) {
+//             const result = await response.json();
+//             console.log('✅ Approval notification sent:', result);
+//           } else {
+//             const error = await response.json();
+//             console.error('❌ Approval notification error:', error);
+//           }
+//         } catch (error) {
+//           console.error('❌ Error sending approval notification:', error);
+//         }
+
+//       } catch (error) {
+     
+//         notification.error({
+//           message: "Approval Failed",
+//           description: "There was an error logging the approved request.",
+//         });
+//       } finally {
+//         setApproveLoading(false);
+//       }
+//     }
+//   };
+
  const handleApprove = async () => {  
   setApproveLoading(true);
   
@@ -11737,10 +12625,14 @@ const mergedRequestList = selectedRequest.requestList.map((item, index) => {
         `${item.itemName}: Requested ${item.requested}, Available ${item.available} (${item.reason})`
       ).join('\n');
       
+      console.log("❌ INSUFFICIENT ITEMS - BLOCKING APPROVAL:", insufficientItems);
       setNotificationMessage(`Cannot approve request. Insufficient inventory:\n${errorMessage}`);
       setIsNotificationVisible(true);
+      setApproveLoading(false);
       return;
     }
+    
+    console.log("✅ INVENTORY CHECK PASSED - PROCEEDING WITH APPROVAL");
 
     const enrichedItems = await Promise.all(
     filteredItems.map(async (item) => {
@@ -11767,61 +12659,6 @@ const mergedRequestList = selectedRequest.requestList.map((item, index) => {
 );
 
 console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: ${i.quantity}`));
-
- for (const item of enrichedItems) {
-  const requestedQty = item.quantity;
-  const itemId = item.selectedItemId;
-  const itemName = item.itemName
-
-  console.log("📦 Logging itemUsage for:", itemId);
-
-  try {
-    // 1. Log the usage
-    await addDoc(collection(db, "itemUsage"), {
-      itemId: itemId,
-      usedQuantity: requestedQty,
-      timestamp: serverTimestamp(),
-      itemName:itemName
-    });
-
-    // 2. Fetch all past usage logs
-    const usageQuery = query(
-      collection(db, "itemUsage"),
-      where("itemId", "==", itemId)
-    );
-    const usageSnap = await getDocs(usageQuery);
-
-    let total = 0;
-    const uniqueDates = new Set();
-
-    usageSnap.forEach((doc) => {
-      const data = doc.data();
-      if (data.usedQuantity && data.timestamp?.toDate) {
-        total += data.usedQuantity;
-        const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
-        uniqueDates.add(dateStr);
-      }
-    });
-
-    const daysWithUsage = uniqueDates.size;
-    const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
-
-    // 🔄 Assumed buffer of 5 days for critical stock level
-    const bufferDays = 7;
-    const criticalLevel = average * bufferDays;
-
-    // 3. Update inventory with new average and critical level
-    const itemRef = doc(db, "inventory", itemId);
-    await updateDoc(itemRef, {
-      averageDailyUsage: average,
-      criticalLevel: criticalLevel,
-    });
-
-    console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
-  } catch (e) {
-    console.error(`❌ Error processing usage for ${itemId}:`, e);
-  }
-}
     // Filter out unchecked items (for rejection)
     // const uncheckedItems = selectedRequest.requestList.filter((item, index) => {
     const uncheckedItems = mergedRequestList.filter((item, index) => {
@@ -11834,15 +12671,205 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
 
 
     if (uncheckedItems.length > 0) {
-     
+      console.log("⚠️ UNCHECKED ITEMS FOUND - SHOWING REJECTION MODAL");
       setPendingApprovalData({
         enrichedItems,
         uncheckedItems,
         selectedRequest,
       });
       setIsMultiRejectModalVisible(true); // ✅ Show new modal for multiple items
+      setApproveLoading(false); // Reset loading state
       return;
     }
+    
+    console.log("✅ ALL ITEMS APPROVED - CONTINUING WITH APPROVAL PROCESS");
+
+    // NOW SUBTRACT QUANTITIES FROM INVENTORY (only after confirming all items are approved)
+    console.log("🚀 STARTING QUANTITY SUBTRACTION LOOP - Total items:", enrichedItems.length);
+    
+    for (const item of enrichedItems) {
+      const requestedQty = item.quantity;
+      const itemId = item.selectedItemId;
+      const itemName = item.itemName;
+      const labRoomId = item.labRoom;
+
+      console.log("📦 Processing item:", itemName, "Quantity:", requestedQty);
+
+      try {
+        // 1. Log the usage
+        await addDoc(collection(db, "itemUsage"), {
+          itemId: itemId,
+          usedQuantity: requestedQty,
+          timestamp: serverTimestamp(),
+          itemName: itemName
+        });
+
+        // 2. Fetch all past usage logs
+        const usageQuery = query(
+          collection(db, "itemUsage"),
+          where("itemId", "==", itemId)
+        );
+        const usageSnap = await getDocs(usageQuery);
+
+        let total = 0;
+        const uniqueDates = new Set();
+
+        usageSnap.forEach((doc) => {
+          const data = doc.data();
+          if (data.usedQuantity && data.timestamp?.toDate) {
+            total += data.usedQuantity;
+            const dateStr = data.timestamp.toDate().toISOString().split("T")[0];
+            uniqueDates.add(dateStr);
+          }
+        });
+
+        const daysWithUsage = uniqueDates.size;
+        const average = daysWithUsage > 0 ? total / daysWithUsage : 0;
+
+        // 🔄 Assumed buffer of 5 days for critical stock level
+        const bufferDays = 7;
+        const criticalLevel = average * bufferDays;
+
+        // 3. Update inventory with new average and critical level
+        const itemRef = doc(db, "inventory", itemId);
+        await updateDoc(itemRef, {
+          averageDailyUsage: average,
+          criticalLevel: criticalLevel,
+        });
+
+        console.log(`✅ Updated ${itemId}: AvgDaily = ${average}, Critical = ${criticalLevel}`);
+
+        // 4. SUBTRACT QUANTITY FROM INVENTORY
+        if (itemId && !isNaN(requestedQty) && requestedQty > 0) {
+          console.log(`🔍 SUBTRACTING QUANTITY: ${itemName} - Requested: ${requestedQty}, ItemId: ${itemId}`);
+          const inventoryRef = doc(db, "inventory", itemId);
+          const inventorySnap = await getDoc(inventoryRef);
+          
+          if (inventorySnap.exists()) {
+            const data = inventorySnap.data();
+            const currentQty = Number(data.quantity || 0);
+            const newQty = Math.max(currentQty - requestedQty, 0);
+            console.log(`📊 INVENTORY UPDATE: ${itemName} - Current: ${currentQty}, New: ${newQty}`);
+            await updateDoc(inventoryRef, { quantity: newQty });
+            console.log(`✅ SUCCESSFULLY UPDATED INVENTORY: ${itemName}`);
+
+            // Update inventory condition breakdown
+            let remaining = requestedQty;
+            const good = data.condition?.Good ?? 0;
+            const damage = data.condition?.Damage ?? 0;
+            const defect = data.condition?.Defect ?? 0;
+            const lost = data.condition?.Lost ?? 0;
+
+            let newGood = good;
+            let newDamage = damage;
+            let newDefect = defect;
+            let newLost = lost;
+
+            if (remaining > 0) {
+              const deductFromGood = Math.min(newGood, remaining);
+              newGood -= deductFromGood;
+              remaining -= deductFromGood;
+            }
+
+            if (remaining > 0) {
+              const deductFromDamage = Math.min(newDamage, remaining);
+              newDamage -= deductFromDamage;
+              remaining -= deductFromDamage;
+            }
+
+            if (remaining > 0) {
+              const deductFromDefect = Math.min(newDefect, remaining);
+              newDefect -= deductFromDefect;
+              remaining -= deductFromDefect;
+            }
+
+            if (remaining > 0) {
+              const deductFromLost = Math.min(newLost, remaining);
+              newLost -= deductFromLost;
+              remaining -= deductFromLost;
+            }
+
+            await updateDoc(inventoryRef, {
+              'condition.Good': newGood,
+              'condition.Damage': newDamage,
+              'condition.Defect': newDefect,
+              'condition.Lost' : newLost,
+            });
+
+            // Update labRoom item quantity if labRoomId exists
+            if (labRoomId) {
+              const roomNumber = item.labRoom;
+              const labRoomCollectionRef = collection(db, "labRoom");
+              const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
+              const querySnapshot = await getDocs(q);
+
+              if (!querySnapshot.empty) {
+                const labRoomDoc = querySnapshot.docs[0];
+                const labRoomDocId = labRoomDoc.id;
+
+                const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
+                const itemQuery = query(itemsCollectionRef, where("itemId", "==", data.itemId));
+                const itemSnapshot = await getDocs(itemQuery);
+
+                if (!itemSnapshot.empty) {
+                  const itemDoc = itemSnapshot.docs[0];
+                  const itemDocId = itemDoc.id;
+                  const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
+                  const labData = itemDoc.data();
+
+                  const currentLabQty = Number(labData.quantity || 0);
+                  const newLabQty = Math.max(currentLabQty - requestedQty, 0);
+                  await updateDoc(labRoomItemRef, { quantity: newLabQty });
+
+                  // Update lab room condition breakdown
+                  let remainingLab = requestedQty;
+                  let labGood = labData.condition?.Good ?? 0;
+                  let labDamage = labData.condition?.Damage ?? 0;
+                  let labDefect = labData.condition?.Defect ?? 0;
+                  let labLost = labData.condition?.Lost ?? 0;
+
+                  if (remainingLab > 0) {
+                    const deductFromLabGood = Math.min(labGood, remainingLab);
+                    labGood -= deductFromLabGood;
+                    remainingLab -= deductFromLabGood;
+                  }
+
+                  if (remainingLab > 0) {
+                    const deductFromLabDamage = Math.min(labDamage, remainingLab);
+                    labDamage -= deductFromLabDamage;
+                    remainingLab -= deductFromLabDamage;
+                  }
+
+                  if (remainingLab > 0) {
+                    const deductFromLabDefect = Math.min(labDefect, remainingLab);
+                    labDefect -= deductFromLabDefect;
+                    remainingLab -= deductFromLabDefect;
+                  }
+
+                  if (remainingLab > 0) {
+                    const deductFromLabLost = Math.min(labLost, remainingLab);
+                    labLost -= deductFromLabLost;
+                    remainingLab -= deductFromLabLost;
+                  }
+
+                  await updateDoc(labRoomItemRef, {
+                    'condition.Good': labGood,
+                    'condition.Damage': labDamage,
+                    'condition.Defect': labDefect,
+                    'condition.Lost' : labLost,
+                  });
+                }
+              }
+            }
+          }
+        }
+
+      } catch (e) {
+        console.error(`❌ Error processing item ${itemName}:`, e);
+      }
+    }
+
+    console.log("✅ QUANTITY SUBTRACTION COMPLETED");
 
     // Process rejected items
     const rejectedItems = await Promise.all(
@@ -12060,161 +13087,9 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
     }
 
 
-try {
-        for (const item of enrichedItems) {
-          const inventoryId = item.selectedItemId;
-          const requestedQty = Number(item.quantity);
-          const labRoomId = item.labRoom;
-
-          if (!inventoryId || isNaN(requestedQty) || requestedQty <= 0) {
-        
-            continue;
-          }
-
-          if (!labRoomId) {
-
-            continue;
-          }
-
-          const inventoryRef = doc(db, "inventory", inventoryId);
-          const inventorySnap = await getDoc(inventoryRef);
-          if (!inventorySnap.exists()) {
-      
-            continue;
-          }
-
-          const data = inventorySnap.data();
-          const currentQty = Number(data.quantity || 0);
-          const newQty = Math.max(currentQty - requestedQty, 0);
-          await updateDoc(inventoryRef, { quantity: newQty });
-        
-
-          // ⚙️ Update inventory condition breakdown
-          let remaining = requestedQty;
-          const good = data.condition?.Good ?? 0;
-          const damage = data.condition?.Damage ?? 0;
-          const defect = data.condition?.Defect ?? 0;
-          const lost = data.condition?.Lost ?? 0;
-
-          let newGood = good;
-          let newDamage = damage;
-          let newDefect = defect;
-          let newLost = lost;
-
-          if (remaining > 0) {
-            const deductFromGood = Math.min(newGood, remaining);
-            newGood -= deductFromGood;
-            remaining -= deductFromGood;
-          }
-
-          if (remaining > 0) {
-            const deductFromDamage = Math.min(newDamage, remaining);
-            newDamage -= deductFromDamage;
-            remaining -= deductFromDamage;
-          }
-
-          if (remaining > 0) {
-            const deductFromDefect = Math.min(newDefect, remaining);
-            newDefect -= deductFromDefect;
-            remaining -= deductFromDefect;
-          }
-
-          if (remaining > 0) {
-            const deductFromLost = Math.min(newLost, remaining);
-            newLost -= deductFromLost;
-            remaining -= deductFromLost;
-          }
-
-          await updateDoc(inventoryRef, {
-            'condition.Good': newGood,
-            'condition.Damage': newDamage,
-            'condition.Defect': newDefect,
-            'condition.Lost' : newLost,
-          });
-
-          // 🔁 Update labRoom item quantity
-          const roomNumber = item.labRoom; // e.g. "0930"
-          const labRoomCollectionRef = collection(db, "labRoom");
-          const q = query(labRoomCollectionRef, where("roomNumber", "==", roomNumber));
-          const querySnapshot = await getDocs(q);
-
-          if (querySnapshot.empty) {
-          
-
-            return;
-          }
-
-          // 2. Get Firestore doc ID of the labRoom
-          const labRoomDoc = querySnapshot.docs[0];
-          const labRoomDocId = labRoomDoc.id;
-
-          // 3. Query items subcollection for item with matching itemId
-          const itemId = data.itemId; // e.g. "DENT02"
-          const itemsCollectionRef = collection(db, "labRoom", labRoomDocId, "items");
-          const itemQuery = query(itemsCollectionRef, where("itemId", "==", itemId));
-          const itemSnapshot = await getDocs(itemQuery);
-
-          if (itemSnapshot.empty) {
-       
-            return;
-          }
-
-          // 4. Get the Firestore doc ID of the item document
-          const itemDoc = itemSnapshot.docs[0];
-          const itemDocId = itemDoc.id;
-          const labRoomItemRef = doc(db, "labRoom", labRoomDocId, "items", itemDocId);
-          const labData = itemDoc.data();
-
-          const currentLabQty = Number(labData.quantity || 0);
-          const newLabQty = Math.max(currentLabQty - requestedQty, 0);
-          await updateDoc(labRoomItemRef, { quantity: newLabQty });
-         
-
-          // Update condition breakdown
-          let labGood = labData.condition?.Good ?? 0;
-          let labDamage = labData.condition?.Damage ?? 0;
-          let labDefect = labData.condition?.Defect ?? 0;
-          let labLost = labData.condition?.Lost ?? 0;
-
-          let remainingLab = requestedQty;
-
-          if (remainingLab > 0) {
-            const deductFromLabGood = Math.min(labGood, remainingLab);
-            labGood -= deductFromLabGood;
-            remainingLab -= deductFromLabGood;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabDamage = Math.min(labDamage, remainingLab);
-            labDamage -= deductFromLabDamage;
-            remainingLab -= deductFromLabDamage;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabDefect = Math.min(labDefect, remainingLab);
-            labDefect -= deductFromLabDefect;
-            remainingLab -= deductFromLabDefect;
-          }
-
-          if (remainingLab > 0) {
-            const deductFromLabLost = Math.min(labLost, remainingLab);
-            labLost -= deductFromLabLost;
-            remainingLab -= deductFromLabLost;
-          }
-
-          await updateDoc(labRoomItemRef, {
-            'condition.Good': labGood,
-            'condition.Damage': labDamage,
-            'condition.Defect': labDefect,
-            'condition.Lost' : labLost,
-          });
-
-          
-        }
-        
-      } catch (err) {
-
-      }
+// REMOVED: Duplicate quantity subtraction loop that was causing double subtraction
+// The quantity subtraction is now handled in the first loop above (lines 1799-1852)
+// where we also log usage and update averages
     
 
     try {
@@ -12500,8 +13375,6 @@ try {
       }
     }
   };
-
-
 
   const handleReject = () => { 
     if (!selectedRequest) return;
