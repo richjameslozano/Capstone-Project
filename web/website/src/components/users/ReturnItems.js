@@ -3709,11 +3709,26 @@ const ReturnItems = () => {
           
           // Create individualQRConditions for equipment items using actual deployedQRCodes
           const deployedQRCodes = selectedRequest.raw.deployedQRCodes || [];
-          const individualQRConditions = conditions.map((condition, index) => ({
-            qrCodeId: deployedQRCodes[index]?.id || `placeholder-${index}`,
-            individualItemId: deployedQRCodes[index]?.individualItemId || `${item.itemIdFromInventory}${String(index + 1).padStart(2, '0')}`,
-            condition: condition
-          }));
+          // const individualQRConditions = conditions.map((condition, index) => ({
+          //   qrCodeId: deployedQRCodes[index]?.id || `placeholder-${index}`,
+          //   individualItemId: deployedQRCodes[index]?.individualItemId || `${item.itemIdFromInventory}${String(index + 1).padStart(2, '0')}`,
+          //   condition: condition
+          // }));
+
+          // Only process QR codes that have conditions set (meaning they were selected for return)
+          const individualQRConditions = conditions
+            .map((condition, index) => {
+              // Only include QR codes that have a condition set (meaning they were selected for return)
+              if (condition) {
+                return {
+                  qrCodeId: deployedQRCodes[index]?.id || `placeholder-${index}`,
+                  individualItemId: deployedQRCodes[index]?.individualItemId || `${item.itemIdFromInventory}${String(index + 1).padStart(2, '0')}`,
+                  condition: condition
+                };
+              }
+              return null;
+            })
+            .filter(Boolean); // Remove null entries
           
           console.log("  Final conditions for this equipment item:", conditions);
           console.log("  Individual QR conditions:", individualQRConditions);

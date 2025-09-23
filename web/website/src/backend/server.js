@@ -3088,8 +3088,9 @@ app.post("/update-inventory-full", async (req, res) => {
     }
 
     const isChemOrReagent = ["Chemical", "Reagent"].includes(sanitizedCategory);
+    const isEquipment = sanitizedCategory === "Equipment";
 
-    const sanitizedCondition = isChemOrReagent
+    const sanitizedCondition = (isChemOrReagent || isEquipment)
       ? {}
       : {
           Good: Number(values.condition?.Good) || 0,
@@ -3102,6 +3103,8 @@ app.post("/update-inventory-full", async (req, res) => {
 
     const sanitizedQuantity = isChemOrReagent
       ? (values.quantity !== undefined ? Number(values.quantity) : existingQuantity)
+      : isEquipment
+      ? existingQuantity // Equipment keeps existing quantity, no condition-based calculation
       : (values.condition?.Good !== undefined
           ? Number(values.condition.Good) || 0
           : existingQuantity);

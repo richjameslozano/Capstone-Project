@@ -4476,6 +4476,205 @@ function getConditionSummary(conditionsArray) {
   //   }
   // };  
 
+  // const handleApprove = async () => {
+  //   setApproveLoading(true);
+  //   try {
+  //     const requisitionId = selectedApprovedRequest?.id;
+  //     if (!requisitionId) {
+  //       setApproveLoading(false);
+  //       return;
+  //     }
+
+  //     const auth = getAuth();
+  //     const currentUser = auth.currentUser;
+  //     const userEmail = currentUser?.email;
+
+  //     let approverName = "Unknown";
+  //     if (userEmail) {
+  //       const userQuery = query(collection(db, "accounts"), where("email", "==", userEmail));
+  //       const userSnapshot = await getDocs(userQuery);
+  //       if (!userSnapshot.empty) {
+  //         approverName = userSnapshot.docs[0].data().name || "Unknown";
+  //       }
+  //     }
+
+  //     for (const item of selectedApprovedRequest.requestList || []) {
+  //       const inventoryId = item.selectedItemId || item.selectedItem?.value;
+  //       const labRoomNumber = item.labRoom;
+  //       const totalReturnedQty = Number(item.quantity);
+
+  //       console.log(
+  //         "🧾 Item:",
+  //         item.selectedItem?.label || item.selectedItemId,
+  //         "\nReturned Quantity:",
+  //         totalReturnedQty,
+  //         "\nConditions Provided:",
+  //         item.conditions,
+  //         "\nIndividual QR Conditions:",
+  //         item.individualQRConditions
+  //       );
+
+  //       // 🔧 Handle individual QR code returns for equipment items
+  //       if (item.category === "Equipment" && item.individualQRConditions) {
+  //         console.log("🔧 PROCESSING EQUIPMENT ITEM WITH INDIVIDUAL QR CODES:", {
+  //           itemName: item.itemName,
+  //           itemIdFromInventory: item.itemIdFromInventory,
+  //           individualQRConditions: item.individualQRConditions
+  //         });
+          
+  //         try {
+  //           const returnResponse = await fetch('https://webnuls.onrender.com/return-individual-qr-codes', {
+  //             method: 'POST',
+  //             headers: { 'Content-Type': 'application/json' },
+  //             body: JSON.stringify({
+  //               itemId: item.itemIdFromInventory,
+  //               individualQRConditions: item.individualQRConditions,
+  //               userId: "web-user", // You might want to get the actual user ID
+  //               userName: approverName,
+  //             }),
+  //           });
+
+  //           const returnData = await returnResponse.json();
+  //           console.log("📡 RETURN RESPONSE:", returnData);
+            
+  //           if (returnResponse.ok) {
+  //             console.log("✅ Returned individual QR codes:", returnData);
+  //             // Skip the regular inventory update since individual QR codes handle it
+  //             continue;
+  //           } else {
+  //             console.error("❌ Failed to return individual QR codes:", returnData.error);
+  //             alert(`Return Error: ${returnData.error || "Failed to return individual items"}`);
+  //             setApproveLoading(false);
+  //             return;
+  //           }
+  //         } catch (error) {
+  //           console.error("❌ Error returning individual QR codes:", error);
+  //           alert("Return Error: Failed to return individual items");
+  //           setApproveLoading(false);
+  //           return;
+  //         }
+  //       }
+
+  //       const conditionCounts = {};
+
+  //       if (Array.isArray(item.conditions) && item.conditions.length > 0) {
+  //         // Count each condition
+  //         item.conditions.forEach((cond) => {
+  //           if (cond) {
+  //             conditionCounts[cond] = (conditionCounts[cond] || 0) + 1;
+  //           }
+  //         });
+  //       } else if (totalReturnedQty > 0) {
+  //         console.warn("⚠️ No condition specified — defaulting to 'Good'");
+  //         conditionCounts["Good"] = totalReturnedQty;
+  //       }
+
+  //       console.log("📦 Final Condition Counts:", conditionCounts);
+
+  //       if (inventoryId && !isNaN(totalReturnedQty)) {
+  //         const inventoryDocRef = doc(db, "inventory", inventoryId);
+  //         const inventoryDocSnap = await getDoc(inventoryDocRef);
+  //         if (!inventoryDocSnap.exists()) continue;
+
+  //         const inventoryData = inventoryDocSnap.data();
+  //         const itemId = inventoryData.itemId;
+
+  //         // for (const [condType, qty] of Object.entries(conditionCounts)) {
+  //         //   const currentQty = Number(inventoryData.quantity || 0);
+  //         //   const currentCond = inventoryData.condition || {};
+  //         //   const currentCondQty = Number(currentCond[condType] || 0);
+
+  //         //   await updateDoc(inventoryDocRef, {
+  //         //     quantity: currentQty + qty,
+  //         //     [`condition.${condType}`]: currentCondQty + qty,
+  //         //   });
+  //         // }
+
+  //         for (const [condType, qty] of Object.entries(conditionCounts)) {
+  //           const currentQty = Number(inventoryData.quantity || 0);
+  //           const currentCond = inventoryData.condition || {};
+  //           const currentCondQty = Number(currentCond[condType] || 0);
+
+  //           const updateData = {
+  //             [`condition.${condType}`]: currentCondQty + qty,
+  //           };
+
+  //           // ✅ Only update the total quantity if condition is "Good"
+  //           if (condType === "Good") {
+  //             updateData.quantity = currentQty + qty;
+  //           }
+
+  //           await updateDoc(inventoryDocRef, updateData);
+  //         }
+
+  //         const labRoomQuery = query(
+  //           collection(db, "labRoom"),
+  //           where("roomNumber", "==", labRoomNumber)
+  //         );
+  //         const labRoomSnapshot = await getDocs(labRoomQuery);
+  //         if (labRoomSnapshot.empty) continue;
+
+  //         const labRoomDoc = labRoomSnapshot.docs[0];
+  //         const labRoomId = labRoomDoc.id;
+
+  //         const labItemsRef = collection(db, "labRoom", labRoomId, "items");
+  //         const itemQuery = query(labItemsRef, where("itemId", "==", itemId));
+  //         const itemSnapshot = await getDocs(itemQuery);
+  //         if (itemSnapshot.empty) continue;
+
+  //         const itemDoc = itemSnapshot.docs[0];
+  //         const labItemDocId = itemDoc.id;
+  //         const labItemRef = doc(db, "labRoom", labRoomId, "items", labItemDocId);
+  //         const labData = itemDoc.data();
+
+  //         for (const [condType, qty] of Object.entries(conditionCounts)) {
+  //           const labQty = Number(labData.quantity || 0);
+  //           const labCond = labData.condition || {};
+  //           const labCondQty = Number(labCond[condType] || 0);
+
+  //           const labUpdateData = {
+  //             [`condition.${condType}`]: labCondQty + qty,
+  //           };
+
+  //           if (condType === "Good") {
+  //             labUpdateData.quantity = labQty + qty;
+  //           }
+
+  //           await updateDoc(labItemRef, labUpdateData);
+  //         }
+  //       }
+  //     }
+
+  //     const borrowDocRef = doc(db, "borrowcatalog", requisitionId);
+  //     await updateDoc(borrowDocRef, { status: "Return Approved" });
+
+  //     const requestLogQuery = query(
+  //       collection(db, "requestlog"),
+  //       where("accountId", "==", selectedApprovedRequest.accountId)
+  //     );
+
+  //     const requestLogSnapshot = await getDocs(requestLogQuery);
+  //     if (!requestLogSnapshot.empty) {
+  //       const requestLogDoc = requestLogSnapshot.docs[0];
+  //       const requestLogDocRef = doc(db, "requestlog", requestLogDoc.id);
+
+  //       await updateDoc(requestLogDocRef, {
+  //         status: "Returned",
+  //         timestamp: serverTimestamp(),
+  //       });
+  //     }
+
+  //     showNotification("Return Item successfully approved!");
+  //     setIsApprovedModalVisible(false);
+  //     setSelectedApprovedRequest(null);
+
+  //   } catch (error) {
+  //     console.error("Approval error:", error);
+  //   } finally {
+  //     setApproveLoading(false);
+  //   }
+  // };
+
   const handleApprove = async () => {
     setApproveLoading(true);
     try {
@@ -4515,21 +4714,39 @@ function getConditionSummary(conditionsArray) {
         );
 
         // 🔧 Handle individual QR code returns for equipment items
-        if (item.category === "Equipment" && item.individualQRConditions) {
-          console.log("🔧 PROCESSING EQUIPMENT ITEM WITH INDIVIDUAL QR CODES:", {
+        if (item.category === "Equipment") {
+          console.log("🔧 PROCESSING EQUIPMENT ITEM:", {
             itemName: item.itemName,
             itemIdFromInventory: item.itemIdFromInventory,
-            individualQRConditions: item.individualQRConditions
+            selectedRequest: selectedApprovedRequest
           });
           
           try {
+            // Get the deployedQRCodes from the selectedApprovedRequest to find the actual QR codes that were deployed
+            const deployedQRCodes = selectedApprovedRequest.deployedQRCodes || [];
+            console.log("🔍 DEPLOYED QR CODES FROM REQUEST:", deployedQRCodes);
+            
+            if (deployedQRCodes.length === 0) {
+              console.log("⚠️ No deployedQRCodes found, skipping individual QR code return");
+              continue;
+            }
+            
+            // Create individualQRConditions based on the actual deployed QR codes
+            const individualQRConditions = deployedQRCodes.map((qrCode, index) => ({
+              qrCodeId: qrCode.id, // Use the actual document ID
+              individualItemId: qrCode.individualItemId, // Use the actual individualItemId
+              condition: "Good" // Default condition, or get from item.conditions if available
+            }));
+            
+            console.log("🔧 CREATED INDIVIDUAL QR CONDITIONS:", individualQRConditions);
+            
             const returnResponse = await fetch('https://webnuls.onrender.com/return-individual-qr-codes', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({
                 itemId: item.itemIdFromInventory,
-                individualQRConditions: item.individualQRConditions,
-                userId: "web-user", // You might want to get the actual user ID
+                individualQRConditions: individualQRConditions,
+                userId: "web-user",
                 userName: approverName,
               }),
             });
@@ -4670,6 +4887,7 @@ function getConditionSummary(conditionsArray) {
 
     } catch (error) {
       console.error("Approval error:", error);
+      
     } finally {
       setApproveLoading(false);
     }
