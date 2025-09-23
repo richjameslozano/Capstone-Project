@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Layout, Row, Col, Table, Input, Typography, Select } from "antd";
 import { collection, onSnapshot } from "firebase/firestore";
 import { db } from "../../backend/firebase/FirebaseConfig"; 
-import "../styles/adminStyle/BorrowCatalog.css";
+import "../styles/adminStyle/ApprovalRequest.css";
 import ApprovalRequestModal from "../customs/ApprovalRequestModal";
 
 const { Content } = Layout;
@@ -246,8 +246,95 @@ const ApprovalRequest = () => {
   };
   
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-       <div style={{
+    // <Layout style={{ minHeight: "100vh" }}>
+    //    <div style={{
+    //         background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+    //         borderRadius: "16px",
+    //         padding: "32px",
+    //         marginBottom: "20px",
+    //         boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+    //         border: "1px solid rgba(255, 255, 255, 0.1)"
+    //       }}>
+    //         <div style={{
+    //           display: "flex",
+    //           justifyContent: "space-between",
+    //           alignItems: "center",
+    //           flexWrap: "wrap",
+    //           gap: "16px"
+    //         }}>
+    //           <div>
+    //             <h1 style={{
+    //               color: "#ffffff",
+    //               fontSize: "28px",
+    //               fontWeight: "700",
+    //               margin: "0 0 8px 0",
+    //               textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+    //             }}>
+    //               Approval Request
+    //             </h1>
+    //             <p style={{
+    //               color: "#a8d5e5",
+    //               fontSize: "16px",
+    //               margin: "0",
+    //               fontWeight: "500"
+    //             }}>
+    //               View, review, and manage all requisition approval requests initiated by Laboratory Personnel.<br/>
+    //             </p>
+    //           </div>
+    //         </div>
+    //       </div>
+    //     <Content style={{ margin: "20px" }}>
+    //       <Row justify="space-between" style={{ marginBottom: 16 }}>
+    //         <Col span={8}>
+    //           <Search
+    //             placeholder="Search"
+    //             allowClear
+    //             enterButton
+    //             onSearch={handleSearch}
+    //           />
+    //         </Col>
+
+    //         <Col>
+    //           <Select
+    //             value={departmentFilter}
+    //             onChange={(value) => setDepartmentFilter(value)}
+    //             style={{ width: 200 }}
+    //             placeholder="Select Department"
+    //           >
+    //             <Option value="All">All Departments</Option>
+    //             {departmentsAll.map((dept) => (
+    //               <Option key={dept.id} value={dept.name}>
+    //                 {dept.name}
+    //               </Option>
+    //             ))}
+    //           </Select>
+    //         </Col>
+            
+    //       </Row>
+
+    //       <Table
+    //         dataSource={filteredCatalog}
+    //         columns={columns}
+    //         rowKey="id"
+    //         bordered
+    //         pagination={{ pageSize: 10 }}
+    //       />
+
+    //         <ApprovalRequestModal
+    //           isApprovedModalVisible={isModalVisible}
+    //           setIsApprovedModalVisible={setIsModalVisible}
+    //           selectedApprovedRequest={selectedRequest}
+    //           setSelectedApprovedRequest={setSelectedRequest}
+    //           requestId={selectedRequest?.id}
+    //           columns={columns}
+    //           formatDate={formatDate}
+    //         />
+    //     </Content>
+    //   </Layout>
+
+    <Layout className="approval-request-layout">
+
+                 <div style={{
             background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
             borderRadius: "16px",
             padding: "32px",
@@ -282,78 +369,68 @@ const ApprovalRequest = () => {
                 </p>
               </div>
             </div>
-          </div>
-        <Content style={{ margin: "20px" }}>
-          <Row justify="space-between" style={{ marginBottom: 16 }}>
-            <Col span={8}>
-              <Search
-                placeholder="Search"
+          </div>  
+      
+      <Content className="approval-request-content">
+        <Row className="approval-request-filters">
+          <Col span={8} xs={24} sm={24} md={12} lg={8}>
+            {/* <Search
+              className="approval-request-search"
+              placeholder="Search requests..."
+              allowClear
+              enterButton
+              onSearch={handleSearch}
+            /> */}
+              <Input.Search
+                placeholder='Search Items'
+                className="search-bar"
                 allowClear
-                enterButton
-                onSearch={handleSearch}
+                onInput={handleSearch}
               />
-            </Col>
+          </Col>
 
-            <Col>
-              <Select
-                value={departmentFilter}
-                onChange={(value) => setDepartmentFilter(value)}
-                style={{ width: 200 }}
-                placeholder="Select Department"
-              >
-                <Option value="All">All Departments</Option>
-                {departmentsAll.map((dept) => (
-                  <Option key={dept.id} value={dept.name}>
-                    {dept.name}
-                  </Option>
-                ))}
-              </Select>
-            </Col>
-            
-            {/* <Col>
-              <Button type={statusFilter === "All" ? "primary" : "default"} onClick={() => handleStatusFilter("All")}>
-                All
-              </Button>
+          <Col xs={24} sm={24} md={12} lg={8}>
+            <Select
+              className="approval-request-department-filter"
+              value={departmentFilter}
+              onChange={(value) => setDepartmentFilter(value)}
+              placeholder="Select Department"
+            >
+              <Option value="All">All Departments</Option>
+              {departmentsAll.map((dept) => (
+                <Option key={dept.id} value={dept.name}>
+                  {dept.name}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+        </Row>
 
-              <Button type={statusFilter === "Borrowed" ? "primary" : "default"} onClick={() => handleStatusFilter("Borrowed")}>
-                Borrowed
-              </Button>
+        <Table
+          className="approval-request-table"
+          dataSource={filteredCatalog}
+          columns={columns}
+          rowKey="id"
+          bordered
+          pagination={{ 
+            pageSize: 10,
+            showSizeChanger: true,
+            showQuickJumper: true,
+            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`
+          }}
+        />
 
-              <Button type={statusFilter === "Returned" ? "primary" : "default"} onClick={() => handleStatusFilter("Returned")}>
-                Returned
-              </Button>
-
-              <Button type={statusFilter === "Return Approved" ? "primary" : "default"} onClick={() => handleStatusFilter("Return Approved")}>
-                Return Approved
-              </Button>
-
-              <Button type={statusFilter === "Deployed" ? "primary" : "default"} onClick={() => handleStatusFilter("Deployed")}>
-                Deployed
-              </Button>
-            </Col> */}
-          </Row>
-
-          <Table
-            className="borrow-catalog-table"
-            dataSource={filteredCatalog}
-            columns={columns}
-            rowKey="id"
-            bordered
-            pagination={{ pageSize: 10 }}
-          />
-
-            <ApprovalRequestModal
-              isApprovedModalVisible={isModalVisible}
-              setIsApprovedModalVisible={setIsModalVisible}
-              selectedApprovedRequest={selectedRequest}
-              setSelectedApprovedRequest={setSelectedRequest}
-              requestId={selectedRequest?.id}
-              columns={columns}
-              formatDate={formatDate}
-            />
-        </Content>
-      </Layout>
-
+        <ApprovalRequestModal
+          isApprovedModalVisible={isModalVisible}
+          setIsApprovedModalVisible={setIsModalVisible}
+          selectedApprovedRequest={selectedRequest}
+          setSelectedApprovedRequest={setSelectedRequest}
+          requestId={selectedRequest?.id}
+          columns={columns}
+          formatDate={formatDate}
+        />
+      </Content>
+    </Layout>
   );
 };
 

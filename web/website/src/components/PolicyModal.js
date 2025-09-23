@@ -7,33 +7,28 @@ const { TabPane } = Tabs;
 
 const PolicyModal = ({ visible, onCancel }) => {
   const borrowingPolicies = [
-    "All borrowing requests must be submitted at least 24 hours in advance",
-    "Maximum borrowing period is 7 days for regular items",
-    "Equipment borrowing is limited to 3 days maximum",
-    "Users are responsible for the condition of borrowed items",
-    "Late returns will result in borrowing privileges suspension",
-    "Damaged or lost items must be reported immediately",
-    "Borrowing privileges may be revoked for repeated violations"
+    "All requests must be submitted at least 7 days before usage.",
+    "Users are responsible for the condition of borrowed items upon returning.",
+    "Late returns will result in violation records.",
+    "Damaged or lost items must be reported immediately.",
+    "Borrowing privileges may be revoked for repeated violations."
   ];
 
-  const categoryPolicies = [
-    "Electronics: Requires special handling and must be returned in original condition",
-    "Laboratory Equipment: Only authorized personnel may borrow",
-    "Books and Materials: Standard 7-day borrowing period applies",
-    "Consumables: Limited quantities per request",
-    "Safety Equipment: Must be returned immediately after use",
-    "Software Licenses: Subject to vendor terms and conditions",
-    "Specialized Tools: Requires supervisor approval"
-  ];
+  // const categoryPolicies = [
+  //   "Electronics: Requires special handling and must be returned in original condition",
+  //   "Laboratory Equipment: Only authorized personnel may borrow",
+  //   "Books and Materials: Standard 7-day borrowing period applies",
+  //   "Consumables: Limited quantities per request",
+  //   "Safety Equipment: Must be returned immediately after use",
+  //   "Software Licenses: Subject to vendor terms and conditions",
+  //   "Specialized Tools: Requires supervisor approval"
+  // ];
 
   const cancellationPolicies = [
-    "Requests can be cancelled up to 2 hours before scheduled pickup",
-    "No cancellation fees for requests cancelled within the allowed timeframe",
-    "Late cancellations may affect future borrowing privileges",
+    "Requests may be canceled provided they have not yet been approved by the laboratory personnel.",
+    "Should you have a valid reason for cancellation (for an approved request), please inform the laboratory personnel.",
     "Emergency cancellations must be reported to the administrator",
     "Cancelled items will be made available to other users immediately",
-    "Repeated cancellations may result in borrowing restrictions",
-    "Cancellation requests must be submitted through the system"
   ];
 
   return (
@@ -107,7 +102,7 @@ const PolicyModal = ({ visible, onCancel }) => {
           </div>
         </TabPane>
 
-        <TabPane
+        {/* <TabPane
           tab={
             <span>
               <BookOutlined />
@@ -147,7 +142,7 @@ const PolicyModal = ({ visible, onCancel }) => {
               )}
             />
           </div>
-        </TabPane>
+        </TabPane> */}
 
         <TabPane
           tab={

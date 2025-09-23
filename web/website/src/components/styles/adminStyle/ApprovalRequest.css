@@ -1,56 +1,328 @@
-.view-details {
-  color: #1890ff;
-  text-decoration: underline;
-  cursor: pointer;
+/* Approval Request Component Styles */
+
+/* Main Layout Container */
+.approval-request-layout {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  padding: 16px;
 }
 
-.view-details:hover {
-  color: #40a9ff;
+/* Header Section with Gradient */
+.approval-request-header {
+  background: linear-gradient(135deg, #0b2d39 0%, #165a72 50%, #1e7490 100%);
+  border-radius: 20px;
+  padding: 40px;
+  /* margin-bottom: 24px; */
+  box-shadow: 
+    0 20px 40px rgba(11, 45, 57, 0.15),
+    0 8px 16px rgba(11, 45, 57, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
 }
 
-.ant-table {
-  border-radius: 8px;
+/* Animated background pattern */
+.approval-request-header::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 30px 30px;
+  animation: float 20s ease-in-out infinite;
+  pointer-events: none;
 }
 
-.ant-input {
-  border-radius: 6px;
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(1deg); }
 }
 
-.ant-btn {
-  border-radius: 6px;
-  background-color: #f0f0f0;
+/* Main content area */
+.approval-request-content {
+  padding: 32px;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  box-shadow: 
+    0 4px 20px rgba(0, 0, 0, 0.05),
+    0 1px 3px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* Modal Header */
-.ant-modal-header {
-  padding: 0;
-  border-radius: 8px 8px 0 0;
-}
-
-.ant-modal-title {
-  color: #fff;
-}
-
-/* Modal Content */
-.ant-modal-content {
-  border-radius: 8px;
-}
-
-/* QR Code Alignment */
-.qr-container {
+/* Search and filter row */
+.approval-request-filters {
   display: flex;
-  justify-content: center;
-  margin-top: 20px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
 }
 
-.borrow-catalog-table .ant-table-tbody > tr:nth-child(odd) > td {
-  background-color: #fafafa; /* Light gray */
+/* Search input styling */
+.approval-request-search {
+  flex: 1;
+  max-width: 400px;
 }
-  
-.borrow-catalog-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #ffffff; /* White */
+
+/* Force input group alignment */
+.approval-request-search .ant-input-group {
+  display: flex;
+  align-items: stretch;
 }
+
+/* Input */
+.approval-request-search .ant-input {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px 0 0 12px;
+  padding: 8px 14px;
+  font-size: 14px;
+  background: #fff;
+  height: 40px;   /* fixed height */
+  box-sizing: border-box;
+}
+
+/* Button wrapper */
+.approval-request-search .ant-input-group-addon {
+  margin: 0;
+  padding: 0;
+}
+
+/* Search button */
+.approval-request-search .ant-btn {
+  border-radius: 0 12px 12px 0;
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  border-color: #0ea5e9;
+  height: 40px;    /* same height as input */
+  min-width: 44px; /* square feel for icon */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  font-size: 16px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(14, 165, 233, 0.2);
+}
+
+.approval-request-search .ant-btn:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(14, 165, 233, 0.3);
+}
+
+/* Department filter dropdown */
+.approval-request-department-filter {
+  min-width: 220px;
+}
+
+.approval-request-department-filter .ant-select-selector {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 8px 12px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  transition: all 0.3s ease;
+  background: #ffffff;
+}
+
+.approval-request-department-filter .ant-select-selector:hover {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+}
+
+.approval-request-department-filter.ant-select-focused .ant-select-selector {
+  border-color: #0ea5e9;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15);
+}
+
+/* Table styling */
+.approval-request-table {
+  border-radius: 16px;
+  overflow: hidden;
+  /* border: 1px solid #e2e8f0; */
+}
+
+.approval-request-table .ant-table-thead > tr > th {
+  /* background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); */
+  background-color: #fafafa !important;
+  color:#262626 !important;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid #e9ecee;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.approval-request-table .ant-table-tbody > tr {
+  transition: all 0.2s ease;
+}
+
+.approval-request-table .ant-table-tbody > tr:hover {
+  background: linear-gradient(135deg, #f8fafc 0%, #f0f9ff 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.approval-request-table .ant-table-tbody > tr > td {
+  padding: 20px 16px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  color: #475569;
+  vertical-align: middle;
+}
+
+/* Action buttons */
+.approval-request-action-btn {
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 16px;
+  height: auto;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+}
+
+.approval-request-action-btn.view-btn {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(14, 165, 233, 0.2);
+}
+
+.approval-request-action-btn.view-btn:hover {
+  background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(14, 165, 233, 0.3);
+}
+
+.approval-request-action-btn.approve-btn {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(5, 150, 105, 0.2);
+}
+
+.approval-request-action-btn.approve-btn:hover {
+  background: linear-gradient(135deg, #047857 0%, #065f46 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(5, 150, 105, 0.3);
+}
+
+.approval-request-action-btn.reject-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(220, 38, 38, 0.2);
+}
+
+.approval-request-action-btn.reject-btn:hover {
+  background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.3);
+}
+
+/* Status badges */
+.approval-request-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+}
+
+.approval-request-status.pending {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(251, 191, 36, 0.3);
+}
+
+.approval-request-status.approved {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.3);
+}
+
+.approval-request-status.rejected {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+
+/* Pagination styling */
+.approval-request-table .ant-pagination {
+  margin: 24px 0 0 0;
+  text-align: center;
+}
+
+.approval-request-table .ant-pagination .ant-pagination-item {
+  border-radius: 8px;
+  border: 2px solid #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+.approval-request-table .ant-pagination .ant-pagination-item:hover {
+  border-color: #0ea5e9;
+  transform: translateY(-1px);
+}
+
+.approval-request-table .ant-pagination .ant-pagination-item-active {
+  background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+  border-color: #0ea5e9;
+  color: #ffffff;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .approval-request-header {
+    padding: 24px;
+    margin-bottom: 16px;
+    border-radius: 16px;
+  }
   
-.borrow-catalog-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
+  .approval-request-content {
+    margin: 16px;
+    padding: 20px;
+  }
+  
+  .approval-request-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .approval-request-search {
+    max-width: 100%;
+  }
+  
+  .approval-request-department-filter {
+    min-width: 100%;
+  }
+  
+  .approval-request-table .ant-table-thead > tr > th,
+  .approval-request-table .ant-table-tbody > tr > td {
+    padding: 12px 8px;
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .approval-request-header {
+    padding: 20px;
+  }
+  
+  .approval-request-title {
+    font-size: 20px;
+  }
+  
+  .approval-request-description {
+    font-size: 14px;
+  }
+  
+  .approval-request-content {
+    margin: 12px;
+    padding: 16px;
+  }
 }
