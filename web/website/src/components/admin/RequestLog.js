@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Layout, Table, Button, Modal, Typography, Row, Col, message, DatePicker } from "antd";
+import { Layout, Table, Button, Modal, Typography, Row, Col, message, DatePicker, Descriptions } from "antd";
 import { db } from "../../backend/firebase/FirebaseConfig";
 import { collection, onSnapshot } from "firebase/firestore";
 import jsPDF from "jspdf";
@@ -8,7 +8,7 @@ import dayjs from "dayjs";
 import "../styles/adminStyle/RequestLog.css";
 import { getAuth } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-
+import { FileTextOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
 const { Text } = Typography;
@@ -711,7 +711,11 @@ const RequestLog = () => {
 
         {/* Modal */}
         <Modal
-          title="📄 Requisition Slip"
+          title={
+            <div style={{position: 'absolute', left: 0, top: 0, right: 0, background: '#e9ecee', borderTopLeftRadius: 8, borderTopRightRadius: 8, justifyContent: 'center', padding: '10px 16px'}}>
+              <p style={{margin: 0}}> <FileTextOutlined/> Requisition Slip</p>
+            </div>
+          }
           visible={modalVisible}
           onCancel={closeModal}
           className="requisition-modal"
@@ -744,43 +748,47 @@ const RequestLog = () => {
           zIndex={1025}
         >
           {selectedRequest && (
-            <div ref={modalRef} className="modal-content">
+            <div ref={modalRef} className="modal-content-reqlog">
               {/* Basic Information */}
-              <Row gutter={[16, 0]} className="info-row">
-                <Col span={12}>
-                  <Text className="info-label">Name:</Text>
-                  <Text>{selectedRequest.raw?.userName}</Text>
-                </Col>
-                <Col span={12}>
-                  <Text className="info-label">Room:</Text>
-                  <Text>{selectedRequest.raw?.room}</Text>
-                </Col>
-              </Row>
+              <p style={{fontWeight: 'bold'}}>Request Details:</p>
 
-              <Row gutter={[16, 0]} className="info-row">
-                <Col span={12}>
-                  <Text className="info-label">Request Date:</Text>
-                  <Text>{selectedRequest.timestamp}</Text>
-                </Col>
-                <Col span={12}>
-                  <Text className="info-label">Required Date:</Text>
-                  <Text>{selectedRequest.raw?.dateRequired}</Text>
-                </Col>
-              </Row>
 
-              <Row gutter={[16, 0]} className="info-row">
-                <Col span={12}>
-                  <Text className="info-label">Requested Items:</Text>
-                  <Text className="status-badge">({selectedRequest.status})</Text>
-                </Col>
-                <Col span={12}>
-                  <Text className="info-label">Time Needed:</Text>
-                  <Text>
-                    {selectedRequest.timeFrom ? selectedRequest.timeFrom : "N/A"} -{" "}
-                    {selectedRequest.timeTo ? selectedRequest.timeTo : "N/A"}
-                  </Text>
-                </Col>
-              </Row>
+<Descriptions
+  bordered
+  size="small"
+  column={2}
+  labelStyle={{ fontWeight: "bold", width: "10%" }}
+  contentStyle={{ width: "10%" }}
+>
+  <Descriptions.Item label="Name">
+    {selectedRequest.raw?.userName}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Room">
+    {selectedRequest.raw?.room}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Request Date">
+    {selectedRequest.timestamp}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Required Date">
+    {selectedRequest.raw?.dateRequired}
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Requested Items">
+    <Text className="status-badge">
+      ({selectedRequest.status})
+    </Text>
+  </Descriptions.Item>
+
+  <Descriptions.Item label="Time Needed">
+    {selectedRequest.timeFrom ? selectedRequest.timeFrom : "N/A"} -{" "}
+    {selectedRequest.timeTo ? selectedRequest.timeTo : "N/A"}
+  </Descriptions.Item>
+</Descriptions>
+
+<p style={{fontWeight: 'bold', marginTop: 40}}>Items Requested:</p>
 
               {/* Items Table */}
               <Table
