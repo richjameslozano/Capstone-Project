@@ -481,7 +481,7 @@ const CapexList = () => {
       title: "Submission Date",
       dataIndex: "createdAt",
       key: "createdAt",
-      width: 180,
+      width: 200,
       render: (createdAt) => formatDate(createdAt),
     },
     {
@@ -601,7 +601,7 @@ const CapexList = () => {
     disabled={exportLoading || pdfLoading}
     style={{
       background: "#134b5f",
-      color: "#fff",
+      color: "#327185ff",
       border: "none",
       borderRadius: 6,
       height: 40,

@@ -247,7 +247,42 @@ const ApprovalRequest = () => {
   
   return (
     <Layout style={{ minHeight: "100vh" }}>
-      <Layout>
+       <div style={{
+            background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+            borderRadius: "16px",
+            padding: "32px",
+            marginBottom: "20px",
+            boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px"
+            }}>
+              <div>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Approval Request
+                </h1>
+                <p style={{
+                  color: "#a8d5e5",
+                  fontSize: "16px",
+                  margin: "0",
+                  fontWeight: "500"
+                }}>
+                  View, review, and manage all requisition approval requests initiated by Laboratory Personnel.<br/>
+                </p>
+              </div>
+            </div>
+          </div>
         <Content style={{ margin: "20px" }}>
           <Row justify="space-between" style={{ marginBottom: 16 }}>
             <Col span={8}>
@@ -318,7 +353,7 @@ const ApprovalRequest = () => {
             />
         </Content>
       </Layout>
-    </Layout>
+
   );
 };
 

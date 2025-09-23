@@ -76,14 +76,12 @@
 }
 
 /* Modal Styles */
-.requisition-modal .ant-modal-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 8px 8px 0 0;
-}
 
 .requisition-modal .ant-modal-title {
-  color: white;
+  color: #165a72;
   font-weight: 600;
+  font-size: 23px;
+  margin: 0px;
 }
 
 .requisition-modal .ant-modal-body {
@@ -92,8 +90,8 @@
   overflow-y: auto;
 }
 
-.modal-content {
-  padding: 0;
+.modal-content-reqlog {
+  padding-top: 30px;
 }
 
 .info-row {
