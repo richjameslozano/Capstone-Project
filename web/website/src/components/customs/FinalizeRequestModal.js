@@ -63,12 +63,12 @@ const FinalizeRequestModal = ({
       zIndex={1007}
       closable={false}
       okButtonProps={{
-        disabled: !liabilityAccepted || loading || disabled,
+        disabled: (requestList.some(item => item.category === 'Equipment') && !liabilityAccepted) || loading || disabled,
         loading: loading,
         style: {
-          color: (!liabilityAccepted || loading || disabled) ? 'white' : undefined,
-          backgroundColor: (!liabilityAccepted || loading || disabled) ? '#d9d9d9' : undefined,
-          borderColor: (!liabilityAccepted || loading || disabled) ? '#d9d9d9' : undefined
+          color: ((requestList.some(item => item.category === 'Equipment') && !liabilityAccepted) || loading || disabled) ? 'white' : undefined,
+          backgroundColor: ((requestList.some(item => item.category === 'Equipment') && !liabilityAccepted) || loading || disabled) ? '#d9d9d9' : undefined,
+          borderColor: ((requestList.some(item => item.category === 'Equipment') && !liabilityAccepted) || loading || disabled) ? '#d9d9d9' : undefined
         }
       }}
     >
@@ -134,17 +134,20 @@ const FinalizeRequestModal = ({
         </table>
       </div>
 
-      <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #e9ecef" }}>
-        <Checkbox
-          checked={liabilityAccepted}
-          onChange={onLiabilityChange}
-          style={{ fontSize: "14px", lineHeight: "1.5" }}
-        >
-          <span style={{ fontWeight: "500" }}>
-            {getLiabilityStatement()}
-          </span>
-        </Checkbox>
-      </div>
+      {/* Only show liability checkbox if there are equipment items requested */}
+      {requestList.some(item => item.category === 'Equipment') && (
+        <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#f8f9fa", borderRadius: "8px", border: "1px solid #e9ecef" }}>
+          <Checkbox
+            checked={liabilityAccepted}
+            onChange={onLiabilityChange}
+            style={{ fontSize: "14px", lineHeight: "1.5" }}
+          >
+            <span style={{ fontWeight: "500" }}>
+              {getLiabilityStatement()}
+            </span>
+          </Checkbox>
+        </div>
+      )}
     </Modal>
   );
 };
