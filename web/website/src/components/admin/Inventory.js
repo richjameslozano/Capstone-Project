@@ -7769,6 +7769,11 @@ useEffect(() => {
               
             onValuesChange={(changedValues, allValues) => {
               if ('condition' in changedValues) {
+                // Skip condition validation for Equipment items
+                if (editingItem.category === 'Equipment') {
+                  return;
+                }
+                
                 const condition = allValues.condition || {};
                 const totalCondition =
                   Number(condition.Good || 0) +
@@ -7984,7 +7989,7 @@ useEffect(() => {
                 </Col>
             )}
             </Row>
-             {(selectedCategory === "Glasswares" || selectedCategory === "Equipment"|| selectedCategory ==="Materials") && (
+             {(selectedCategory === "Glasswares" || selectedCategory ==="Materials") && (
       <Row gutter={16}>
                     <Form.Item
                       label="Good"
