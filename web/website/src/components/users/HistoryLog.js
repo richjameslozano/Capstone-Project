@@ -2545,7 +2545,7 @@ const handlePrint = () => {
 
   return (
     <Layout style={{ minHeight: "100vh"}}>
-                 <div style={{
+          <div style={{
             background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
             borderRadius: "16px",
             padding: "32px",

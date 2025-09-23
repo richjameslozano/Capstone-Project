@@ -1835,6 +1835,45 @@ const others = filteredCatalog.filter((item) => {
             pagination={{ pageSize: 10 }}
           /> */}
 
+           <div style={{
+            background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
+            borderRadius: "16px",
+            padding: "32px",
+            marginBottom: "20px",
+            boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
+            border: "1px solid rgba(255, 255, 255, 0.1)"
+          }}>
+            <div style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              flexWrap: "wrap",
+              gap: "16px"
+            }}>
+              <div>
+                <h1 style={{
+                  color: "#ffffff",
+                  fontSize: "28px",
+                  fontWeight: "700",
+                  margin: "0 0 8px 0",
+                  textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
+                }}>
+                  Borrow Catalog
+                </h1>
+                <p style={{
+                  color: "#a8d5e5",
+                  fontSize: "16px",
+                  margin: "0",
+                  fontWeight: "500"
+                }}>
+                  Manage deployment and release requisitions on this page. <br/>
+                  Monitor the status of each request throughout the process.
+                  All items issued from the stockroom must be returned after use.
+                </p>
+              </div>
+            </div>
+          </div>
+
 <Tabs defaultActiveKey="1" type="card" className="requisition-tabs">
   {/* Tab 1: For Release + For Deployment */}
 <TabPane tab="For Release / Deployment" key="1">

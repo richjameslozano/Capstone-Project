@@ -1,132 +1,251 @@
-.view-details {
-  color: #1890ff;
-  text-decoration: none;
+/* Request Log Component Styles */
+.request-log-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding: 20px;
 }
 
-.view-details:hover {
-  text-decoration: underline;
+.request-log-content {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: 8px;
 }
 
-.ant-modal-title {
-  font-weight: bold;
+.filters-section {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+  border-radius: 8px 8px 0 0;
 }
 
-.ant-btn:hover {
-  background-color: #d9d9d9;
+.filters-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.request-log-table .ant-table-tbody > tr:nth-child(odd) > td {
-  background-color: #fafafa; /* Light gray */
+.date-picker {
+  width: 180px;
 }
-  
-.request-log-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #ffffff; /* White */
+
+.filter-buttons-group {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
 }
-  
+
+.action-buttons-group {
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
+}
+
+.status-buttons-group {
+  display: flex;
+  gap: 8px;
+  margin-left: 24px;
+}
+
+.table-section {
+  padding: 16px;
+}
+
+.request-log-table {
+  background: white;
+  border-radius: 6px;
+}
+
+.request-log-table .ant-table-tbody > tr > td{
+  padding: 10px;
+  font-size: 14px;
+}
+.request-log-table .ant-table-thead > tr > th {
+  background-color: #fafafa !important;
+  color:#262626 !important;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid #e9ecee;
+  border-bottom: 2px solid #f0f0f0;
+
+}
+
 .request-log-table .ant-table-tbody > tr:hover > td {
-  background-color: #e6f7ff; /* Light blue highlight */
-}
-  
-.pdf-format {
-  background: white !important;
-  color: black !important;
-  font-family: Arial, sans-serif !important;
-  font-size: 12pt !important;
-  padding: 20px !important;
-  overflow: visible !important;
-  max-height: none !important;
-  box-shadow: none !important;
-}
-.pdf-format table {
-  width: 100% !important;
-  border-collapse: collapse !important;
-}
-.pdf-format th, .pdf-format td {
-  border: 1px solid #000 !important;
-  padding: 5px !important;
-  font-size: 11pt !important;
-}
-.pdf-format th {
-  background-color: #f0f0f0 !important;
+  background-color: #f5f5f5;
 }
 
-/* Styles for "Save All as PDF" button */
-.save-all-pdf-button {
-  background-color: #af2626 !important; /* Red, consistent with "Save as PDF" */
-  border-color: #af2626 !important;
+/* Modal Styles */
+.requisition-modal .ant-modal-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 8px 8px 0 0;
 }
 
-.save-all-pdf-button:hover {
-  background-color: #e53935 !important; /* Lighter red on hover */
-  border-color: #e53935 !important;
+.requisition-modal .ant-modal-title {
+  color: white;
+  font-weight: 600;
 }
 
-/* Styles for "Print All" button */
-.print-all-button.ant-btn-primary {
-  background-color: #d4d4d4 !important; /* Gray, consistent with "Print PDF" */
-  border-color: #8b8989 !important;
-  color: black;
+.requisition-modal .ant-modal-body {
+  padding: 20px;
+  max-height: 65vh;
+  overflow-y: auto;
 }
 
-.print-all-button:hover {
-  background-color: #9e9e9e !important; /* Lighter gray on hover */
-  border-color: #9e9e9e !important;
-  color: black !important;
+.modal-content {
+  padding: 0;
 }
 
-/* Styles for "Approved" status button */
-.approved-status-button.ant-btn-primary {
-  background-color: #52c41a !important; /* Green for success/approved */
-  border-color: #52c41a !important;
-
+.info-row {
+  margin-bottom: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
 }
 
-.approved-status-button.ant-btn-primary:hover {
-  background-color: #73d13d !important; /* Lighter green on hover */
-  border-color: #73d13d !important;
+.info-row:last-of-type {
+  border-bottom: none;
 }
 
-/* Styles for "Rejected" status button */
-.rejected-status-button.ant-btn-primary {
-  background-color: #e0424a !important; /* Red for rejection/danger */
-  border-color: #e0424a !important;
+.info-label {
+  font-weight: 600;
+  color: #262626;
+  margin-right: 8px;
 }
 
-.rejected-status-button.ant-btn-primary:hover {
-  background-color: #ff4d4f !important; /* Lighter red on hover */
-  border-color: #ff4d4f !important;
+.status-badge {
+  color: #52c41a;
+  font-weight: 500;
 }
 
-/* Styles for "Returned" status button */
-.returned-status-button.ant-btn-primary {
-  background-color: #faad14 !important; 
-  border-color: #faad14 !important;
+.items-table {
+  margin-top: 16px;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.returned-status-button.ant-btn-primary:hover {
-  background-color: #ffc53d !important; 
-  border-color: #ffc53d !important;
+.items-table .ant-table-thead > tr > th {
+  background-color: #f5f5f5;
+  font-weight: 600;
+  font-size: 12px;
 }
 
-/* Mobile responsiveness - make table scrollable */
+.reason-section {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border-left: 4px solid #1890ff;
+}
+
+.reason-text {
+  margin: 4px 0 0 0;
+  color: #595959;
+  line-height: 1.5;
+}
+
+.department-section {
+  margin-top: 16px;
+  padding: 12px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border-left: 4px solid #52c41a;
+}
+
+.approval-info {
+  margin-top: 8px;
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
-  .request-log-table {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+  .request-log-content {
+    margin: 8px;
   }
   
-  .request-log-table .ant-table {
-    min-width: 600px; /* Ensure table maintains minimum width for readability */
+  .filters-section {
+    padding: 12px;
   }
   
-  .request-log-table .ant-table-tbody > tr > td,
-  .request-log-table .ant-table-thead > tr > th {
-    white-space: nowrap;
-    padding: 8px 12px;
+  .filters-row {
+    flex-direction: column;
+    align-items: stretch;
   }
   
-  /* Ensure the table container doesn't break the layout */
-  .ant-layout-content {
-    overflow-x: hidden;
+  .filter-buttons-group,
+  .action-buttons-group,
+  .status-buttons-group {
+    margin-left: 0;
+    justify-content: flex-start;
   }
+  
+  .date-picker {
+    width: 100%;
+    margin-bottom: 8px;
+  }
+  
+  .table-section {
+    padding: 8px;
+  }
+}
+
+/* Button Styling */
+.save-all-pdf-button,
+.print-all-button,
+.approved-status-button,
+.rejected-status-button,
+.returned-status-button {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.save-all-pdf-button:hover,
+.print-all-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading States */
+.ant-btn-loading {
+  cursor: not-allowed;
+}
+
+/* Pagination Styles */
+.ant-table-pagination {
+  margin: 20px 0 8px 0;
+  padding: 0 16px;
+  text-align: right;
+}
+
+.ant-table-pagination .ant-pagination-item {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.2s ease;
+}
+
+.ant-table-pagination .ant-pagination-item:hover {
+  border-color: #667eea;
+  transform: translateY(-1px);
+}
+
+.ant-table-pagination .ant-pagination-item-active {
+  background: linear-gradient(135deg, #667eea, #764ba2);
+  border-color: #667eea;
+  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.3);
+}
+
+.ant-table-pagination .ant-pagination-item-active a {
+  color: white;
+  font-weight: 600;
+}
+
+.ant-table-pagination .ant-pagination-prev,
+.ant-table-pagination .ant-pagination-next {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.ant-table-pagination .ant-pagination-prev:hover,
+.ant-table-pagination .ant-pagination-next:hover {
+  border-color: #667eea;
+  color: #667eea;
 }

@@ -209,7 +209,7 @@
 }
 
 .inventory-table .ant-table-tbody > tr:nth-child(even) > td {
-  background-color: #f0f8fc; /* White */
+  background-color: #f3fbff; /* White */
 }
 
 .inventory-table .ant-table-tbody > tr:hover > td {
