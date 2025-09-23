@@ -13356,9 +13356,11 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
           if (response.ok) {
             const result = await response.json();
             console.log('✅ Approval notification sent:', result);
+
           } else {
             const error = await response.json();
             console.error('❌ Approval notification error:', error);
+            
           }
         } catch (error) {
           console.error('❌ Error sending approval notification:', error);
