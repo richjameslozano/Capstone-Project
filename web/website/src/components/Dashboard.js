@@ -792,40 +792,61 @@ const Dashboard = () => {
     { title: "Expiry Date", dataIndex: "expiryDate", key: "expiryDate" },
   ];
 
-  /* ---------- Critical list logic (UPDATED) ---------- */
-  const getCriticalOrLowAvailabilityItems = (inventoryItems) => {
-    if (!inventoryItems || inventoryItems.length === 0) return [];
-    return inventoryItems
-      .filter((item) => {
-        const quantity = Number(item.quantity) || 0;
-        const category = (item.category || "").toLowerCase();
+  /* ---------- Critical / Low Availability List Logic (REVISED) ---------- */
+const getCriticalOrLowAvailabilityItems = (inventoryItems = []) => {
+  if (!Array.isArray(inventoryItems) || inventoryItems.length === 0) return [];
 
-        if (isConsumable(category)) {
-          const cl = Number(item.criticalLevel) || 0;
-          return quantity <= cl;
+  return inventoryItems
+    .filter((item) => {
+      const category = (item.category || "").toLowerCase();
+      const quantity = Number.isFinite(Number(item.quantity)) ? Number(item.quantity) : 0;
+
+      if (isConsumable(category)) {
+        const cl = Number.isFinite(Number(item.criticalLevel)) ? Number(item.criticalLevel) : 0;
+        // Consumable flagged if at/below CL
+        return quantity <= cl;
+      }
+
+      if (isDurable(category)) {
+        const at = Number.isFinite(Number(item.availabilityThreshold))
+          ? Number(item.availabilityThreshold)
+          : 0;
+        // Durable flagged if threshold set and quantity falls below
+        return at > 0 && quantity < at;
+      }
+
+      return false;
+    })
+    .map((item) => {
+      const category = (item.category || "").toLowerCase();
+      const quantity = Number.isFinite(Number(item.quantity)) ? Number(item.quantity) : 0;
+      const cl = Number.isFinite(Number(item.criticalLevel)) ? Number(item.criticalLevel) : 0;
+      const at = Number.isFinite(Number(item.availabilityThreshold))
+        ? Number(item.availabilityThreshold)
+        : 0;
+
+      // Optional: project runout date if available in item
+      let runoutInfo = null;
+      if (isConsumable(category) && item.runoutDate) {
+        const rd = new Date(item.runoutDate);
+        if (!isNaN(rd)) {
+          runoutInfo = {
+            runoutDate: rd.toISOString(),
+            atRisk: item.atRisk === true, // preserve flag from backend/useEffect
+          };
         }
+      }
 
-        if (isDurable(category)) {
-          const at = Number(item.availabilityThreshold) || 0;
-          return at > 0 && quantity < at;
-        }
-
-        return false;
-      })
-      .map((item) => {
-        const category = (item.category || "").toLowerCase();
-        const quantity = Number(item.quantity) || 0;
-        const cl = Number(item.criticalLevel) || 0;
-        const at = Number(item.availabilityThreshold) || 0;
-        return {
-          ...item,
-          _kind: isConsumable(category) ? "consumable" : "durable",
-          _quantity: quantity,
-          _criticalLevel: cl,
-          _availabilityThreshold: at,
-        };
-      });
-  };
+      return {
+        ...item,
+        _kind: isConsumable(category) ? "consumable" : "durable",
+        _quantity: quantity,
+        _criticalLevel: cl,
+        _availabilityThreshold: at,
+        ...(runoutInfo ? runoutInfo : {}),
+      };
+    });
+};
 
   /* ---------- Expiry ---------- */
   useEffect(() => {

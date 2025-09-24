@@ -4745,146 +4745,170 @@ useEffect(() => {
             const entryDate = data.entryDate || "N/A";
             const expiryDate = data.expiryDate || "N/A";
 
-            // sanitize numeric inputs
+            // ===== Sanitize inputs =====
             const quantityRaw = Number(data.quantity);
-            const quantity = Number.isFinite(quantityRaw) && quantityRaw >= 0 ? quantityRaw : 0;
+            const quantity =
+              Number.isFinite(quantityRaw) && quantityRaw >= 0 ? quantityRaw : 0;
 
             const category = (data.category || "").toLowerCase();
-
             let status = data.status || "";
             let newStatus = status;
 
-            // ===== Compute by type =====
-            let avgDailyUsage = 0;
-            let finalCriticalLevel = Number.isFinite(Number(data.criticalLevel))
-              ? Math.max(Number(data.criticalLevel), 0)
-              : 0; // initial/manual
+            // ===== Critical level + usage (consumables) =====
+            let avgDailyUsage = undefined;
+            // DO NOT coerce stored criticalLevel to 0 here — treat absent as null
+            const storedCriticalRaw = data.criticalLevel;
+            const storedCritical = Number.isFinite(Number(storedCriticalRaw))
+              ? Number(storedCriticalRaw)
+              : null;
+
+            let finalCriticalLevel = storedCritical; // start with stored (may be null)
+
             let availabilityThresholdOut;
             let availableNowOut;
 
             if (isConsumable(category) && data.itemId) {
-              // Usage stats
-              const { avgDaily, stdDaily } = await getDailyUsageStats(db, data.itemId);
+              // compute stats
+              const { avgDaily, stdDaily } = await getDailyUsageStats(
+                db,
+                data.itemId
+              );
               const safeAvg = Number.isFinite(avgDaily) ? Math.max(avgDaily, 0) : 0;
+              avgDailyUsage = safeAvg;
+
               const today = new Date();
               const nextRestockDate = resolveNextRestockDateSafe(data, today);
 
-              // horizon with clamp
               const rawDays = daysBetweenUTC(today, nextRestockDate);
-              const safeDays = clamp(rawDays, 1, 180); // ≤ 6 months horizon
+              const safeDays = clamp(rawDays, 1, 180);
 
-              // buffer (sanitize and clamp again to [0, 1])
               let bufferPct = computeBufferPct(safeAvg, stdDaily);
-              bufferPct = Number.isFinite(bufferPct) ? clamp(bufferPct, 0, 1) : 0.2;
+              bufferPct = Number.isFinite(bufferPct)
+                ? clamp(bufferPct, 0, 1)
+                : 0.2;
 
               // compute + cap per category/global
               const capForCat = CATEGORY_CL_CAPS[category] ?? MAX_CL_GLOBAL;
               let computedAnnualCL = Math.ceil(safeAvg * safeDays * (1 + bufferPct));
               computedAnnualCL = clamp(computedAnnualCL, 0, capForCat);
 
-              // final policy: manual wins if sane; else computed
-              const manual = Number(data.criticalLevel);
+              // manual handling (if user provided a CL)
+              const manualRaw = data.criticalLevel;
+              const manual = Number.isFinite(Number(manualRaw)) ? Number(manualRaw) : null;
               const manualIsSane =
                 Number.isFinite(manual) && manual >= 0 && manual <= capForCat;
 
-              finalCriticalLevel = manualIsSane ? manual : computedAnnualCL;
+              // DECISION LOGIC:
+              // - If manual exists and sane -> use manual
+              // - Else if computedAnnualCL > 0 -> use computed
+              // - Else keep existing storedCritical (do NOT overwrite with 0)
+              if (manualIsSane) {
+                finalCriticalLevel = manual;
+              } else if (computedAnnualCL > 0) {
+                finalCriticalLevel = computedAnnualCL;
+              } else {
+                // keep storedCritical (may be null), do not force to 0
+                finalCriticalLevel = storedCritical;
+              }
 
-              // Runout projection (safe divide)
-              const runoutDays = quantity / Math.max(safeAvg, 1e-6);
-              const runoutDate = new Date(today.getTime() + runoutDays * 24 * 60 * 60 * 1000);
-              // const atRisk = runoutDate < nextRestockDate;
-              const atRisk = isValidDate(runoutDate) && isValidDate(nextRestockDate) ? runoutDate < nextRestockDate : false;
+              // Runout projection (safe divide). Only computed if safeAvg > 0.
+              const runoutDays = safeAvg > 0 ? quantity / safeAvg : null;
+              const runoutDate =
+                runoutDays != null
+                  ? new Date(today.getTime() + runoutDays * 24 * 60 * 60 * 1000)
+                  : null;
+              const atRisk =
+                isValidDate(runoutDate) && isValidDate(nextRestockDate)
+                  ? runoutDate < nextRestockDate
+                  : false;
 
-              // Persist computed fields
-              batch.update(doc(db, "inventory", docId), {
-                averageDailyUsage: safeAvg,
-                criticalLevel: finalCriticalLevel,               // reuse your existing field
-                // nextRestockDate: nextRestockDate.toISOString(),  // optional; now per-item
-                // runoutDate: runoutDate.toISOString(),
-                nextRestockDate: isValidDate(nextRestockDate) ? nextRestockDate.toISOString() : null,  // optional; now per-item
-                runoutDate: isValidDate(runoutDate) ? runoutDate.toISOString() : null,
-                atRisk,
-              });
+              // Prepare update object but only include fields that changed
+              const updates = {};
+              if (Number.isFinite(safeAvg) && safeAvg !== data.averageDailyUsage) {
+                updates.averageDailyUsage = safeAvg;
+              }
+              // Only persist criticalLevel if it's a finite number and different from stored
+              if (Number.isFinite(finalCriticalLevel) && finalCriticalLevel !== storedCritical) {
+                updates.criticalLevel = finalCriticalLevel;
+              }
 
-              avgDailyUsage = safeAvg; // for UI return
+              // persist nextRestockDate/runoutDate/atRisk only if they changed (or are newly set)
+              const nextRestockISO = isValidDate(nextRestockDate) ? nextRestockDate.toISOString() : null;
+              if (nextRestockISO !== (data.nextRestockDate || null)) {
+                updates.nextRestockDate = nextRestockISO;
+              }
+              const runoutISO = isValidDate(runoutDate) ? runoutDate.toISOString() : null;
+              if (runoutISO !== (data.runoutDate || null)) {
+                updates.runoutDate = runoutISO;
+              }
+              if (updates.atRisk === undefined && atRisk !== (data.atRisk || false)) {
+                updates.atRisk = atRisk;
+              }
+
+              if (Object.keys(updates).length > 0) {
+                batch.update(doc(db, "inventory", docId), updates);
+              }
             }
 
+            // ===== Availability (durables) =====
             if (isDurable(category)) {
               const { availableNow, availabilityThreshold } =
                 getDurableAvailabilityFields(data);
+
               availableNowOut = availableNow;
               availabilityThresholdOut = availabilityThreshold;
 
-              // Persist durable fields
-              batch.update(doc(db, "inventory", docId), {
-                availableNow: availableNowOut,
-                availabilityThreshold: availabilityThresholdOut,
-              });
+              // write only when changed
+              const updates = {};
+              if (availableNowOut !== data.availableNow) updates.availableNow = availableNowOut;
+              if (availabilityThresholdOut !== data.availabilityThreshold)
+                updates.availabilityThreshold = availabilityThresholdOut;
+              if (Object.keys(updates).length > 0) {
+                batch.update(doc(db, "inventory", docId), updates);
+              }
             }
 
-          // if (isConsumable(category)) {
-          //     if (quantity === 0) newStatus = "out of stock";
-          //     else if (quantity <= finalCriticalLevel) newStatus = "low stock";
-          //     else newStatus = "in stock";
-          //   }
-
-          //   if (isDurable(category)) {
-          //     if (quantity === 0) newStatus = "unavailable";
-          //     else if (
-          //       availabilityThresholdOut != null &&
-          //       quantity < availabilityThresholdOut
-          //     ) newStatus = "low availability";
-          //     else newStatus = "available";
-          //   }
-            
             // ===== Status logic =====
-            // PRIORITY: Check quantity first - if 0, item is unavailable regardless of type
             if (quantity === 0) {
-              if (isConsumable(category)) {
-                newStatus = "out of stock";
-              } else if (isDurable(category)) {
-                newStatus = "unavailable";
-              } else {
-                newStatus = "out of stock"; // Default to out of stock for any category when quantity is 0
-              }
-              // Force update status when quantity is 0
-              batch.update(doc(db, "inventory", docId), { status: newStatus });
+              newStatus = isConsumable(category)
+                ? "out of stock"
+                : isDurable(category)
+                ? "unavailable"
+                : "out of stock";
             } else if (isConsumable(category)) {
-              if (quantity <= finalCriticalLevel) newStatus = "low stock";
-              else newStatus = "in stock";
-            } else if (category && category.toLowerCase() === "equipment" || category.toLowerCase() === "glasswares") {
-              // Equipment items should always be "available" when quantity > 0
+              // when finalCriticalLevel is null (no data), treat as not low
+              newStatus =
+                Number.isFinite(finalCriticalLevel) && quantity <= finalCriticalLevel
+                  ? "low stock"
+                  : "in stock";
+            } else if (category === "equipment" || category === "glasswares") {
               if (
                 availabilityThresholdOut != null &&
                 quantity < availabilityThresholdOut
-              ) newStatus = "low availability";
-              else newStatus = "available";
+              ) {
+                newStatus = "low availability";
+              } else {
+                newStatus = "available";
+              }
             } else if (isDurable(category)) {
               if (
                 availabilityThresholdOut != null &&
                 quantity < availabilityThresholdOut
-              ) newStatus = "low availability";
-              else newStatus = "in stock"; // Changed from "available" to "in stock" for non-equipment durable items
+              ) {
+                newStatus = "low availability";
+              } else {
+                newStatus = "in stock";
+              }
             } else {
-              // Default for unknown categories when quantity > 0
-              newStatus = "in stock"; // Changed from "available" to "in stock"
+              newStatus = "in stock";
             }
 
-            // Update status if it changed (for non-zero quantities)
-            if (quantity > 0 && newStatus !== status) {
+            // Only update status if it changed
+            if (newStatus !== status) {
               batch.update(doc(db, "inventory", docId), { status: newStatus });
             }
 
-            // ===== (OPTIONAL) Triggers =====
-            // if (isConsumable(category) && quantity <= finalCriticalLevel) {
-            //   const shortfall = Math.max(
-            //     finalCriticalLevel - quantity,
-            //     Number(data.minOrderQty) || 1
-            //   );
-            //   await createRestockRequest({ ...data, criticalLevel: finalCriticalLevel, shortfall });
-            // }
-
-            // ===== SYNC TO LABROOM ITEMS (your original logic) =====
+            // ===== Sync labRoom items =====
             const labRoomsSnapshot = await getDocs(collection(db, "labRoom"));
             for (const roomDoc of labRoomsSnapshot.docs) {
               const roomId = roomDoc.id;
@@ -4893,13 +4917,21 @@ useEffect(() => {
 
               itemsSnap.forEach((itemDoc) => {
                 const itemData = itemDoc.data();
-                if (itemData.itemId === data.itemId && itemData.status !== newStatus) {
-                  const labItemRef = doc(db, `labRoom/${roomId}/items`, itemDoc.id);
+                if (
+                  itemData.itemId === data.itemId &&
+                  itemData.status !== newStatus
+                ) {
+                  const labItemRef = doc(
+                    db,
+                    `labRoom/${roomId}/items`,
+                    itemDoc.id
+                  );
                   batch.update(labItemRef, { status: newStatus });
                 }
               });
             }
 
+            // Return UI row (finalCriticalLevel may be null)
             return {
               docId,
               id: index + 1,
@@ -4911,18 +4943,23 @@ useEffect(() => {
               category,
               quantity,
               status: newStatus,
-              averageDailyUsage: avgDailyUsage || undefined,
-              criticalLevel: isConsumable(category) ? finalCriticalLevel : undefined,
-              availabilityThreshold: isDurable(category) ? availabilityThresholdOut : undefined,
-              availableNow: isDurable(category) ? availableNowOut : undefined,
+              averageDailyUsage: avgDailyUsage ?? data.averageDailyUsage,
+              criticalLevel: isConsumable(category) ? finalCriticalLevel ?? data.criticalLevel : undefined,
+              availabilityThreshold: isDurable(category)
+                ? availabilityThresholdOut ?? data.availabilityThreshold
+                : undefined,
+              availableNow: isDurable(category) ? availableNowOut ?? data.availableNow : undefined,
               ...data,
             };
           })
         );
 
+        // commit only once
         await batch.commit();
 
-        items.sort((a, b) => (a.item || "").localeCompare(b.item || ""));
+        items.sort((a, b) =>
+          (a.item || "").localeCompare(b.item || "")
+        );
         setDataSource(items);
         setCount(items.length);
       } catch (error) {
@@ -4939,29 +4976,7 @@ useEffect(() => {
 
   return () => unsubscribe();
 }, []);
-//revised
 
-  useEffect(() => {
-    const departmentsCollection = collection(db, "departments");
-
-    // Only get departments where college == "SAH"
-    const q = query(departmentsCollection, where("college", "==", "SAH"));
-
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        const deptList = querySnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-        setDepartmentsAll(deptList);
-      },
-      (error) => {
-        console.error("Error fetching SAH departments in real-time:", error);
-      }
-    );
-
-    return () => unsubscribe();
-  }, []);
 
   //RESTOCKING
   useEffect(() => {
@@ -5167,25 +5182,6 @@ const handleRestockSubmit = async (values) => {
 //       return;
 //     }
 
-//     // Sanitize itemName and itemDetails (trim whitespace, ensure non-empty strings)
-//     const sanitizedItemName = values.itemName.trim();
-//     const sanitizedItemDetails = values.itemDetails.trim();
-
-//     if (!sanitizedItemName || !sanitizedItemDetails) {
-//       console.warn("❌ Item Name and Item Details are required.");
-//       return;
-//     }
-
-//     // Sanitize criticalLevel (ensure it's a number and >= 1)
-//    const sanitizedCriticalLevel = Math.max(Number(values.criticalLevel), 1);
-
-
-//     // Sanitize category to ensure it's valid
-//     const validCategories = ["Glasswares", "Equipment", "Materials", "Chemical", "Reagent"];
-//     if (!validCategories.includes(values.category)) {
-//       console.warn(`❌ Invalid category: ${values.category}`);
-//       return;
-//     }
 
 //     const sanitizedLabRoom = values.labRoom ? values.labRoom.toString().padStart(4, '0') : null;
 
@@ -6184,9 +6180,9 @@ const handleAdd = async (values) => {
     const formattedEntryDate  = values.entryDate  ? values.entryDate.format("YYYY-MM-DD") : null;
     const formattedExpiryDate = values.expiryDate ? values.expiryDate.format("YYYY-MM-DD") : null;
 
-    const parseNum = (v) => {
+    const parseNum = (v, fallback = 0) => {
       const n = Number(v);
-      return Number.isFinite(n) ? n : 0;
+      return Number.isFinite(n) ? n : fallback;
     };
 
     // ---- quantity logic (containers only for Chemical/Reagent) ----
@@ -6225,16 +6221,27 @@ const handleAdd = async (values) => {
       return;
     }
 
+    // ---- critical level safe default ----
+    // Let backend / useEffect compute if none is provided
+    const rawCritical = parseNum(values.criticalLevel, NaN);
+    const criticalLevel = Number.isFinite(rawCritical) && rawCritical >= 0 ? rawCritical : null;
+
     // ---- status logic ----
-    const criticalLevel = parseNum(values.criticalLevel);
     const isConsumable = (c) => ["chemical", "reagent", "materials"].includes(c);
     const isDurable    = (c) => ["equipment", "glasswares"].includes(c);
 
     let initialStatus;
     if (qtyBase === 0) {
-      initialStatus = isConsumable(cat) ? "out of stock" : (isDurable(cat) ? "unavailable" : "out of stock");
+      initialStatus = isConsumable(cat)
+        ? "out of stock"
+        : isDurable(cat)
+        ? "unavailable"
+        : "out of stock";
     } else if (isConsumable(cat)) {
-      initialStatus = qtyBase <= criticalLevel ? "low stock" : "in stock";
+      // if manual critical is missing, default to "in stock" (later recalculated by listener)
+      initialStatus = criticalLevel != null && qtyBase <= criticalLevel
+        ? "low stock"
+        : "in stock";
     } else if (cat === "equipment" || cat === "glasswares") {
       initialStatus = "available";
     } else if (isDurable(cat)) {
@@ -6264,8 +6271,12 @@ const handleAdd = async (values) => {
       shelves: values.shelves ?? null,
       row: values.row ?? null,
       type: values.type ?? null,
-      criticalLevel: Number.isFinite(criticalLevel) ? criticalLevel : null,
-      availabilityThreshold: values.availabilityThreshold != null ? Number(values.availabilityThreshold) : null,
+
+      // safe: null means "let the system compute"
+      criticalLevel,
+      availabilityThreshold: values.availabilityThreshold != null
+        ? Number(values.availabilityThreshold)
+        : null,
     };
 
     // keep the UI input structure for reference / future parsing
@@ -6296,11 +6307,19 @@ const handleAdd = async (values) => {
 
     let result;
     const text = await response.text();
-    try { result = text ? JSON.parse(text) : {}; } catch { result = { raw: text }; }
+    try {
+      result = text ? JSON.parse(text) : {};
+    } catch {
+      result = { raw: text };
+    }
 
     if (!response.ok) {
       console.error("Add Inventory failed:", { status: response.status, result });
-      const msg = result?.error || result?.message || result?.raw || `Server error (${response.status}). Check server logs.`;
+      const msg =
+        result?.error ||
+        result?.message ||
+        result?.raw ||
+        `Server error (${response.status}). Check server logs.`;
       alert(msg);
       return;
     }
