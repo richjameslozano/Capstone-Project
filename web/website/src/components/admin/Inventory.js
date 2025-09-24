@@ -4977,6 +4977,27 @@ useEffect(() => {
   return () => unsubscribe();
 }, []);
 
+ useEffect(() => {
+    const departmentsCollection = collection(db, "departments");
+
+    // Only get departments where college == "SAH"
+    const q = query(departmentsCollection, where("college", "==", "SAH"));
+
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
+        const deptList = querySnapshot.docs
+          .map((doc) => ({ id: doc.id, ...doc.data() }))
+          .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        setDepartmentsAll(deptList);
+      },
+      (error) => {
+        console.error("Error fetching SAH departments in real-time:", error);
+      }
+    );
+
+    return () => unsubscribe();
+  }, []);
 
   //RESTOCKING
   useEffect(() => {

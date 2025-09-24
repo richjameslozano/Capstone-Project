@@ -1149,7 +1149,16 @@ const getCriticalOrLowAvailabilityItems = (inventoryItems = []) => {
       const qy = query(productsRef, orderBy("timestamp", "desc"));
       const qs = await getDocs(qy);
       const recentItems = [];
-      qs.forEach((doc) => recentItems.push(doc.data()));
+      qs.forEach((doc) => {
+        const data = doc.data();
+        // Filter to only show activities that contain "Added new item", "Archived item", or "Updated item"
+        if (data.action && (
+            data.action.includes("Added new item") || 
+            data.action.includes("Archived item") || 
+            data.action.includes("Updated item"))) {
+          recentItems.push(data);
+        }
+      });
       setRecentProducts(recentItems);
     };
     fetchRecentProducts();
