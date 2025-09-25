@@ -5338,6 +5338,85 @@ useEffect(() => {
 
     return () => unsubscribe();
   }, []);
+
+  // Real-time monitor QR codes subcollections for condition changes
+  useEffect(() => {
+    const inventoryRef = collection(db, "inventory");
+    const unsubscribeFunctions = [];
+    
+    // First, get all inventory items to set up listeners for their QR codes subcollections
+    const setupQRCodeListeners = async () => {
+      try {
+        const inventorySnapshot = await getDocs(inventoryRef);
+        
+        for (const docSnap of inventorySnapshot.docs) {
+          const inventoryId = docSnap.id;
+          const inventoryData = docSnap.data();
+          
+          // Set up real-time listener for QR codes subcollection
+          const qrCodesRef = collection(db, "inventory", inventoryId, "qrCodes");
+          
+          const qrCodesUnsubscribe = onSnapshot(qrCodesRef, (qrSnapshot) => {
+            qrSnapshot.docChanges().forEach(async (change) => {
+              if (change.type === 'modified' || change.type === 'added') {
+                const qrData = change.doc.data();
+                const condition = qrData.condition?.toLowerCase();
+                const currentStatus = qrData.status;
+                
+                // Check if condition is defect, damage, or lost and status is not already "Not Available"
+                if ((condition === 'defect' || condition === 'damage' || condition === 'lost') && 
+                    currentStatus !== 'Not Available') {
+                  
+                  try {
+                    // Update the individual QR code document status to "Not Available"
+                    const qrCodeDocRef = doc(db, "inventory", inventoryId, "qrCodes", change.doc.id);
+                    await updateDoc(qrCodeDocRef, {
+                      status: "Not Available",
+                      lastUpdated: serverTimestamp()
+                    });
+                    
+                    console.log(`🔄 Real-time update: QR code ${qrData.individualItemId} status changed to "Not Available" due to condition: ${condition}`);
+                  } catch (updateError) {
+                    console.error(`Error updating QR code ${qrData.individualItemId}:`, updateError);
+                  }
+                }
+                // Check if condition is good and status is currently "Not Available"
+                else if (condition === 'good' && currentStatus === 'Not Available') {
+                  
+                  try {
+                    // Update the individual QR code document status back to "Available"
+                    const qrCodeDocRef = doc(db, "inventory", inventoryId, "qrCodes", change.doc.id);
+                    await updateDoc(qrCodeDocRef, {
+                      status: "Available",
+                      lastUpdated: serverTimestamp()
+                    });
+                    
+                    console.log(`🔄 Real-time update: QR code ${qrData.individualItemId} status changed back to "Available" due to condition: ${condition}`);
+                  } catch (updateError) {
+                    console.error(`Error updating QR code ${qrData.individualItemId}:`, updateError);
+                  }
+                }
+              }
+            });
+          }, (error) => {
+            console.error(`Error monitoring QR codes for inventory ${inventoryData.itemName}:`, error);
+          });
+          
+          unsubscribeFunctions.push(qrCodesUnsubscribe);
+        }
+      } catch (error) {
+        console.error("Error setting up QR code listeners:", error);
+      }
+    };
+    
+    setupQRCodeListeners();
+    
+    // Cleanup function to unsubscribe from all listeners
+    return () => {
+      unsubscribeFunctions.forEach(unsubscribe => unsubscribe());
+    };
+  }, []);
+
 // Function to automatically create restock requests
 
 //VERSION 1
