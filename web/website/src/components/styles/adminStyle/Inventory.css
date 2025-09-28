@@ -279,6 +279,28 @@
 }
 
 /* Styles for the "Reset Filters" button - Minimalist */
+
+/* Critical item row styling */
+.inventory-table .ant-table-tbody > tr.critical-item-row > td {
+  background-color: #ffebee !important; /* Light red background */
+  border-left: 4px solid #f44336 !important; /* Red left border */
+  border-right: 1px solid #f44336 !important; /* Red right border */
+  font-weight: 500 !important; /* Slightly bolder text */
+}
+
+.inventory-table .ant-table-tbody > tr.critical-item-row:hover > td {
+  background-color: #ffcdd2 !important; /* Darker red on hover */
+  border-left: 4px solid #d32f2f !important; /* Darker red border on hover */
+}
+
+/* Override the alternating row colors for critical items */
+.inventory-table .ant-table-tbody > tr.critical-item-row:nth-child(odd) > td {
+  background-color: #ffebee !important; /* Light red background */
+}
+
+.inventory-table .ant-table-tbody > tr.critical-item-row:nth-child(even) > td {
+  background-color: #ffebee !important; /* Light red background */
+}
 .reset-filters-button {
   height: 40px;
   padding: 0 16px;

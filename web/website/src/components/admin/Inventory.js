@@ -4612,6 +4612,30 @@ const isConsumable = (cat) =>
 const isDurable = (cat) =>
   ["equipment", "glasswares"].includes((cat || "").toLowerCase());
 
+// === CRITICAL ITEM DETECTION ===
+const isItemCritical = (item) => {
+  if (!item) return false;
+  
+  const category = (item.category || "").toLowerCase();
+  const quantity = Number.isFinite(Number(item.quantity)) ? Number(item.quantity) : 0;
+
+  if (isConsumable(category)) {
+    const cl = Number.isFinite(Number(item.criticalLevel)) ? Number(item.criticalLevel) : 0;
+    // Consumable flagged if at/below critical level
+    return quantity <= cl;
+  }
+
+  if (isDurable(category)) {
+    const at = Number.isFinite(Number(item.availabilityThreshold))
+      ? Number(item.availabilityThreshold)
+      : 0;
+    // Durable flagged if threshold set and quantity falls below
+    return at > 0 && quantity < at;
+  }
+
+  return false;
+};
+
 // Function to override status display based on inventory balance
 const getDisplayStatus = (status, quantity, category) => {
   if (quantity === 0) {
@@ -7223,6 +7247,7 @@ useEffect(() => {
                     setIsRowModalVisible(true);
                   }, 100);
                 },
+                className: isItemCritical(record) ? 'critical-item-row' : '',
               };
             }}
           />
