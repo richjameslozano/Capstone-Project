@@ -116,7 +116,7 @@ const pieOptions = {
         <Title level={5} style={{margin: 0, padding: 0, fontSize: 20}}>Pixie Prescription</Title>
         </div>
         <Paragraph>
-          {chartData.Explanation || "No explanation provided by the AI."}
+          {chartData.explanation || "No explanation provided by the AI."}
         </Paragraph>
 
         <Title level={5} style={{ marginTop: 24 }}>How Items Are Classified</Title>
