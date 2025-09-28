@@ -763,6 +763,7 @@ const Dashboard = () => {
   const [todayRequestCount, setTodayRequestCount] = useState(0);
   const [pendingRequestCount, setPendingRequestCount] = useState(0);
   const [borrowCatalogCount, setBorrowCatalogCount] = useState(0);
+  const [approvalRequestCount, setApprovalRequestCount] = useState(0);
   const [historyData, setHistoryData] = useState(0);
   const [dataSource, setDataSource] = useState(0);
 
@@ -1057,6 +1058,12 @@ const getCriticalOrLowAvailabilityItems = (inventoryItems = []) => {
   }, []);
 
   useEffect(() => {
+    const q = collectionGroup(db, "approvalrequestcollection");
+    const unsubscribe = onSnapshot(q, (qs) => setApprovalRequestCount(qs.size));
+    return () => unsubscribe();
+  }, []);
+
+  useEffect(() => {
     const q = collectionGroup(db, "requestlog");
     const unsubscribe = onSnapshot(q, (qs) => setHistoryData(qs.size));
     return () => unsubscribe();
@@ -1207,7 +1214,7 @@ const getCriticalOrLowAvailabilityItems = (inventoryItems = []) => {
   // Add ApprovalRequest card for admin users
   const adminSummaryCards = [
     { title: "Pending Requests", count: pendingRequestCount, color: "#2596be", icon: <FileTextOutlined /> },
-    { title: "Approval Request", count: borrowCatalogCount, color: "#8b5cf6", icon: <DatabaseOutlined /> },
+    { title: "Approval Request", count: approvalRequestCount, color: "#8b5cf6", icon: <DatabaseOutlined /> },
     { title: "Critical Stocks", count: criticalStockList.length, color: "#0b2d39", icon: <UnorderedListOutlined /> },
     { title: "Expiring Items", count: expiringSoonItems.length, color: "#000000", icon: <DatabaseOutlined /> },
   ];
@@ -1263,7 +1270,7 @@ const getCriticalOrLowAvailabilityItems = (inventoryItems = []) => {
                     navigate("/main/approval-request");
                   }
                   if (card.title === "Expiring Items") navigate("/main/inventory");
-                  if (card.title === "Critical Stocks") navigate("/main/inventory");
+                  if (card.title === "Critical Stocks") navigate("/main/inventory?filter=critical");
                 }}
               >
                 <div className="summary-card-icon">{card.icon}</div>

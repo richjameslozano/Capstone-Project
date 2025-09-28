@@ -4315,6 +4315,7 @@
 // VERSION 2 TESTING QR PER EQUIPMENT ITEM
 import React, { useState, useRef, useEffect } from "react";
 import ReactDOM from "react-dom/client";
+import { useLocation } from "react-router-dom";
 import {Layout,Table,Input,Button,Select,Form,Row,Col,DatePicker,Modal,InputNumber,Radio,FloatButton,Checkbox,Spin} from "antd";
 import { EditOutlined, DeleteOutlined, PlusOutlined, FileTextOutlined, DownloadOutlined, FilePdfOutlined, FileExcelOutlined, PrinterOutlined, FilterOutlined} from '@ant-design/icons'; 
 import { QRCodeCanvas, QRCodeSVG } from "qrcode.react";
@@ -4391,6 +4392,19 @@ const Inventory = () => {
   const userId = localStorage.getItem("userId");
   const [exportLoading, setExportLoading] = useState(false);
   const [pdfLoading, setPdfLoading] = useState(false);
+  const [showCriticalOnly, setShowCriticalOnly] = useState(false);
+  
+  // Get URL parameters
+  const location = useLocation();
+  
+  // Handle URL parameters for critical filter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const filter = searchParams.get('filter');
+    if (filter === 'critical') {
+      setShowCriticalOnly(true);
+    }
+  }, [location.search]);
   const [printLoading, setPrintLoading] = useState(false);
   const [qrCodesModalVisible, setQrCodesModalVisible] = useState(false);
   const [selectedItemQRCodes, setSelectedItemQRCodes] = useState([]);
@@ -5940,12 +5954,16 @@ const filteredData = dataSource.filter((item) => {
       )
     : true;
 
-  // Filter items based on selected category, item type, and department only
+  // Critical filter logic
+  const matchesCriticalFilter = showCriticalOnly ? isItemCritical(item) : true;
+
+  // Filter items based on selected category, item type, department, and critical status
   return (
     (!filterCategory || item.category === filterCategory) &&
     (!filterItemType || item.type === filterItemType) &&
     (!filterDepartment || item.department === filterDepartment) &&
-    matchesSearch
+    matchesSearch &&
+    matchesCriticalFilter
   );
 });
 
@@ -7212,11 +7230,21 @@ useEffect(() => {
   </Select>
 
   <Button
+    className={`critical-filter-button ${showCriticalOnly ? 'active' : ''}`}
+    onClick={() => setShowCriticalOnly(!showCriticalOnly)}
+    icon={<FilterOutlined />}
+    type={showCriticalOnly ? 'primary' : 'default'}
+  >
+    {showCriticalOnly ? 'Show All Items' : 'Show Critical Only'}
+  </Button>
+
+  <Button
     className="reset-filters-button"
     onClick={() => {
       setFilterCategory(null);
       setFilterItemType(null);
       setSearchText('');
+      setShowCriticalOnly(false);
     }}
   >
     Reset Filters

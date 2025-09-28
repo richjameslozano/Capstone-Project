@@ -279,6 +279,38 @@
 }
 
 /* Styles for the "Reset Filters" button - Minimalist */
+.reset-filters-button {
+  height: 40px;
+  padding: 0 16px;
+}
+
+/* Critical filter button styling */
+.critical-filter-button {
+  height: 40px;
+  padding: 0 16px;
+  margin-right: 8px;
+  border-color: #f44336 !important;
+  color: #f44336 !important;
+}
+
+.critical-filter-button:hover {
+  background-color: #ffebee !important;
+  border-color: #d32f2f !important;
+  color: #d32f2f !important;
+}
+
+.critical-filter-button.active,
+.critical-filter-button.ant-btn-primary {
+  background-color: #f44336 !important;
+  border-color: #f44336 !important;
+  color: white !important;
+}
+
+.critical-filter-button.active:hover,
+.critical-filter-button.ant-btn-primary:hover {
+  background-color: #d32f2f !important;
+  border-color: #d32f2f !important;
+}
 
 /* Critical item row styling */
 .inventory-table .ant-table-tbody > tr.critical-item-row > td {
