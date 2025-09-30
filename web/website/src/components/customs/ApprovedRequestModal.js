@@ -4730,15 +4730,73 @@ function getConditionSummary(conditionsArray) {
               console.log("⚠️ No deployedQRCodes found, skipping individual QR code return");
               continue;
             }
+            // // Create individualQRConditions based on the actual deployed QR codes
+            //  const individualQRConditions = deployedQRCodes.map((qrCode, index) => ({
+            //   qrCodeId: qrCode.id, // Use the actual document ID
+            //   individualItemId: qrCode.individualItemId, // Use the actual individualItemId
+            //   condition: "Good" // Default condition, or get from item.conditions if available
+            // }));
             
-            // Create individualQRConditions based on the actual deployed QR codes
-            const individualQRConditions = deployedQRCodes.map((qrCode, index) => ({
-              qrCodeId: qrCode.id, // Use the actual document ID
-              individualItemId: qrCode.individualItemId, // Use the actual individualItemId
-              condition: "Good" // Default condition, or get from item.conditions if available
-            }));
+            // 🔧 FIX: Retrieve the actual return data with individualQRConditions
+            let individualQRConditions = [];
             
-            console.log("🔧 CREATED INDIVIDUAL QR CONDITIONS:", individualQRConditions);
+            // First, check if the current item has individualQRConditions from the updated requestList
+            if (item.individualQRConditions && Array.isArray(item.individualQRConditions)) {
+              individualQRConditions = item.individualQRConditions;
+              console.log("🔧 USING INDIVIDUAL QR CONDITIONS FROM REQUEST LIST:", individualQRConditions);
+            } else {
+              // Fallback: try to get the return data from the returnedItems collection
+              try {
+                const returnQuery = query(
+                  collection(db, "returnedItems"),
+                  where("userName", "==", selectedApprovedRequest.userName),
+                  where("dateRequired", "==", selectedApprovedRequest.dateRequired),
+                  where("room", "==", selectedApprovedRequest.room)
+                );
+                
+                const returnSnapshot = await getDocs(returnQuery);
+                if (!returnSnapshot.empty) {
+                  const returnData = returnSnapshot.docs[0].data();
+                  console.log("🔍 FOUND RETURN DATA:", returnData);
+                  
+                  // Find the matching item in the return data
+                  const returnItem = returnData.requestList?.find(returnItem => 
+                    returnItem.itemIdFromInventory === item.itemIdFromInventory
+                  );
+                  
+                  if (returnItem && returnItem.individualQRConditions) {
+                    individualQRConditions = returnItem.individualQRConditions;
+                    console.log("🔧 USING ACTUAL RETURN CONDITIONS:", individualQRConditions);
+                  } else {
+                    console.log("⚠️ No individualQRConditions found in return data, using default Good conditions");
+                    // Fallback to default Good conditions
+                    individualQRConditions = deployedQRCodes.map((qrCode, index) => ({
+                      qrCodeId: qrCode.id,
+                      individualItemId: qrCode.individualItemId,
+                      condition: "Good"
+                    }));
+                  }
+                } else {
+                  console.log("⚠️ No return data found, using default Good conditions");
+                  // Fallback to default Good conditions
+                  individualQRConditions = deployedQRCodes.map((qrCode, index) => ({
+                    qrCodeId: qrCode.id,
+                    individualItemId: qrCode.individualItemId,
+                    condition: "Good"
+                  }));
+                }
+              } catch (error) {
+                console.error("❌ Error retrieving return data:", error);
+                // Fallback to default Good conditions
+                individualQRConditions = deployedQRCodes.map((qrCode, index) => ({
+                  qrCodeId: qrCode.id,
+                  individualItemId: qrCode.individualItemId,
+                  condition: "Good"
+                }));
+              }
+            }
+            
+            console.log("🔧 FINAL INDIVIDUAL QR CONDITIONS:", individualQRConditions);
             
             const returnResponse = await fetch('https://webnuls.onrender.com/return-individual-qr-codes', {
               method: 'POST',
