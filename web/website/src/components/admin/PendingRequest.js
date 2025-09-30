@@ -12754,6 +12754,7 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
             console.log(`✅ SUCCESSFULLY UPDATED INVENTORY: ${itemName}`);
 
             // Update inventory condition breakdown
+            // 🔧 FIX: Only deduct from "Good" condition items, preserve Damage/Defect/Lost items
             let remaining = requestedQty;
             const good = data.condition?.Good ?? 0;
             const damage = data.condition?.Damage ?? 0;
@@ -12761,39 +12762,42 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
             const lost = data.condition?.Lost ?? 0;
 
             let newGood = good;
-            let newDamage = damage;
-            let newDefect = defect;
-            let newLost = lost;
+            let newDamage = damage; // Preserve existing damage items
+            let newDefect = defect; // Preserve existing defect items  
+            let newLost = lost;     // Preserve existing lost items
 
+            // Only deduct from "Good" condition items (available items)
             if (remaining > 0) {
               const deductFromGood = Math.min(newGood, remaining);
               newGood -= deductFromGood;
               remaining -= deductFromGood;
             }
 
-            if (remaining > 0) {
-              const deductFromDamage = Math.min(newDamage, remaining);
-              newDamage -= deductFromDamage;
-              remaining -= deductFromDamage;
-            }
+            // 🔧 FIX: Don't deduct from Damage, Defect, or Lost items
+            // These items are not available for borrowing and should remain unchanged
+            // if (remaining > 0) {
+            //   const deductFromDamage = Math.min(newDamage, remaining);
+            //   newDamage -= deductFromDamage;
+            //   remaining -= deductFromDamage;
+            // }
 
-            if (remaining > 0) {
-              const deductFromDefect = Math.min(newDefect, remaining);
-              newDefect -= deductFromDefect;
-              remaining -= deductFromDefect;
-            }
+            // if (remaining > 0) {
+            //   const deductFromDefect = Math.min(newDefect, remaining);
+            //   newDefect -= deductFromDefect;
+            //   remaining -= deductFromDefect;
+            // }
 
-            if (remaining > 0) {
-              const deductFromLost = Math.min(newLost, remaining);
-              newLost -= deductFromLost;
-              remaining -= deductFromLost;
-            }
+            // if (remaining > 0) {
+            //   const deductFromLost = Math.min(newLost, remaining);
+            //   newLost -= deductFromLost;
+            //   remaining -= deductFromLost;
+            // }
 
             await updateDoc(inventoryRef, {
               'condition.Good': newGood,
-              'condition.Damage': newDamage,
-              'condition.Defect': newDefect,
-              'condition.Lost' : newLost,
+              'condition.Damage': newDamage,    // Preserve existing damage count
+              'condition.Defect': newDefect,    // Preserve existing defect count
+              'condition.Lost' : newLost,       // Preserve existing lost count
             });
 
             // Update labRoom item quantity if labRoomId exists
@@ -12822,41 +12826,45 @@ console.log("Approved item quantities:", enrichedItems.map(i => `${i.itemName}: 
                   await updateDoc(labRoomItemRef, { quantity: newLabQty });
 
                   // Update lab room condition breakdown
+                  // 🔧 FIX: Only deduct from "Good" condition items, preserve Damage/Defect/Lost items
                   let remainingLab = requestedQty;
                   let labGood = labData.condition?.Good ?? 0;
                   let labDamage = labData.condition?.Damage ?? 0;
                   let labDefect = labData.condition?.Defect ?? 0;
                   let labLost = labData.condition?.Lost ?? 0;
 
+                  // Only deduct from "Good" condition items (available items)
                   if (remainingLab > 0) {
                     const deductFromLabGood = Math.min(labGood, remainingLab);
                     labGood -= deductFromLabGood;
                     remainingLab -= deductFromLabGood;
                   }
 
-                  if (remainingLab > 0) {
-                    const deductFromLabDamage = Math.min(labDamage, remainingLab);
-                    labDamage -= deductFromLabDamage;
-                    remainingLab -= deductFromLabDamage;
-                  }
+                  // 🔧 FIX: Don't deduct from Damage, Defect, or Lost items
+                  // These items are not available for borrowing and should remain unchanged
+                  // if (remainingLab > 0) {
+                  //   const deductFromLabDamage = Math.min(labDamage, remainingLab);
+                  //   labDamage -= deductFromLabDamage;
+                  //   remainingLab -= deductFromLabDamage;
+                  // }
 
-                  if (remainingLab > 0) {
-                    const deductFromLabDefect = Math.min(labDefect, remainingLab);
-                    labDefect -= deductFromLabDefect;
-                    remainingLab -= deductFromLabDefect;
-                  }
+                  // if (remainingLab > 0) {
+                  //   const deductFromLabDefect = Math.min(labDefect, remainingLab);
+                  //   labDefect -= deductFromLabDefect;
+                  //   remainingLab -= deductFromLabDefect;
+                  // }
 
-                  if (remainingLab > 0) {
-                    const deductFromLabLost = Math.min(labLost, remainingLab);
-                    labLost -= deductFromLabLost;
-                    remainingLab -= deductFromLabLost;
-                  }
+                  // if (remainingLab > 0) {
+                  //   const deductFromLabLost = Math.min(labLost, remainingLab);
+                  //   labLost -= deductFromLabLost;
+                  //   remainingLab -= deductFromLabLost;
+                  // }
 
                   await updateDoc(labRoomItemRef, {
                     'condition.Good': labGood,
-                    'condition.Damage': labDamage,
-                    'condition.Defect': labDefect,
-                    'condition.Lost' : labLost,
+                    'condition.Damage': labDamage,    // Preserve existing damage count
+                    'condition.Defect': labDefect,    // Preserve existing defect count
+                    'condition.Lost' : labLost,       // Preserve existing lost count
                   });
                 }
               }
