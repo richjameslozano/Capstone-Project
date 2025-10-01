@@ -399,8 +399,8 @@ const sanitizeInput = (input) =>
     setReorderModalVisible(true);
   };
 
-  // Function to clean item data by removing returned-specific fields
-  const cleanItemData = (items) => {
+  // Function to clean item data by removing returned-specific fields and updating course info
+  const cleanItemData = (items, mainRequestData = null) => {
     if (!Array.isArray(items)) return [];
     
     return items.map(item => {
@@ -412,9 +412,24 @@ const sanitizeInput = (input) =>
       delete cleanedItem.conditions;
       delete cleanedItem.dateReturned;
       
+      // Update course information from main request if available
+      if (mainRequestData) {
+        // Update course and courseDescription from the main request
+        if (mainRequestData.course) {
+          cleanedItem.course = mainRequestData.course;
+        }
+        if (mainRequestData.courseDescription) {
+          cleanedItem.courseDescription = mainRequestData.courseDescription;
+        }
+        // Also update program field if it exists
+        if (mainRequestData.program) {
+          cleanedItem.program = mainRequestData.program;
+        }
+      }
+      
       // Debug: Log the cleaning process
       console.log('Original item before cleaning:', item);
-      console.log('Cleaned item after removing returned fields:', cleanedItem);
+      console.log('Cleaned item after removing returned fields and updating course info:', cleanedItem);
       
       return cleanedItem;
     });
@@ -527,7 +542,7 @@ const sanitizeInput = (input) =>
       // Get the original items and clean them of returned-specific data
       const originalItems = selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [];
       console.log('Original items from Firestore:', originalItems);
-      const cleanedItems = cleanItemData(originalItems);
+      const cleanedItems = cleanItemData(originalItems, selectedCompletedOrder.fullData);
       console.log('Cleaned items after processing:', cleanedItems);
 
       // Validate schedule conflicts
@@ -2979,7 +2994,7 @@ const handlePrint = () => {
                   overflowY: 'auto'
                 }}>
                   <ul style={{ margin: 0, paddingLeft: 20 }}>
-                    {cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || []).map((item, index) => (
+                    {cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [], selectedCompletedOrder.fullData).map((item, index) => (
                       <li key={index} style={{ marginBottom: 8 }}>
                         <strong>{item.itemName}</strong> - Quantity: {item.quantity}
                         {item.department && ` (${item.department})`}
@@ -2996,7 +3011,7 @@ const handlePrint = () => {
                   style={{ fontSize: "14px", lineHeight: "1.5" }}
                 >
                   <span style={{ fontWeight: "500" }}>
-                    {getLiabilityStatement(cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || []))}
+                    {getLiabilityStatement(cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [], selectedCompletedOrder.fullData))}
                   </span>
                 </Checkbox>
               </div>
