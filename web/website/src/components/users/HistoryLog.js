@@ -2915,6 +2915,13 @@ const handlePrint = () => {
                       style={{ width: '100%' }}
                       placeholder="Select start time"
                       format="HH:mm"
+                      minuteStep={10}
+                      use12Hours={false}
+                      hideDisabledOptions
+                      disabledHours={() => {
+                        // hide hours outside 7–21
+                        return [...Array(24).keys()].filter(h => h < 7 || h > 21);
+                      }}
                     />
                   </Form.Item>
 
@@ -2927,6 +2934,25 @@ const handlePrint = () => {
                       style={{ width: '100%' }}
                       placeholder="Select end time"
                       format="HH:mm"
+                      minuteStep={10}
+                      use12Hours={false}
+                      hideDisabledOptions
+                      disabledHours={() => {
+                        const timeFromValue = reorderForm.getFieldValue('timeFrom');
+                        if (!timeFromValue) return [];
+                        const [startHour] = timeFromValue.format('HH:mm').split(":").map(Number);
+                        // hide hours before startHour and outside 7–21
+                        return [...Array(24).keys()].filter(h => h < Math.max(7, startHour) || h > 21);
+                      }}
+                      disabledMinutes={(selectedHour) => {
+                        const timeFromValue = reorderForm.getFieldValue('timeFrom');
+                        if (!timeFromValue) return [];
+                        const [startHour, startMinute] = timeFromValue.format('HH:mm').split(":").map(Number);
+                        if (selectedHour === startHour) {
+                          return Array.from({ length: startMinute }, (_, i) => i);
+                        }
+                        return [];
+                      }}
                     />
                   </Form.Item>
 
