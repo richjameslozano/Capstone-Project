@@ -238,8 +238,8 @@ const sanitizeInput = (input) =>
             requester: data.userName || "Unknown",
             room: data.room || "N/A",
             timeNeeded: `${data.timeFrom || "N/A"} - ${data.timeTo || "N/A"}`,
-            courseCode: data.program || "N/A",
-            courseDescription: data.reason || "N/A",
+            courseCode: data.course || data.courseCode || "N/A",
+            courseDescription: data.courseDescription || data.reason || "N/A",
             items: enrichedItems,
             status: "PENDING",
             message: data.reason || "",
@@ -412,19 +412,13 @@ const sanitizeInput = (input) =>
       delete cleanedItem.conditions;
       delete cleanedItem.dateReturned;
       
-      // Update course information from main request if available
-      if (mainRequestData) {
-        // Update course and courseDescription from the main request
-        if (mainRequestData.course) {
-          cleanedItem.course = mainRequestData.course;
-        }
-        if (mainRequestData.courseDescription) {
-          cleanedItem.courseDescription = mainRequestData.courseDescription;
-        }
-        // Also update program field if it exists
-        if (mainRequestData.program) {
-          cleanedItem.program = mainRequestData.program;
-        }
+      // Remove course and courseDescription from individual items (they should only be at top level)
+      delete cleanedItem.course;
+      delete cleanedItem.courseDescription;
+      
+      // Update program field if it exists
+      if (mainRequestData && mainRequestData.program) {
+        cleanedItem.program = mainRequestData.program;
       }
       
       // Debug: Log the cleaning process
@@ -542,7 +536,7 @@ const sanitizeInput = (input) =>
       // Get the original items and clean them of returned-specific data
       const originalItems = selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [];
       console.log('Original items from Firestore:', originalItems);
-      const cleanedItems = cleanItemData(originalItems, selectedCompletedOrder.fullData);
+      const cleanedItems = cleanItemData(originalItems);
       console.log('Cleaned items after processing:', cleanedItems);
 
       // Validate schedule conflicts
@@ -577,6 +571,8 @@ const sanitizeInput = (input) =>
         timestamp: new Date(),
         userName: selectedCompletedOrder.fullData.userName,
         program: selectedCompletedOrder.fullData.program,
+        course: selectedCompletedOrder.fullData.course,
+        courseDescription: selectedCompletedOrder.fullData.courseDescription,
         room: selectedCompletedOrder.fullData.room,
         timeFrom: timeFrom,
         timeTo: timeTo,
@@ -1066,9 +1062,9 @@ const renderPendingTab = () => (
         {requests
           .filter((item) =>
             item.requester.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.courseCode || item.course || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.usageType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (item.courseDescription?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+            (item.courseDescription || item.reason || "").toLowerCase().includes(searchQuery.toLowerCase())
           )
           .map((item) => (
             <div
@@ -1178,14 +1174,14 @@ const renderPendingTab = () => (
               {selectedRequest.requester}
             </Descriptions.Item>
             <Descriptions.Item label="Course Code">
-              {selectedRequest.courseCode}
+              {selectedRequest.courseCode || selectedRequest.program || "N/A"}
             </Descriptions.Item>
 
             <Descriptions.Item label="Requisition Date">
               {selectedRequest.dateRequested}
             </Descriptions.Item>
             <Descriptions.Item label="Course Description">
-              {selectedRequest.courseDescription}
+              {selectedRequest.courseDescription || selectedRequest.reason || "N/A"}
             </Descriptions.Item>
 
             <Descriptions.Item label="Date Required">
@@ -2994,7 +2990,7 @@ const handlePrint = () => {
                   overflowY: 'auto'
                 }}>
                   <ul style={{ margin: 0, paddingLeft: 20 }}>
-                    {cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [], selectedCompletedOrder.fullData).map((item, index) => (
+                    {cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || []).map((item, index) => (
                       <li key={index} style={{ marginBottom: 8 }}>
                         <strong>{item.itemName}</strong> - Quantity: {item.quantity}
                         {item.department && ` (${item.department})`}
@@ -3011,7 +3007,7 @@ const handlePrint = () => {
                   style={{ fontSize: "14px", lineHeight: "1.5" }}
                 >
                   <span style={{ fontWeight: "500" }}>
-                    {getLiabilityStatement(cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [], selectedCompletedOrder.fullData))}
+                    {getLiabilityStatement(cleanItemData(selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || []))}
                   </span>
                 </Checkbox>
               </div>
