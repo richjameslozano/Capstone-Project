@@ -6076,7 +6076,7 @@ const generatePdfFromFilteredData = async () => {
   const pageWidth  = pdf.internal.pageSize.getWidth();
   const pageHeight = pdf.internal.pageSize.getHeight();
 
-  // Layout
+
   const marginX        = 12;
   const headerTopY     = 8;
   const headerBottomY  = 19;
@@ -6097,6 +6097,13 @@ const generatePdfFromFilteredData = async () => {
     }
   } catch (_) {/* noop */}
 
+  // --- "As of (month day, year)" ---
+ const now = new Date();
+  const monthCovered = now.toLocaleString("default", { month: "long" });
+  const dayCovered = now.getDate();
+  const yearCovered = now.getFullYear();
+  const asOfString = `As of (${monthCovered} ${dayCovered}, ${yearCovered})`;
+
   // Logo (same path you used elsewhere)
   const logoDataURL = await loadImageAsDataURL("/NULS_Favicon.png");
 
@@ -6111,9 +6118,15 @@ const generatePdfFromFilteredData = async () => {
     pdf.setFontSize(15);
     pdf.text("INVENTORY LIST", pageWidth / 2, headerTopY + 7, { align: "center" });
 
+    // Add "As of (Month Day, Year)" below the title
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(11);
+    pdf.text(asOfString, pageWidth / 2, headerTopY + 13, { align: "center" });
+
+    const lineY = headerTopY + 16.5; // slightly below the "as of" text
     pdf.setDrawColor(180);
     pdf.setLineWidth(0.2);
-    pdf.line(marginX, headerBottomY, pageWidth - marginX, headerBottomY);
+    pdf.line(marginX, lineY, pageWidth - marginX, lineY);
   };
 
   const drawFooter = () => {
@@ -6132,7 +6145,7 @@ const generatePdfFromFilteredData = async () => {
   drawHeader();
 
   // ---------- REPORT META ----------
-  let y = contentTop;
+   let y = headerTopY + 25;
   pdf.setFont("helvetica", "bold");
   pdf.setFontSize(12);
   pdf.text("Report Details", marginX, y);
