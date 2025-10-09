@@ -510,7 +510,7 @@ const menuItems =
   role === "super-admin"
     ? superAdminMenuItems
     : role === "admin"
-    ? adminMenuItems // Restock Requests is visible only for admin
+    ? adminMenuItems 
     : role === "super-user"
     ? superUserMenuItems
     : userMenuItems;
@@ -518,9 +518,6 @@ const menuItems =
 const SIDEBAR_WIDTH = 250;
 const COLLAPSED_WIDTH = 80;
 const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDTH : SIDEBAR_WIDTH);
-
-
-
 
   return (
     <Layout style={{ }}>
@@ -585,8 +582,8 @@ const currentSiderWidth = isMobile ? SIDEBAR_WIDTH : (collapsed ? COLLAPSED_WIDT
     width: "auto",
     height: "auto",
     objectFit: "contain",
-    borderRadius: 0, // 🚀 removes unwanted circle crop
-    display: "block", // avoids inline spacing issues
+    borderRadius: 0, 
+    display: "block", 
   }}
 />
 
