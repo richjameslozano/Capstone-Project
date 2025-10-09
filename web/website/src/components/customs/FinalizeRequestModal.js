@@ -21,12 +21,10 @@ const FinalizeRequestModal = ({
   loading,
   disabled,
 }) => {
-  
-  // Function to get liability statement based on item categories
+ 
   const getLiabilityStatement = () => {
     const categories = [...new Set(requestList.map(item => item.category))];
     
-    // If only one category, show specific statement
     if (categories.length === 1) {
       const category = categories[0];
       switch (category) {
@@ -44,15 +42,13 @@ const FinalizeRequestModal = ({
           return "I am responsible for the proper use, care, and timely return of borrowed laboratory items. I accept liability for any loss or damage.";
       }
     }
-    
-    // If mixed categories, show unified statement
+ 
     return "I am responsible for the proper use, care, and timely return of all borrowed laboratory items. I accept liability for any loss, damage, or improper use.";
   };
 
   return (
     <Modal
-      className="finalize-modal"
-      // title="Finalize Request"
+      className="finalize-modal" 
       visible={visible}
       
       onOk={onOk}

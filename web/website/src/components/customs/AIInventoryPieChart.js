@@ -109,9 +109,6 @@ const pieOptions = {
 
       <div style={{ backgroundColor: '#e9f5f9', padding:20, borderRadius: 8}}>
         <div style={{display: 'flex', alignItems: 'center', gap: 5, marginBottom: 10}}>
-          {/* <FaRobot size={28} color="#4b8bbe" />
-          <MdSmartToy size={28} color="gray" />
-          <GiArtificialHive size={28} color="purple" /> */}
         <Bot size={28} color="#0f3c4c" />
         <Title level={5} style={{margin: 0, padding: 0, fontSize: 20}}>Pixie Prescription</Title>
         </div>

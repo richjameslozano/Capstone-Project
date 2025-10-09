@@ -20,8 +20,6 @@ const ApprovalRequestModal = ({
   const [approveLoading, setApproveLoading] = useState(false);
   const [rejectLoading, setRejectLoading] = useState(false);
 
-  console.log("requestList in Modal:", requestList);
-
     // Define your own columns for the modal
     const approvedRequestColumns = [
       {
@@ -132,11 +130,6 @@ const ApprovalRequestModal = ({
         }
 
         try {
-            // const auth = getAuth();
-            // const currentUser = auth.currentUser;
-            // const userId = currentUser?.uid;
-            // const userName = currentUser?.displayName || "Unknown User";
-
             const userId = localStorage.getItem("userId");
             const userName = localStorage.getItem("userName");
 
@@ -144,7 +137,6 @@ const ApprovalRequestModal = ({
             const requestDocSnap = await getDoc(requestDocRef);
 
             if (!requestDocSnap.exists()) {
-            console.error(`❌ Request document not found at userrequests/${userRequestId}`);
             alert("Request not found. It may have been deleted.");
             return;
             }
@@ -159,12 +151,10 @@ const ApprovalRequestModal = ({
             const approvalDoc = await getApprovalRequestDocByInternalId(userRequestId);
             if (approvalDoc?.docId) {
               await deleteDoc(doc(db, "approvalrequestcollection", approvalDoc.docId));
-              console.log("✅ Removed from approvalrequestcollection");
             }
 
             await logRequestOrReturn(userId, userName, "Rejected Request");
 
-            console.log("✅ userrequests document updated successfully.");
             setIsApprovedModalVisible(false);
             setSelectedApprovedRequest(null);
             setComment("");
@@ -189,8 +179,6 @@ const ApprovalRequestModal = ({
             userRequestId = userRequestId.replace("/userrequests/", "");
         }
 
-        console.log("✅ Using cleaned userrequests doc ID:", userRequestId);
-
         if (!userRequestId) {
             console.error("❌ Missing userrequests ID in selectedApprovedRequest");
             setNotificationMessage("Missing request ID. Cannot approve the request.");
@@ -214,7 +202,6 @@ const ApprovalRequestModal = ({
             const requestDocSnap = await getDoc(requestDocRef);
 
             if (!requestDocSnap.exists()) {
-            console.error(`❌ Request document not found at userrequests/${userRequestId}`);
             alert("Request not found. It may have been deleted.");
             return;
             }
@@ -229,12 +216,10 @@ const ApprovalRequestModal = ({
             const approvalDoc = await getApprovalRequestDocByInternalId(userRequestId);
             if (approvalDoc?.docId) {
               await deleteDoc(doc(db, "approvalrequestcollection", approvalDoc.docId));
-              console.log("✅ Removed from approvalrequestcollection");
             }
 
             await logRequestOrReturn(userId, userName, "Approved Request");
 
-            console.log("✅ userrequests document updated successfully.");
             setIsApprovedModalVisible(false);
             setSelectedApprovedRequest(null);
             setComment("");

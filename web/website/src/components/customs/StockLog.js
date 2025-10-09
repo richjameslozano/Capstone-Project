@@ -63,8 +63,6 @@ const StockLog = ({ inventoryDocId, editingItem, setDataSource }) => {
     const itemId = itemMeta?.itemId || itemMeta?.itemID || itemMeta?.id;
     
     if (!itemMeta || !itemId) {
-      console.error("Missing editingItem metadata - cannot proceed with deletion");
-      console.error("Available itemMeta:", itemMeta);
       alert("Error: Missing item information. Please refresh the page and try again.");
       setConfirmVisible(false);
       return;
@@ -72,7 +70,6 @@ const StockLog = ({ inventoryDocId, editingItem, setDataSource }) => {
 
     try {
       const response = await axios.post("https://webnuls.onrender.com/deduct-stocklog-item", {
-      // const response = await axios.post("http://localhost:5000/deduct-stocklog-item", {
         userId,
         userName,
         values: {
@@ -83,10 +80,8 @@ const StockLog = ({ inventoryDocId, editingItem, setDataSource }) => {
       });
 
       if (response.status === 200) {
-        // ✅ Gray out the deleted row
         setGrayedRows(prev => ({ ...prev, [selectedRow.key]: true }));
 
-        // ✅ Update the local top-level table count
         if (setDataSource) {
           setDataSource(prev =>
             prev.map(item => {
