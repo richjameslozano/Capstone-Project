@@ -167,42 +167,6 @@ const AccountManagement = () => {
     setIsDeptModalVisible(false);
   };
 
-  // const onJobTitleChange = (value) => {
-  //   setJobTitle(value);
-
-  //   form.setFieldsValue({
-  //     role:
-  //       value === "Dean"
-  //         ? "admin"
-
-  //         : value === "Laboratory Custodian"
-  //         ? "super-user"
-
-  //         : value === "Program Chair"
-  //         ? "admin"
-
-  //         : value === "Faculty"
-  //         ? "User"
-
-  //         : "",
-  //     department: undefined, 
-  //   });
-
-  //   if (value === "Faculty") {
-  //     const facultyDepts = departmentsAll.map((dept) => dept.name);
-  //     setDepartments(facultyDepts);
-
-  //   } else if (value === "Program Chair") {
-  //     const programChairDepts = departmentsAll
-  //       .map((dept) => dept.name)
-  //       .filter((name) => name !== "SHS");
-  //     setDepartments(programChairDepts);
-
-  //   } else {
-  //     setDepartments(departmentOptionsByJobTitle[value] || []);
-  //   }
-  // };
-
   const onJobTitleChange = (value) => {
     setJobTitle(value);
 
@@ -305,187 +269,8 @@ const AccountManagement = () => {
 
     setIsModalVisible(true);
   };
-  
-  // FRONTEND
-  // const handleSave = async (values) => {
-  //   const capitalizeWords = (str) =>
-  //     str
-  //       .trim()
-  //       .toLowerCase()
-  //       .replace(/\b\w/g, (char) => char.toUpperCase());
 
-  //   // Sanitize input by trimming extra spaces and lowering the case
-  //   const sanitizedValues = {
-  //     ...values,
-  //     // name: values.name.trim().toLowerCase(),
-  //     name: capitalizeWords(values.name),
-  //     email: values.email.trim().toLowerCase(),
-  //   };
-
-  //   // Validate email domain
-  //   const email = sanitizedValues.email;
-  //   const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
-  //   const isValidEmail = validDomains.some(domain => email.endsWith(domain));
-
-  //   if (!isValidEmail) {
-  //     setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
-  //     setIsNotificationVisible(true);
-  //     return;
-  //   }
-
-  //   // Check if the employeeId already exists in the 'accounts' collection
-  //   const employeeQuery = query(
-  //     collection(db, "accounts"),
-  //     where("employeeId", "==", sanitizedValues.employeeId.trim())
-  //   );
-    
-  //   const employeeSnapshot = await getDocs(employeeQuery);
-    
-  //   if (!employeeSnapshot.empty && employeeSnapshot.docs[0].id !== (editingAccount?.id || null)) {
-  //     setModalMessage("This employee ID is already in use!");
-  //     setIsNotificationVisible(true);
-  //     return;
-  //   }
-  
-  //   // Check for duplicates, ensuring all names and emails are unique
-  //   const isDuplicate = accounts.some(
-  //     (acc) =>
-  //       acc.id !== (editingAccount?.id || null) &&
-  //       (acc.name.toLowerCase() === sanitizedValues.name ||
-  //         acc.email.toLowerCase() === sanitizedValues.email)
-  //   );
-  
-  //   if (isDuplicate) {
-  //     setModalMessage("An account with the same name or email already exists!");
-  //     setIsNotificationVisible(true);
-  //     return;
-  //   }
-  
-  //   try {
-  //     if (editingAccount) {
-  //       // If editing an existing account
-  //       const accountRef = doc(db, "accounts", editingAccount.id);
-  //       await updateDoc(accountRef, sanitizedValues);
-  
-  //       const updatedAccounts = accounts.map((acc) =>
-  //         acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
-  //       );
-  
-  //       setAccounts(updatedAccounts);
-  //       setModalMessage("Account updated successfully!");
-        
-  //     } else {
-  //       // If adding a new account
-  //       const docRef = await addDoc(collection(db, "accounts"), sanitizedValues);
-  //       const newAccount = { ...sanitizedValues, id: docRef.id };
-
-  //       await fetch('https://sendemail-guopzbbmca-uc.a.run.app', {  // Use your deployed URL here
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify({
-  //           to: email.trim().toLowerCase(),
-  //           subject: "Account Registration - Pending Approval",
-  //           text: `Hi ${sanitizedValues.name},\n\nYour account has been added by the ITSO. You may now login your account. \n\nRegards,\nNU MOA ITSO Team`,
-  //           html: `<p>Hi ${sanitizedValues.name},</p><p>Your account has been added by the ITSO. You may now login your account.</p><p>Regards,<br>NU MOA ITSO Team</p>`,
-  //         }),
-  //       });
-  
-  //       setAccounts([...accounts, newAccount]);
-  //       setModalMessage("Account added successfully!");
-  //       setIsNotificationVisible(true);
-  //     }
-  
-  //     setIsNotificationVisible(true);
-
-  //   } catch (error) {
-
-  //     setModalMessage("Failed to update account.");
-  //     setIsNotificationVisible(true);
-  //   }
-  
-  //   setIsModalVisible(false);
-  // };  
-
-    // BACKEND
-  // const handleSave = async (values) => {
-  //   // Sanitize input locally
-  //   // const sanitizedValues = {
-  //   //   ...values,
-  //   //   name: values.name.trim().toLowerCase(),
-  //   //   email: values.email.trim().toLowerCase(),
-  //   //   employeeId: values.employeeId.trim(),
-  //   // };
-
-  //   const capitalizeWords = (str) =>
-  //     str
-  //       .trim()
-  //       .toLowerCase()
-  //       .replace(/\b\w/g, (char) => char.toUpperCase());
-
-  //   // Sanitize and format input
-  //   const sanitizedValues = {
-  //     ...values,
-  //     // name: values.name.trim().toLowerCase(),
-  //     name: capitalizeWords(values.name),
-  //     email: values.email.trim().toLowerCase(),
-  //     employeeId: values.employeeId.trim(),
-  //   };
-
-  //   // Validate email domain client-side early for quick feedback
-  //   const validDomains = ["@students.nu-moa.edu.ph", "@nu-moa.edu.ph"];
-  //   if (!validDomains.some(domain => sanitizedValues.email.endsWith(domain))) {
-  //     setModalMessage("Only @students.nu-moa.edu.ph or @nu-moa.edu.ph emails are allowed!");
-  //     setIsNotificationVisible(true);
-  //     return;
-  //   }
-
-  //   try {
-  //     const response = await fetch("https://webnuls.onrender.com/account/save", {
-  //       method: "POST",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({
-  //         id: editingAccount?.id || undefined,  // send if editing, else undefined
-  //         ...sanitizedValues,
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (!response.ok) {
-  //       // Show error message from backend
-  //       setModalMessage(data.error || "Failed to save account.");
-  //       setIsNotificationVisible(true);
-  //       return;
-  //     }
-
-  //     if (editingAccount) {
-  //       // Update account in local state
-  //       const updatedAccounts = accounts.map(acc =>
-  //         acc.id === editingAccount.id ? { ...acc, ...sanitizedValues } : acc
-  //       );
-  //       setAccounts(updatedAccounts);
-  //       setModalMessage(data.message || "Account updated successfully!");
-
-  //     } else {
-  //       // Add new account to local state with id from backend
-  //       const newAccount = { ...sanitizedValues, id: data.id };
-  //       setAccounts([...accounts, newAccount]);
-  //       setModalMessage(data.message || "Account added successfully!");
-  //     }
-
-  //     setIsNotificationVisible(true);
-  //     setIsModalVisible(false);
-
-  //   } catch (error) {
-  //     console.error("Error saving account:", error);
-  //     setModalMessage("Failed to save account due to a network or server error.");
-  //     setIsNotificationVisible(true);
-  //   }
-  // };  
-
-   const handleSave = async (values) => {
+  const handleSave = async (values) => {
     const capitalizeWords = (str) =>
       str
         .trim()
@@ -626,83 +411,10 @@ const AccountManagement = () => {
     }
   };
 
-  // const handlePasswordConfirm = async () => {
-  //   const currentUser = auth.currentUser;
-
-  //   if (!currentUser) {
-  //     setPasswordError("User not logged in.");
-  //     return;
-  //   }
-
-  //   const credential = EmailAuthProvider.credential(currentUser.email, password);
-
-  //   try {
-  //     await reauthenticateWithCredential(currentUser, credential);
-
-  //     if (actionType === "edit") {
-  //       const accountToEdit = accounts.find((acc) => acc.id === selectedAccountId);
-  //       showModalHandler(accountToEdit);
-  //     } else if (actionType === "delete") {
-  //       handleDisable(selectedAccountId);
-  //     }
-
-  //     message.success("Password confirmed!");
-  //     setIsPasswordModalVisible(false);
-  //     setPassword("");
-  //     setPasswordError("");
-      
-  //   } catch (error) {
-  //     console.error("Reauthentication error:", error);
-  //     setPasswordError("❗ Incorrect password. Please try again.");
-  //   }
-  // };
-
   const capitalizeWords = (str) =>
     str
       .toLowerCase()
       .replace(/\b\w/g, (char) => char.toUpperCase());
-
-  // const handleAddDepartment = async () => {
-  //   const trimmedName = newDepartment.trim();
-
-  //   if (!trimmedName) {
-  //     setModalMessage("Department name cannot be empty.");
-  //     setIsNotificationVisible(true);
-  //     return;
-  //   }
-
-  //   try {
-  //     const formattedName = capitalizeWords(trimmedName);
-
-  //     // Check if department already exists
-  //     const deptQuery = query(collection(db, "departments"), where("name", "==", formattedName));
-  //     const existingDepts = await getDocs(deptQuery);
-
-  //     if (!existingDepts.empty) {
-  //       setModalMessage("Department already exists!");
-  //       setIsNotificationVisible(true);
-  //       return;
-  //     }
-
-  //     // Generate custom doc ref so we can include the ID
-  //     const deptRef = doc(collection(db, "departments"));
-  //     const id = deptRef.id;
-
-  //     await setDoc(deptRef, {
-  //       id,
-  //       name: formattedName,
-  //       createdAt: new Date(),
-  //     });
-
-  //     setModalMessage("Department added successfully!");
-  //     setIsNotificationVisible(true);
-  //     setIsDeptModalVisible(false);
-  //     setNewDepartment("");
-
-  //   } catch (error) {
-  //     message.error("Failed to add department.");
-  //   }
-  // };
 
   const handleAddDepartment = async () => {
     const trimmedName = newDepartment.trim();
@@ -875,8 +587,8 @@ const AccountManagement = () => {
   ];
 
   const handleEmployeeIdChange = (e) => {
-    let rawValue = e.target.value.replace(/\D/g, ""); // Only digits
-    if (rawValue.length > 6) rawValue = rawValue.slice(0, 6); // Limit to 6 digits
+    let rawValue = e.target.value.replace(/\D/g, "");
+    if (rawValue.length > 6) rawValue = rawValue.slice(0, 6); 
 
     // Auto-insert dash after 2 digits
     let formattedValue = rawValue;
@@ -968,7 +680,6 @@ const AccountManagement = () => {
      </div>
 
           <Table
-            // dataSource={accounts}
             dataSource={filteredAccounts}
             columns={columns}
             rowKey="id"
