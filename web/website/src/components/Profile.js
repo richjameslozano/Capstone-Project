@@ -2,8 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import {Layout,Upload,Avatar,Typography,message,} from "antd";
 import {UserOutlined,IdcardOutlined, ApartmentOutlined, SolutionOutlined, MailOutlined } from "@ant-design/icons";
 import {collection,query,where,getDocs,updateDoc} from "firebase/firestore";
-import { db, storage } from "../backend/firebase/FirebaseConfig";
-import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { db, storage, auth } from "../backend/firebase/FirebaseConfig";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { onAuthStateChanged } from "firebase/auth";
 import "./styles/Profile.css";
 
 const { Content } = Layout;
@@ -14,7 +15,18 @@ const Profile = () => {
   const [userDocRef, setUserDocRef] = useState(null);
   const [warningCount, setWarningCount] = useState(0);
   const [violationCount, setViolationCount] = useState(0);
+  const [currentUser, setCurrentUser] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef();
+
+  useEffect(() => {
+    // Listen for authentication state changes
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setCurrentUser(user);
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -59,45 +71,102 @@ const Profile = () => {
     fetchUserData();
   }, []);
 
-  const handleImageUpload = (file) => {
+  const handleImageUpload = async (file) => {
     if (!file) return;
 
-    const storageRef = ref(storage, `profileImages/${file.name}`);
-    const uploadTask = uploadBytesResumable(storageRef, file);
+    // Check if user is authenticated
+    if (!currentUser) {
+      message.error("You must be logged in to upload images.");
+      return;
+    }
 
-    uploadTask.on(
-      "state_changed",
-      (snapshot) => {
-        const progress =
-          (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+    // Check file size (limit to 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      message.error("File size must be less than 5MB.");
+      return;
+    }
 
-      },
-      (error) => {
+    // Check file type
+    if (!file.type.startsWith('image/')) {
+      message.error("Please select a valid image file.");
+      return;
+    }
 
-        message.error("Failed to upload image.");
-      },
-      async () => {
+    setIsUploading(true);
+
+    try {
+      // Try different storage paths to find one that works
+      const possiblePaths = [
+        `profileImages/${currentUser.uid}_${Date.now()}.jpg`,
+        `images/${currentUser.uid}_${Date.now()}.jpg`,
+        `uploads/${currentUser.uid}_${Date.now()}.jpg`,
+        `users/${currentUser.uid}/profile_${Date.now()}.jpg`
+      ];
+
+      let uploadSuccess = false;
+      let downloadURL = null;
+
+      for (const path of possiblePaths) {
         try {
-          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log(`Trying upload path: ${path}`);
+          const storageRef = ref(storage, path);
           
-          if (userDocRef) {
-            await updateDoc(userDocRef, { profileImage: downloadURL });
-            message.success("Profile image updated successfully!");
-
-            // Force re-render with new image URL
-            const imageUrlWithCacheBuster = `${downloadURL}${downloadURL.includes('?') ? '&' : '?'}t=${Date.now()}`;
-            setImageUrl(imageUrlWithCacheBuster);
-            
-            // Also update localStorage to ensure consistency
-            localStorage.setItem('profileImageUpdated', Date.now().toString());
+          // Convert file to blob if needed
+          let fileToUpload = file;
+          if (file instanceof File) {
+            fileToUpload = file;
+          } else {
+            // Convert to blob
+            const response = await fetch(URL.createObjectURL(file));
+            fileToUpload = await response.blob();
           }
+
+          // Upload the file
+          await uploadBytes(storageRef, fileToUpload);
+          
+          // Get download URL
+          downloadURL = await getDownloadURL(storageRef);
+          console.log(`✅ Upload successful with path: ${path}`);
+          uploadSuccess = true;
+          break;
           
         } catch (error) {
-
-          message.error("Failed to update profile image.");
+          console.log(`❌ Upload failed with path ${path}:`, error.message);
+          continue;
         }
       }
-    );
+
+      if (!uploadSuccess || !downloadURL) {
+        throw new Error("All upload paths failed. Please check Firebase Storage rules.");
+      }
+
+      // Update user profile with the image URL
+      if (userDocRef) {
+        await updateDoc(userDocRef, { profileImage: downloadURL });
+        message.success("Profile image updated successfully!");
+
+        // Force re-render with new image URL
+        const imageUrlWithCacheBuster = `${downloadURL}${downloadURL.includes('?') ? '&' : '?'}t=${Date.now()}`;
+        setImageUrl(imageUrlWithCacheBuster);
+        
+        // Also update localStorage to ensure consistency
+        localStorage.setItem('profileImageUpdated', Date.now().toString());
+      }
+      
+    } catch (error) {
+      console.error("Upload error:", error);
+      
+      // Handle specific Firebase Storage errors
+      if (error.message.includes('unauthorized') || error.message.includes('403')) {
+        message.error("You don't have permission to upload files. Please contact an administrator to check Firebase Storage rules.");
+      } else if (error.message.includes('storage/unknown')) {
+        message.error("An unknown error occurred during upload. Please try again.");
+      } else {
+        message.error(`Upload failed: ${error.message}`);
+      }
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const capitalizeName = (name) => {
@@ -123,6 +192,7 @@ const Profile = () => {
                     name="profileImage"
                     listType="picture"
                     showUploadList={false}
+                    disabled={!currentUser || isUploading}
                     onChange={(info) => {
                       const file = info.file.originFileObj;
                       if (file) {
@@ -160,10 +230,24 @@ const Profile = () => {
                     </p>
                     <text
                       className="upload-btn"
-                      onClick={() => fileInputRef.current.click()}
-                      style={{backgroundColor: 'transparent', color: '#2187ab', fontSize: 16}}
+                      onClick={() => {
+                        if (!currentUser) {
+                          message.error("You must be logged in to change your profile photo.");
+                          return;
+                        }
+                        if (!isUploading) {
+                          fileInputRef.current.click();
+                        }
+                      }}
+                      style={{
+                        backgroundColor: 'transparent', 
+                        color: isUploading ? '#ccc' : '#2187ab', 
+                        fontSize: 16,
+                        cursor: (!currentUser || isUploading) ? 'not-allowed' : 'pointer',
+                        opacity: (!currentUser || isUploading) ? 0.6 : 1
+                      }}
                     >
-                      Change Photo
+                      {isUploading ? 'Uploading...' : 'Change Photo'}
                     </text>
 
                     <input
@@ -171,6 +255,7 @@ const Profile = () => {
                       type="file"
                       accept="image/*"
                       style={{ display: "none" }}
+                      disabled={!currentUser || isUploading}
                       onChange={(e) => {
                         const file = e.target.files[0];
                         if (file) {
