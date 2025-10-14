@@ -819,24 +819,8 @@ function resolveNextRestockDate(data) {
       return;
     }
 
-    let Good = 0, Defect = 0, Damage = 0, Lost = 0;
-    if (["Equipment", "Glasswares", "Materials"].includes(cat)) {
-      Good   = Number(values.condition?.Good || 0);
-      Defect = Number(values.condition?.Defect || 0);
-      Damage = Number(values.condition?.Damage || 0);
-      Lost   = Number(values.condition?.Lost || 0);
-
-      const conditionTotal = Good + Defect + Damage + Lost;
-      const originalQuantity = editingItem.quantity || 0;
-
-      if (conditionTotal !== originalQuantity) {
-        setNotificationMessage(
-          `❌ Total of Good, Defect, Damage, and Lost (${conditionTotal}) must equal original quantity (${originalQuantity}).`
-        );
-        setIsNotificationVisible(true);
-        return;
-      }
-    }
+    // 🔧 FIX: Don't validate conditions during full update
+    // Condition counts are not changed during full updates - they remain the same
 
     const payload = {
       itemName: sanitizedItemName,
@@ -880,9 +864,9 @@ function resolveNextRestockDate(data) {
       payload.availabilityThreshold = Math.floor(atNum);
     }
 
-    if (["Equipment", "Glasswares", "Materials"].includes(cat)) {
-      payload.condition = { Good, Defect, Damage, Lost };
-    }
+    // if (["Equipment", "Glasswares", "Materials"].includes(cat)) {
+    //   payload.condition = { Good, Defect, Damage, Lost };
+    // }
 
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName") || "User";
