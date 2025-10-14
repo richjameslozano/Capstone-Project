@@ -69,8 +69,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
             if (!snapshot.empty) {
               const userData = snapshot.docs[0].data();
               if (userData.profileImage) {
-                const imageUrlWithCacheBuster = `${userData.profileImage}${userData.profileImage.includes('?') ? '&' : '?'}t=${Date.now()}`;
-                setProfileImage(imageUrlWithCacheBuster);
+                setProfileImage(userData.profileImage);
               }
             }
           });
@@ -97,9 +96,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
       if (!snapshot.empty) {
         const userData = snapshot.docs[0].data();
         if (userData.profileImage) {
-          // Add cache-busting parameter to force reload
-          const imageUrlWithCacheBuster = `${userData.profileImage}${userData.profileImage.includes('?') ? '&' : '?'}t=${Date.now()}`;
-          setProfileImage(imageUrlWithCacheBuster);
+          setProfileImage(userData.profileImage);
         }
       }
     };
@@ -114,9 +111,7 @@ const AppHeader = ({ pageTitle, onToggleSidebar, isSidebarCollapsed }) => {
         if (!snapshot.empty) {
           const userData = snapshot.docs[0].data();
           if (userData.profileImage) {
-            // Add cache-busting parameter to force reload
-            const imageUrlWithCacheBuster = `${userData.profileImage}${userData.profileImage.includes('?') ? '&' : '?'}t=${Date.now()}`;
-            setProfileImage(imageUrlWithCacheBuster);
+            setProfileImage(userData.profileImage);
           } else {
             setProfileImage(null);
           }
