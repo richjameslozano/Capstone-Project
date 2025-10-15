@@ -56,22 +56,9 @@ return (
             <li>Return all borrowed items to the laboratory stockroom in clean and intact condition.</li>
             <li><strong>Report any damaged</strong> to the laboratory personnel for proper documentation.</li>
           </ul>
-          {/* <p>
-            Laboratory requests must be submitted (7) seven days before the scheduled date needed.<br /><br />
-            Failure to adhere with this protocol will result in non-fulfillment of the request.<br /><br />
-            Return the borrowed items to the laboratory stock room. Microscopes, glasswares, and equipment must be cleaned and in an intact condition. Dirty, missing, broken, and extremely damaged laboratory items should be reported to the laboratory custodian for proper documentation.
-          </p> */}
         </div>
 
         <div className="modal-footer">
-          {/* <label className="checkbox-container">
-            <input
-              type="checkbox"
-              checked={dontShowAgain}
-              onChange={(e) => setDontShowAgain(e.target.checked)}
-            />
-            &nbsp;Don't show this again
-          </label> */}
           <button className="close-btn" onClick={handleClose}>
             Close
           </button>

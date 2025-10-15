@@ -200,7 +200,6 @@ const ApprovalRequest = () => {
   ];
 
   const handleViewDetails = (record) => {
-    console.log("Selected Record:", record);
     setSelectedRequest(record);
     setIsModalVisible(true);
   };
@@ -214,7 +213,6 @@ const ApprovalRequest = () => {
     if (!timestamp) return "N/A";
   
     try {
-      // If it's a Firestore Timestamp object
       if (timestamp.seconds) {
         const date = new Date(timestamp.seconds * 1000);
         return date.toLocaleString("en-US", {
@@ -227,7 +225,6 @@ const ApprovalRequest = () => {
         });
       }
   
-      // If it's already a string or Date object
       const date = new Date(timestamp);
       if (isNaN(date)) return "N/A";
       
@@ -246,92 +243,6 @@ const ApprovalRequest = () => {
   };
   
   return (
-    // <Layout style={{ minHeight: "100vh" }}>
-    //    <div style={{
-    //         background: "linear-gradient(135deg, #0b2d39 0%, #165a72 100%)",
-    //         borderRadius: "16px",
-    //         padding: "32px",
-    //         marginBottom: "20px",
-    //         boxShadow: "0 8px 32px rgba(11, 45, 57, 0.15)",
-    //         border: "1px solid rgba(255, 255, 255, 0.1)"
-    //       }}>
-    //         <div style={{
-    //           display: "flex",
-    //           justifyContent: "space-between",
-    //           alignItems: "center",
-    //           flexWrap: "wrap",
-    //           gap: "16px"
-    //         }}>
-    //           <div>
-    //             <h1 style={{
-    //               color: "#ffffff",
-    //               fontSize: "28px",
-    //               fontWeight: "700",
-    //               margin: "0 0 8px 0",
-    //               textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
-    //             }}>
-    //               Approval Request
-    //             </h1>
-    //             <p style={{
-    //               color: "#a8d5e5",
-    //               fontSize: "16px",
-    //               margin: "0",
-    //               fontWeight: "500"
-    //             }}>
-    //               View, review, and manage all requisition approval requests initiated by Laboratory Personnel.<br/>
-    //             </p>
-    //           </div>
-    //         </div>
-    //       </div>
-    //     <Content style={{ margin: "20px" }}>
-    //       <Row justify="space-between" style={{ marginBottom: 16 }}>
-    //         <Col span={8}>
-    //           <Search
-    //             placeholder="Search"
-    //             allowClear
-    //             enterButton
-    //             onSearch={handleSearch}
-    //           />
-    //         </Col>
-
-    //         <Col>
-    //           <Select
-    //             value={departmentFilter}
-    //             onChange={(value) => setDepartmentFilter(value)}
-    //             style={{ width: 200 }}
-    //             placeholder="Select Department"
-    //           >
-    //             <Option value="All">All Departments</Option>
-    //             {departmentsAll.map((dept) => (
-    //               <Option key={dept.id} value={dept.name}>
-    //                 {dept.name}
-    //               </Option>
-    //             ))}
-    //           </Select>
-    //         </Col>
-            
-    //       </Row>
-
-    //       <Table
-    //         dataSource={filteredCatalog}
-    //         columns={columns}
-    //         rowKey="id"
-    //         bordered
-    //         pagination={{ pageSize: 10 }}
-    //       />
-
-    //         <ApprovalRequestModal
-    //           isApprovedModalVisible={isModalVisible}
-    //           setIsApprovedModalVisible={setIsModalVisible}
-    //           selectedApprovedRequest={selectedRequest}
-    //           setSelectedApprovedRequest={setSelectedRequest}
-    //           requestId={selectedRequest?.id}
-    //           columns={columns}
-    //           formatDate={formatDate}
-    //         />
-    //     </Content>
-    //   </Layout>
-
     <Layout className="approval-request-layout">
 
                  <div style={{
@@ -374,13 +285,6 @@ const ApprovalRequest = () => {
       <Content className="approval-request-content">
         <Row className="approval-request-filters">
           <Col span={8} xs={24} sm={24} md={12} lg={8}>
-            {/* <Search
-              className="approval-request-search"
-              placeholder="Search requests..."
-              allowClear
-              enterButton
-              onSearch={handleSearch}
-            /> */}
               <Input.Search
                 placeholder='Search Items'
                 className="search-bar"

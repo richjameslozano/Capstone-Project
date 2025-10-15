@@ -78,8 +78,6 @@ const RequisitionRequestModal = ({
   const handleAskApproval = async () => {
     if (!selectedRequest) return;
 
-    console.log("userId:", selectedRequest.accountId); 
-
     try {
       await addDoc(collection(db, "approvalrequestcollection"), {
         ...selectedRequest,
@@ -87,13 +85,11 @@ const RequisitionRequestModal = ({
         forwardedAt: serverTimestamp(),
         status: "Pending Approval",
       });
-      console.log("Successfully added to approvalrequestcollection");
 
       await updateDoc(doc(db, `userrequests/${selectedRequest.id}`), {
         approvalRequested: true,
       });
 
-      console.log("Successfully updated userRequests");
       setApprovalRequestedIds(prev => [...prev, selectedRequest.id]);
       setNotificationMessage("Request successfully forwarded for approval.");
       setIsNotificationVisible(true);
@@ -108,9 +104,7 @@ const RequisitionRequestModal = ({
 
   const isDeanOfSAH = userDepartment === "SAH" && userJobTitle === "dean";
   const shouldShowAskApproval = requestCollege !== "SAH" && !isDeanOfSAH;
-  
-  // Check if any items are checked to disable reject button
-  // const hasCheckedItems = Object.values(checkedItems).some((checked) => checked);
+
   const hasCheckedItems = checkedItems ? Object.values(checkedItems).some((checked) => checked) : false;
 
   return (
@@ -130,7 +124,6 @@ const RequisitionRequestModal = ({
           <Button key="cancel" onClick={handleCancel} disabled={approveLoading || rejectLoading}>Cancel</Button>,
           <Button key="reject" type="default" onClick={handleReturn} loading={rejectLoading} disabled={approveLoading || hasCheckedItems}>Reject</Button>,
 
-          // requestCollege !== null && shouldShowAskApproval && (
           requestCollege !== null && shouldShowAskApproval && selectedRequest && (
             <Button
               key="askApproval"
@@ -147,20 +140,12 @@ const RequisitionRequestModal = ({
             type="primary"
             onClick={handleApprove}
             loading={approveLoading}
-            // disabled={
-            //   rejectLoading ||
-            //   // If approvalRequested exists...
-            //   typeof selectedRequest?.approvalRequested !== "undefined"
-            //     ? selectedRequest.approvalRequested || selectedRequest.deanStatus !== "Approved by Dean"
-            //     : false // If approvalRequested does not exist, enable
-            // }
             disabled={
               rejectLoading ||
               !selectedRequest ||
-              // If approvalRequested exists...
               (typeof selectedRequest?.approvalRequested !== "undefined"
                 ? selectedRequest.approvalRequested || selectedRequest.deanStatus !== "Approved by Dean"
-                : false) // If approvalRequested does not exist, enable
+                : false) 
             }
           >
             {allItemsChecked ? "Approve" : "Next"}

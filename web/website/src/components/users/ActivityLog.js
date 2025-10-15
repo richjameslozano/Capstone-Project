@@ -41,57 +41,6 @@ const ActivityLog = () => {
   const [selectedLog, setSelectedLog] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
 
-  // NOT REAL TIME
-  // useEffect(() => {
-  //   const fetchActivityLogs = async () => {
-  //     try {
-  //       const userId = localStorage.getItem("userId");
-  //       if (!userId) throw new Error("User ID not found");
-
-  //       const activityRef = collection(db, `accounts/${userId}/activitylog`);
-  //       const querySnapshot = await getDocs(activityRef);
-
-  //       const logs = querySnapshot.docs.map((doc, index) => {
-  //         const data = doc.data();
-  //         const logDate =
-  //           data.cancelledAt?.toDate?.() ||
-  //           data.timestamp?.toDate?.() ||
-  //           new Date();
-        
-  //         return {
-  //           key: doc.id || index.toString(),
-  //           date: logDate.toLocaleString("en-US", {
-  //             year: "numeric",
-  //             month: "short",
-  //             day: "numeric",
-  //             hour: "numeric",
-  //             minute: "2-digit",
-  //             hour12: true,
-  //           }),
-  //           action:
-  //             data.status === "CANCELLED"
-  //               ? "Cancelled a request"
-  //               : data.action || "Modified a request",
-  //           by: data.userName || "Unknown User",
-  //           fullData: data,
-  //         };
-  //       });        
-
-  //       logs.sort((a, b) => {
-  //         const dateA = new Date(a.fullData.timestamp?.toDate?.() || a.fullData.cancelledAt?.toDate?.() || 0);
-  //         const dateB = new Date(b.fullData.timestamp?.toDate?.() || b.fullData.cancelledAt?.toDate?.() || 0);
-  //         return dateB - dateA; 
-  //       });        
-
-  //       setActivityData(logs);
-
-  //     } catch (error) {
-  //     }
-  //   };
-
-  //   fetchActivityLogs();
-  // }, []);
-
   useEffect(() => {
     const userId = localStorage.getItem("userId");
     if (!userId) return;
@@ -171,7 +120,6 @@ const ActivityLog = () => {
                   color: "#ffffff",
                   fontSize: "28px",
                   fontWeight: "700",
-                  // margin: "0 0 8px 0",
                   textShadow: "0 2px 4px rgba(0, 0, 0, 0.3)"
                 }}>
                   Activity Log

@@ -66,21 +66,12 @@ const Requisition = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Function to check if selected date is less than 7 days from today
   const checkDateWarning = (selectedDate) => {
     if (!selectedDate) return false;
     
     const today = moment().startOf('day');
     const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
     const daysDiff = selected.diff(today, 'days');
-    
-    console.log('Date warning check:', {
-      selectedDate,
-      today: today.format('YYYY-MM-DD'),
-      selected: selected.format('YYYY-MM-DD'),
-      daysDiff,
-      shouldWarn: daysDiff < 7
-    });
     
     return daysDiff < 7;
   };
@@ -121,13 +112,11 @@ const Requisition = () => {
             warningCount: 0,
             violationCount: currentViolationCount + 1
           });
-          console.log('Warning count reached 3, converted to violation for user:', userEmail);
         } else {
           // Just increment warning count
           await updateDoc(userDoc.ref, {
             warningCount: newWarningCount
           });
-          console.log('Warning count incremented for user:', userEmail);
         }
       }
     } catch (error) {
@@ -156,43 +145,7 @@ const Requisition = () => {
     { key: 0, selectedItemId: null }, 
   ]);
   
-
-  const activitycolumn = [
-  {
-    title: "Date",
-    dataIndex: "date",
-    key: "date",
-    className: "table-header",
-    align: "center",
-  },
-  {
-    title: "Action",
-    dataIndex: "action",
-    key: "action",
-    className: "table-header",
-    align: "center",
-  },
-  {
-    title: "By",
-    dataIndex: "by",
-    key: "by",
-    className: "table-header",
-    align: "center",
-  },
-];
-
   useEffect(() => {
-  //  const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
-  //     item.itemName &&
-  //     item.itemDetails &&
-  //     item.category &&
-  //     item.quantity &&
-  //     item.labRoom &&
-  //     item.status &&
-  //     item.condition &&
-  //     item.department &&
-  //     item.category
-  //   );
 
     const allItemFieldsValid = mergedData.length > 0 && mergedData.every(item =>
       item.itemName &&
@@ -221,63 +174,6 @@ const Requisition = () => {
       setRequestList(storedRequestList);
     }
   }, []);
-
-  // useEffect(() => {
-  //   async function fetchVolumeOptions() {
-  //     const inventoryRef = collection(db, "inventory");
-  //     const snapshot = await getDocs(inventoryRef);
-
-  //     // Extract volumes from all glasswares' quantity arrays
-  //     const volumesSet = new Set();
-
-  //     snapshot.docs.forEach((doc) => {
-  //       const data = doc.data();
-  //       if (data.category === "Glasswares" && Array.isArray(data.quantity)) {
-  //         data.quantity.forEach(qtyObj => {
-  //           // qtyObj.volume may be string or number, convert to number for consistency
-  //           const vol = Number(qtyObj.volume);
-  //           if (!isNaN(vol)) volumesSet.add(vol);
-  //         });
-  //       }
-  //     });
-
-  //     // Convert Set to sorted array
-  //     const sortedVolumes = Array.from(volumesSet).sort((a, b) => a - b);
-  //     setVolumeOptions(sortedVolumes);
-  //   }
-
-  //   fetchVolumeOptions();
-  // }, [db]);
-
-  // useEffect(() => {
-  //   const fetchRequestList = async () => {
-  //     const userId = localStorage.getItem("userId");
-  //     if (userId) {
-  //       try {
-  //         const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-  //         const querySnapshot = await getDocs(tempRequestRef);
-  //         const tempRequestList = querySnapshot.docs.map((doc) => {
-  //           const data = doc.data();
-  //           return {
-  //             ...data,
-  //             selectedItem: {
-  //               value: data.selectedItemId,
-  //               label: data.selectedItemLabel, // <-- This restores the label after refresh
-  //             },
-  //           };
-  //         });          
-  
-  //         setRequestList(tempRequestList);
-
-  //         localStorage.setItem("requestList", JSON.stringify(tempRequestList));
-  
-  //       } catch (error) {
-  //  
-  //       }
-  //     }
-  //   };
-  //   fetchRequestList();
-  // }, []);  
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -312,141 +208,6 @@ const Requisition = () => {
     return () => unsubscribe();
   }, []);
 
-  // REAL TIME UPDATE TEMREQ
-  // useEffect(() => {
-  //   const userId = localStorage.getItem("userId");
-
-  //   const fetchRequestList = async () => {
-  //     if (userId) {
-  //       try {
-  //         const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-  //         const querySnapshot = await getDocs(tempRequestRef);
-  //         const tempRequestList = querySnapshot.docs.map((doc) => {
-  //           const data = doc.data();
-  //           return {
-  //             ...data,
-  //             selectedItem: {
-  //               value: data.selectedItemId,
-  //               label: data.selectedItemLabel, // <-- This restores the label after refresh
-  //             },
-  //           };
-  //         });
-
-  //         setRequestList(tempRequestList);
-  //         localStorage.setItem("requestList", JSON.stringify(tempRequestList));
-
-  //       } catch (error) {
-  //         
-  //       }
-  //     }
-  //   };
-
-  //   fetchRequestList(); // run initial fetch
-
-  //   // Real-time listener
-  //   let unsubscribe;
-  //   if (userId) {
-  //     const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-  //     unsubscribe = onSnapshot(tempRequestRef, (querySnapshot) => {
-  //       const tempRequestList = querySnapshot.docs.map((doc) => {
-  //         const data = doc.data();
-  //         return {
-  //           ...data,
-  //           selectedItem: {
-  //             value: data.selectedItemId,
-  //             label: data.selectedItemLabel,
-  //           },
-  //         };
-  //       });
-
-  //       setRequestList(tempRequestList);
-  //       localStorage.setItem("requestList", JSON.stringify(tempRequestList));
-  //     }, (error) => {
-  //   
-  //     });
-  //   }
-
-  //   // Clean up real-time listener on unmount
-  //   return () => {
-  //     if (unsubscribe) unsubscribe();
-  //   };
-  // }, []);
-
-  // VERSION NI BERLENE NO DATE OF EXPIRY CONDITION
-  // useEffect(() => {
-  //   const fetchItems = async () => {
-  //     try {
-  //       const querySnapshot = await getDocs(collection(db, "inventory"));
-  //       const itemList = querySnapshot.docs.map(doc => ({
-  //         id: doc.id,
-  //         ...doc.data()
-  //       }));
-  
-  //       setItems(itemList);
-  //       setFilteredItems(itemList);
-
-  //     } catch (error) {
-        
-  //     }
-  //   };
-  
-  //   fetchItems();
-  // }, []);
-
-  // VERSION NI RICH WITH DATE OF EXPIRY CONDITION
-  // useEffect(() => {
-  //   const fetchItems = async () => {
-  //     try {
-  //       const inventorySnapshot = await getDocs(collection(db, "inventory"));
-  //       const now = new Date();
-
-  //       const validItems = [];
-
-  //       for (const doc of inventorySnapshot.docs) {
-  //         const itemData = doc.data();
-  //         const stockLogRef = collection(db, "inventory", doc.id, "stockLog");
-  //         const stockSnapshot = await getDocs(stockLogRef);
-
-  //         let hasValidStock = false;
-
-  //         for (const logDoc of stockSnapshot.docs) {
-  //           const logData = logDoc.data();
-  //           const expiryRaw = logData.expiryDate;
-
-  //           if (!expiryRaw) {
-  //             hasValidStock = true;
-  //             break;
-  //           }
-
-  //           const expiryDate = typeof expiryRaw === "string"
-  //             ? new Date(expiryRaw)
-  //             : expiryRaw?.toDate?.() || new Date(expiryRaw);
-
-  //           if (isNaN(expiryDate.getTime())) continue;
-
-  //           if (expiryDate >= now) {
-  //             hasValidStock = true;
-  //             break;
-  //           }
-  //         }
-
-  //         if (hasValidStock) {
-  //           validItems.push({
-  //             id: doc.id,
-  //             ...itemData
-  //           });
-  //         }
-  //       }
-
-  //       setItems(validItems);
-  //       setFilteredItems(validItems);
-  //     } catch (error) {
-  //       console.error("Error fetching inventory with expiry filtering:", error);
-  //     }
-  //   };
-
-  //   fetchItems();
-  // }, []);
 
   useEffect(() => {
     setItemsLoading(true);
@@ -483,13 +244,6 @@ const Requisition = () => {
             break;
           }
         }
-
-        // if (hasValidStock) {
-        //   validItems.push({
-        //     id: doc.id,
-        //     ...itemData
-        //   });
-        // }
 
         if (hasValidStock && itemData.status !== "out of stock" && itemData.status !== "in use") {
           validItems.push({
@@ -563,9 +317,8 @@ const Requisition = () => {
   useEffect(() => {
     const checkTodaysRequests = async () => {
       const userId = localStorage.getItem("userId");
-      console.log("User ID from localStorage:", userId);
+
       if (!userId) {
-        console.log("No userId found in localStorage");
         return;
       }
 
@@ -574,38 +327,26 @@ const Requisition = () => {
         const today = new Date();
         const todayStr = today.toISOString().split('T')[0];
         
-        console.log("Today's date string:", todayStr);
-        
         // Query user's approved requests from historylog collection
         const historyLogRef = collection(db, `accounts/${userId}/historylog`);
         const q = query(historyLogRef, where("action", "==", "Request Approved"));
         const querySnapshot = await getDocs(q);
-        
-        console.log("Total approved requests found in historylog:", querySnapshot.size);
         
         let todayCount = 0;
         
         // Check approved requests from historylog for required date
         querySnapshot.forEach((doc) => {
           const data = doc.data();
-          console.log("HistoryLog - Required date:", data.dateRequired);
           
           // Check if the required date is today
           if (data.dateRequired === todayStr) {
-            console.log("Found request with required date today:", data.dateRequired);
             todayCount++;
           }
         });
         
         setTodayRequestCount(todayCount);
         
-        console.log("Today's request count (based on required date):", todayCount);
-        console.log("Login success state:", location.state?.loginSuccess);
-        
-        // Show modal if user has requests required today and just logged in
         if (todayCount > 0 && location.state?.loginSuccess) {
-          console.log("Showing today's request modal");
-          // Delay the modal to show after login success modal
           setTimeout(() => {
             setShowTodayRequestModal(true);
           }, 2000);
@@ -617,24 +358,6 @@ const Requisition = () => {
 
     checkTodaysRequests();
   }, [location.state?.loginSuccess]);
-
-    // useEffect(() => {
-    //   const departmentsCollection = collection(db, "departments");
-    //   const unsubscribe = onSnapshot(
-    //     departmentsCollection,
-    //     (querySnapshot) => {
-    //       const deptList = querySnapshot.docs
-    //         .map((doc) => ({ id: doc.id, ...doc.data() }))
-    //         .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-    //       setDepartmentsAll(deptList);
-    //     },
-    //     (error) => {
-    //       console.error("Error fetching departments in real-time: ", error);
-    //     }
-    //   );
-
-    //   return () => unsubscribe();
-    // }, []);
 
     useEffect(() => {
       const departmentsCollection = collection(db, "departments");
@@ -669,10 +392,6 @@ const Requisition = () => {
     setShowPolicies(false);      // Close policies modal
   };
 
-  const handleCloseModal = () => {
-    setIsModalVisible(false);
-  };
-
   const handleOpenModal = (message) => {
     setModalMessage(message);
     setIsModalVisible(true);
@@ -685,431 +404,21 @@ const Requisition = () => {
     ];
 
     setMergedData(merged);
-  }, [tableData, requestList]); // <- dependencies added
+  }, [tableData, requestList]);
   
 
   useEffect(() => {
-    mergeData(); // will always use the freshest version now
+    mergeData(); 
   }, [mergeData]);
 
   const logRequestOrReturn = async (userId, userName, action, requestDetails) => {
     await addDoc(collection(db, `accounts/${userId}/activitylog`), {
-      action, // e.g. "Requested Items" or "Returned Items"
+      action, 
       userName,
       timestamp: serverTimestamp(),
       requestList: requestDetails, 
     });
   };  
-  
-  // const finalizeRequest = async () => {
-  //   let isValid = true;
-  //   let idsToRemove = [];
-  
-  //   if (!dateRequired) {
-  //     setNotificationMessage("Please select a date!.");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-  
-  //   if (!program) {
-  //     setProgramError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setProgramError(false);
-  //   }
-
-  //   if (!course) {
-  //     setCourseError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setCourseError(false);
-  //   }
-
-  //   if (!usageType) {
-  //     setUsageError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setUsageError(false);
-  //   }
-  
-  //   if (!room) {
-  //     setRoomError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setRoomError(false);
-  //   }
-
-  //   if (usageType === "Others" && !customUsageType.trim()) {
-  //     setNotificationMessage("Please specify the usage type.");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-
-  //   if (!timeFrom || !timeTo) {
-  //     setNotificationMessage("Please select both 'Time From' and 'Time To'!");
-  //     setIsNotificationVisible(true);
-
-  //     isValid = false;
-
-  //   } else if (new Date(`1970-01-01T${timeFrom}`) >= new Date(`1970-01-01T${timeTo}`)) {
-  //     setNotificationMessage("'Time From' must be earlier than 'Time To'!");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-    
-  //   if (mergedData.length === 0) {
-  //     setNotificationMessage("Please add items to the request list!");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-
- 
-  //   // Filter out incomplete items from mergedData
-  //   const filteredMergedData = mergedData.filter(item =>
-  //     item.itemName && item.category && item.quantity && item.labRoom &&
-  //     item.status && item.condition && item.department
-  //   );
-
-  //   // Show a warning if all items are incomplete
-  //   if (filteredMergedData.length === 0) {
-  //     setNotificationMessage("Please complete all required item fields before finalizing.");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-
-
-  //   if (isValid) {
-  //     try {
-  //       const userId = localStorage.getItem("userId");
-  
-  //       if (userId) {
-  //         // Fetch the user's name from the accounts collection
-  //         const userDocRef = doc(db, "accounts", userId);
-  //         const userDocSnapshot = await getDoc(userDocRef);
-  
-  //         if (!userDocSnapshot.exists()) {
-  //           message.error("User not found.");
-  //           return;
-  //         }
-  
-  //         const userName = userDocSnapshot.data().name;
-
-  //         const finalUsageType = usageType === "Others" ? customUsageType : usageType;
-  
-  //         // Add data to the user's requests collection
-  //         const userRequestRef = collection(db, "accounts", userId, "userRequests");
-  //         const requestData = {
-  //           dateRequired,
-  //           timeFrom,
-  //           timeTo,
-  //           program,
-  //           course,
-  //           usageType: finalUsageType,
-  //           room,
-  //           reason,
-  //           filteredMergedData,
-  //           userName,
-  //           timestamp: Timestamp.now(),
-  //         };
-  
-  //         await addDoc(userRequestRef, requestData);
-  
-  //         // Add to root userrequests collection
-  //         const userRequestsRootRef = collection(db, "userrequests");
-  //         const newUserRequestRef = doc(userRequestsRootRef);
-  //         await setDoc(newUserRequestRef, {
-  //           ...requestData,
-  //           accountId: userId,
-  //         });
-
-  //         await logRequestOrReturn(userId, userName, "Requested Items", filteredMergedData); 
-  
-  //         const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-  //         const querySnapshot = await getDocs(tempRequestRef);
-  
-  //         const deletionPromises = [];
-  
-  //         querySnapshot.forEach((docSnapshot) => {
-  //           const itemData = docSnapshot.data();
-  //           idsToRemove.push(itemData.id);
-  
-  //           const pendingRequestRef = collection(db, "accounts", userId, "pendingrequest");
-  
-  //           deletionPromises.push(
-  //             (async () => {
-  //               // Add to pending requests
-  //               await addDoc(pendingRequestRef, itemData);
-  
-  //               // Delete from temporaryRequests
-  //               await deleteDoc(doc(db, "accounts", userId, "temporaryRequests", docSnapshot.id));
-  
-  //               // Delete from pendingRequest if already exists
-  //               const pendingRequestDocs = await getDocs(pendingRequestRef);
-  //               pendingRequestDocs.forEach((pendingDoc) => {
-  //                 if (pendingDoc.data().id === itemData.id) {
-  //                   deletionPromises.push(deleteDoc(doc(db, "accounts", userId, "pendingrequest", pendingDoc.id)));
-  //                 }
-  //               });
-  //             })()
-  //           );
-  //         });
-  
-  //         await Promise.all(deletionPromises);
-  
-  //         // Filter out removed items from requestList
-  //         const updatedRequestList = mergedData.filter((item) => !idsToRemove.includes(item.id));
-  //         setRequestList(updatedRequestList);
-  //         localStorage.setItem('requestList', JSON.stringify(updatedRequestList));
-  
-  //         setNotificationMessage("Requisition sent successfully!");
-  //         setIsNotificationVisible(true);
-  //         setIsFinalizeVisible(false);
-  
-  //         clearTableData();
-  //         setDateRequired(null);
-  //         setTimeFrom(null);
-  //         setTimeTo(null);
-  //         setProgram("");
-  //         setCourse("");
-  //         setUsageType("");
-  //         setRoom("");
-  //         setReason("");
-  //         setRequestList([]);
-  //         setMergedData([]);
-  //         setTableData([]); 
-
-
-  //         localStorage.removeItem('requestList');
-
-  //       } else {
-  //         message.error("User is not logged in.");
-  //       }
-  
-  //     } catch (error) {
-
-  //       message.error("Failed to send requisition. Please try again.");
-  //     }
-  //   }
-  // };  
-
-  //  const finalizeRequest = async () => {
-  //   let isValid = true;
-  //   let idsToRemove = [];
-  
-  //   if (!dateRequired) {
-  //     setNotificationMessage("Please select a date!.");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-  
-  //   if (!program) {
-  //     setProgramError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setProgramError(false);
-  //   }
-
-  //   if (!course) {
-  //     setCourseError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setCourseError(false);
-  //   }
-
-  //   if (!usageType) {
-  //     setUsageError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setUsageError(false);
-  //   }
-  
-  //   if (!room) {
-  //     setRoomError(true);
-  //     isValid = false;
-
-  //   } else {
-  //     setRoomError(false);
-  //   }
-
-  //   if (usageType === "Others" && !customUsageType.trim()) {
-  //     setNotificationMessage("Please specify the usage type.");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-
-  //   if (!timeFrom || !timeTo) {
-  //     setNotificationMessage("Please select both 'Time From' and 'Time To'!");
-  //     setIsNotificationVisible(true);
-
-  //     isValid = false;
-
-  //   } else if (new Date(`1970-01-01T${timeFrom}`) >= new Date(`1970-01-01T${timeTo}`)) {
-  //     setNotificationMessage("'Time From' must be earlier than 'Time To'!");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-    
-  //   if (mergedData.length === 0) {
-  //     setNotificationMessage("Please add items to the request list!");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-
-
-  //   // Filter out incomplete items from mergedData
-  //   const filteredMergedData = mergedData.filter(item =>
-  //     // item.itemName && item.category && item.quantity && item.labRoom &&
-  //     item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
-  //     item.status && item.condition && item.department && item.unit
-  //   );
-
-  //   // Show a warning if all items are incomplete
-  //   if (filteredMergedData.length === 0) {
-  //     setNotificationMessage("Please complete all required item fields before finalizing.");
-  //     setIsNotificationVisible(true);
-  //     isValid = false;
-  //   }
-
-
-  // // for (const item of filteredMergedData) {
-  // //   if (item.category.toLowerCase() === "glasswares") {
-  // //     // Assuming volume property is named "volume" and must be > 0
-  // //     if (!item.volume || Number(item.volume) <= 0) {
-  // //       setNotificationMessage(`Please specify a valid volume for glassware item "${item.itemName}".`);
-  // //       setIsNotificationVisible(true);
-  // //       isValid = false;
-  // //       break; // no need to check further once invalid
-  // //     }
-  // //   }
-  // // }
-
-  //   if (isValid) {
-  //     try {
-  //       const userId = localStorage.getItem("userId");
-  
-  //       if (userId) {
-  //         // Fetch the user's name from the accounts collection
-  //         const userDocRef = doc(db, "accounts", userId);
-  //         const userDocSnapshot = await getDoc(userDocRef);
-  
-  //         if (!userDocSnapshot.exists()) {
-  //           message.error("User not found.");
-  //           return;
-  //         }
-  
-  //         const userName = userDocSnapshot.data().name;
-
-  //         const finalUsageType = usageType === "Others" ? customUsageType : usageType;
-  
-  //         // Add data to the user's requests collection
-  //         const userRequestRef = collection(db, "accounts", userId, "userRequests");
-  //         const requestData = {
-  //           dateRequired,
-  //           timeFrom,
-  //           timeTo,
-  //           program,
-  //           course,
-  //           courseDescription,
-  //           // usageType,
-  //           usageType: finalUsageType,
-  //           room,
-  //           reason,
-  //           filteredMergedData,
-  //           userName,
-  //           timestamp: Timestamp.now(),
-  //         };
-  
-  //         // await addDoc(userRequestRef, requestData);
-
-  //         const newUserDocRef = await addDoc(userRequestRef, requestData);
-  //         const generatedId = newUserDocRef.id;
-  //         await updateDoc(newUserDocRef, { iid: generatedId });
-  
-  //         // Add to root userrequests collection
-  //         // const userRequestsRootRef = collection(db, "userrequests");
-  //         // const newUserRequestRef = doc(userRequestsRootRef);
-  //         const userRequestsRootRef = doc(db, "userrequests", generatedId);
-  //         await setDoc(userRequestsRootRef, {
-  //           ...requestData,
-  //           accountId: userId,
-  //         });
-
-  //         await logRequestOrReturn(userId, userName, "Requested Items", filteredMergedData); 
-  
-  //         const tempRequestRef = collection(db, "accounts", userId, "temporaryRequests");
-  //         const querySnapshot = await getDocs(tempRequestRef);
-  
-  //         const deletionPromises = [];
-  
-  //         querySnapshot.forEach((docSnapshot) => {
-  //           const itemData = docSnapshot.data();
-  //           idsToRemove.push(itemData.id);
-  
-  //           const pendingRequestRef = collection(db, "accounts", userId, "pendingrequest");
-  
-  //           deletionPromises.push(
-  //             (async () => {
-  //               // Add to pending requests
-  //               await addDoc(pendingRequestRef, itemData);
-  
-  //               // Delete from temporaryRequests
-  //               await deleteDoc(doc(db, "accounts", userId, "temporaryRequests", docSnapshot.id));
-  
-  //               // Delete from pendingRequest if already exists
-  //               const pendingRequestDocs = await getDocs(pendingRequestRef);
-  //               pendingRequestDocs.forEach((pendingDoc) => {
-  //                 if (pendingDoc.data().id === itemData.id) {
-  //                   deletionPromises.push(deleteDoc(doc(db, "accounts", userId, "pendingrequest", pendingDoc.id)));
-  //                 }
-  //               });
-  //             })()
-  //           );
-  //         });
-  
-  //         await Promise.all(deletionPromises);
-  
-  //         // Filter out removed items from requestList
-  //         const updatedRequestList = mergedData.filter((item) => !idsToRemove.includes(item.id));
-  //         setRequestList(updatedRequestList);
-  //         localStorage.setItem('requestList', JSON.stringify(updatedRequestList));
-  
-  //         setNotificationMessage("Requisition sent successfully!");
-  //         setIsNotificationVisible(true);
-  //         setIsFinalizeVisible(false);
-  
-  //         clearTableData();
-  //         setDateRequired(null);
-  //         setTimeFrom(null);
-  //         setTimeTo(null);
-  //         setProgram("");
-  //         setCourse("");
-  //         setUsageType("");
-  //         setRoom("");
-  //         setReason("");
-  //          setCourseDescription("");
-  //         setRequestList([]);
-  //         setMergedData([]);
-  //         setTableData([]); 
-
-
-  //         localStorage.removeItem('requestList');
-
-  //       } else {
-  //         message.error("User is not logged in.");
-  //       }
-  
-  //     } catch (error) {
-  //       message.error("Failed to send requisition. Please try again.");
-  //     }
-  //   }
-  // };  
 
   const finalizeRequest = async () => {
     setFinalizeLoading(true);
@@ -1178,13 +487,6 @@ const Requisition = () => {
       isValid = false;
     }
 
-    // Filter out incomplete items from mergedData
-    // const filteredMergedData = mergedData.filter(item =>
-    //   // item.itemName && item.category && item.quantity && item.labRoom &&
-    //   item.itemName && item.itemDetails && item.category && item.quantity && item.labRoom &&
-    //   item.status && item.condition && item.department  && item.unit
-    // );
-
     const normalizedData = mergedData.map(item => {
       if (
         item.category !== "Chemical" &&
@@ -1210,34 +512,18 @@ const Requisition = () => {
       item.department;
 
     if (item.category === "Chemical" || item.category === "Reagent") {
-      return basicFieldsValid; // unit and condition optional here
+      return basicFieldsValid; 
     } else {
       const conditionValid = !!item.condition;
-      // unit can be empty or missing for non-Chem/Reagent, matching your UI logic
       return basicFieldsValid && conditionValid;
     }
   });
 
-  // for (const item of filteredMergedData) {
-  //   if (item.category.toLowerCase() === "glasswares") {
-  //     // Assuming volume property is named "volume" and must be > 0
-  //     if (!item.volume || Number(item.volume) <= 0) {
-  //       setNotificationMessage(`Please specify a valid volume for glassware item "${item.itemName}".`);
-  //       setIsNotificationVisible(true);
-  //       isValid = false;
-  //       break; // no need to check further once invalid
-  //     }
-  //   }
-  // }
-
-    // Check if any item is incomplete (filtered list must be same length as original)
   if (filteredMergedData.length !== normalizedData.length) {
     setNotificationMessage("Please complete all required item fields before finalizing.");
     setIsNotificationVisible(true);
     isValid = false;
   }
-
-
 
   const sanitizeData = (data) => {
     return data.map(item => {
@@ -1282,7 +568,6 @@ const Requisition = () => {
             program,
             course,
             courseDescription,
-            // usageType,
             usageType: finalUsageType,
             room,
             reason,
@@ -1292,15 +577,10 @@ const Requisition = () => {
             timestamp: Timestamp.now(),
           };
   
-          // await addDoc(userRequestRef, requestData);
-
           const newUserDocRef = await addDoc(userRequestRef, requestData);
           const generatedId = newUserDocRef.id;
           await updateDoc(newUserDocRef, { iid: generatedId });
   
-          // Add to root userrequests collection
-          // const userRequestsRootRef = collection(db, "userrequests");
-          // const newUserRequestRef = doc(userRequestsRootRef);
           const userRequestsRootRef = doc(db, "userrequests", generatedId);
           await setDoc(userRequestsRootRef, {
             ...requestData,
@@ -1357,9 +637,7 @@ const Requisition = () => {
           setNotificationMessage("Requisition sent successfully!");
           setIsNotificationVisible(true);
 
-          // 🔔 Send push notifications to admins via backend API
           try {
-            console.log('🔔 Sending push notifications to admins via backend...');
             
             const response = await fetch('https://webnuls.onrender.com/api/notify-admins-request', {
               method: 'POST',
@@ -1378,8 +656,7 @@ const Requisition = () => {
 
             if (response.ok) {
               const result = await response.json();
-              console.log('✅ Backend notification response:', result);
-              console.log(`✅ Push notifications sent to ${result.successfulNotifications}/${result.totalAdmins} admins`);
+
             } else {
               const error = await response.json();
               console.error('❌ Backend notification error:', error);
@@ -1422,18 +699,13 @@ const Requisition = () => {
 
   const removeFromList = async (id) => {
     try {
-      // Filter out the item from local state (requestList and tableData)
       const updatedList = requestList.filter((item) => item.selectedItemId !== id);
       const updatedTableData = tableData.filter((item) => item.selectedItemId !== id);
   
       // Update local state
       setRequestList(updatedList);
       setTableData(updatedTableData);
-  
-      // Log current state
 
-  
-      // Update localStorage
       localStorage.setItem("requestList", JSON.stringify(updatedList));
       localStorage.setItem("tableData", JSON.stringify(updatedTableData));
   
@@ -1458,10 +730,6 @@ const Requisition = () => {
         }
       }
   
-      // Notify user whether the item was successfully removed from Firestore
-      // setNotificationMessage(foundInFirestore ? "Item removed from the list" : "Item not found in Firestore.");
-      // setIsNotificationVisible(true);
-  
     } catch (error) {
 
       setNotificationMessage("Something went wrong while removing the item.");
@@ -1469,96 +737,12 @@ const Requisition = () => {
     }
   };  
 
-  // const handleItemSelect = async (selected, index) => {
-  //   const { value: itemId } = selected;
-  //   const selectedItem = JSON.parse(JSON.stringify(items.find(item => item.id === itemId)));
-  
-  //   const previousItemId = tableData[index]?.selectedItemId;
-  
-  //   // Build new row object
-  //   const newRow = {
-  //     selectedItem: {
-  //       value: itemId,
-  //       label: selectedItem.itemName,
-  //     },
-  //     selectedItemId: itemId,
-  //     itemName: selectedItem.itemName,
-  //     category: selectedItem.category,
-  //     quantity: tableData[index]?.quantity || 1,
-  //     labRoom: selectedItem.labRoom,
-  //     status: selectedItem.status,
-  //     condition: selectedItem.condition,
-  //     department: selectedItem.department,
-  //   };
-  
-  //   // Update tableData
-  //   let updatedData = [...tableData];
-  //   if (updatedData[index]) {
-  //     updatedData[index] = newRow;
-
-  //   } else {
-  //     updatedData.push(newRow); // Add to the end if it's a new item
-  //   }
-    
-  //   setTableData(updatedData);
-  //   localStorage.setItem("tableData", JSON.stringify(updatedData)); // Save updated table data
-  
-  //   // Update requestList
-  //   let updatedRequestList = [...requestList];
-  //   if (updatedRequestList[index]) {
-  //     updatedRequestList[index] = newRow;
-
-  //   } else {
-  //     updatedRequestList.push(newRow); // Add to the end if it's a new item
-  //   }
-  //   setRequestList(updatedRequestList);
-  //   localStorage.setItem("requestList", JSON.stringify(updatedRequestList)); // Save updated request list
-  
-  //   mergeData();
-  
-  //   const userId = localStorage.getItem("userId");
-  
-  //   if (userId) {
-  //     try {
-  //       const tempRequestRef = doc(db, "accounts", userId, "temporaryRequests", itemId);
-  
-  //       // Delete the previous item from Firestore if it's different from the new one
-  //       if (previousItemId && previousItemId !== itemId) {
-  //         const previousRef = doc(db, "accounts", userId, "temporaryRequests", previousItemId);
-  //         await deleteDoc(previousRef);
-  //       }
-  
-  //       // Add or update the new item
-  //       await setDoc(tempRequestRef, {
-  //         ...selectedItem,
-  //         id: itemId,
-  //         selectedItemId: itemId,
-  //         selectedItemLabel: selectedItem.itemName,
-  //         quantity: newRow.quantity,
-  //         timestamp: Timestamp.fromDate(new Date()),
-  //       });
-  
-  //       setNotificationMessage("Item updated in temporary list.");
-  //       setIsNotificationVisible(true);
-  
-  //     } catch (error) {
-
-  //       setNotificationMessage("Failed to update item in temporary list.");
-  //       setIsNotificationVisible(true);
-  //     }
-  //   }
-  // };  
-
   const handleItemSelect = async (selected, index) => {
     const { value: itemId } = selected;
     const selectedItem = JSON.parse(JSON.stringify(items.find(item => item.id === itemId)));
 
     const previousItemId = tableData[index]?.selectedItemId;
 
-    // Get volume if it exists in current row (tableData)
-    // const volume = tableData[index]?.volume || selectedItem.volume || null;
-
-    // Build new row object including volume
     const newRow = {
       selectedItem: {
         value: itemId,
@@ -1569,7 +753,6 @@ const Requisition = () => {
       itemDetails: selectedItem.itemDetails,
       category: selectedItem.category,
       quantity: tableData[index]?.quantity || 1,
-      // volume,  // <-- include volume here
       labRoom: selectedItem.labRoom,
       status: selectedItem.status,
       condition: selectedItem.condition,
@@ -1625,9 +808,6 @@ const Requisition = () => {
           unit: selectedItem.unit || null,
         });
 
-        // setNotificationMessage("Item updated in temporary list.");
-        // setIsNotificationVisible(true);
-
       } catch (error) {
 
         setNotificationMessage("Failed to update item in temporary list.");
@@ -1637,11 +817,11 @@ const Requisition = () => {
   };
 
   const clearTableData = () => {
-    setTableData([{ key: 0, selectedItemId: null }]); // Clear tableData but keep one empty row
-    setRequestList([]); // Clear requestList
-    setLiabilityAccepted(false); // Reset liability checkbox
-    localStorage.removeItem("tableData"); // Remove from localStorage
-    localStorage.removeItem("requestList"); // Remove from localStorage
+    setTableData([{ key: 0, selectedItemId: null }]); 
+    setRequestList([]); 
+    setLiabilityAccepted(false); 
+    localStorage.removeItem("tableData"); 
+    localStorage.removeItem("requestList"); 
   };  
   
   useEffect(() => {
@@ -1662,81 +842,11 @@ const Requisition = () => {
   };
 
   const columns = [
-    // {
-    //   title: "Item Name",
-    //   dataIndex: "selectedItemId",
-    //   key: "selectedItemId",
-    //   render: (value, record, index) => {
-    //     // Get all selected item IDs except the current row
-    //     const selectedIds = mergedData
-    //       .filter((_, i) => i !== index)
-    //       .map((row) => row.selectedItemId);
-  
-    //     return (
-    //       <Select
-    //         showSearch
-    //         placeholder="Select item"
-    //         style={{ width: 100 }}
-    //         dropdownStyle={{ width: 700 }}
-    //         optionFilterProp="label"
-    //         labelInValue
-    //         value={record.selectedItem || undefined}
-    //         onChange={(selected) => handleItemSelect(selected, index)} // Trigger handleItemSelect on change
-    //         filterOption={(input, option) =>
-    //           option?.label?.toLowerCase().includes(input.toLowerCase())
-    //         }>
-    //         {/* Map through filtered items instead of the entire items list */}
-    //         {/* {filteredItems.map((item) => {
-    //           // const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${item.status} | ${item.department}`;
-    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-    //           } | ${item.status} | ${item.department}`;
-    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""} | ${item.status} | ${item.department}`;
-    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-    //           // const label = `${item.itemName} | ${item.category} | Qty: ${item.quantity}${["Glasswares", "Chemical", "Reagent"].includes(item.category) ? " pcs" : ""}${item.category === "Glasswares" && item.volume ? ` / ${item.volume} ML` : ""}${["Chemical", "Reagent"].includes(item.category) && item.unit ? ` / ${item.unit} ML` : ""} | ${item.status} | ${item.department}`;
-    //           const isDisabled = selectedIds.includes(item.id);
-  
-    //           return (
-    //             <Select.Option
-    //               key={item.id}
-    //               value={item.id}
-    //               label={item.itemName}
-    //               disabled={isDisabled}
-    //             >
-    //               {label}
-    //             </Select.Option>
-    //           );
-    //         })} */}
-
-    //         {filteredItems
-    //         .filter((item) => item.status !== "out of stock" && item.status !== "in use")
-    //         .map((item) => {
-    //           const label = `${item.itemName} | ${item.itemDetails} | ${item.category} | Qty: ${item.quantity} | ${
-    //             ["Chemical", "Reagent"].includes(item.category) && item.unit ? ` ${item.unit}` : ""
-    //           } | ${item.status} | ${item.department}`;
-    //           const isDisabled = selectedIds.includes(item.id);
-
-    //           return (
-    //             <Select.Option
-    //               key={item.id}
-    //               value={item.id}
-    //               label={item.itemName}
-    //               disabled={isDisabled}
-    //             >
-    //               {label}
-    //             </Select.Option>
-    //           );
-    //         })}
-    //       </Select>
-    //     );
-    //   },
-    // },
     {
       title: "Item Name",
       dataIndex: "selectedItemId",
       key: "selectedItemId",
       render: (value, record, index) => {
-        // Get all selected item IDs except the current row
         const selectedIds = mergedData
           .filter((_, i) => i !== index)
           .map((row) => row.selectedItemId);
@@ -1752,7 +862,6 @@ const Requisition = () => {
             value={record.selectedItem || undefined}
             onChange={(selected) => handleItemSelect(selected, index)}
             filterOption={(input, option) => {
-              // option?.label?.toLowerCase().includes(input.toLowerCase())
               const searchText = input.toLowerCase();
               const labelText = option?.label?.toLowerCase() || '';
               const childrenText = option?.children?.toLowerCase() || '';
@@ -1891,11 +1000,6 @@ const Requisition = () => {
       key: "status",
       render: (status) => status?.toUpperCase() || status,
     },
-    // {
-    //   title: "Condition",
-    //   dataIndex: "condition",
-    //   key: "condition",
-    // },
     {
       title: "Department",
       dataIndex: "department",
@@ -2010,7 +1114,6 @@ const Requisition = () => {
                 return {
                   ...item,
                   itemIdFromInventory: itemId,
-                  // volume: item.volume ?? "N/A", 
                 };
               })
             );
@@ -2065,114 +1168,6 @@ const Requisition = () => {
       fetchRequests();
       fetchUserName();
     }, []);
-  
-    const handleCancelRequest = async () => {
-      setCancelLoading(true);
-      try {
-        const userId = localStorage.getItem("userId");
-    
-        if (!userId || !selectedRequest?.id) {
-          throw new Error("Missing user ID or selected request ID.");
-        }
-    
-        const userRequestRef = doc(db, `accounts/${userId}/userRequests`, selectedRequest.id);
-        const activityLogRef = doc(db, `accounts/${userId}/historylog`, selectedRequest.id);
-    
-        // Fetch request data before deleting
-        const requestSnap = await getDoc(userRequestRef);
-        if (!requestSnap.exists()) throw new Error("Request not found.");
-    
-        const requestData = requestSnap.data();
-    
-        // Write to activity log
-        await setDoc(activityLogRef, {
-          ...requestData,
-          status: "CANCELLED",
-          cancelledAt: new Date(),
-        });
-    
-        // Delete from userRequests subcollection
-        await deleteDoc(userRequestRef);
-    
-        // Find and delete from root userrequests collection
-        const rootQuery = query(
-          collection(db, "userrequests"),
-          where("accountId", "==", userId),
-          where("timestamp", "==", requestData.timestamp) // Assumes timestamp is unique for each request
-        );
-    
-        const rootSnap = await getDocs(rootQuery);
-        const batchDeletes = [];
-    
-        rootSnap.forEach((docSnap) => {
-          batchDeletes.push(deleteDoc(doc(db, "userrequests", docSnap.id)));
-        });
-    
-        await Promise.all(batchDeletes);
-        setIsCancelVisible(false);
-  
-        setNotificationMessage("Request successfully canceled and logged.");
-        setNotificationVisible(true);
-        setSelectedRequest(null);
-        setViewDetailsModalVisible(false);
-        fetchRequests();
-  
-            } catch (err) {
-
-        setNotificationMessage("Failed to cancel the request.");
-        setNotificationVisible(true);
-      } finally {
-        setCancelLoading(false);
-      }
-    };
-  
-    const handleViewDetails = (request) => {
-      setSelectedRequest(request);
-      setViewDetailsModalVisible(true);
-    };
-  
-    const handleModalClose = () => {
-      setViewDetailsModalVisible(false);
-      setSelectedRequest(null);
-    };
-  
-  //Pending Request Functions
-   const columns1 = [
-      {
-        title: "Request ID",
-        dataIndex: "id",
-        key: "id",
-      },
-      {
-        title: "Requisition Date",
-        dataIndex: "dateRequested",
-        key: "dateRequested",
-      },
-      {
-        title: "Date Required",
-        dataIndex: "dateRequired",
-        key: "dateRequired",
-      },
-      {
-        title: "Status",
-        dataIndex: "status",
-        key: "status",
-        render: (status) => (
-          <Button type="text" className="status-btn">
-            {status?.toUpperCase() || status}
-          </Button>
-        ),
-      },
-      {
-        title: "Action",
-        key: "action",
-        render: (_, record) => (
-          <Button onClick={() => handleViewDetails(record)} type="primary">
-            View Details
-          </Button>
-        ),
-      },
-    ];
   
     useEffect(() => {
       const userId = localStorage.getItem("userId");
@@ -2232,74 +1227,6 @@ const Requisition = () => {
       // Cleanup the listener when the component unmounts
       return () => unsubscribe();
     }, []);
-  
-    const filteredData = activityData
-    .filter((item) => {
-      // Filter by action type
-      if (actionFilter !== "ALL" && item.action !== actionFilter) {
-        return false;
-      }
-      // Filter by search
-  
-      return (
-        item.date.includes(searchQuery) ||
-        item.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.by.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    });
-  
-    const handleRowClick = (record) => {
-      setSelectedLog(record.fullData);
-      setModalVisible(true);
-    };
-  
-      const hasGlassware = Array.isArray(selectedRequest?.items)
-      ? selectedRequest.items.some(
-          (item) => item.category?.toLowerCase() === "glasswares"
-        )
-      : false;
-  
-  
-    const itemColumns = [
-      {
-        title: "Item #",
-        key: "index",
-        render: (_, __, index) => <span>{index + 1}</span>,
-      },
-      {
-        title: "Item Name",
-        dataIndex: "itemName",
-        key: "itemName",
-      },
-      {
-        title: "Item ID",
-        dataIndex: "itemIdFromInventory",
-        key: "itemIdFromInventory",
-      },
-      {
-        title: "Qty",
-        dataIndex: "quantity",
-        key: "quantity",
-      },
-      {
-        title: "Department",
-        dataIndex: "department",
-        key: "department",
-        render: (department) => (
-          <span
-            style={{
-              color: department === "MEDTECH" ? "magenta" : "orange",
-              fontWeight: "bold",
-            }}
-          >
-            {department}
-          </span>
-        ),
-      },
-      
-    ];
-
-
 
   return (
 
@@ -2387,17 +1314,12 @@ const Requisition = () => {
                       type="primary"
                       onClick={handleAddRow}
                       className="add-item-row-btn"
-                      // disabled={tableData.length >= 10}
                     >
                       Add Item Row
                     </Button>
                 </div>
                 </div>
-                   
-
-         
-
-
+        
           <div style={{display: 'flex', alignItems: 'center', gap: 10, marginBottom: 50}}>
           <FormOutlined style={{fontSize: 25, color: '#1e7898'}}/>
           <div style={{display: 'flex', flexDirection: 'column', gap: 5}}>
@@ -2416,7 +1338,6 @@ const Requisition = () => {
                   <DatePicker
                     value={dateRequired ? dayjs(dateRequired, "YYYY-MM-DD") : null}
                     onChange={(date, dateString) => {
-                      console.log('DatePicker onChange:', { date, dateString });
                       setDateRequired(dateString);
                       
                       // Check for 7-day warning immediately when date is selected
@@ -2424,7 +1345,6 @@ const Requisition = () => {
                         const daysDiff = getDaysDifference(dateString);
                         setDaysDifference(daysDiff);
                         setIsWarningFromDateSelection(true); // Mark this as from date selection
-                        console.log('Showing warning modal for date:', dateString, 'days difference:', daysDiff);
                         setIsWarningModalVisible(true);
                       }
                     }}
@@ -2723,47 +1643,7 @@ const Requisition = () => {
             </div>
                    </div>
 
-
-    
-          {/* <Table
-            className="requisition-table"
-            columns={columns}
-            dataSource={mergedData}
-            pagination={{ pageSize: 10 }}
-            rowKey={(record) => record.key}
-          /> */}
-{/* 
-          <div style={{ minHeight: "300px", overflow: "auto", marginBottom: "40px" }}>
-          <Table
-            className="requisition-table"
-            dataSource={mergedData}
-            columns={columns}
-            pagination={false}
-          />
-        </div> */}
-
-
           <div className="bottom-btns">
-            {/* <Button
-              type="dashed"
-              onClick={() => {
-                const lastRow = tableData[tableData.length - 1];
-
-                if (!lastRow || lastRow.selectedItemId) {
-                  setTableData([
-                    ...tableData,
-                    { key: Date.now(), selectedItemId: null }
-                  ]);
-
-                } else {
-                  setNotificationMessage("Please select an item in the last row first.");
-                  setIsNotificationVisible(true);
-                }
-              }}
-              className="add-item-row-btn"
-            >
-              Add Item Row
-            </Button> */}
             
          <FinalizeRequestModal
           visible={isFinalizeModalVisible}
@@ -2826,249 +1706,6 @@ const Requisition = () => {
               </div>
             </div>
           </div>
-          
-
-        {/* <div className="section requests-list">
-          
-          <Title level={2}>Requests List</Title>
-            {loading ? (
-              <Spin size="large" />
-            ) : (
-              <Table
-                columns={columns1}
-                dataSource={requests}
-                pagination={{ pageSize: 10 }}
-                rowKey="id"
-                className="pending-table"
-              />
-            )}
-
-            <Modal
-              className="request-list-modal"
-              open={viewDetailsModalVisible}
-              onCancel={handleModalClose}
-              width={800}
-              closable={false}
-              footer={[
-                <Button key="close" onClick={handleModalClose}>Close</Button>,
-                <Button
-                  key="cancel"
-                  danger
-                  onClick={() => setIsCancelVisible(true)}
-                  icon={<CloseOutlined />}
-                >Cancel Request</Button>,
-              ]}
-            >
-              {selectedRequest && (
-                <div>
-                  <Title level={4}>Request Details</Title>
-                  <Descriptions bordered column={2}>
-                    <Descriptions.Item label="Requester">{selectedRequest.requester}</Descriptions.Item>
-                    <Descriptions.Item label="Requisition Date">{selectedRequest.dateRequested}</Descriptions.Item>
-                    <Descriptions.Item label="Date Required">{selectedRequest.dateRequired}</Descriptions.Item>
-                    <Descriptions.Item label="Time Needed">{selectedRequest.timeNeeded}</Descriptions.Item>
-                    <Descriptions.Item label="Course Code">{selectedRequest.courseCode}</Descriptions.Item>
-                    <Descriptions.Item label="Room">{selectedRequest.room}</Descriptions.Item>
-                    <Descriptions.Item label="Usage Type">{selectedRequest.usageType}</Descriptions.Item>
-                  </Descriptions>
-                  <br />
-                  <Title level={5}>Requested Items:</Title>
-                  <Table
-                    columns={[
-                      { title: "Item #", key: "index", render: (_, __, index) => <span>{index + 1}</span> },
-                      { title: "Item Name", dataIndex: "itemName", key: "itemName" },
-                      { title: "Item ID", dataIndex: "itemIdFromInventory", key: "itemIdFromInventory" },
-                      { title: "Qty", dataIndex: "quantity", key: "quantity" },
-                      { title: "Department", dataIndex: "department", key: "department" },
-                    ]}
-                    dataSource={selectedRequest.items}
-                    rowKey={(_, index) => index}
-                    size="small"
-                    pagination={false}
-                  />
-                </div>
-              )}
-            </Modal>
-            
-
-            <Modal
-              title="Confirm Cancellation"
-              open={isCancelVisible}
-              onCancel={() => setIsCancelVisible(false)}
-              onOk={handleCancelRequest}
-              okText="Yes, Cancel"
-              cancelText="No"
-              okButtonProps={{ loading: cancelLoading, disabled: finalizeLoading }}
-            >
-              <p>Are you sure you want to cancel this request?</p>
-            </Modal>
-     
-          </div> */}
-
-           {/* <div className="section activity-log">
-            <Title level={2} style={{marginTop:"8px"}}>Activity Log</Title>
-            <div>
-               <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between" }}>
-                          <Input
-                            placeholder="Search"
-                            prefix={<SearchOutlined />}
-                            className="activity-search"
-                            allowClear
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            style={{ width: "60%" }}
-                          />
-              
-                          <Select
-                            value={actionFilter}
-                            onChange={(value) => setActionFilter(value)}
-                            style={{ width: 200 }}
-                            allowClear
-                            placeholder="Filter by Action"
-                          >
-                            <Select.Option value="ALL">All</Select.Option>
-                            <Select.Option value="Request Approved">Request Approved</Select.Option>
-                            <Select.Option value="Request Rejected">Request Rejected</Select.Option>
-                            <Select.Option value="Cancelled a request">Request Cancelled</Select.Option>
-                            <Select.Option value="Deployed">Deployed</Select.Option>
-                          </Select>
-                        </div>
-              
-                        <Table
-                          columns= {activitycolumn}
-                          dataSource={filteredData}
-                          pagination={{ pageSize: 10 }}
-                          bordered
-                          className="activity-table"
-                          rowClassName="activity-row"
-                          onRow={(record) => ({
-                            onClick: () => handleRowClick(record),
-                          })}
-                          locale={{
-                            emptyText: (
-                              <div className="empty-row">
-                                <span>No activity found.</span>
-                              </div>
-                            ),
-                          }}
-                        />
-              
-                        <Modal
-                          title="Activity Details"
-                          visible={modalVisible}
-                          zIndex={1015}
-                          onCancel={() => setModalVisible(false)}
-                          footer={null}
-                        >
-                          {selectedLog && (
-                            <Descriptions column={1} bordered size="small">
-                              <Descriptions.Item label="Action">
-                                {selectedLog.status === "CANCELLED"
-                                  ? "Cancelled a request"
-                                  : selectedLog.action || "Modified a request"}
-                              </Descriptions.Item>
-              
-                              <Descriptions.Item label="By">
-                                {selectedLog.userName || "Unknown User"}
-                              </Descriptions.Item>
-              
-                              <Descriptions.Item label="Program">
-                                {selectedLog.program || "N/A"}
-                              </Descriptions.Item> */}
-              
-                              {/* <Descriptions.Item label="Items Requested">
-                                {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                                  <ul style={{ paddingLeft: 20 }}>
-                                    {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                                      <li key={index} style={{ marginBottom: 10 }}>
-                                        <strong>{item.itemName}</strong>
-                                        <ul style={{ marginLeft: 20 }}>
-                                          <li>Quantity: {item.quantity}</li>
-                                          {item.category && <li>Category: {item.category}</li>}
-                                          {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                                          {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                                          {item.itemType && <li>Item Type: {item.itemType}</li>}
-                                          {item.department && <li>Department: {item.department}</li>}
-                                          {selectedLog.action === "Request Rejected" && item.reason && (
-                                            <li><strong>Rejection Reason:</strong> {item.reason}</li>
-                                          )}
-                                        </ul>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  "None"
-                                )}
-                              </Descriptions.Item> */}
-              
-                              {/* <Descriptions.Item label="Items Requested">
-                                {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-                                  <ul style={{ paddingLeft: 20 }}>
-                                    {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-                                      <li key={index} style={{ marginBottom: 10 }}>
-                                        <strong>{item.itemName}</strong>
-                                        <ul style={{ marginLeft: 20 }}>
-                                          <li>Quantity: {item.quantity}</li> */}
-                                          {/* {item.category && <li>Category: {item.category}</li>} */}
-                                          {/* {item.category && <li>Category: {item.category}</li>}
-                                          {item.category === "Glasswares" && item.volume && (
-                                            <li>Volume: {item.volume}</li>
-                                          )} */}
-                                          {/* {item.condition && <li>Condition: {item.condition}</li>} */}
-                                          {/* {item.condition && (
-                                            <li>
-                                              Condition:
-                                              <ul>
-                                                <li>Good: {item.condition.Good ?? 0}</li>
-                                                <li>Defect: {item.condition.Defect ?? 0}</li>
-                                                <li>Damage: {item.condition.Damage ?? 0}</li>
-                                              </ul>
-                                            </li>
-                                          )} */}
-                                          {/* {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-                                          {item.usageType && <li>Usage Type: {item.usageType}</li>}
-                                          {item.itemType && <li>Item Type: {item.itemType}</li>}
-                                          {item.department && <li>Department: {item.department}</li>} */}
-                                          {/* {selectedLog.action === "Request Rejected" && item.reason && (
-                                            <li><strong>Rejection Reason:</strong> {item.reason}</li>
-                                          )} */}
-                                          {/* {selectedLog.action === "Request Rejected" && (item.rejectionReason || item.reason) && (
-                                            <li><strong>Rejection Reason:</strong> {item.rejectionReason || item.reason}</li>
-                                          )}
-                                        </ul>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                ) : (
-                                  "None"
-                                )}
-                              </Descriptions.Item>
-              
-                              {selectedLog.action !== "Request Rejected" && (
-                                <Descriptions.Item label="Reason">
-                                  {selectedLog.reason || "N/A"}
-                                </Descriptions.Item>
-                              )}
-              
-                              <Descriptions.Item label="Room">
-                                {selectedLog.room || "N/A"}
-                              </Descriptions.Item>
-              
-                              <Descriptions.Item label="Time">
-                                {selectedLog.timeFrom && selectedLog.timeTo
-                                  ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-                                  : "N/A"}
-                              </Descriptions.Item>
-              
-                              <Descriptions.Item label="Date Required">
-                                {selectedLog.dateRequired || "N/A"}
-                              </Descriptions.Item>
-                            </Descriptions>
-                          )}
-                        </Modal>
-
-
-            </div>
-          </div> */}
 
         <NotificationModal
           isVisible={isNotificationVisible}

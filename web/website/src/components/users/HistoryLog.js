@@ -107,24 +107,15 @@ const HistoryLog = () => {
   const [reorderLiabilityAccepted, setReorderLiabilityAccepted] = useState(false);
 
 const sanitizeInput = (input) =>
-  input.replace(/\s+/g, " ")           // convert multiple spaces to one                    // remove leading/trailing spaces
-      .replace(/[^a-zA-Z0-9\s\-.,()]/g, ""); // remove unwanted characters
+  input.replace(/\s+/g, " ")          
+      .replace(/[^a-zA-Z0-9\s\-.,()]/g, ""); 
 
-  // Function to check if selected date is less than 7 days from today
   const checkDateWarning = (selectedDate) => {
     if (!selectedDate) return false;
     
     const today = moment().startOf('day');
     const selected = moment(selectedDate, "YYYY-MM-DD").startOf('day');
     const daysDiff = selected.diff(today, 'days');
-    
-    console.log('Date warning check:', {
-      selectedDate,
-      today: today.format('YYYY-MM-DD'),
-      selected: selected.format('YYYY-MM-DD'),
-      daysDiff,
-      shouldWarn: daysDiff < 7
-    });
     
     return daysDiff < 7;
   };
@@ -165,17 +156,17 @@ const sanitizeInput = (input) =>
             warningCount: 0,
             violationCount: currentViolationCount + 1
           });
-          console.log('Warning count reached 3, converted to violation for user:', userEmail);
+        
         } else {
           // Just increment warning count
           await updateDoc(userDoc.ref, {
             warningCount: newWarningCount
           });
-          console.log('Warning count incremented for user:', userEmail);
+
         }
       }
     } catch (error) {
-      console.error('Error incrementing warning count:', error);
+
     }
   };
 
@@ -186,8 +177,6 @@ const sanitizeInput = (input) =>
       setUserName(user.displayName || "Unknown User");
     }
   };
-  
-
 
   const fetchRequests = () => {
     setLoading(true);
@@ -238,8 +227,8 @@ const sanitizeInput = (input) =>
             requester: data.userName || "Unknown",
             room: data.room || "N/A",
             timeNeeded: `${data.timeFrom || "N/A"} - ${data.timeTo || "N/A"}`,
-            courseCode: data.program || "N/A",
-            courseDescription: data.reason || "N/A",
+            courseCode: data.course || data.courseCode || "N/A",
+            courseDescription: data.courseDescription || data.reason || "N/A",
             items: enrichedItems,
             status: "PENDING",
             message: data.reason || "",
@@ -361,7 +350,6 @@ const sanitizeInput = (input) =>
         
         // Delete the most recent notification
         const mostRecentNotification = sortedNotifications[0];
-        console.log("Deleting most recent notification:", mostRecentNotification.id);
         await deleteDoc(doc(db, "allNotifications", mostRecentNotification.id));
       }
       setIsCancelVisible(false);
@@ -381,26 +369,18 @@ const sanitizeInput = (input) =>
     }
   };
 
-  const handleViewDetails = (request) => {
-    setSelectedRequest(request);
-    setViewDetailsModalVisible(true);
-  };
-
   const handleModalClose = () => {
     setViewDetailsModalVisible(false);
     setSelectedRequest(null);
   };
 
   const handleReorder = (completedOrder) => {
-    console.log('Completed order data:', completedOrder);
-    console.log('Full data:', completedOrder.fullData);
-    console.log('Items in fullData:', completedOrder.fullData?.filteredMergedData || completedOrder.fullData?.requestList);
     setSelectedCompletedOrder(completedOrder);
     setReorderModalVisible(true);
   };
 
-  // Function to clean item data by removing returned-specific fields
-  const cleanItemData = (items) => {
+  // Function to clean item data by removing returned-specific fields and updating course info
+  const cleanItemData = (items, mainRequestData = null) => {
     if (!Array.isArray(items)) return [];
     
     return items.map(item => {
@@ -412,9 +392,14 @@ const sanitizeInput = (input) =>
       delete cleanedItem.conditions;
       delete cleanedItem.dateReturned;
       
-      // Debug: Log the cleaning process
-      console.log('Original item before cleaning:', item);
-      console.log('Cleaned item after removing returned fields:', cleanedItem);
+      // Remove course and courseDescription from individual items (they should only be at top level)
+      delete cleanedItem.course;
+      delete cleanedItem.courseDescription;
+      
+      // Update program field if it exists
+      if (mainRequestData && mainRequestData.program) {
+        cleanedItem.program = mainRequestData.program;
+      }
       
       return cleanedItem;
     });
@@ -526,9 +511,7 @@ const sanitizeInput = (input) =>
 
       // Get the original items and clean them of returned-specific data
       const originalItems = selectedCompletedOrder.fullData.filteredMergedData || selectedCompletedOrder.fullData.requestList || [];
-      console.log('Original items from Firestore:', originalItems);
       const cleanedItems = cleanItemData(originalItems);
-      console.log('Cleaned items after processing:', cleanedItems);
 
       // Validate schedule conflicts
       const hasConflict = await isRoomTimeConflict(
@@ -562,6 +545,8 @@ const sanitizeInput = (input) =>
         timestamp: new Date(),
         userName: selectedCompletedOrder.fullData.userName,
         program: selectedCompletedOrder.fullData.program,
+        course: selectedCompletedOrder.fullData.course,
+        courseDescription: selectedCompletedOrder.fullData.courseDescription,
         room: selectedCompletedOrder.fullData.room,
         timeFrom: timeFrom,
         timeTo: timeTo,
@@ -592,9 +577,7 @@ const sanitizeInput = (input) =>
         timestamp: serverTimestamp()
       });
 
-      // 🔔 Send push notifications to admins for reorder
       try {
-        console.log('🔔 Sending push notifications to admins for reorder via backend...');
         
         const response = await fetch('https://webnuls.onrender.com/api/notify-admins-request', {
           method: 'POST',
@@ -613,8 +596,7 @@ const sanitizeInput = (input) =>
 
         if (response.ok) {
           const result = await response.json();
-          console.log('✅ Backend notification response:', result);
-          console.log(`✅ Push notifications sent to ${result.successfulNotifications}/${result.totalAdmins} admins`);
+
         } else {
           const error = await response.json();
           console.error('❌ Backend notification error:', error);
@@ -643,98 +625,6 @@ const sanitizeInput = (input) =>
     setReorderLiabilityAccepted(false);
     reorderForm.resetFields();
   };
-
-  // const columns = [
-
-  //   {
-  //     title: "Requisition Date",
-  //     dataIndex: "dateRequested",
-  //     key: "dateRequested",
-  //   },
-  //   {
-  //     title: "Date Required",
-  //     dataIndex: "dateRequired",
-  //     key: "dateRequired",
-  //   },
-  //   {
-  //     title: "Status",
-  //     dataIndex: "status",
-  //     key: "status",
-  //     render: (status) => (
-  //       <Button type="text" className="status-btn">
-  //         {status}
-  //       </Button>
-  //     ),
-  //   },
-  //   {
-  //     title: "Action",
-  //     key: "action",
-  //     render: (_, record) => (
-  //       <Button onClick={() => handleViewDetails(record)} type="primary">
-  //         View Details
-  //       </Button>
-  //     ),
-  //   },
-  // ];
-
-  // useEffect(() => {
-  //   const userId = localStorage.getItem("userId");
-  //   if (!userId) return;
-  
-  //   const activityRef = collection(db, `accounts/${userId}/historylog`);
-  
-  //   const unsubscribe = onSnapshot(
-  //     activityRef,
-  //     (querySnapshot) => {
-  //       const logs = querySnapshot.docs.map((doc, index) => {
-  //         const data = doc.data();
-  //         const logDate =
-  //           data.cancelledAt?.toDate?.() ||
-  //           data.timestamp?.toDate?.() ||
-  //           new Date();
-  
-  //         const isCancelled = data.status === "CANCELLED";
-  //         const action = isCancelled
-  //           ? "Cancelled a request"
-  //           : data.action || "Modified a request";
-            
-  //         const by = 
-  //           action === "Request Approved"
-  //             ? data.approvedBy
-  //             : action === "Request Rejected"
-  //             ? data.rejectedBy
-  //             : action === "Deployed"
-  //             ? data.approvedBy
-  //             : data.userName || "Unknown User";
-  
-  //         return {
-  //           key: doc.id || index.toString(),
-  //           date: logDate.toLocaleString("en-US", {
-  //             year: "numeric",
-  //             month: "short",
-  //             day: "numeric",
-  //             hour: "numeric",
-  //             minute: "2-digit",
-  //             hour12: true,
-  //           }),
-  //           rawDate: logDate,
-  //           action: action,
-  //           by: by,
-  //           fullData: data,
-  //         };
-  //       });
-  
-  //       const sortedLogs = logs.sort((a, b) => b.rawDate - a.rawDate);
-  //       setActivityData(sortedLogs);
-  //     },
-  //     (error) => {
-     
-  //     }
-  //   );
-  
-  //   // Cleanup the listener when the component unmounts
-  //   return () => unsubscribe();
-  // }, []);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -782,21 +672,21 @@ const sanitizeInput = (input) =>
             rawDate: logDate,
             action,
             by,
-            dateRequired: data.dateRequired || "N/A", // ✅ Matches modal display
+            dateRequired: data.dateRequired || "N/A",
             itemsRequested:
               (data.filteredMergedData && data.filteredMergedData.length > 0
                 ? data.filteredMergedData
-                : data.requestList) || [], // ✅ Same fallback as modal
-            program: data.program || "N/A", // ✅ Matches modal
+                : data.requestList) || [],
+            program: data.program || "N/A", 
             reason:
               action !== "Request Rejected"
                 ? data.reason || "N/A"
-                : data.reason || data.rejectionReason || "N/A", // ✅ Covers both fields
-            room: data.room || "N/A", // ✅ Matches modal
+                : data.reason || data.rejectionReason || "N/A", 
+            room: data.room || "N/A",
             time:
               data.timeFrom && data.timeTo
                 ? `${data.timeFrom} - ${data.timeTo}`
-                : "N/A", // ✅ Matches modal
+                : "N/A",
             fullData: data,
           };
         });
@@ -836,12 +726,6 @@ const sanitizeInput = (input) =>
     setModalVisible(true);
   };
 
-    const hasGlassware = Array.isArray(selectedRequest?.items)
-    ? selectedRequest.items.some(
-        (item) => item.category?.toLowerCase() === "glasswares"
-      )
-    : false;
-
 
   const itemColumns = [
     {
@@ -879,94 +763,7 @@ const sanitizeInput = (input) =>
         </span>
       ),
     },
-    
-    
   ];
-
-  //   const renderPendingTab = () => (
-  //   <Content className="pending-content">
-  //           <div className="activity-header">
-  //     </div>
- 
-      
-  //       {loading ? (
-  //         <Spin size="large" />
-  //       ) : (
-  //         <Table
-  // columns={columns}
-  // dataSource={requests.filter((item) =>
-  //   item.requester.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   item.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   item.usageType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-  //   (item.courseDescription?.toLowerCase() || '').includes(searchQuery.toLowerCase())
-  // )}
-  // pagination={{ pageSize: 10 }}
-  // rowKey="id"
-  // className="pending-table"
-  //         />
-  //       )}
-      
-  //     <Modal
-  //       className="request-list-modal"
-  //       open={viewDetailsModalVisible}
-  //       onCancel={handleModalClose}
-  //       width={800}
-  //       zIndex={1008}
-  //       closable={false}
-  //       footer={[
-  //         <Button key="close" onClick={handleModalClose}>Close</Button>,
-  //         <Button key="cancel" danger onClick={() => setIsCancelVisible(true)} icon={<CloseOutlined />}>Cancel Request</Button>,
-  //       ]}
-  //     >
-  //       {selectedRequest && (
-  //         <>
-  //           <div className="request-details-container" style={{ justifyContent: 'space-between' }}>
-  //             <strong style={{ fontSize: '18px', color: 'white' }}>Request Details</strong>
-  //             {/* <span style={{ fontSize: 12, color: 'white' }}>{selectedRequest?.id}</span> */}
-  //           </div>
-  //           <div className="request-details-whole">
-  //             <div className="request-details-left">
-  //               <div><p><strong>Requester:</strong></p><p>{selectedRequest.requester}</p></div>
-  //               <div><p><strong>Requisition Date:</strong></p><p>{selectedRequest.dateRequested}</p></div>
-  //               <div><p><strong>Date Required:</strong></p><p>{selectedRequest.dateRequired}</p></div>
-  //               <div><p><strong>Time Needed:</strong></p><p>{selectedRequest.timeNeeded}</p></div>
-  //             </div>
-  //             <div className="request-details-right">
-  //               <div><p><strong>Course Code:</strong></p><p>{selectedRequest.courseCode}</p></div>
-  //               <div><p><strong>Course Description:</strong></p><p>{selectedRequest.requester}</p></div>
-  //               <div><p><strong>Room:</strong></p><p>{selectedRequest.room}</p></div>
-  //               <div><p><strong>Usage Type:</strong></p><p>{selectedRequest.usageType}</p></div>
-  //             </div>
-  //           </div>
-  //           <div className="details-table">
-  //             <Title level={5}>Requested Items:</Title>
-  //             <Table
-  //               columns={itemColumns}
-  //               dataSource={selectedRequest.items}
-  //               rowKey={(_, index) => index}
-  //               size="small"
-  //               pagination={false}
-  //             />
-  //             <br />
-  //             <p style={{ marginBottom: '30px' }}><strong>Note:</strong> {selectedRequest.message || "No message provided."}</p>
-  //           </div>
-  //         </>
-  //       )}
-  //     </Modal>
-
-  //     <Modal
-  //       title="Confirm Cancellation"
-  //       open={isCancelVisible}
-  //       onCancel={() => setIsCancelVisible(false)}
-  //       onOk={handleCancelRequest}
-  //       zIndex={1009}
-  //       okText="Yes, Cancel"
-  //       cancelText="No"
-  //     >
-  //       <p>Are you sure you want to cancel this request?</p>
-  //     </Modal>
-  //   </Content>
-  // );
 
   const getUsageIcon = (usageType) => {
   switch (usageType) {
@@ -1051,9 +848,9 @@ const renderPendingTab = () => (
         {requests
           .filter((item) =>
             item.requester.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            item.courseCode.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.courseCode || item.course || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.usageType.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (item.courseDescription?.toLowerCase() || "").includes(searchQuery.toLowerCase())
+            (item.courseDescription || item.reason || "").toLowerCase().includes(searchQuery.toLowerCase())
           )
           .map((item) => (
             <div
@@ -1163,14 +960,14 @@ const renderPendingTab = () => (
               {selectedRequest.requester}
             </Descriptions.Item>
             <Descriptions.Item label="Course Code">
-              {selectedRequest.courseCode}
+              {selectedRequest.courseCode || selectedRequest.program || "N/A"}
             </Descriptions.Item>
 
             <Descriptions.Item label="Requisition Date">
               {selectedRequest.dateRequested}
             </Descriptions.Item>
             <Descriptions.Item label="Course Description">
-              {selectedRequest.courseDescription}
+              {selectedRequest.courseDescription || selectedRequest.reason || "N/A"}
             </Descriptions.Item>
 
             <Descriptions.Item label="Date Required">
@@ -1250,38 +1047,6 @@ const renderPendingTab = () => (
     </Modal>
   </Content>
 );
-
-
-// Assuming you only need Approved requests
-// const renderApprovedTab = () => {
-//   const approvedData = filteredData.filter((item) => item.action === 'Request Approved');
-
-//   return (
-//     <Content className="approved-content">
-//       {loading ? (
-//         <Spin size="large" />
-//       ) : (
-//         <Table
-//           columns={columns2}
-//           dataSource={approvedData}
-//           pagination={{ pageSize: 10 }}
-//           rowKey="id"
-//           bordered
-//           onRow={(record) => ({
-//             onClick: () => handleRowClick(record), // Make the row clickable
-//           })}
-//           locale={{
-//             emptyText: (
-//               <div className="empty-row">
-//                 <span>No activity found.</span>
-//               </div>
-//             ),
-//           }}
-//         />
-//       )}
-//     </Content>
-//   );
-// };
 
 const renderApprovedTab = () => {
   const approvedData = filteredData.filter((item) => item.action === "Request Approved");
@@ -1429,7 +1194,7 @@ const renderApprovedTab = () => {
 
 const renderDeployedTab = () => {
   const deployedData = filteredData.filter((item) => item.action === "Deployed");
-console.log(deployedData);
+
   return (
     <Content className="pending-content">
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
@@ -1448,10 +1213,9 @@ console.log(deployedData);
         <div className="approved-cards">
           {deployedData.length > 0 ? (
             deployedData.map((item, index) => {
-              console.log(item); // Debugging the structure of each item
               return (
                 <div
-                  key={item.id || index} // Fallback to index if id is not unique
+                  key={item.id || index} 
                   className="request-card"
                   onClick={() => handleRowClick(item)}
                   style={{
@@ -1575,7 +1339,6 @@ console.log(deployedData);
 const renderReturnedTab = () => {
   const returnedData = filteredData.filter((item) => item.action === 'Returned' || item.action === 'Released');
 
-console.log(returnedData);
   return (
     <Content className="pending-content">
       <div style={{ display: "flex", gap: 10, alignItems: "flex-start"}}>
@@ -1594,7 +1357,6 @@ console.log(returnedData);
         <div className="approved-cards">
           {returnedData.length > 0 ? (
             returnedData.map((item, index) => {
-              console.log(item); // Debugging the structure of each item
               return (
                 <div
                   key={item.id || index} // Fallback to index if id is not unique
@@ -2049,128 +1811,6 @@ const renderRejectedTab = () => {
   );
 };
 
-// const ProcessedTab = () => {
-//   const [activeTab, setActiveTab] = useState('APPROVED');
-
-//   const getTabData = (type) => {
-//     return filteredData.filter((item) => {
-//       if (type === 'APPROVED') return item.action === 'Request Approved';
-//       if (type === 'REJECTED') return item.action === 'Request Rejected';
-//       if (type === 'CANCELLED') return item.action === 'Cancelled a request';
-//       if (type === 'DEPLOYED') return item.action === 'Deployed';
-//       return true;
-//     });
-//   };
-
-//   const tabData = getTabData(activeTab);
-
-//   return (
-//     <Content className="activity-content">
-//       <div className="activity-controls">
-
-//       </div>
-
-//       <Tabs activeKey={activeTab} onChange={setActiveTab}>
-//         <TabPane tab={`Approved (${getTabData('APPROVED').length})`} key="APPROVED" />
-//         <TabPane tab={`Deployed (${getTabData('DEPLOYED').length})`} key="DEPLOYED" />
-//         <TabPane tab={`Rejected (${getTabData('REJECTED').length})`} key="REJECTED" />
-//         <TabPane tab={`Cancelled (${getTabData('CANCELLED').length})`} key="CANCELLED" />
-//       </Tabs>
-
-//       <Table
-//         columns={columns2}
-//         dataSource={tabData}
-//         pagination={{ pageSize: 10 }}
-//         bordered
-//         className="activity-table"
-//         rowClassName="activity-row"
-//         onRow={(record) => ({ onClick: () => handleRowClick(record) })}
-//         locale={{
-//           emptyText: (
-//             <div className="empty-row">
-//               <span>No activity found.</span>
-//             </div>
-//           ),
-//         }}
-//       />
-
-//       <Modal
-//         title="Activity Details"
-//         visible={modalVisible}
-//         zIndex={1015}
-//         onCancel={() => setModalVisible(false)}
-//         footer={null}
-//       >
-//         {selectedLog && (
-//           <Descriptions column={1} bordered size="small">
-//             <Descriptions.Item label="Action">
-//               {selectedLog.status === 'CANCELLED'
-//                 ? 'Cancelled a request'
-//                 : selectedLog.action || 'Modified a request'}
-//             </Descriptions.Item>
-
-//             <Descriptions.Item label="By">
-//               {selectedLog.userName || 'Unknown User'}
-//             </Descriptions.Item>
-
-//             <Descriptions.Item label="Program">
-//               {selectedLog.program || 'N/A'}
-//             </Descriptions.Item>
-
-//             <Descriptions.Item label="Items Requested">
-//               {(selectedLog.filteredMergedData || selectedLog.requestList)?.length > 0 ? (
-//                 <ul style={{ paddingLeft: 20 }}>
-//                   {(selectedLog.filteredMergedData || selectedLog.requestList).map((item, index) => (
-//                     <li key={index} style={{ marginBottom: 10 }}>
-//                       <strong>{item.itemName}</strong>
-//                       <ul style={{ marginLeft: 20 }}>
-//                         <li>Quantity: {item.quantity}</li>
-//                         {(item.category === 'Chemical' || item.category === 'Reagent') && item.unit && (
-//                           <li>Unit: {item.unit}</li>
-//                         )}
-//                         {item.category && <li>Category: {item.category}</li>}
-//                         {item.category === 'Glasswares' && item.volume && (
-//                           <li>Volume: {item.volume}</li>
-//                         )}
-//                         {item.labRoom && <li>Lab Room: {item.labRoom}</li>}
-//                         {item.usageType && <li>Usage Type: {item.usageType}</li>}
-//                         {item.itemType && <li>Item Type: {item.itemType}</li>}
-//                         {item.department && <li>Department: {item.department}</li>}
-//                         {selectedLog.action === 'Request Rejected' && (item.reason || item.rejectionReason) && (
-//                           <>
-//                             {item.reason && <li><strong>Reason:</strong> {item.reason}</li>}
-//                             {item.rejectionReason && <li><strong>Rejection Reason:</strong> {item.rejectionReason}</li>}
-//                           </>
-//                         )}
-//                       </ul>
-//                     </li>
-//                   ))}
-//                 </ul>
-//               ) : 'None'}
-//             </Descriptions.Item>
-//             {selectedLog.action !== 'Request Rejected' && (
-//               <Descriptions.Item label="Reason">
-//                 {selectedLog.reason || 'N/A'}
-//               </Descriptions.Item>
-//             )}
-//             <Descriptions.Item label="Room">
-//               {selectedLog.room || 'N/A'}
-//             </Descriptions.Item>
-//             <Descriptions.Item label="Time">
-//               {selectedLog.timeFrom && selectedLog.timeTo
-//                 ? `${selectedLog.timeFrom} - ${selectedLog.timeTo}`
-//                 : 'N/A'}
-//             </Descriptions.Item>
-//             <Descriptions.Item label="Date Required">
-//               {selectedLog.dateRequired || 'N/A'}
-//             </Descriptions.Item>
-//           </Descriptions>
-//         )}
-//       </Modal>
-//     </Content>
-//   );
-// };
-
   const loadImageAsDataURL = async (url) => {
   try {
     const res = await fetch(url, { cache: "force-cache" });
@@ -2196,9 +1836,6 @@ const formatDateTimePH = (d = new Date()) => {
     minute: "2-digit",
   }).format(d);
 };
-
-// Call this from your component: handleGeneratePDF(selectedLog)
-// Put NULS_Favicon.png in /public/images/NULS_Favicon.png
 
 const handleGeneratePDF = async () => {
   if (!selectedLog) {
@@ -2651,12 +2288,6 @@ const handlePrint = () => {
   ]}
 />
 
-
-
-
-
-
-     
       <Modal
         visible={modalVisible}
         zIndex={1015}
@@ -2884,13 +2515,9 @@ const handlePrint = () => {
                       placeholder="Select date"
                       format="YYYY-MM-DD"
                       onChange={(date, dateString) => {
-                        console.log('Reorder DatePicker onChange:', { date, dateString });
-                        
-                        // Check for 7-day warning immediately when date is selected
                         if (dateString && checkDateWarning(dateString)) {
                           const daysDiff = getDaysDifference(dateString);
                           setDaysDifference(daysDiff);
-                          console.log('Showing warning modal for reorder date:', dateString, 'days difference:', daysDiff);
                           setIsWarningModalVisible(true);
                         }
                       }}
@@ -2915,6 +2542,13 @@ const handlePrint = () => {
                       style={{ width: '100%' }}
                       placeholder="Select start time"
                       format="HH:mm"
+                      minuteStep={10}
+                      use12Hours={false}
+                      hideDisabledOptions
+                      disabledHours={() => {
+                        // hide hours outside 7–21
+                        return [...Array(24).keys()].filter(h => h < 7 || h > 21);
+                      }}
                     />
                   </Form.Item>
 
@@ -2927,6 +2561,25 @@ const handlePrint = () => {
                       style={{ width: '100%' }}
                       placeholder="Select end time"
                       format="HH:mm"
+                      minuteStep={10}
+                      use12Hours={false}
+                      hideDisabledOptions
+                      disabledHours={() => {
+                        const timeFromValue = reorderForm.getFieldValue('timeFrom');
+                        if (!timeFromValue) return [];
+                        const [startHour] = timeFromValue.format('HH:mm').split(":").map(Number);
+                        // hide hours before startHour and outside 7–21
+                        return [...Array(24).keys()].filter(h => h < Math.max(7, startHour) || h > 21);
+                      }}
+                      disabledMinutes={(selectedHour) => {
+                        const timeFromValue = reorderForm.getFieldValue('timeFrom');
+                        if (!timeFromValue) return [];
+                        const [startHour, startMinute] = timeFromValue.format('HH:mm').split(":").map(Number);
+                        if (selectedHour === startHour) {
+                          return Array.from({ length: startMinute }, (_, i) => i);
+                        }
+                        return [];
+                      }}
                     />
                   </Form.Item>
 

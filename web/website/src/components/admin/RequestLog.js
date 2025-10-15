@@ -52,9 +52,6 @@ const RequestLog = () => {
       minute: "2-digit",
     }).format(d);
 
-
-
-
  useEffect(() => {
     const auth = getAuth();
     const user = auth.currentUser;

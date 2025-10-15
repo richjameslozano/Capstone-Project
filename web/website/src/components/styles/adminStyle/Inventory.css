@@ -284,6 +284,60 @@
   padding: 0 16px;
 }
 
+/* Critical filter button styling */
+.critical-filter-button {
+  height: 40px;
+  padding: 0 16px;
+  margin-right: 8px;
+  border-color: #f44336 !important;
+  color: #f44336 !important;
+}
+
+.critical-filter-button:hover {
+  background-color: #ffebee !important;
+  border-color: #d32f2f !important;
+  color: #d32f2f !important;
+}
+
+.critical-filter-button.active,
+.critical-filter-button.ant-btn-primary {
+  background-color: #f44336 !important;
+  border-color: #f44336 !important;
+  color: white !important;
+}
+
+.critical-filter-button.active:hover,
+.critical-filter-button.ant-btn-primary:hover {
+  background-color: #d32f2f !important;
+  border-color: #d32f2f !important;
+}
+
+/* Critical item row styling */
+.inventory-table .ant-table-tbody > tr.critical-item-row > td {
+  background-color: #ffebee !important; /* Light red background */
+  border-left: 4px solid #f44336 !important; /* Red left border */
+  border-right: 1px solid #f44336 !important; /* Red right border */
+  font-weight: 500 !important; /* Slightly bolder text */
+}
+
+.inventory-table .ant-table-tbody > tr.critical-item-row:hover > td {
+  background-color: #ffcdd2 !important; /* Darker red on hover */
+  border-left: 4px solid #d32f2f !important; /* Darker red border on hover */
+}
+
+/* Override the alternating row colors for critical items */
+.inventory-table .ant-table-tbody > tr.critical-item-row:nth-child(odd) > td {
+  background-color: #ffebee !important; /* Light red background */
+}
+
+.inventory-table .ant-table-tbody > tr.critical-item-row:nth-child(even) > td {
+  background-color: #ffebee !important; /* Light red background */
+}
+.reset-filters-button {
+  height: 40px;
+  padding: 0 16px;
+}
+
 .reset-filters-button:hover {
   background-color: #dddddd !important; /* Very light gray on hover */
   border-color: #c0c0c0 !important;

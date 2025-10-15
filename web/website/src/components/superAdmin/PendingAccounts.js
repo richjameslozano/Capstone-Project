@@ -75,80 +75,7 @@ const PendingAccounts = () => {
     setSelectedRequests(selectedRowKeys); // Update selected rows
   };
 
-  // FRONTEND
-  //   const handleApprove = async () => {
-  //   const auth = getAuth();
-
-  //   try {
-  //     await Promise.all(
-  //       selectedRequests.map(async (requestId) => {
-  //         const requestRef = doc(db, "pendingaccounts", requestId);
-  //         const requestSnapshot = await getDoc(requestRef);
-  //         const requestData = requestSnapshot.data();
-
-  //         if (!requestData) {
-
-  //           return;
-  //         }
-
-  //         // Check if user already exists in 'accounts' collection by email
-  //         const accountsRef = collection(db, "accounts");
-  //         const q = query(accountsRef, where("email", "==", requestData.email));
-  //         const querySnapshot = await getDocs(q);
-  //         if (!querySnapshot.empty) {
-
-  //           return;
-  //         }
-
-  //         // Extract password before saving to 'accounts'
-  //         const { password, ...restData } = requestData;
-
-  //         // Create a Firestore doc in 'accounts' without password and UID for now
-  //         const newAccountRef = doc(accountsRef); 
-  //         await setDoc(newAccountRef, {
-  //           ...restData,
-  //           uid: "", // UID will be set after user registers password
-  //           status: "approved",
-  //           approvedAt: new Date(),
-  //         });
-
-  //         // Send email notification
-  //         await sendEmailNotification({
-  //           to: requestData.email,
-  //           name: requestData.name,
-  //           status: "approved",
-  //         });
-
-  //         // Remove the document from the 'pendingaccounts' collection
-  //         await deleteDoc(requestRef);
-  //       })
-  //     );
-
-  //     notification.success({
-  //       message: "Requests Approved",
-  //       description: "The selected account requests have been approved and moved to the accounts collection.",
-  //     });
-
-  //     setModalMessage("Account added successfully!");
-  //     setIsNotificationVisible(true);
-
-  //     // Remove approved requests from UI
-  //     setRequests((prevRequests) =>
-  //       prevRequests.filter((request) => !selectedRequests.includes(request.id))
-  //     );
-  //     setSelectedRequests([]); // Clear selected rows
-
-  //   } catch (error) {
-
-  //     notification.error({
-  //       message: "Error",
-  //       description: "Failed to approve the selected requests.",
-  //     });
-  //   }
-  // };
-
-  // BACKEND
-   const handleApprove = async () => {
+  const handleApprove = async () => {
     setApproveLoading(true);
     try {
       const userId = localStorage.getItem("userId");
@@ -213,8 +140,8 @@ const PendingAccounts = () => {
             status: "rejected",
           });
 
-          // Step 1: Remove the document from the 'pendingaccounts' collection
-          await deleteDoc(requestRef); // Delete the document
+          
+          await deleteDoc(requestRef); 
         })
       );
   
@@ -298,7 +225,7 @@ const PendingAccounts = () => {
                   loading={approveLoading}
                   disabled={selectedRequests.length === 0 || rejectLoading}
                     style={{
-                        backgroundColor: selectedRequests.length > 0 ? '#45a049' : '', // green when enabled
+                        backgroundColor: selectedRequests.length > 0 ? '#45a049' : '', 
                         borderColor: selectedRequests.length > 0 ? '#45a049' : '',
                         color:  selectedRequests.length > 0 ? '#fff': '',
                       }}

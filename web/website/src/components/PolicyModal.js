@@ -14,16 +14,6 @@ const PolicyModal = ({ visible, onCancel }) => {
     "Borrowing privileges may be revoked for repeated violations."
   ];
 
-  // const categoryPolicies = [
-  //   "Electronics: Requires special handling and must be returned in original condition",
-  //   "Laboratory Equipment: Only authorized personnel may borrow",
-  //   "Books and Materials: Standard 7-day borrowing period applies",
-  //   "Consumables: Limited quantities per request",
-  //   "Safety Equipment: Must be returned immediately after use",
-  //   "Software Licenses: Subject to vendor terms and conditions",
-  //   "Specialized Tools: Requires supervisor approval"
-  // ];
-
   const cancellationPolicies = [
     "Requests may be canceled provided they have not yet been approved by the laboratory personnel.",
     "Should you have a valid reason for cancellation (for an approved request), please inform the laboratory personnel.",
@@ -101,48 +91,6 @@ const PolicyModal = ({ visible, onCancel }) => {
             />
           </div>
         </TabPane>
-
-        {/* <TabPane
-          tab={
-            <span>
-              <BookOutlined />
-              <span style={{ display: window.innerWidth <= 480 ? 'none' : 'inline' }}>
-                Category Policies
-              </span>
-            </span>
-          }
-          key="2"
-        >
-          <div style={{ padding: window.innerWidth <= 768 ? '8px 0' : '16px 0' }}>
-            <Title level={4} style={{ color: '#52c41a', marginBottom: '16px' }}>
-              Item Category Guidelines
-            </Title>
-            <List
-              dataSource={categoryPolicies}
-              renderItem={(item, index) => (
-                <List.Item style={{ border: 'none', padding: '8px 0' }}>
-                  <Text>
-                    <span style={{ 
-                      display: 'inline-block', 
-                      width: '20px', 
-                      height: '20px', 
-                      backgroundColor: '#52c41a', 
-                      color: 'white', 
-                      borderRadius: '50%', 
-                      textAlign: 'center', 
-                      lineHeight: '20px', 
-                      fontSize: '12px', 
-                      marginRight: '12px' 
-                    }}>
-                      {index + 1}
-                    </span>
-                    {item}
-                  </Text>
-                </List.Item>
-              )}
-            />
-          </div>
-        </TabPane> */}
 
         <TabPane
           tab={

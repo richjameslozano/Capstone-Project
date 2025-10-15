@@ -60,8 +60,8 @@ const CapexList = () => {
         });
 
         return () => unsubscribe();
+
       } catch (e) {
-        // noop
       }
     };
 
@@ -90,7 +90,6 @@ const CapexList = () => {
     setModalVisible(true);
   };
 
-  // ---------- PDF helpers ----------
   const formatDateTimePH = (d = new Date()) =>
     new Intl.DateTimeFormat("en-PH", {
       timeZone: "Asia/Manila",
@@ -193,7 +192,6 @@ const CapexList = () => {
 
     drawHeader();
 
-    // Report meta
     doc.setFont("helvetica", "bold");
     doc.setFontSize(12);
     doc.text("Report Details", marginX, contentTop);
@@ -236,7 +234,6 @@ const CapexList = () => {
       y = contentTop;
     }
 
-    // helpers inside generator
     const ensureSpace = (needed = 0) => {
       if (y + needed > contentBottom) {
         doc.addPage();
@@ -251,7 +248,6 @@ const CapexList = () => {
         maximumFractionDigits: 2,
       })}`;
 
-    // Per-request sections
     filteredRequests.forEach((request, idx) => {
       const reqTotal = (request.items || []).reduce(
         (sum, it) => sum + Number(it.totalPrice || 0),
@@ -550,9 +546,7 @@ const CapexList = () => {
     }}
   >
 
-    {/* Action Buttons */}
 <div style={{ display: "flex", gap: 12 }}>
-  {/* Excel Button */}
   <Button
     className="export-excel-button"
     icon={<FileExcelOutlined />}
@@ -572,7 +566,6 @@ const CapexList = () => {
     Export Excel
   </Button>
 
-  {/* Save PDF Button */}
   <Button
     className="save-pdf-button"
     icon={<FilePdfOutlined />}
@@ -592,7 +585,6 @@ const CapexList = () => {
     Save PDF
   </Button>
 
-  {/* Print Button */}
   <Button
     className="print-pdf-button"
     icon={<PrinterOutlined />}
