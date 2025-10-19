@@ -864,9 +864,14 @@ function resolveNextRestockDate(data) {
       payload.availabilityThreshold = Math.floor(atNum);
     }
 
-    // if (["Equipment", "Glasswares", "Materials"].includes(cat)) {
-    //   payload.condition = { Good, Defect, Damage, Lost };
-    // }
+    if (cat === "Glasswares") {
+      payload.condition = {
+        Good: values.condition?.Good ?? 0,
+        Defect: values.condition?.Defect ?? 0,
+        Damage: values.condition?.Damage ?? 0,
+        Lost: values.condition?.Lost ?? 0,
+      };
+    }
 
     const userId = localStorage.getItem("userId");
     const userName = localStorage.getItem("userName") || "User";
