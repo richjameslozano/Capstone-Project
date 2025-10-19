@@ -455,7 +455,7 @@ const getCriticalOrLowAvailabilityItems = (inventoryItems = []) => {
 
   const adminSummaryCards = [
     { title: "Pending Requests", count: pendingRequestCount, color: "#2596be", icon: <FileTextOutlined /> },
-    { title: "Approval Request", count: approvalRequestCount, color: "#8b5cf6", icon: <DatabaseOutlined /> },
+    { title: "Approval Request", count: approvalRequestCount, color: "#165a72", icon: <DatabaseOutlined /> },
     { title: "Critical Stocks", count: criticalStockList.length, color: "#0b2d39", icon: <UnorderedListOutlined /> },
     { title: "Expiring Items", count: expiringSoonItems.length, color: "#000000", icon: <DatabaseOutlined /> },
   ];
