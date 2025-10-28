@@ -29,3 +29,13 @@ Follow these steps to run the mobile app or build a release APK.
 7. The generated APK will be located at: (android/app/build/outputs/apk/release/app-release.apk)
 
 You can then transfer this APK to your phone or upload it to a distribution platform.
+
+Authors 
+1. Aquino, Tristan Jay
+2. Aruta, Henreizh Nathan 
+3. Bernabe, Berlene
+4. Lozano, Rich James
+
+One Pixel
+
+National University Mall of Asia – School of Information Technology
