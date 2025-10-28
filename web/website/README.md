@@ -3,6 +3,7 @@
 A Mobile and Web Laboratory Requisition and Inventory Management
 of Health and Science Departments of NU MOA 
 
+WEB Installation
 
 📋 Prerequisites
 
