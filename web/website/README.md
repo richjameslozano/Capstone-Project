@@ -1,70 +1,35 @@
-# Getting Started with Create React App
+⚡ National University Laboratory System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A Mobile and Web Laboratory Requisition and Inventory Management
+of Health and Science Departments of NU MOA 
 
-## Available Scripts
 
-In the project directory, you can run:
+📋 Prerequisites
 
-### `npm start`
+Before running the project locally, make sure you have installed the following:
+- Node.js
+ (version 16 or higher)
+- npm
+ (comes with Node.js)
+- Git
+- Code editor (e.g., Visual Studio Code)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+⚙️ Installation Guide
+Follow these steps to set up and run the system on your localhost.
+1. download the ZIP file and extract it to your local machine.
+2. open the project folder (cd project-name)
+3. open the website folder(cd web/website)
+4. install all required dependencies (npm install)
+5. npm start
+6. your app should be open at http://localhost:3000
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+👥 Authors
 
-### `npm test`
+Aquino, Tristan Jay
+Aruta, Henreizh Nathan
+Bernabe, Berlene
+Lozano, Rich James 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+One Pixel
 
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+National University Mall of Asia – School of Information Technology
