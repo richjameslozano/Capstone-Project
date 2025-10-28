@@ -26,10 +26,10 @@ Follow these steps to set up and run the system on your localhost.
 
 👥 Authors
 
-Aquino, Tristan Jay
-Aruta, Henreizh Nathan
-Bernabe, Berlene
-Lozano, Rich James 
+1. Aquino, Tristan Jay
+2. Aruta, Henreizh Nathan
+3. Bernabe, Berlene
+4. Lozano, Rich James 
 
 One Pixel
 
