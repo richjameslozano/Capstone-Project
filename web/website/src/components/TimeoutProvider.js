@@ -8,20 +8,20 @@ export function TimeoutProvider({ children }) {
     const navigate = useNavigate();
     const location = useLocation();
     const timeoutRef = useRef();
-    const [isModalVisible, setIsModalVisible] = useState(false); // State to control modal visibility
-    const SESSION_TIMEOUT = 900000; // 60 seconds change when desired
-    const exemptedRoutes = ['/', '/signup']; // Routes that should not trigger timeout
+    const [isModalVisible, setIsModalVisible] = useState(false); 
+    const SESSION_TIMEOUT = 900000;
+    const exemptedRoutes = ['/', '/signup'];
 
     useEffect(() => {
         if (exemptedRoutes.includes(location.pathname)) return;
 
         const handleActivity = () => {
             clearTimeout(timeoutRef.current);
-            setIsModalVisible(false); // Hide modal on activity
+            setIsModalVisible(false);
             timeoutRef.current = setTimeout(() => {
                 logoutUser();
-                setIsModalVisible(true); // Show modal on session timeout
-                navigate('/'); // Example action on timeout
+                setIsModalVisible(true);
+                navigate('/'); 
             }, SESSION_TIMEOUT);
         };
 
